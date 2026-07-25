@@ -3,46 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ricardo Maio — GitHub Pages</title>
+<title>Ricardo Maio — Live Projects Dashboard</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --border: #2a2a3a;
+    --border-hover: #3a3a4a;
+    --text: #e0ddd6;
+    --text-dim: #8a887f;
+    --accent: #d4a853;
+    --accent-blue: #5b8def;
+    --green: #4ade80;
+    --red: #f87171;
+    --amber: #fbbf24;
+  }
   body {
-    background: #0a0a0f;
-    color: #e0ddd6;
+    background: var(--bg);
+    color: var(--text);
     font-family: Georgia, 'Times New Roman', serif;
-    display: flex; align-items: center; justify-content: center;
-    min-height: 100vh; text-align: center;
+    min-height: 100vh;
+    padding: 40px 20px;
   }
-  .card {
-    background: #12121a;
-    border: 1px solid #2a2a3a;
+  .container { max-width: 900px; margin: 0 auto; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 48px; }
+  .header h1 { font-size: 2.2rem; color: #f5f0e8; font-weight: 400; margin-bottom: 8px; }
+  .header p { color: var(--text-dim); font-size: 1.1rem; }
+  .header .updated { color: var(--text-dim); font-size: 0.85rem; margin-top: 12px; }
+
+  /* Section title */
+  .section-title {
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin: 40px 0 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Project grid */
+  .projects { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+  .project-card {
+    background: var(--card);
+    border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 48px;
-    max-width: 500px;
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.1s;
   }
-  h1 { font-size: 2rem; color: #f5f0e8; font-weight: 400; margin-bottom: 8px; }
-  p { color: #8a887f; margin-bottom: 24px; }
-  a {
-    display: block;
-    background: #1a1a28;
-    border: 1px solid #2a2a3a;
-    border-radius: 8px;
-    padding: 16px 24px;
-    margin: 8px 0;
-    color: #d4a853;
-    text-decoration: none;
-    font-size: 1.1rem;
-    transition: background 0.2s;
+  .project-card:hover { border-color: var(--border-hover); }
+  .project-card h3 { font-size: 1.15rem; color: #f5f0e8; font-weight: 400; margin-bottom: 4px; }
+  .project-card .stack { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 16px; }
+  .project-card .status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; padding: 3px 10px; border-radius: 20px;
+    margin-bottom: 14px;
   }
-  a:hover { background: #222236; }
-  a .emoji { margin-right: 8px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .status-running { background: rgba(74,222,128,0.15); color: var(--green); }
+  .status-running .status-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-stopped { background: rgba(248,113,113,0.15); color: var(--red); }
+  .status-stopped .status-dot { background: var(--red); }
+  .project-card .links { display: flex; flex-direction: column; gap: 8px; }
+  .project-card a {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #1a1a28; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 16px; color: var(--accent); text-decoration: none;
+    font-size: 0.95rem; transition: background 0.2s;
+  }
+  .project-card a:hover { background: #222236; }
+  .project-card a .port { color: var(--text-dim); font-size: 0.85rem; }
+  .project-card .desc { color: var(--text-dim); font-size: 0.85rem; margin-top: 12px; line-height: 1.5; }
+
+  /* Other links */
+  .other-links { display: flex; flex-direction: column; gap: 8px; }
+  .other-links a {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px 20px; color: var(--accent); text-decoration: none;
+    transition: background 0.2s; font-size: 1rem;
+  }
+  .other-links a:hover { background: #222236; }
+
+  /* Refresh note */
+  .note {
+    text-align: center; color: var(--text-dim); font-size: 0.85rem;
+    margin-top: 40px; line-height: 1.6;
+  }
+  .note code {
+    background: #1a1a28; border: 1px solid var(--border); border-radius: 4px;
+    padding: 2px 6px; font-family: 'SF Mono', Monaco, monospace; font-size: 0.8rem;
+  }
 </style>
 </head>
 <body>
-<div class="card">
-  <h1>Ricardo Maio</h1>
-  <p>Personal GitHub Pages</p>
-  <a href="/garden-plan"><span class="emoji">🌱</span> Welgemoed Garden Plan</a>
+<div class="container">
+  <div class="header">
+    <h1>Ricardo Maio</h1>
+    <p>Live Projects Dashboard</p>
+    <div class="updated" id="updated">Status auto-checked on page load</div>
+  </div>
+
+  <!-- Live Dev Projects -->
+  <div class="section-title">⚡ Live Dev Servers</div>
+  <div class="projects" id="projects">
+
+    <div class="project-card" data-port="3001">
+      <h3>Papa Pasta</h3>
+      <div class="stack">Next.js 16 · React 19 · Tailwind 4</div>
+      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="links">
+        <a href="http://localhost:3001"><span>Open App</span> <span class="port">:3001</span></a>
+      </div>
+      <div class="desc">Main restaurant website — menu, merch, loyalty, events, franchise info.</div>
+    </div>
+
+    <div class="project-card" data-port="3002">
+      <h3>Esoteric Command</h3>
+      <div class="stack">Next.js 16 · React 19 · Prisma · Swiss Ephemeris · Recharts</div>
+      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="links">
+        <a href="http://localhost:3002"><span>Open App</span> <span class="port">:3002</span></a>
+      </div>
+      <div class="desc">Astrology and Human Design platform — chart computation, ephemeris, interpretations.</div>
+    </div>
+
+    <div class="project-card" data-port="3003">
+      <h3>INFX Web Media</h3>
+      <div class="stack">Next.js 16 · React 19 · Tailwind 4 · Framer Motion · GSAP</div>
+      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="links">
+        <a href="http://localhost:3003"><span>Open App</span> <span class="port">:3003</span></a>
+      </div>
+      <div class="desc">INFX Media agency website — motion design, creative portfolio, service showcase.</div>
+    </div>
+
+    <div class="project-card" data-port="3004">
+      <h3>ChromaCommand</h3>
+      <div class="stack">Next.js · Turbo monorepo · tRPC · Edge Gateway · Dashboard</div>
+      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="links">
+        <a href="http://localhost:3004"><span>Dashboard</span> <span class="port">:3004</span></a>
+        <a href="http://localhost:3005"><span>tRPC API</span> <span class="port">:3005</span></a>
+      </div>
+      <div class="desc">Unified RGB + Digital Menu + Audio control platform for Papa Pasta franchise network.</div>
+    </div>
+
+    <div class="project-card" data-port="8001">
+      <h3>Divorced Dads</h3>
+      <div class="stack">Laravel 13 · Filament 5 · Livewire 4 · Vite 8 · Octane</div>
+      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="links">
+        <a href="http://localhost:8001"><span>Open App</span> <span class="port">:8001</span></a>
+      </div>
+      <div class="desc">Family law support platform for divorced dads — custody tracking, resources, community.</div>
+    </div>
+
+    <div class="project-card" data-port="5173">
+      <h3>SunScout</h3>
+      <div class="stack">Vite 6 · React 19 · Express 5 · Postgres · Recharts</div>
+      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="links">
+        <a href="http://localhost:5173"><span>Open App</span> <span class="port">:5173</span></a>
+        <a href="http://localhost:8788"><span>Express API</span> <span class="port">:8788</span></a>
+      </div>
+      <div class="desc">Beach discovery and conditions app — live surf/UV data, trip planner, dynamic rankings.</div>
+    </div>
+
+  </div>
+
+  <!-- Other Pages -->
+  <div class="section-title">📁 Other Pages</div>
+  <div class="other-links">
+    <a href="/garden-plan">🌱 Welgemoed Garden Plan</a>
+    <a href="/tlf-feedback-report.html">📋 TLF App — INFX Solutions Team Feedback Report</a>
+  </div>
+
+  <div class="note">
+    Dev servers run on Mac mini via <code>tmux</code>, tunneled to <code>localhost</code> on this MacBook Air.<br>
+    Status indicator checks each port live — <span style="color: var(--green);">●</span> running / <span style="color: var(--red);">●</span> stopped.<br>
+    <strong>GitHub Pages URL:</strong> https://targetpraks.github.io
+  </div>
 </div>
+
+<script>
+async function checkPort(port, cardEl) {
+  const statusEl = cardEl.querySelector('.status');
+  const textEl = cardEl.querySelector('.status-text');
+  try {
+    const res = await fetch(`http://localhost:${port}`, {
+      mode: 'no-cors',
+      signal: AbortSignal.timeout(3000),
+    });
+    // no-cors returns opaque response; any response = port is open
+    statusEl.className = 'status status-running';
+    textEl.textContent = 'Running';
+  } catch (err) {
+    statusEl.className = 'status status-stopped';
+    textEl.textContent = 'Stopped';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('updated').textContent =
+    'Last checked: ' + new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' });
+
+  document.querySelectorAll('.project-card').forEach(card => {
+    const port = card.dataset.port;
+    checkPort(port, card);
+  });
+});
+</script>
 </body>
 </html>
