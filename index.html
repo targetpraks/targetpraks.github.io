@@ -34,6 +34,21 @@
   .header p { color: var(--text-dim); font-size: 1.1rem; }
   .header .updated { color: var(--text-dim); font-size: 0.85rem; margin-top: 12px; }
 
+  /* Summary bar */
+  .summary-bar {
+    display: flex; justify-content: center; gap: 24px;
+    margin: 20px 0 0;
+  }
+  .summary-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.9rem; color: var(--text-dim);
+  }
+  .summary-pill .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .summary-pill .dot-green { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .summary-pill .dot-red { background: var(--red); }
+  .summary-pill .dot-amber { background: var(--amber); }
+  .summary-pill .count { font-weight: 600; color: var(--text); }
+
   /* Section title */
   .section-title {
     font-size: 1.3rem;
@@ -65,6 +80,8 @@
   .status-running .status-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
   .status-stopped { background: rgba(248,113,113,0.15); color: var(--red); }
   .status-stopped .status-dot { background: var(--red); }
+  .status-checking { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .status-checking .status-dot { background: var(--amber); }
   .project-card .links { display: flex; flex-direction: column; gap: 8px; }
   .project-card a {
     display: flex; align-items: center; justify-content: space-between;
@@ -94,6 +111,16 @@
     background: #1a1a28; border: 1px solid var(--border); border-radius: 4px;
     padding: 2px 6px; font-family: 'SF Mono', Monaco, monospace; font-size: 0.8rem;
   }
+
+  /* Refresh button */
+  .refresh-btn {
+    display: inline-block; margin-top: 16px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 20px; color: var(--accent); cursor: pointer;
+    font-size: 0.9rem; font-family: inherit;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .refresh-btn:hover { background: #222236; border-color: var(--border-hover); }
 </style>
 </head>
 <body>
@@ -101,7 +128,12 @@
   <div class="header">
     <h1>Ricardo Maio</h1>
     <p>Live Projects Dashboard</p>
-    <div class="updated" id="updated">Status auto-checked on page load</div>
+    <div class="updated" id="updated">Checking status…</div>
+    <div class="summary-bar" id="summary-bar" style="display:none;">
+      <span class="summary-pill"><span class="dot dot-green"></span> <span class="count" id="count-running">0</span> Running</span>
+      <span class="summary-pill"><span class="dot dot-red"></span> <span class="count" id="count-stopped">0</span> Stopped</span>
+    </div>
+    <button class="refresh-btn" onclick="recheckAll()">↻ Refresh Status</button>
   </div>
 
   <!-- Live Dev Projects -->
@@ -111,7 +143,7 @@
     <div class="project-card" data-port="3001">
       <h3>Papa Pasta</h3>
       <div class="stack">Next.js 16 · React 19 · Tailwind 4</div>
-      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="status status-checking"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
       <div class="links">
         <a href="http://localhost:3001"><span>Open App</span> <span class="port">:3001</span></a>
       </div>
@@ -121,7 +153,7 @@
     <div class="project-card" data-port="3002">
       <h3>Esoteric Command</h3>
       <div class="stack">Next.js 16 · React 19 · Prisma · Swiss Ephemeris · Recharts</div>
-      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="status status-checking"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
       <div class="links">
         <a href="http://localhost:3002"><span>Open App</span> <span class="port">:3002</span></a>
       </div>
@@ -131,17 +163,17 @@
     <div class="project-card" data-port="3003">
       <h3>INFX Web Media</h3>
       <div class="stack">Next.js 16 · React 19 · Tailwind 4 · Framer Motion · GSAP</div>
-      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="status status-checking"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
       <div class="links">
         <a href="http://localhost:3003"><span>Open App</span> <span class="port">:3003</span></a>
       </div>
       <div class="desc">INFX Media agency website — motion design, creative portfolio, service showcase.</div>
     </div>
 
-    <div class="project-card" data-port="3004">
+    <div class="project-card" data-port="3004" data-ports="3004,3005">
       <h3>ChromaCommand</h3>
       <div class="stack">Next.js · Turbo monorepo · tRPC · Edge Gateway · Dashboard</div>
-      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="status status-checking"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
       <div class="links">
         <a href="http://localhost:3004"><span>Dashboard</span> <span class="port">:3004</span></a>
         <a href="http://localhost:3005"><span>tRPC API</span> <span class="port">:3005</span></a>
@@ -152,17 +184,17 @@
     <div class="project-card" data-port="8001">
       <h3>Divorced Dads</h3>
       <div class="stack">Laravel 13 · Filament 5 · Livewire 4 · Vite 8 · Octane</div>
-      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="status status-checking"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
       <div class="links">
         <a href="http://localhost:8001"><span>Open App</span> <span class="port">:8001</span></a>
       </div>
       <div class="desc">Family law support platform for divorced dads — custody tracking, resources, community.</div>
     </div>
 
-    <div class="project-card" data-port="5173">
+    <div class="project-card" data-port="5173" data-ports="5173,8788">
       <h3>SunScout</h3>
       <div class="stack">Vite 6 · React 19 · Express 5 · Postgres · Recharts</div>
-      <div class="status status-stopped"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
+      <div class="status status-checking"><span class="status-dot"></span> <span class="status-text">Checking…</span></div>
       <div class="links">
         <a href="http://localhost:5173"><span>Open App</span> <span class="port">:5173</span></a>
         <a href="http://localhost:8788"><span>Express API</span> <span class="port">:8788</span></a>
@@ -180,38 +212,99 @@
   </div>
 
   <div class="note">
-    Dev servers run on Mac mini via <code>tmux</code>, tunneled to <code>localhost</code> on this MacBook Air.<br>
+    Dev servers run on Mac mini via <code>tmux</code>, forwarded to <code>localhost</code> on this MacBook Air via SSH tunnels (launchd-managed).<br>
     Status indicator checks each port live — <span style="color: var(--green);">●</span> running / <span style="color: var(--red);">●</span> stopped.<br>
-    <strong>GitHub Pages URL:</strong> https://targetpraks.github.io
+    <strong>GitHub Pages URL:</strong> https://targetpraks.github.io<br>
+    <em style="font-size: 0.8rem; color: var(--text-dim);">Note: Status checks only work when viewed from a machine with active SSH tunnels to the Mac mini.</em>
   </div>
 </div>
 
 <script>
+// Track results for summary
+let results = { running: 0, stopped: 0, total: 0 };
+
 async function checkPort(port, cardEl) {
   const statusEl = cardEl.querySelector('.status');
   const textEl = cardEl.querySelector('.status-text');
+
+  // Set checking state
+  statusEl.className = 'status status-checking';
+  textEl.textContent = 'Checking…';
+
   try {
     const res = await fetch(`http://localhost:${port}`, {
       mode: 'no-cors',
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(4000),
     });
-    // no-cors returns opaque response; any response = port is open
+    // no-cors returns opaque response; any response (even 404) = port is open
+    // 404 on API endpoints is expected — the server is running, just no root route
     statusEl.className = 'status status-running';
     textEl.textContent = 'Running';
+    return true;
   } catch (err) {
     statusEl.className = 'status status-stopped';
     textEl.textContent = 'Stopped';
+    return false;
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+async function checkCard(card) {
+  // Some cards have multiple ports (data-ports="3004,3005") — check all
+  const portsAttr = card.dataset.ports;
+  const ports = portsAttr ? portsAttr.split(',').map(p => p.trim()) : [card.dataset.port];
+
+  // Set checking state
+  const statusEl = card.querySelector('.status');
+  const textEl = card.querySelector('.status-text');
+  statusEl.className = 'status status-checking';
+  textEl.textContent = 'Checking…';
+
+  // Check all ports for this card
+  const checks = await Promise.all(ports.map(p => checkPort(p, card)));
+
+  // Card is running if ANY port is up
+  const anyUp = checks.some(c => c === true);
+  if (anyUp) {
+    statusEl.className = 'status status-running';
+    const upCount = checks.filter(c => c).length;
+    textEl.textContent = upCount === ports.length
+      ? 'Running'
+      : `Running (${upCount}/${ports.length})`;
+    results.running++;
+  } else {
+    statusEl.className = 'status status-stopped';
+    textEl.textContent = 'Stopped';
+    results.stopped++;
+  }
+}
+
+function updateSummary() {
+  const bar = document.getElementById('summary-bar');
+  document.getElementById('count-running').textContent = results.running;
+  document.getElementById('count-stopped').textContent = results.stopped;
+  bar.style.display = 'flex';
+}
+
+async function recheckAll() {
+  // Reset
+  results = { running: 0, stopped: 0, total: 0 };
+  document.getElementById('summary-bar').style.display = 'none';
+
+  const cards = document.querySelectorAll('.project-card');
+  results.total = cards.length;
+
+  // Update timestamp
   document.getElementById('updated').textContent =
     'Last checked: ' + new Date().toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' });
 
-  document.querySelectorAll('.project-card').forEach(card => {
-    const port = card.dataset.port;
-    checkPort(port, card);
-  });
+  // Check all cards in parallel
+  await Promise.all(Array.from(cards).map(card => checkCard(card)));
+
+  updateSummary();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  recheckAll();
 });
 </script>
 </body>
