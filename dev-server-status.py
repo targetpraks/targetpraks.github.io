@@ -36,6 +36,11 @@ def check_url(url):
 
 
 def main():
+    # Sync to origin first so every run starts clean (self-healing against push races)
+    os.chdir(REPO_DIR)
+    subprocess.run(["git", "fetch", "origin"], capture_output=True, text=True)
+    subprocess.run(["git", "reset", "--hard", "origin/main"], capture_output=True, text=True)
+
     services = []
     running = 0
     pending = 0
