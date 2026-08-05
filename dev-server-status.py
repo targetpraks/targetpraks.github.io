@@ -8,7 +8,7 @@ import os
 import sys
 import urllib.request
 
-REPO_DIR = "/Volumes/Hiksemi 1TB/DevMini/targetpraks.github.io"
+REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(REPO_DIR, "status.json")
 
 APPS = {
