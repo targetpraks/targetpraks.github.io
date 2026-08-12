@@ -48,6 +48,14 @@ def main():
     subprocess.run(["git", "fetch", "origin"], capture_output=True, text=True)
     subprocess.run(["git", "reset", "--hard", "origin/main"], capture_output=True, text=True)
 
+    # If Docker/Colima is down, keep the last good status — don't push all-red.
+    docker_check = subprocess.run(
+        ["docker", "info"], capture_output=True, text=True, timeout=15
+    )
+    if docker_check.returncode != 0:
+        print("Docker/Colima is down — keeping last good status, not pushing", file=sys.stderr)
+        sys.exit(0)
+
     services = []
     running = 0
     pending = 0
