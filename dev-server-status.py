@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Coolify status checker — checks deployed app URLs, pushes status.json to GitHub Pages."""
+"""Coolify status checker — checks deployed app URLs, pushes status.json to GitHub Pages.
+
+Checks apps via Host-header requests to 127.0.0.1 (works without Tailscale).
+"""
 
 import json
 import subprocess
@@ -11,14 +14,16 @@ import urllib.request
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(REPO_DIR, "status.json")
 
+# All Coolify apps on the Mac mini (LAN IP 192.168.0.154)
 APPS = {
-    "Papa Pasta": "http://z51m00l0vfw3erypmwrw7drb.100.91.243.82.sslip.io",
-    "Esoteric Command": "http://j626owap98e8hxudwx6amo02.100.91.243.82.sslip.io",
-    "INFX Web Media": "http://gc9d19ckjl9o5xbv7ll0iwu6.100.91.243.82.sslip.io",
-    "Divorced Dads": "http://x29f5ohoi3vcsb71f3elzfsd.100.91.243.82.sslip.io",
-    "Personal Site": "http://p1aei61r7j1jplux91cx54gp.100.91.243.82.sslip.io",
-    "ChromaCommand": "http://o3oc10fm2z0gzffee963rmkx.100.91.243.82.sslip.io",
-    "SunScout": "http://usolei362859c24hssx15rj8.100.91.243.82.sslip.io",
+    "GSD Dashboard": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
+    "Papa Pasta": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
+    "Esoteric Command": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
+    "INFX Web Media": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
+    "Divorced Dads": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
+    "Personal Site": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
+    "ChromaCommand": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
+    "SunScout": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
 }
 
 # Apps known to need repo work before they can serve HTTP
@@ -26,9 +31,11 @@ PENDING = {"ChromaCommand", "SunScout"}
 
 
 def check_url(url):
-    """Check if a URL is reachable."""
+    """Check if a URL is reachable via Host header on 127.0.0.1."""
     try:
-        req = urllib.request.Request(url, method="HEAD")
+        host = url.split("//")[1].split("/")[0]
+        req = urllib.request.Request("http://127.0.0.1/", method="HEAD")
+        req.add_header("Host", host)
         with urllib.request.urlopen(req, timeout=6) as resp:
             return "running"
     except Exception:
