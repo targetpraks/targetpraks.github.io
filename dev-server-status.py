@@ -14,16 +14,16 @@ import urllib.request
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(REPO_DIR, "status.json")
 
-# All Coolify apps on the Mac mini (LAN IP 192.168.0.154)
+# All Coolify apps on the Mac mini (LAN IP 100.91.243.82)
 APPS = {
-    "GSD Dashboard": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
-    "Papa Pasta": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
-    "Esoteric Command": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
-    "INFX Web Media": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
-    "Divorced Dads": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
-    "Personal Site": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
-    "ChromaCommand": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
-    "SunScout": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
+    "GSD Dashboard": "http://t5ffr1yc018j0kxd8s8sr4jo.100.91.243.82.sslip.io",
+    "Papa Pasta": "http://z51m00l0vfw3erypmwrw7drb.100.91.243.82.sslip.io",
+    "Esoteric Command": "http://j626owap98e8hxudwx6amo02.100.91.243.82.sslip.io",
+    "INFX Web Media": "http://gc9d19ckjl9o5xbv7ll0iwu6.100.91.243.82.sslip.io",
+    "Divorced Dads": "http://x29f5ohoi3vcsb71f3elzfsd.100.91.243.82.sslip.io",
+    "Personal Site": "http://p1aei61r7j1jplux91cx54gp.100.91.243.82.sslip.io",
+    "ChromaCommand": "http://o3oc10fm2z0gzffee963rmkx.100.91.243.82.sslip.io",
+    "SunScout": "http://usolei362859c24hssx15rj8.100.91.243.82.sslip.io",
 }
 
 # Apps known to need repo work before they can serve HTTP
