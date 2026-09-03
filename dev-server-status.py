@@ -2,6 +2,12 @@
 """Coolify status checker — checks deployed app URLs, pushes status.json to GitHub Pages.
 
 Checks apps via Host-header requests to 127.0.0.1 (works without Tailscale).
+
+Watchdog behavior: SILENT when healthy. stdout (what the cron delivers to
+Discord) is only printed when a service status actually changes — that is the
+alert. The status page "Last checked" timestamp is kept fresh by a silent
+heartbeat push (output to stderr only) when nothing has changed for
+HEARTBEAT_HOURS.
 """
 
 import json
@@ -13,6 +19,10 @@ import urllib.request
 
 REPO_DIR = os.path.dirname(os.path.abspath(__file__))
 STATUS_FILE = os.path.join(REPO_DIR, "status.json")
+
+# Force a timestamp-refresh push if the pushed status.json is older than this,
+# so the status page never shows a stale "Last checked".
+HEARTBEAT_HOURS = 2
 
 # All Coolify apps on the Mac mini (LAN IP 100.91.243.82)
 APPS = {
@@ -40,6 +50,24 @@ def check_url(url):
             return "running"
     except Exception:
         return "stopped"
+
+
+def last_push_age_hours():
+    """Hours since the last commit on main, or None if it can't be determined."""
+    try:
+        ts = subprocess.run(
+            ["git", "log", "-1", "--format=%cI", "main"],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+        if ts:
+            last = datetime.datetime.fromisoformat(ts)
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=datetime.timezone.utc)
+            age = datetime.datetime.now(datetime.timezone.utc) - last
+            return age.total_seconds() / 3600.0
+    except Exception:
+        pass
+    return None
 
 
 def main():
@@ -83,25 +111,59 @@ def main():
         "summary": {"running": running, "pending": pending, "stopped": stopped, "total": len(APPS)},
     }
 
+    # Compare against the last PUSHED state. After the reset --hard above,
+    # status.json on disk is exactly what origin/main has.
+    old_statuses = {}
+    try:
+        with open(STATUS_FILE) as f:
+            old = json.load(f)
+        old_statuses = {s.get("name"): s.get("status") for s in old.get("services", [])}
+    except Exception:
+        pass
+
+    new_statuses = {s["name"]: s["status"] for s in services}
+    changes = [
+        f"{name}: {old_statuses.get(name, '?')} -> {new_statuses[name]}"
+        for name in new_statuses
+        if old_statuses.get(name) != new_statuses[name]
+    ]
+
+    age = last_push_age_hours()
+    stale = age is None or age > HEARTBEAT_HOURS
+
+    if not changes and not stale:
+        # Healthy and nothing changed — stay silent (empty stdout = no Discord message)
+        return
+
     with open(STATUS_FILE, "w") as f:
         json.dump(data, f, indent=2)
-
-    print(f"Status: {running} running, {pending} pending, {stopped} stopped out of {len(APPS)} services")
 
     os.chdir(REPO_DIR)
     subprocess.run(["git", "add", "status.json"], check=True)
     diff = subprocess.run(["git", "diff", "--cached", "--quiet"], capture_output=True)
     if diff.returncode == 0:
-        print("No status changes — skipping push")
-    else:
+        print("No status changes — skipping push", file=sys.stderr)
+        return
+
+    if changes:
         msg = f"auto: update dev server status ({running} running, {pending} pending, {stopped} stopped) [{now_jst}]"
-        subprocess.run(["git", "commit", "-m", msg], check=True)
-        push = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
-        if push.returncode == 0:
-            print("Pushed status update to GitHub Pages")
+    else:
+        msg = f"auto: heartbeat status refresh (no status changes) [{now_jst}]"
+    subprocess.run(["git", "commit", "-m", msg], check=True)
+    push = subprocess.run(["git", "push", "origin", "main"], capture_output=True, text=True)
+    if push.returncode == 0:
+        if changes:
+            # Real status change — this is the alert the watchdog exists to send
+            print(
+                f"Service status changed ({running} running, {pending} pending, {stopped} stopped): "
+                + "; ".join(changes)
+            )
         else:
-            print(f"Push failed: {push.stderr}", file=sys.stderr)
-            sys.exit(1)
+            # Heartbeat refresh — keep Discord silent, note it on stderr only
+            print(f"Heartbeat refresh pushed (last push {age:.1f}h ago, no status changes)", file=sys.stderr)
+    else:
+        print(f"Push failed: {push.stderr}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
