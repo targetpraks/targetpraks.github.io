@@ -35,10 +35,11 @@ APPS = {
     "ChromaCommand": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
     "SunScout": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
     "Quorum": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
+    "Wheel of Life": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
 }
 
 # Apps known to need repo work before they can serve HTTP
-PENDING = {"ChromaCommand", "SunScout"}
+PENDING = set()  # all apps now deployed
 
 
 def check_url(url):
