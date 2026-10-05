@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maio OS — the household cockpit</title>
+<meta name="description" content="One sky-rim window over the whole Maio household: projects, agent reports, PRDs, live stack truth.">
+<meta name="theme-color" content="#080b12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080b12; --bg2:#0b0f18; --panel:#10151f; --panel2:#141a26; --line:#1e2836; --line2:#2a3648;
+  --ink:#e8eaf2; --body:#b9c1d0; --dim:#7e8898; --dim2:#5a6375;
+  --gold:#d4a853; --gold-dim:#8a6f36; --ok:#6fbf8b; --warn:#e0b34c; --bad:#e07a6a; --blue:#7ea6d4;
+  --grot:'Space Grotesk',system-ui,sans-serif; --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--body);font-family:var(--sans);font-size:14px;line-height:1.55;
+     -webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px solid var(--line2);
+    border-bottom-width:2px;border-radius:4px;padding:1px 5px;color:var(--dim)}
+
+/* ============ BOOT ============ */
+#boot{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;
+      transition:opacity .45s ease;cursor:pointer}
+#boot.gone{opacity:0;pointer-events:none}
+.bootbox{width:min(560px,86vw)}
+.bootlogo{font-family:var(--grot);font-weight:600;font-size:1.5rem;color:var(--ink);letter-spacing:-.01em}
+.bootlogo em{font-style:normal;color:var(--gold)}
+.bootsub{font-family:var(--mono);font-size:.75rem;color:var(--dim2);margin-top:2px}
+#bootlog{font-family:var(--mono);font-size:.78rem;color:var(--dim);margin-top:22px;min-height:96px}
+#bootlog div{opacity:0;animation:bline .3s forwards}
+#bootlog .ok{color:var(--ok)} #bootlog .bad{color:var(--bad)} #bootlog .dim{color:var(--dim2)}
+@keyframes bline{to{opacity:1}}
+.bootskip{margin-top:18px;font-size:.72rem;color:var(--dim2)}
+
+/* ============ TOPBAR ============ */
+#topbar{position:fixed;top:0;left:0;right:0;height:40px;z-index:100;display:flex;align-items:center;gap:14px;
+        padding:0 14px;background:rgba(8,11,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+#logo{font-family:var(--grot);font-weight:600;font-size:.95rem;color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
+#logo em{font-style:normal;color:var(--gold)}
+.menubtn{font-size:.8rem;color:var(--dim);padding:3px 9px;border-radius:6px;white-space:nowrap}
+.menubtn:hover{background:var(--panel2);color:var(--ink)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:.72rem;color:var(--dim2)}
+#cmdbtn{display:flex;align-items:center;gap:7px;font-size:.76rem;color:var(--dim);border:1px solid var(--line2);
+        padding:4px 10px;border-radius:7px;background:var(--panel)}
+#cmdbtn:hover{color:var(--ink);border-color:var(--gold-dim)}
+#clock{white-space:nowrap}
+
+/* ============ DESKTOP / DESKLETS ============ */
+#desktop{position:fixed;inset:40px 0 64px 0;overflow:hidden}
+#skyrim{position:absolute;inset:0;pointer-events:none;opacity:.5}
+.desklets{position:absolute;top:22px;left:22px;display:grid;gap:12px;grid-template-columns:repeat(2,minmax(210px,240px));max-width:calc(100% - 44px)}
+.desklet{background:rgba(16,21,31,.82);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:13px 15px;pointer-events:auto}
+.desklet h4{font-family:var(--grot);font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--dim2);margin-bottom:9px}
+.vrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0;font-size:.8rem}
+.vrow .nm{color:var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.vrow .vl{font-family:var(--mono);font-size:.72rem}
+.pill{font-family:var(--mono);font-size:.66rem;padding:1px 7px;border-radius:20px;border:1px solid var(--line2)}
+.pill.ok{color:var(--ok);border-color:rgba(111,191,139,.35)}
+.pill.bad{color:var(--bad);border-color:rgba(224,122,106,.35)}
+.pill.warn{color:var(--warn);border-color:rgba(224,179,76,.35)}
+.bigstat{display:flex;gap:16px}
+.bigstat .bs{flex:1}
+.bigstat b{display:block;font-family:var(--mono);font-size:1.35rem;font-weight:500;color:var(--ink);line-height:1.2}
+.bigstat span{font-size:.68rem;color:var(--dim2);letter-spacing:.05em}
+.bigstat b.gold{color:var(--gold)} .bigstat b.bad{color:var(--bad)}
+
+/* ============ DOCK ============ */
+#dock{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:6px;align-items:center;
+      background:rgba(16,21,31,.85);backdrop-filter:blur(14px);border:1px solid var(--line2);border-radius:16px;padding:7px}
+.dockbtn{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;padding:8px 10px;border-radius:11px;
+         color:var(--dim);font-size:.66rem;letter-spacing:.02em;transition:background .15s,color .15s}
+.dockbtn:hover{background:var(--panel2);color:var(--ink)}
+.dockbtn .di{font-size:1.05rem}
+.dockbtn.active{color:var(--gold)}
+.dockbtn .dot{width:4px;height:4px;border-radius:50%;background:transparent}
+.dockbtn.open .dot{background:var(--gold)}
+.docksep{width:1px;height:34px;background:var(--line2);margin:0 4px}
+
+/* ============ WINDOWS ============ */
+.win{position:absolute;min-width:320px;min-height:220px;background:var(--bg2);border:1px solid var(--line2);border-radius:13px;
+     box-shadow:0 24px 70px rgba(0,0,0,.55);display:flex;flex-direction:column;overflow:hidden;z-index:10}
+.win.focused{border-color:#3a4a66;box-shadow:0 30px 90px rgba(0,0,0,.7),0 0 0 1px rgba(212,168,83,.14)}
+.win.max{border-radius:0}
+.winbar{display:flex;align-items:center;gap:9px;height:38px;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);
+        cursor:move;user-select:none;flex:none}
+.wlights{display:flex;gap:6px}
+.wl{width:11px;height:11px;border-radius:50%;background:var(--line2);cursor:pointer}
+.wl.wclose:hover{background:var(--bad)} .wl.wmin:hover{background:var(--warn)} .wl.wmax:hover{background:var(--ok)}
+.wtitle{font-family:var(--grot);font-size:.8rem;font-weight:500;color:var(--ink);letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wsub{font-family:var(--mono);font-size:.66rem;color:var(--dim2);margin-left:auto;white-space:nowrap}
+.winbody{flex:1;overflow:auto;padding:16px 18px}
+.winresize{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;
+           background:linear-gradient(135deg,transparent 50%,var(--line2) 50%)}
+
+/* window content bits */
+.chiprow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:.75rem;color:var(--dim);border:1px solid var(--line2);padding:3px 12px;border-radius:20px}
+.chip:hover{color:var(--ink)}
+.chip.on{color:var(--gold);border-color:var(--gold-dim);background:rgba(212,168,83,.07)}
+.searchbox{width:100%;background:var(--panel);border:1px solid var(--line2);border-radius:8px;color:var(--ink);
+           font:inherit;font-size:.85rem;padding:8px 12px;margin-bottom:14px}
+.searchbox::placeholder{color:var(--dim2)}
+.pgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;
+       transition:border-color .15s,transform .15s}
+.pcard:hover{border-color:var(--gold-dim);transform:translateY(-1px)}
+.pcard .pn{font-family:var(--grot);font-weight:500;color:var(--ink);font-size:.9rem;display:flex;align-items:center;gap:8px}
+.pcard .pw{font-size:.76rem;color:var(--dim);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pcard .pm{display:flex;gap:8px;align-items:center;margin-top:9px;font-family:var(--mono);font-size:.66rem;color:var(--dim2)}
+.pcard .fam{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:1px 7px;border-radius:4px;background:var(--panel2);color:var(--dim)}
+.fam.dev{color:var(--blue)} .fam.work{color:var(--gold)} .fam.pages{color:var(--ok)}
+.tagprd{color:var(--gold);border:1px solid var(--gold-dim);border-radius:4px;padding:0 5px;font-size:.6rem}
+.rows{display:flex;flex-direction:column}
+.rrow{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:8px;font-size:.8rem;border-bottom:1px solid rgba(30,40,54,.55)}
+.rrow:hover{background:var(--panel)}
+.rrow .ra{font-family:var(--grot);color:var(--ink);min-width:86px}
+.rrow .rp{flex:1;min-width:0;color:var(--dim);font-family:var(--mono);font-size:.7rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .rd{font-family:var(--mono);font-size:.7rem;color:var(--dim2);white-space:nowrap}
+.copy{font-family:var(--mono);font-size:.62rem;color:var(--dim2);border:1px solid var(--line2);border-radius:5px;padding:1px 7px;flex:none}
+.copy:hover{color:var(--gold);border-color:var(--gold-dim)}
+.svcgrid{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.svc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+.svc .sn{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.svc .sn b{font-family:var(--grot);font-weight:500;font-size:.84rem;color:var(--ink)}
+.svc .sp{font-family:var(--mono);font-size:.68rem;color:var(--dim2);margin-top:4px}
+.svc .snote{font-size:.68rem;color:var(--dim2);margin-top:6px}
+.agentgrid{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.agc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.agc .an{font-family:var(--grot);font-weight:500;color:var(--ink);font-size:.85rem}
+.agc .ar{font-size:.7rem;color:var(--dim);margin-top:3px;min-height:2.1em}
+.agc .al{font-family:var(--mono);font-size:.64rem;color:var(--dim2);margin-top:6px}
+.agc .al b{color:var(--gold);font-weight:500}
+.empty{color:var(--dim2);font-size:.8rem;padding:22px;text-align:center}
+.sect{font-family:var(--grot);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim2);margin:18px 0 9px}
+.sect:first-child{margin-top:2px}
+.notebox{background:rgba(212,168,83,.07);border:1px solid rgba(212,168,83,.25);border-radius:10px;padding:11px 14px;font-size:.78rem;color:var(--body)}
+.notebox b{color:var(--gold)}
+.aboutp{font-size:.84rem;color:var(--body);max-width:70ch;margin-bottom:11px}
+.aboutp b{color:var(--ink)}
+.phases{display:grid;gap:10px;margin-top:6px}
+.phase{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+.phase .pn2{font-family:var(--mono);color:var(--gold);font-size:.75rem;flex:none;padding-top:2px}
+.phase .pt{font-size:.82rem;color:var(--ink);font-weight:500}
+.phase .pd{font-size:.76rem;color:var(--dim);margin-top:2px}
+
+/* ============ COMMAND BAR ============ */
+#cmdbar-wrap{position:fixed;inset:0;z-index:500;display:none;align-items:flex-start;justify-content:center;padding-top:16vh;
+             background:rgba(5,7,12,.6);backdrop-filter:blur(3px)}
+#cmdbar-wrap.show{display:flex}
+#cmdbar{width:min(620px,92vw);background:var(--bg2);border:1px solid var(--line2);border-radius:13px;overflow:hidden;
+        box-shadow:0 30px 90px rgba(0,0,0,.7)}
+#cmdinput{width:100%;background:transparent;border:none;outline:none;color:var(--ink);font:inherit;font-size:1rem;padding:15px 18px}
+#cmdinput::placeholder{color:var(--dim2)}
+#cmdlist{max-height:320px;overflow:auto;border-top:1px solid var(--line);padding:6px}
+.cmdrow{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;cursor:pointer;font-size:.84rem}
+.cmdrow.sel{background:var(--panel2)}
+.cmdrow .ck{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);flex:none;min-width:52px}
+.cmdrow .cl{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmdrow .cd{margin-left:auto;font-family:var(--mono);font-size:.64rem;color:var(--dim2);white-space:nowrap;flex:none}
+#cmdempty{padding:14px;color:var(--dim2);font-size:.8rem;text-align:center}
+#cmdfoot{display:flex;gap:14px;padding:8px 14px;border-top:1px solid var(--line);font-size:.66rem;color:var(--dim2)}
+
+/* ============ MOBILE ============ */
+@media (max-width:760px){
+  .desklets{grid-template-columns:1fr;top:14px;left:14px;right:14px;max-width:none}
+  #desktop{inset:40px 0 64px 0}
+  .win{left:4px!important;right:4px!important;top:6px!important;bottom:0!important;width:auto!important;height:auto!important;min-width:0;border-radius:12px 12px 0 0}
+  .winbar{cursor:default}
+  .winresize{display:none}
+  #dock{max-width:calc(100vw - 12px);overflow-x:auto}
+  .menubtn{display:none}
+  .tb-right{gap:8px}
+}
+</style>
+</head>
+<body>
+
+<div id="boot" role="status" aria-label="Maio OS booting">
+  <div class="bootbox">
+    <div class="bootlogo">maio<em>.</em>os</div>
+    <div class="bootsub">the household cockpit — one window over everything</div>
+    <div id="bootlog"></div>
+    <div class="bootskip">click anywhere to skip</div>
+  </div>
+</div>
+
+<header id="topbar">
+  <span id="logo">maio<em>.</em>os</span>
+  <nav id="menunav" aria-label="Open windows"></nav>
+  <div class="tb-right">
+    <span id="genned" title="when this data was scanned"></span>
+    <button id="cmdbtn" aria-label="Open command bar">Search <kbd>⌘K</kbd></button>
+    <span id="clock"></span>
+  </div>
+</header>
+
+<main id="desktop">
+  <svg id="skyrim" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <radialGradient id="g1" cx="18%" cy="12%" r="55%">
+        <stop offset="0%" stop-color="#d4a853" stop-opacity=".10"/><stop offset="100%" stop-color="#d4a853" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="g2" cx="85%" cy="90%" r="60%">
+        <stop offset="0%" stop-color="#7ea6d4" stop-opacity=".07"/><stop offset="100%" stop-color="#7ea6d4" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="1400" height="800" fill="url(#g1)"/><rect width="1400" height="800" fill="url(#g2)"/>
+    <g id="starfield" fill="#e8eaf2"></g>
+  </svg>
+
+  <section id="desklets-area" class="desklets" aria-label="Desklets"></section>
+  <div id="winlayer" style="position:absolute;inset:0" aria-live="polite"></div>
+</main>
+
+<nav id="dock" aria-label="Dock"></nav>
+
+<div id="cmdbar-wrap">
+  <div id="cmdbar" role="dialog" aria-label="Command bar">
+    <input id="cmdinput" placeholder="Type a command, project, agent, report…" autocomplete="off" spellcheck="false">
+    <div id="cmdlist" role="listbox"></div>
+    <div id="cmdfoot"><span><kbd>↑↓</kbd> navigate</span><span><kbd>↵</kbd> open</span><span><kbd>esc</kbd> close</span></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+'use strict';
+/* ================= Maio OS shell =================
+   OS metaphor over real household data (MAIO_DATA from data.js).
+   Windows: draggable / focusable / closable / resizable.
+   ⌘K palette indexes windows + projects + agents + prds + reports. */
+
+const D = window.MAIO_DATA || {stack:[], devServers:[], projects:[], reports:[], roster:[], prds:[],
+  summary:{}, meta:{generatedAt:''}};
+const S = D.summary || {};
+const $ = (s, r=document) => r.querySelector(s);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const escAttr = esc;
+const fmtDate = ds => { if(!ds) return '—'; const [y,m,d]=ds.split('-'); const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]; return `${mo} ${+d}`; };
+const agoDays = ds => { if(!ds) return 9999; const diff = Math.round((Date.now() - new Date(ds+'T12:00:00').getTime())/86400000); return diff; };
+const agoTxt = ds => { const n=agoDays(ds); if(n<=0) return 'today'; if(n===1) return 'yesterday'; if(n<30) return n+'d ago'; if(n<365) return Math.round(n/30)+'mo ago'; return Math.round(n/365)+'y ago'; };
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+/* ---------- state ---------- */
+const OPEN = new Map();      // id -> {el, prev}
+let zIndex = 10; let focusedId = null;
+const MOBILE = matchMedia('(max-width:760px)').matches;
+try{ const saved = JSON.parse(localStorage.getItem('maioos.layout')||'{}'); if(saved && !MOBILE && saved.length){ saved.forEach(o=>openWin(o.id,true)); } }catch(_){}
+
+/* ---------- boot sequence ---------- */
+const bootEl = $('#boot'), bootLog = $('#bootlog');
+const stackOk = (D.stack||[]).filter(x=>x.ok).length, devOn = S.devOnline ?? 0;
+const bootLines = [
+  ['dim','maio.os 1.0 · orchestrator build'],
+  ['ok',`stack probe ......... ${stackOk}/${(D.stack||[]).length} services live`],
+  [devOn? 'ok':'bad',`dev servers ......... ${devOn}/${S.devTotal ?? 10} online`],
+  ['ok',`projects indexed .... ${S.projects ?? 0}`],
+  ['ok',`agent reports ....... ${S.reports ?? 0} · PRDs ${S.prds ?? 0}`],
+  ['dim',`scanned ${D.meta&&D.meta.generatedAt?D.meta.generatedAt:'recently'} · click / any key to enter`],
+];
+let bi = 0; const btimer = setInterval(()=>{
+  if(bi >= bootLines.length){ clearInterval(btimer); setTimeout(endBoot, 520); return; }
+  const [cls, txt] = bootLines[bi++]; const div = document.createElement('div');
+  div.className = cls; div.textContent = '▸ ' + txt; bootLog.appendChild(div);
+}, 240);
+function endBoot(){ clearInterval(btimer); bootEl.classList.add('gone'); setTimeout(()=>bootEl.remove(), 600); if(!OPEN.size && !MOBILE) openWin('desk'); }
+bootEl.addEventListener('click', endBoot);
+addEventListener('keydown', e => { if(!bootEl.isConnected) return; endBoot(); }, {once:false});
+
+/* ---------- desklets ---------- */
+function renderDesklets(){
+  const area = $('#desklets-area'); if(!area || MOBILE) { if(area&&!MOBILE){} else if(area){ area.style.display='none'; } }
+  const rows = (D.stack||[]).slice(0,5).map(s =>
+    `<div class="vrow"><span class="nm">${esc(s.name)}</span><span class="vl pill ${s.ok?'ok':'bad'}">${s.ok? (s.code??'')+' · '+s.ms+'ms' : 'down'}</span></div>`).join('');
+  const dark = (D.devServers||[]).length - devOn;
+  area.innerHTML = `
+    <div class="desklet"><h4>System vitals</h4>
+      <div class="bigstat">
+        <div class="bs"><b class="gold">${stackOk}/${(D.stack||[]).length}</b><span>stack live</span></div>
+        <div class="bs"><b class="${devOn? '' : 'bad'}">${devOn}<span style="font-size:.7rem">/${S.devTotal??10}</span></b><span>dev servers</span></div>
+      </div></div>
+    <div class="desklet"><h4>Services</h4>${rows || '<div class="empty">no probes</div>'}</div>
+    <div class="desklet"><h4>Household</h4>
+      <div class="vrow"><span class="nm">Projects</span><span class="vl" style="color:var(--ink)">${S.projects??0}</span></div>
+      <div class="vrow"><span class="nm">Agent reports</span><span class="vl" style="color:var(--ink)">${S.reports??0}</span></div>
+      <div class="vrow"><span class="nm">PRDs</span><span class="vl" style="color:var(--ink)">${S.prds??0}</span></div>
+      <div class="vrow"><span class="nm">Agents on roster</span><span class="vl" style="color:var(--ink)">${S.roster??0}</span></div>
+      <div class="vrow"><span class="nm">Legacy vhosts dark</span><span class="vl" style="color:${dark?'var(--bad)':'var(--ok)'}">${dark}</span></div>
+    </div>`;
+}
+
+/* starfield — deterministic */
+(function(){ const g = $('#starfield'); if(!g) return; let seed = 7; const rnd = () => (seed = (seed*16807)%2147483647)/2147483647;
+  let html=''; for(let i=0;i<110;i++){ const x=rnd()*1400, y=rnd()*800, r=rnd()*1.1+0.2, o=(rnd()*0.5+0.12).toFixed(2);
+    html += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(2)}" opacity="${o}"/>`; }
+  g.innerHTML = html; })();
+
+/* ---------- window manager ---------- */
+const WINS = {
+  desk:{title:'The Desk', icon:'◆', sub:'what changed lately', render:renderDesk, w:640, h:420},
+  projects:{title:'Projects', icon:'▣', sub:`${S.projects??0} indexed`, render:renderProjects, w:820, h:520},
+  agents:{title:'Agents', icon:'✦', sub:`${S.roster??0} on roster`, render:renderAgents, w:760, h:480},
+  reports:{title:'Reports', icon:'▤', sub:`${S.reports??0} artifacts`, render:renderReports, w:820, h:520},
+  prds:{title:'PRDs', icon:'✎', sub:`${S.prds??0} found`, render:renderPRDs, w:700, h:440},
+  stack:{title:'Stack', icon:'◉', sub:'live truth', render:renderStack, w:780, h:500},
+  about:{title:'About / Roadmap', icon:'☆', sub:'what this is + where it goes', render:renderAbout, w:660, h:520},
+};
+function openWin(id, restore=false){
+  const def = WINS[id]; if(!def) return;
+  if(OPEN.has(id)){ focusWin(id); if(def.render) def.rerender && def.rerender(); return; }
+  const el = document.createElement('section');
+  el.className = 'win focused'; el.dataset.win = id; el.style.zIndex = ++zIndex;
+  const vw = $('#desktop').clientWidth, vh = $('#desktop').clientHeight;
+  const w = Math.min(def.w, vw - 24), h = Math.min(def.h, vh - 30);
+  const off = (OPEN.size % 6) * 26;
+  el.style.width = w+'px'; el.style.height = h+'px';
+  el.style.left = clamp(vw/2 - w/2 + off, 6, Math.max(6, vw - w - 6)) + 'px';
+  el.style.top = clamp((vh - h)/2 - 20 + off, 6, Math.max(6, vh - h - 6)) + 'px';
+  if(MOBILE){ el.classList.add('max'); }
+  el.innerHTML = `
+    <div class="winbar">
+      <div class="wlights">
+        <button class="wl wclose" aria-label="Close ${escAttr(def.title)}"></button>
+        <button class="wl wmin" aria-label="Minimize"></button>
+        <button class="wl wmax" aria-label="Maximize"></button>
+      </div>
+      <span class="wtitle">${def.icon} ${esc(def.title)}</span>
+      <span class="wsub">${esc(def.sub)}</span>
+    </div>
+    <div class="winbody"></div>
+    <div class="winresize" aria-hidden="true"></div>`;
+  $('#winlayer').appendChild(el);
+  OPEN.set(id, {el, mode:'normal', prev:null});
+  def.rerender = () => { const b = $('.winbody', el); b.innerHTML = '<div class="empty">loading…</div>'; setTimeout(()=>{ b.innerHTML = def.render(id); }, 0); };
+  def.rerender();
+  focusWin(id);
+  $('.wl.wclose', el).onclick = () => closeWin(id);
+  $('.wl.wmin', el).onclick = () => minWin(id);
+  $('.wl.wmax', el).onclick = () => maxWin(id);
+  $('.winbar', el).addEventListener('pointerdown', ev => startDrag(ev, el, id));
+  $('.winresize', el).addEventListener('pointerdown', ev => startResize(ev, el, id));
+  el.addEventListener('pointerdown', () => focusWin(id), true);
+  persist(); dockSync();
+}
+function closeWin(id){ const w = OPEN.get(id); if(!w) return; w.el.remove(); OPEN.delete(id); if(focusedId===id) focusedId=null; persist(); dockSync(); focusTop(); }
+function minWin(id){ const w = OPEN.get(id); if(!w) return; w.prev = {l:w.el.style.left,t:w.el.style.top}; w.el.style.display='none'; w.mode='min'; persist(); focusTop(); dockSync(); }
+function maxWin(id){ const w = OPEN.get(id); if(!w) return; const el=w.el; const desk=$('#desktop');
+  if(el.classList.contains('max')){ el.classList.remove('max'); const p=w.prev; if(p) el.style.left=p.l, el.style.top=p.t; el.style.width=DEPW[id].w+'px'; el.style.height=DEPW[id].h+'px'; }
+  else { w.prev={l:el.style.left,t:el.style.top}; DEPW[id]={w:el.style.width=='auto'?'':parseInt(el.style.width),h:parseInt(el.style.height)};
+    el.classList.add('max'); el.style.width='100%'; el.style.height='100%'; el.style.left='0px'; el.style.top='0px'; }
+  persist(); }
+const DEPW = {};
+function focusWin(id){ const w=OPEN.get(id); if(!w) return; if(w.mode==='min'){ w.el.style.display=''; w.mode='normal'; if(w.prev){w.el.style.left=w.prev.l; w.el.style.top=w.prev.t;} }
+  w.el.style.zIndex = ++zIndex; focusedId=id; dockSync(); }
+function focusTop(){ let best=null; for(const [id,w] of OPEN){ if(w.mode!=='min' && (!best || +w.el.style.zIndex > +best[1].el.style.zIndex)) best=[id,w]; }
+  focusedId = best? best[0] : null; dockSync(); }
+function persist(){ try{ localStorage.setItem('maioos.layout', JSON.stringify([...OPEN.keys()].map(id=>({id})))); }catch(_){}}
+function dockSync(){ document.querySelectorAll('.dockbtn').forEach(b=>{ const id=b.dataset.open; b.classList.toggle('open', OPEN.has(id)); b.classList.toggle('active', focusedId===id); }); }
+
+/* drag + resize */
+function startDrag(ev, el, id){ if(MOBILE) return; if(ev.target.closest('.wl')) return; ev.preventDefault();
+  const w = OPEN.get(id); if(w.mode==='min') return;
+  const sx=ev.clientX, sy=ev.clientY, ol=parseFloat(el.style.left)||0, ot=parseFloat(el.style.top)||0;
+  el.setPointerCapture?.(ev.pointerId);
+  const mv = e => { el.style.left = clamp(ol + e.clientX - sx, -40, innerWidth-60) + 'px';
+                    el.style.top  = clamp(ot + e.clientY - sy, 0, innerHeight-140) + 'px'; };
+  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); persist(); };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up); }
+function startResize(ev, el, id){ ev.preventDefault(); ev.stopPropagation();
+  const sw=el.offsetWidth, sh=el.offsetHeight, sx=ev.clientX, sy=ev.clientY;
+  const mv = e => { el.style.width = clamp(sw + e.clientX - sx, 320, innerWidth-8) + 'px';
+                    el.style.height = clamp(sh + e.clientY - sy, 220, innerHeight-8) + 'px'; };
+  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); DEPW[id]={w:parseInt(el.style.width),h:parseInt(el.style.height)}; };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up); }
+
+/* ---------- renderers ---------- */
+function renderDesk(){
+  const reps = (D.reports||[]).slice(0,7);
+  const big = (D.projects||[]).filter(p=>p.lastTouched).sort((a,b)=>b.lastTouched.localeCompare(a.lastTouched)).slice(0,5);
+  return `
+    <p class="aboutp">One window over the household, rebuilt <b>${esc(D.meta?.generatedAt||'today')}</b> from a live scan — no stale heartbeat.</p>
+    <div class="sect">Latest agent output</div>
+    <div class="rows">${reps.map(r=>`
+      <div class="rrow"><span class="ra">${esc(r.agent)}</span><span class="rp">${esc(r.path)}</span>
+      <span class="rd">${fmtDate(r.date)} · ${agoTxt(r.date)}</span>
+      <button class="copy" data-report="${escAttr(r.path)}">path ⧉</button></div>`).join('') || '<div class="empty">nothing yet</div>'}</div>
+    <div class="sect">Newest activity in projects</div>
+    <div class="pgrid">${big.map(p=>`
+      <div class="pcard" data-openproject="${escAttr(p.name)}" role="button" tabindex="0">
+        <div class="pn">${esc(p.name)} <span class="fam ${p.family}">${p.family}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>
+        <div class="pw">${esc(p.what)}</div>
+        <div class="pm"><span>${agoTxt(p.lastTouched)}</span>${p.artifact?`<span>· ${p.artifact.ext||'—'} ${p.artifact.kb}KB</span>`:''}</div>
+      </div>`).join('') || '<div class="empty">no projects</div>'}</div>`;
+}
+let projFilter = 'all';
+function renderProjects(){
+  const fams = ['all', ...new Set((D.projects||[]).map(p=>p.family))];
+  const list = (D.projects||[])
+    .filter(p=>projFilter==='all' || p.family===projFilter)
+    .sort((a,b)=>(b.lastTouched||'').localeCompare(a.lastTouched||''));
+  return `
+    <input class="searchbox" data-filter="projects" placeholder="Filter ${S.projects??0} projects…" value="${escAttr(window.__projq||'')}">
+    <div class="chiprow">${fams.map(f=>`<button class="chip ${projFilter===f?'on':''}" data-fam="${f}">${f}</button>`).join('')}</div>
+    <div class="pgrid">${list.filter(p=>{const q=(window.__projq||'').toLowerCase(); const hay=(p.name+' '+p.what+' '+p.family).toLowerCase(); return hay.includes(q);}).map(p=>`
+      <div class="pcard" tabindex="0" role="button" data-detail='${escAttr(JSON.stringify(p))}'>
+        <div class="pn">${esc(p.name)} <span class="fam ${p.family}">${p.family}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>
+        <div class="pw">${esc(p.what)}</div>
+        <div class="pm"><span>Last touch ${fmtDate(p.lastTouched)} · ${agoTxt(p.lastTouched)}</span>
+        ${p.artifact?`<span>· ${p.artifact.ext||'—'} ${p.artifact.kb}KB</span>`:''}</div>
+      </div>`).join('') || '<div class="empty">no matches</div>'}</div>`;
+}
+window.__detail = function(p){
+  const id='detail'; const def = WINS[id] || (function(){ WINS[id]={title:'Project', icon:'▣', sub:'', render:()=>window.__detailHTML, w:620, h:460}; return WINS[id]; })();
+  def.title='Project'; def.sub=p.name;
+  openWin(id); const w=OPEN.get(id); if(w) { $('.wtitle',w.el).textContent='▣ '+p.name; $('.wsub',w.el).textContent=p.family; def.rerender(); }
+};
+function renderAgents(){
+  const rs = (D.roster||[]).slice().sort((a,b)=>(b.latest?.date||'').localeCompare(a.latest?.date||''));
+  return `<div class="sect">Roster · latest output</div>
+  <div class="agentgrid">${rs.map(a=>`
+    <div class="agc" data-openreport="${a.latest?escAttr(a.latest.path):''}">
+      <div class="an">${esc(a.name)}</div>
+      <div class="ar">${esc(a.role||'—')}</div>
+      <div class="al">${a.latest?`latest <b>${fmtDate(a.latest.date)}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}</div>
+    </div>`).join('')}</div>`;
+}
+function renderReports(){
+  const reps=(D.reports||[]).slice();
+  return `<input class="searchbox" data-filter="reports" placeholder="Filter reports by agent / path…" value="${escAttr(window.__repq||'')}">
+  <div class="rows">${reps.filter(r=>{const q=(window.__repq||'').toLowerCase(); return (r.agent+' '+r.path).toLowerCase().includes(q);}).map(r=>`
+    <div class="rrow"><span class="ra">${esc(r.agent)}</span><span class="rp">${esc(r.path)}</span>
+    <span class="rd">${fmtDate(r.date)} · ${r.ext||'—'} ${r.kb}KB</span>
+    <button class="copy" data-report="${escAttr(r.path)}">⧉</button></div>`).join('') || '<div class="empty">no reports</div>'}</div>`;
+}
+function renderPRDs(){
+  const ps=(D.prds||[]).slice();
+  return `<div class="notebox">PRDs & product docs found by filename scan <b>(case-insensitive "PRD")</b> across AI-Drive and DevMini. ${ENRICH_PRDS.length? '' : 'Run a deeper scout to auto-summarize each.'}</div>
+  <div class="rows" style="margin-top:12px">${ps.map(p=>`
+    <div class="rrow"><span class="ra" style="min-width:130px">${esc(p.project)}</span><span class="rp">${esc(p.title)}</span>
+    <span class="rd">${fmtDate(p.date)}</span><button class="copy" data-report="${escAttr(p.path)}">⧉</button></div>`).join('') || '<div class="empty">none logged</div>'}</div>`;
+}
+const enriched = D.enriched || {};
+const ENRICH_PRDS = enriched.prds || [];
+function renderStack(){
+  const st=D.stack||[], dev=D.devServers||[];
+  return `
+    <div class="sect">Local stack · probed live at generation</div>
+    <div class="svcgrid">${st.map(s=>`
+      <div class="svc"><div class="sn"><b>${esc(s.name)}</b><span class="pill ${s.ok?'ok':'bad'}">${s.code!=null? s.code : 'down'}${s.ms? ' · '+s.ms+'ms':''}</span></div>
+      <div class="sp">${esc(s.port)}</div><div class="snote">${esc(s.note||'')}</div></div>`).join('')}</div>
+    <div class="sect">Legacy dev-host vhosts · status.json said "running" since ${esc(D.devServersStaleSince||'Oct 1')} — this is the live truth</div>
+    <div class="svcgrid">${dev.map(d=>`
+      <div class="svc"><div class="sn"><b>${esc(d.name)}</b><span class="pill ${d.ok?'ok':'bad'}">${d.ok? '200' : 'dark'}</span></div>
+      <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${esc(d.url.replace(/^https?:\/\//,''))}</div></div>`).join('')}</div>`;
+}
+function renderAbout(){
+  return `
+    <p class="aboutp"><b>Maio OS</b> is the cockpit for the household: every project, every agent's latest output, every PRD, and the honest state of the stack — one window, refreshed by a generator instead of a stale heartbeat.</p>
+    <div class="notebox">Data source: <b>maio_os_gen.py</b> — scans AI-Drive/Agent-Output, DevMini, AI-Space/Work + probes 18 endpoints live · runs on this Mac · <span style="font-family:var(--mono)">env -u PYTHONPATH python3 ~/.config/maio-stack/tools/maio_os_gen.py</span></div>
+    <div class="sect">Roadmap (brainstorm → build)</div>
+    <div class="phases">
+      <div class="phase"><span class="pn2">P1</span><div><div class="pt">Live data, shipped ✅</div><div class="pd">Generator + OS shell + GitHub Pages deploy + ⌘K over everything — this build.</div></div></div>
+      <div class="phase"><span class="pn2">P2</span><div><div class="pt">Auto-fresh + PRD reader</div><div class="pd">launchd job regenerating data.js 4×/day; PRD view reads the actual markdown and summarizes per project; scout-merge JSON wires in agent-written insights.</div></div></div>
+      <div class="phase"><span class="pn2">P3</span><div><div class="pt">Two-way</div><div class="pd">Buttons that talk back — "ask Scrooge for the latest market digest" posts to the right bot; restart a dead dev server from the Stack window (with gate + approval).</div></div></div>
+      <div class="phase"><span class="pn2">P4</span><div><div class="pt">Vault view</div><div class="pd">Read-only Obsidian vault browser (MOCs, agent notes) via OpenKnowledge search — Beast stays the only writer.</div></div></div>
+    </div>
+    <div class="sect">Keyboard</div>
+    <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> close palette / focused window · windows: drag the bar, resize from bottom-right corner, lights close/min/max.</p>`;
+}
+
+/* ---------- dock / menu ---------- */
+function renderDock(){
+  const items = ['desk','projects','agents','reports','prds','stack','about'];
+  $('#dock').innerHTML = items.map(id=>`
+    <button class="dockbtn" data-open="${id}" aria-label="Open ${escAttr(WINS[id].title)}">
+      <span class="di">${WINS[id].icon}</span><span>${WINS[id].title.split(' ')[0]}</span><span class="dot"></span></button>`).join('')
+    + `<span class="docksep"></span><button class="dockbtn" data-cmd="1" aria-label="Command bar"><span class="di">⌘</span><span>Search</span></button>`;
+  $('#dock').onclick = e => { const b = e.target.closest('.dockbtn'); if(!b) return;
+    if(b.dataset.cmd){ showCmd(); return; } const id=b.dataset.open;
+    const w=OPEN.get(id); if(w && w.mode!=='min' && focusedId===id){ minWin(id); } else openWin(id); };
+  $('#menunav').innerHTML = items.map(id=>`<button class="menubtn" data-open="${id}">${esc(WINS[id].title)}</button>`).join('');
+  $('#menunav').onclick = e => { const b=e.target.closest('.menubtn'); if(b) openWin(b.dataset.open); };
+}
+
+/* ---------- command palette ---------- */
+let cmdIdx = 0, cmdItems = [];
+function buildIndex(){
+  const ix = [];
+  Object.entries(WINS).forEach(([id,w])=>ix.push({k:'open', t:'Open ' + w.title, d:'window', act:()=>openWin(id)}));
+  (D.projects||[]).forEach(p=>ix.push({k:p.family, t:p.name, d:(p.lastTouched?agoTxt(p.lastTouched):''), act:()=>{ openWin('projects'); setTimeout(()=>window.__detail(p),30); }}));
+  (D.roster||[]).forEach(a=>ix.push({k:'agent', t:a.name, d:(a.latest?('→ '+fmtDate(a.latest.date)):''), act:()=>openWin('agents')}));
+  (D.prds||[]).forEach(p=>ix.push({k:'prd', t:p.title, d:p.project, act:()=>openWin('prds')}));
+  (D.reports||[]).forEach(r=>ix.push({k:'report', t:r.agent+' — '+r.path.split('/').pop(), d:fmtDate(r.date), act:()=>openWin('reports')}));
+  ix.push({k:'action', t:'About the roadmap', d:'⌘K', act:()=>openWin('about')});
+  return ix;
+}
+const INDEX = buildIndex();
+function showCmd(){ $('#cmdbar-wrap').classList.add('show'); const i=$('#cmdinput'); i.value=''; cmdUpdate(''); i.focus(); }
+function hideCmd(){ $('#cmdbar-wrap').classList.remove('show'); }
+function cmdUpdate(q){
+  const s=q.toLowerCase().trim();
+  cmdItems = (s? INDEX.filter(it=>(it.t+' '+it.k+' '+it.d).toLowerCase().includes(s)) : INDEX.slice(0,9)).slice(0,12);
+  cmdIdx = 0;
+  $('#cmdlist').innerHTML = cmdItems.length? cmdItems.map((it,i)=>`
+    <div class="cmdrow ${i===0?'sel':''}" data-i="${i}" role="option">
+      <span class="ck">${esc(it.k)}</span><span class="cl">${esc(it.t)}</span><span class="cd">${esc(it.d||'')}</span></div>`).join('')
+    : '<div id="cmdempty">nothing matches — try "projects", "scrooge", "pasta"…</div>';
+  markSel();
+}
+function markSel(){ document.querySelectorAll('.cmdrow').forEach(r=>r.classList.toggle('sel', +r.dataset.i===cmdIdx)); }
+$('#cmdinput').addEventListener('input', e => cmdUpdate(e.target.value));
+$('#cmdinput').addEventListener('keydown', e => {
+  if(e.key==='ArrowDown'){ e.preventDefault(); cmdIdx=Math.min(cmdIdx+1, cmdItems.length-1); markSel(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); cmdIdx=Math.max(0, cmdIdx-1); markSel(); }
+  else if(e.key==='Enter'){ e.preventDefault(); const it=cmdItems[cmdIdx]; if(it){ hideCmd(); it.act(); } }
+  else if(e.key==='Escape'){ hideCmd(); }
+});
+$('#cmdbar-wrap').addEventListener('click', e => { if(e.target.id==='cmdbar-wrap') hideCmd(); });
+$('#cmdlist').addEventListener('click', e => { const r=e.target.closest('.cmdrow'); if(!r) return;
+  const it=cmdItems[+r.dataset.i]; if(it){ hideCmd(); it.act(); } });
+$('#cmdbtn').onclick = showCmd;
+addEventListener('keydown', e => { if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); showCmd(); }
+  else if(e.key==='Escape' && !$('#cmdbar-wrap').classList.contains('show') && focusedId){ const w=OPEN.get(focusedId); if(w && !MOBILE) closeWin(focusedId); } });
+
+/* ---------- delegated clicks ---------- */
+document.addEventListener('click', e => {
+  const cp = e.target.closest('[data-report]'); if(cp){ navigator.clipboard?.writeText(cp.dataset.report).catch(()=>{}); const t=cp.textContent; cp.textContent='copied ✓'; setTimeout(()=>cp.textContent=t, 900); return; }
+  const dp = e.target.closest('.pcard[data-detail]'); if(dp){ try{ window.__detail(JSON.parse(dp.dataset.detail)); }catch(_){ } return; }
+  const oq = e.target.closest('[data-openproject]'); if(oq){ openWin('projects'); return; }
+});
+document.addEventListener('keydown', e => { if(e.key==='Enter'){ const dp=e.target.closest?.('.pcard[data-detail]'); if(dp){ try{ window.__detail(JSON.parse(dp.dataset.detail)); }catch(_){}} } });
+document.addEventListener('input', e => {
+  if(e.target.dataset && e.target.dataset.filter==='projects'){ window.__projq=e.target.value; const def=WINS.projects; def.rerender(); refocus(e.target); }
+  if(e.target.dataset && e.target.dataset.filter==='reports'){ window.__repq=e.target.value; const def=WINS.reports; def.rerender(); refocus(e.target); }
+});
+function refocus(input){ const w = input.closest('.win'); const el2 = document.querySelector(`.win[data-win] input[data-filter="${input.dataset.filter}"]`); if(el2===input){ input.focus(); try{ input.setSelectionRange(input.value.length, input.value.length); }catch(_){}} }
+
+/* ---------- clock + meta ---------- */
+function tick(){ const el=$('#clock'); if(el){ const n=new Date(); el.textContent = n.toLocaleTimeString('en-ZA',{hour12:false}); } }
+tick(); setInterval(tick, 1000);
+$('#genned').textContent = 'data: ' + (D.meta?.generatedAt || '—');
+renderDesklets(); renderDock();
+
+/* deep-link hash: #projects / #report:<agent> */
+(function(){ const h = decodeURIComponent(location.hash.replace('#',''));
+  if(!h) return; if(WINS[h]){ openWin(h); }
+  else if(h.startsWith('report:')){ openWin('reports'); setTimeout(()=>{ const q=document.querySelector('input[data-filter="reports"]'); if(q){ q.value=h.slice(7); q.dispatchEvent(new Event('input',{bubbles:true})); } }, 60); } })();
+</script>
+</body>
+</html>
