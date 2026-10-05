@@ -4,7 +4,7 @@ var MAIO_DATA = {
   "generatedAt": "2026-10-05",
   "version": "1.0",
   "generator": "maio_os_gen.py",
-  "enriched": false
+  "enriched": true
  },
  "stack": [
   {
@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 7,
+   "ms": 10,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 9,
+   "ms": 24,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 8,
+   "ms": 13,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 44,
+   "ms": 57,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 4,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 38,
+   "ms": 28,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 1,
+   "ms": 4,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 5,
+   "ms": 2,
    "ok": true,
    "note": "decision gates"
   }
@@ -85,7 +85,7 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 6,
+   "ms": 3,
    "ok": false
   },
   {
@@ -106,21 +106,21 @@ var MAIO_DATA = {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 0,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 0,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 3,
+   "ms": 0,
    "ok": false
   },
   {
@@ -191,10 +191,10 @@ var MAIO_DATA = {
   },
   {
    "agent": "adrianna",
-   "path": "AI-Drive/Agent-Output/adrianna/snappier-deploy-2026-10-04/vault-note-v2.md",
+   "path": "AI-Drive/Agent-Output/adrianna/model-roster-intel/eval_models.py",
    "date": "2026-10-05",
-   "ext": "md",
-   "kb": 4
+   "ext": "py",
+   "kb": 8
   },
   {
    "agent": "xavier",
@@ -437,12 +437,12 @@ var MAIO_DATA = {
    "name": "targetpraks.github.io",
    "family": "dev",
    "root": "DevMini/targetpraks.github.io",
-   "what": "GitHub Pages \u2014 Maio OS, charts, reports live here",
+   "what": "Ricardo Maio \u2014 Live Projects Dashboard",
    "lastTouched": "2026-10-05",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/index.html",
+    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
     "date": "2026-10-05",
     "ext": "html",
     "kb": 0
@@ -452,7 +452,7 @@ var MAIO_DATA = {
    "name": "Wheel of Life",
    "family": "dev",
    "root": "DevMini/Wheel of Life",
-   "what": "wheel-of-life",
+   "what": "Wheel of Life",
    "lastTouched": "2026-10-01",
    "hasPRD": false,
    "prdNewest": null,
@@ -467,7 +467,7 @@ var MAIO_DATA = {
    "name": "chromacommand-platform",
    "family": "dev",
    "root": "DevMini/chromacommand-platform",
-   "what": "chromacommand-platform \u2014 Unified RGB + Digital Menu + Audio control platform for Papa Pasta franchise network",
+   "what": "ChromaCommand Platform",
    "lastTouched": "2026-10-01",
    "hasPRD": true,
    "prdNewest": {
@@ -500,7 +500,7 @@ var MAIO_DATA = {
    "name": "esoteric-command",
    "family": "dev",
    "root": "DevMini/esoteric-command",
-   "what": "esoteric-command",
+   "what": "Esoteric Command",
    "lastTouched": "2026-10-01",
    "hasPRD": true,
    "prdNewest": {
@@ -533,7 +533,7 @@ var MAIO_DATA = {
    "name": "infx-media-website",
    "family": "dev",
    "root": "DevMini/infx-media-website",
-   "what": "infx-media",
+   "what": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/",
    "lastTouched": "2026-10-01",
    "hasPRD": true,
    "prdNewest": {
@@ -551,7 +551,7 @@ var MAIO_DATA = {
    "name": "papa-pasta-main-website",
    "family": "dev",
    "root": "DevMini/papa-pasta-main-website",
-   "what": "papa-pasta-main-website",
+   "what": "Papa Pasta Main Website",
    "lastTouched": "2026-10-01",
    "hasPRD": true,
    "prdNewest": {
@@ -569,7 +569,7 @@ var MAIO_DATA = {
    "name": "quote-program",
    "family": "dev",
    "root": "DevMini/quote-program",
-   "what": "quote-program \u2014 Quorum \u2014 procurement desk. Dev-only tooling for the regression suite; the app itself is a sing",
+   "what": "Quorum (quote-program)",
    "lastTouched": "2026-10-01",
    "hasPRD": false,
    "prdNewest": null,
@@ -584,7 +584,7 @@ var MAIO_DATA = {
    "name": "sa-funding-directory",
    "family": "dev",
    "root": "DevMini/sa-funding-directory",
-   "what": "\u2014",
+   "what": "SA Funding Directory \u2014 Staff Tool",
    "lastTouched": "2026-10-01",
    "hasPRD": false,
    "prdNewest": null,
@@ -915,6 +915,162 @@ var MAIO_DATA = {
     "ext": "json",
     "kb": 1
    }
+  },
+  {
+   "name": "Papa Pasta",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "QSR Franchise \u2014 pasta",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "1 \u2014 \"100% my main priority\"",
+   "status": "Active Development"
+  },
+  {
+   "name": "The Local Farmer",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Farm / Supply, micro-franchise",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "2",
+   "status": "Active"
+  },
+  {
+   "name": "Divorced Dads",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "App for Divorced Men / Family Law Tech",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "3",
+   "status": "Active Development"
+  },
+  {
+   "name": "Infinity Brands",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Brand / Portfolio Company (HQ)",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "4",
+   "status": "Active"
+  },
+  {
+   "name": "INFX Solutions",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Zoho Implementation / Business Digitization",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "5",
+   "status": "Active"
+  },
+  {
+   "name": "INFX Media",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Media / Marketing",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "6",
+   "status": "Active Development"
+  },
+  {
+   "name": "INFX Labs",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Software Development House",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "6",
+   "status": "Active"
+  },
+  {
+   "name": "FluxFlow",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "ETL + Agentic AI for Business Tools",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "6",
+   "status": "Active Development"
+  },
+  {
+   "name": "ChromaCommand",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "RGB / digital menu / audio for the Papa Pasta network",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "6",
+   "status": "Active Development"
+  },
+  {
+   "name": "SunScout",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Beach Convenience App (may become BeachScout)",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "6",
+   "status": "Active Development"
+  },
+  {
+   "name": "Loxbox",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "TBD (Greek market)",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "6",
+   "status": "Fundraising"
+  },
+  {
+   "name": "Soul Hotel",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Hospitality / Apartment Hotel, Rhodes, Greece",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "7",
+   "status": "Concept"
+  },
+  {
+   "name": "ACDC Express",
+   "family": "venture",
+   "root": "see Business-Index.md (vault)",
+   "what": "Electrical Retail / Franchise",
+   "lastTouched": null,
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": null,
+   "priority": "7",
+   "status": "Active"
   }
  ],
  "roster": [
@@ -922,7 +1078,7 @@ var MAIO_DATA = {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
-    "path": "AI-Drive/Agent-Output/adrianna/snappier-deploy-2026-10-04/vault-note-v2.md",
+    "path": "AI-Drive/Agent-Output/adrianna/model-roster-intel/eval_models.py",
     "date": "2026-10-05"
    }
   },
@@ -1124,50 +1280,864 @@ var MAIO_DATA = {
  ],
  "prds": [
   {
+   "title": "Constellation-Multi-Company-Plan-2026-10-01",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Multi-Company-Plan-2026-10-01.md",
+   "date": "2026-10-01",
+   "area": "Work"
+  },
+  {
+   "title": "Constellation-Product-Audit-2026-09-30",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Product-Audit-2026-09-30.md",
+   "date": "2026-10-01",
+   "area": "Work"
+  },
+  {
+   "title": "Constellation-MoA-Rulings-2026-09-17",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-MoA-Rulings-2026-09-17.md",
+   "date": "2026-09-30",
+   "area": "Work"
+  },
+  {
+   "title": "2026-09-10 OpenWebUI Decommission",
+   "project": "Archived",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/2026-09-10 OpenWebUI Decommission.md",
+   "date": "2026-09-29",
+   "area": "AI-Space"
+  },
+  {
+   "title": "QwenPaw-Telegram-Topics-Brief-2026-09-28",
+   "project": "Active",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/QwenPaw-Telegram-Topics-Brief-2026-09-28.md",
+   "date": "2026-09-28",
+   "area": "AI-Space"
+  },
+  {
+   "title": "TLF-Zoho-Buildout-CSuite-Review-and-Decisions",
+   "project": "TLF-Zoho-Buildout",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Zoho-Buildout/TLF-Zoho-Buildout-CSuite-Review-and-Decisions.md",
+   "date": "2026-09-28",
+   "area": "Work"
+  },
+  {
+   "title": "TLF-Zoho-Buildout-PRD",
+   "project": "TLF-Zoho-Buildout",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Zoho-Buildout/TLF-Zoho-Buildout-PRD.md",
+   "date": "2026-09-28",
+   "area": "Work"
+  },
+  {
+   "title": "DD-QUICK-REFERENCE",
+   "project": "Divorced-Dads",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/DD-QUICK-REFERENCE.md",
+   "date": "2026-09-27",
+   "area": "Work"
+  },
+  {
+   "title": "DD-MARKET-INTEL",
+   "project": "Divorced-Dads",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/DD-MARKET-INTEL.md",
+   "date": "2026-09-27",
+   "area": "Work"
+  },
+  {
+   "title": "Papa-Pasta-Remaining-Brand-Marketing-Tasks",
+   "project": "Papa Pasta",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa Pasta/Papa-Pasta-Remaining-Brand-Marketing-Tasks.md",
+   "date": "2026-09-27",
+   "area": "Work"
+  },
+  {
+   "title": "Mr-Infinity-Cron-Architecture",
+   "project": "Infinity-Brands-GM",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Infinity-Brands-GM/Mr-Infinity-Cron-Architecture.md",
+   "date": "2026-09-27",
+   "area": "Work"
+  },
+  {
+   "title": "PRD-Maio-Task-Center-v2-2026-09-01",
+   "project": "Active",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/PRD-Maio-Task-Center-v2-2026-09-01.md",
+   "date": "2026-09-26",
+   "area": "AI-Space"
+  },
+  {
+   "title": "Magnific-Spaces-Flows-Research-2026-08-24",
+   "project": "Active",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/Magnific-Spaces-Flows-Research-2026-08-24.md",
+   "date": "2026-09-24",
+   "area": "AI-Space"
+  },
+  {
+   "title": "Anytype-Template-Fix-2026-08-23",
+   "project": "Active",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/Anytype-Template-Fix-2026-08-23.md",
+   "date": "2026-09-24",
+   "area": "AI-Space"
+  },
+  {
+   "title": "PRD",
+   "project": "Papa-Pasta-Kitchen-Equipment-Sourcing",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Kitchen-Equipment-Sourcing/PRD.md",
+   "date": "2026-09-24",
+   "area": "Work"
+  },
+  {
+   "title": "The-Good-Stuff-Personal-Top-10",
+   "project": "Active",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Good-Stuff-Personal-Top-10.md",
+   "date": "2026-09-23",
+   "area": "Work"
+  },
+  {
+   "title": "Anytype-Mirror-Plan-2026-08-05",
+   "project": "Active",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/Anytype-Mirror-Plan-2026-08-05.md",
+   "date": "2026-09-22",
+   "area": "AI-Space"
+  },
+  {
+   "title": "Constellation-Instrument-Research-2026-09-17",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Instrument-Research-2026-09-17.md",
+   "date": "2026-09-21",
+   "area": "Work"
+  },
+  {
+   "title": "Constellation-Verified-Findings-2026-09-17",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Verified-Findings-2026-09-17.md",
+   "date": "2026-09-21",
+   "area": "Work"
+  },
+  {
+   "title": "Constellation-Scope-2026-09-16",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Scope-2026-09-16.md",
+   "date": "2026-09-21",
+   "area": "Work"
+  },
+  {
+   "title": "Constellation-Build-Spec-2026-09-16",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Build-Spec-2026-09-16.md",
+   "date": "2026-09-21",
+   "area": "Work"
+  },
+  {
+   "title": "SunScout-Website-PRD-2026-09-15",
+   "project": "SunScout",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/SunScout/SunScout-Website-PRD-2026-09-15.md",
+   "date": "2026-09-16",
+   "area": "Work"
+  },
+  {
+   "title": "Divorced-Dads-Playlists",
+   "project": "Divorced-Dads",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/Divorced-Dads-Playlists.md",
+   "date": "2026-09-16",
+   "area": "Work"
+  },
+  {
+   "title": "SunScout-Web-App-System-PRD-2026-09-15",
+   "project": "SunScout",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/SunScout/SunScout-Web-App-System-PRD-2026-09-15.md",
+   "date": "2026-09-16",
+   "area": "Work"
+  },
+  {
+   "title": "PRD-v2.8-UI-Design-System",
+   "project": "Quote-Program",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Quote-Program/PRD-v2.8-UI-Design-System.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "FluxFlow-Public-Data-Connectors",
+   "project": "FluxFlow",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/FluxFlow/FluxFlow-Public-Data-Connectors.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "INF-MKT-Template-One-Master-Explained",
+   "project": "Active",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INF-MKT-Template-One-Master-Explained.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13",
+   "project": "Active",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13.md",
+   "date": "2026-09-15",
+   "area": "AI-Space"
+  },
+  {
+   "title": "TLF-App-INFX-Feedback-Report",
+   "project": "Active",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/TLF-App-INFX-Feedback-Report.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "CHANGE-LOG-v23",
+   "project": "TLF-Franchisee-Model-Audit",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGE-LOG-v23.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "CHANGELOG-v26",
+   "project": "TLF-Franchisee-Model-Audit",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v26.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "CHANGELOG-v25",
+   "project": "TLF-Franchisee-Model-Audit",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v25.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "CHANGELOG-v24",
+   "project": "TLF-Franchisee-Model-Audit",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v24.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "audit_A_formula_consistency",
+   "project": "TLF-Franchisee-Model-Audit",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/audit_A_formula_consistency.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "_folder",
+   "project": "TLF-Franchisee-Model-Audit",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/_folder.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "INF-KPI-Compliance-Enforcement-Sep-2026",
+   "project": "Infinity-Brands-GM",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Infinity-Brands-GM/INF-KPI-Compliance-Enforcement-Sep-2026.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "TLF-Joe-Farmer-Agent-PRD",
+   "project": "The-Local-Farmer",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Joe-Farmer-Agent-PRD.md",
+   "date": "2026-09-15",
+   "area": "Work"
+  },
+  {
+   "title": "voice",
+   "project": "Company-Brain",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/voice.md",
+   "date": "2026-09-14",
+   "area": "Work"
+  },
+  {
+   "title": "offer",
+   "project": "Company-Brain",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/offer.md",
+   "date": "2026-09-14",
+   "area": "Work"
+  },
+  {
+   "title": "company",
+   "project": "Company-Brain",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/company.md",
+   "date": "2026-09-14",
+   "area": "Work"
+  },
+  {
+   "title": "customer",
+   "project": "Company-Brain",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/customer.md",
+   "date": "2026-09-14",
+   "area": "Work"
+  },
+  {
    "title": "PRD-SECTION-DESIGN.md",
    "project": "Papa Pasta",
    "path": "AI-Drive/AI-Space/Work/Papa Pasta/Store Design/PRD/PRD-SECTION-DESIGN.md",
-   "date": "2026-09-01"
+   "date": "2026-09-01",
+   "area": "disk scan"
   },
   {
    "title": "PRD_FEATURE.md",
    "project": "esoteric-command",
    "path": "DevMini/esoteric-command/PRD_FEATURE.md",
-   "date": "2026-08-21"
+   "date": "2026-08-21",
+   "area": "disk scan"
   },
   {
    "title": "PRD.md",
    "project": "chromacommand-platform",
    "path": "DevMini/chromacommand-platform/PRD.md",
-   "date": "2026-07-24"
-  },
-  {
-   "title": "PRD.md",
-   "project": "infx-media-website",
-   "path": "DevMini/infx-media-website/PRD.md",
-   "date": "2026-07-24"
-  },
-  {
-   "title": "PRD.md",
-   "project": "papa-pasta-main-website",
-   "path": "DevMini/papa-pasta-main-website/PRD.md",
-   "date": "2026-07-24"
+   "date": "2026-07-24",
+   "area": "disk scan"
   },
   {
    "title": "PRD_v2.md",
    "project": "sunscout",
    "path": "DevMini/sunscout/docs/PRD_v2.md",
-   "date": "2026-07-24"
+   "date": "2026-07-24",
+   "area": "disk scan"
   }
  ],
+ "enriched": {
+  "vaultPrds": [
+   {
+    "title": "Constellation-Multi-Company-Plan-2026-10-01",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Multi-Company-Plan-2026-10-01.md",
+    "date": "2026-10-01"
+   },
+   {
+    "title": "Constellation-Product-Audit-2026-09-30",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Product-Audit-2026-09-30.md",
+    "date": "2026-10-01"
+   },
+   {
+    "title": "Constellation-MoA-Rulings-2026-09-17",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-MoA-Rulings-2026-09-17.md",
+    "date": "2026-09-30"
+   },
+   {
+    "title": "2026-09-10 OpenWebUI Decommission",
+    "project": "Archived",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/2026-09-10 OpenWebUI Decommission.md",
+    "date": "2026-09-29"
+   },
+   {
+    "title": "QwenPaw-Telegram-Topics-Brief-2026-09-28",
+    "project": "Active",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/QwenPaw-Telegram-Topics-Brief-2026-09-28.md",
+    "date": "2026-09-28"
+   },
+   {
+    "title": "TLF-Zoho-Buildout-CSuite-Review-and-Decisions",
+    "project": "TLF-Zoho-Buildout",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Zoho-Buildout/TLF-Zoho-Buildout-CSuite-Review-and-Decisions.md",
+    "date": "2026-09-28"
+   },
+   {
+    "title": "TLF-Zoho-Buildout-PRD",
+    "project": "TLF-Zoho-Buildout",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Zoho-Buildout/TLF-Zoho-Buildout-PRD.md",
+    "date": "2026-09-28"
+   },
+   {
+    "title": "DD-QUICK-REFERENCE",
+    "project": "Divorced-Dads",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/DD-QUICK-REFERENCE.md",
+    "date": "2026-09-27"
+   },
+   {
+    "title": "DD-MARKET-INTEL",
+    "project": "Divorced-Dads",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/DD-MARKET-INTEL.md",
+    "date": "2026-09-27"
+   },
+   {
+    "title": "Papa-Pasta-Remaining-Brand-Marketing-Tasks",
+    "project": "Papa Pasta",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa Pasta/Papa-Pasta-Remaining-Brand-Marketing-Tasks.md",
+    "date": "2026-09-27"
+   },
+   {
+    "title": "Mr-Infinity-Cron-Architecture",
+    "project": "Infinity-Brands-GM",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Infinity-Brands-GM/Mr-Infinity-Cron-Architecture.md",
+    "date": "2026-09-27"
+   },
+   {
+    "title": "PRD-Maio-Task-Center-v2-2026-09-01",
+    "project": "Active",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/PRD-Maio-Task-Center-v2-2026-09-01.md",
+    "date": "2026-09-26"
+   },
+   {
+    "title": "Magnific-Spaces-Flows-Research-2026-08-24",
+    "project": "Active",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/Magnific-Spaces-Flows-Research-2026-08-24.md",
+    "date": "2026-09-24"
+   },
+   {
+    "title": "Anytype-Template-Fix-2026-08-23",
+    "project": "Active",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/Anytype-Template-Fix-2026-08-23.md",
+    "date": "2026-09-24"
+   },
+   {
+    "title": "PRD",
+    "project": "Papa-Pasta-Kitchen-Equipment-Sourcing",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Kitchen-Equipment-Sourcing/PRD.md",
+    "date": "2026-09-24"
+   },
+   {
+    "title": "The-Good-Stuff-Personal-Top-10",
+    "project": "Active",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Good-Stuff-Personal-Top-10.md",
+    "date": "2026-09-23"
+   },
+   {
+    "title": "Anytype-Mirror-Plan-2026-08-05",
+    "project": "Active",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/Anytype-Mirror-Plan-2026-08-05.md",
+    "date": "2026-09-22"
+   },
+   {
+    "title": "Constellation-Instrument-Research-2026-09-17",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Instrument-Research-2026-09-17.md",
+    "date": "2026-09-21"
+   },
+   {
+    "title": "Constellation-Verified-Findings-2026-09-17",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Verified-Findings-2026-09-17.md",
+    "date": "2026-09-21"
+   },
+   {
+    "title": "Constellation-Scope-2026-09-16",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Scope-2026-09-16.md",
+    "date": "2026-09-21"
+   },
+   {
+    "title": "Constellation-Build-Spec-2026-09-16",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Build-Spec-2026-09-16.md",
+    "date": "2026-09-21"
+   },
+   {
+    "title": "SunScout-Website-PRD-2026-09-15",
+    "project": "SunScout",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/SunScout/SunScout-Website-PRD-2026-09-15.md",
+    "date": "2026-09-16"
+   },
+   {
+    "title": "Divorced-Dads-Playlists",
+    "project": "Divorced-Dads",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/Divorced-Dads-Playlists.md",
+    "date": "2026-09-16"
+   },
+   {
+    "title": "SunScout-Web-App-System-PRD-2026-09-15",
+    "project": "SunScout",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/SunScout/SunScout-Web-App-System-PRD-2026-09-15.md",
+    "date": "2026-09-16"
+   },
+   {
+    "title": "PRD-v2.8-UI-Design-System",
+    "project": "Quote-Program",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Quote-Program/PRD-v2.8-UI-Design-System.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "FluxFlow-Public-Data-Connectors",
+    "project": "FluxFlow",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/FluxFlow/FluxFlow-Public-Data-Connectors.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "INF-MKT-Template-One-Master-Explained",
+    "project": "Active",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INF-MKT-Template-One-Master-Explained.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13",
+    "project": "Active",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "TLF-App-INFX-Feedback-Report",
+    "project": "Active",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/TLF-App-INFX-Feedback-Report.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "CHANGE-LOG-v23",
+    "project": "TLF-Franchisee-Model-Audit",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGE-LOG-v23.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "CHANGELOG-v26",
+    "project": "TLF-Franchisee-Model-Audit",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v26.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "CHANGELOG-v25",
+    "project": "TLF-Franchisee-Model-Audit",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v25.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "CHANGELOG-v24",
+    "project": "TLF-Franchisee-Model-Audit",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v24.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "audit_A_formula_consistency",
+    "project": "TLF-Franchisee-Model-Audit",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/audit_A_formula_consistency.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "_folder",
+    "project": "TLF-Franchisee-Model-Audit",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/_folder.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "INF-KPI-Compliance-Enforcement-Sep-2026",
+    "project": "Infinity-Brands-GM",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Infinity-Brands-GM/INF-KPI-Compliance-Enforcement-Sep-2026.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "TLF-Joe-Farmer-Agent-PRD",
+    "project": "The-Local-Farmer",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Joe-Farmer-Agent-PRD.md",
+    "date": "2026-09-15"
+   },
+   {
+    "title": "voice",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/voice.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "offer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/offer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "company",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/company.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "customer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Loxbox/Company-Brain/customer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "voice",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Dynamics/Company-Brain/voice.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "company",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Dynamics/Company-Brain/company.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "offer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Dynamics/Company-Brain/offer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "customer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Dynamics/Company-Brain/customer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "customer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/Company-Brain/customer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "company",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/Company-Brain/company.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "voice",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/Company-Brain/voice.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "offer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/Company-Brain/offer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "customer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/Company-Brain/customer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "company",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/Company-Brain/company.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "voice",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Express/Company-Brain/voice.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "offer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Express/Company-Brain/offer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "customer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Express/Company-Brain/customer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "company",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/ACDC-Express/Company-Brain/company.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "voice",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/Company-Brain/voice.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "offer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/Company-Brain/offer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "offer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/FluxFlow/Company-Brain/offer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "customer",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/FluxFlow/Company-Brain/customer.md",
+    "date": "2026-09-14"
+   },
+   {
+    "title": "company",
+    "project": "Company-Brain",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/FluxFlow/Company-Brain/company.md",
+    "date": "2026-09-14"
+   }
+  ],
+  "roles": {
+   "jarvis": "AI Space Orchestrator \u2014 handles everything that isn't clearly Work or Personal",
+   "atlas": "Research (Tier-1) \u2014 deep research, benchmarks, vendor evaluation",
+   "archie": "Architecture specialist \u2014 system and solution architecture",
+   "shadow": "Restricted-Ops specialist \u2014 OSINT, dark-web research; runs on the local model",
+   "echo": "Comms (Tier-1) \u2014 briefs, summaries, comms drafting",
+   "keeper": "Machine ops (Tier-1) \u2014 launchd, gateways, backups, host hardening",
+   "forge": "Code and repos \u2014 builds, PRs, code review",
+   "beacon": "Monitoring (Tier-1) \u2014 watchers, alerts, watchdog cron",
+   "section": "Orchestrator",
+   "ai space": "JARVIS",
+   "work": "Warren W",
+   "personal": "Poppi P",
+   "x-mansion": "Xavier"
+  },
+  "ventures": [
+   {
+    "name": "Papa Pasta",
+    "sector": "QSR Franchise \u2014 pasta",
+    "status": "Active Development",
+    "priority": "1 \u2014 \"100% my main priority\""
+   },
+   {
+    "name": "The Local Farmer",
+    "sector": "Farm / Supply, micro-franchise",
+    "status": "Active",
+    "priority": "2"
+   },
+   {
+    "name": "Divorced Dads",
+    "sector": "App for Divorced Men / Family Law Tech",
+    "status": "Active Development",
+    "priority": "3"
+   },
+   {
+    "name": "Infinity Brands",
+    "sector": "Brand / Portfolio Company (HQ)",
+    "status": "Active",
+    "priority": "4"
+   },
+   {
+    "name": "INFX Solutions",
+    "sector": "Zoho Implementation / Business Digitization",
+    "status": "Active",
+    "priority": "5"
+   },
+   {
+    "name": "INFX Media",
+    "sector": "Media / Marketing",
+    "status": "Active Development",
+    "priority": "6"
+   },
+   {
+    "name": "INFX Labs",
+    "sector": "Software Development House",
+    "status": "Active",
+    "priority": "6"
+   },
+   {
+    "name": "FluxFlow",
+    "sector": "ETL + Agentic AI for Business Tools",
+    "status": "Active Development",
+    "priority": "6"
+   },
+   {
+    "name": "ChromaCommand",
+    "sector": "RGB / digital menu / audio for the Papa Pasta network",
+    "status": "Active Development",
+    "priority": "6"
+   },
+   {
+    "name": "SunScout",
+    "sector": "Beach Convenience App (may become BeachScout)",
+    "status": "Active Development",
+    "priority": "6"
+   },
+   {
+    "name": "Loxbox",
+    "sector": "TBD (Greek market)",
+    "status": "Fundraising",
+    "priority": "6"
+   },
+   {
+    "name": "Soul Hotel",
+    "sector": "Hospitality / Apartment Hotel, Rhodes, Greece",
+    "status": "Concept",
+    "priority": "7"
+   },
+   {
+    "name": "ACDC Express",
+    "sector": "Electrical Retail / Franchise",
+    "status": "Active",
+    "priority": "7"
+   }
+  ],
+  "enrichedWhat": {
+   "Quote-Program": "Quorum (quote-program)",
+   "Wheel of Life": "Wheel of Life",
+   "chromacommand-platform": "ChromaCommand Platform",
+   "esoteric-command": "Esoteric Command",
+   "gsd-dashboard": "GSD \u2014 Get Shit Done \u00b7 Limited Edition Dashboard",
+   "infx-media-website": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/",
+   "papa-pasta-main-website": "Papa Pasta Main Website",
+   "quote-program": "Quorum (quote-program)",
+   "sa-funding-directory": "SA Funding Directory \u2014 Staff Tool",
+   "sunscout": "sunscout",
+   "sunscout-web": "sunscout-web",
+   "targetpraks.github.io": "Ricardo Maio \u2014 Live Projects Dashboard"
+  },
+  "soulFound": true,
+  "mergedAt": "2026-10-05T20:33:21Z"
+ },
  "summary": {
+  "projects": 56,
+  "prds": 45,
   "stackLive": 8,
   "stackTotal": 8,
   "devOnline": 0,
   "devTotal": 10,
-  "projects": 43,
   "reports": 16,
-  "roster": 31,
-  "prds": 6
+  "roster": 31
  }
 };
