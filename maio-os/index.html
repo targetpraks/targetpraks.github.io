@@ -266,24 +266,30 @@ const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 /* ---------- state ---------- */
 const OPEN = new Map();      // id -> {el, prev, mode, geo}
 let zIndex = 10; let focusedId = null;
+let RESTORING = false;       // true only while restoreLayout() is repopulating OPEN
 const MOBILE = matchMedia('(max-width:760px)').matches;
 /* layout restored on load: [{id,left,top,width,height,max}].
    Called from the bottom of the script — openWin touches the const WINS/_WINS state,
    so restoring any earlier hits a TDZ ReferenceError (silently swallowed before). */
 function restoreLayout(){
+  /* While this runs, persist() is suppressed: each openWin() would otherwise rewrite
+     storage from the partially-populated OPEN, dropping entries that have not been
+     restored yet — and the next entry then loses its saved geometry/max state. */
+  RESTORING = true;
   try{ const saved = JSON.parse(localStorage.getItem('maioos.layout')||'[]');
     if(!Array.isArray(saved)) return;
     /* mobile windows are CSS-forced full-screen: restore which ones were open, skip the geometry */
     saved.forEach(o=>{
-      if(!o || !o.id) return;
+      if(!o || typeof o.id!=='string') return;
       if(o.id==='detail'){
         const p=(D.projects||[]).find(x=>x.name===o.project);
         if(p) openDetail(p, MOBILE ? null : o);        // project gone from data.js → skip silently
         return;
       }
-      if(WINS[o.id] && !WINS[o.id].hidden) openWin(o.id, MOBILE ? null : o);
+      const d=winDef(o.id);                            // own property + a render function, or nothing
+      if(d && !d.hidden) openWin(o.id, MOBILE ? null : o);
     });
-  }catch(_){}
+  }catch(_){} finally { RESTORING = false; }
 }
 
 /* ---------- boot sequence ---------- */
@@ -344,8 +350,16 @@ const WINS = {
   stack:{title:'Stack', icon:'◉', sub:'live truth', render:renderStack, w:780, h:500},
   about:{title:'About / Roadmap', icon:'☆', sub:'what this is + where it goes', render:renderAbout, w:660, h:520},
 };
+/* only real window definitions: an OWN property that carries a render function.
+   Guards against inherited keys ("toString", "constructor", "__proto__"…) and junk ids. */
+function winDef(id){
+  if(typeof id!=='string') return null;
+  if(!Object.prototype.hasOwnProperty.call(WINS, id)) return null;
+  const d=WINS[id];
+  return (d && typeof d.render==='function') ? d : null;
+}
 function openWin(id, restore=null){
-  const def = WINS[id]; if(!def) return;
+  const def = winDef(id); if(!def) return;
   if(OPEN.has(id)){ focusWin(id); return; }
   const el = document.createElement('section');
   el.className = 'win focused'; el.dataset.win = id; el.style.zIndex = ++zIndex;
@@ -384,7 +398,7 @@ function openWin(id, restore=null){
   $('.wl.wmax', el).onclick = () => maxWin(id);
   $('.winbar', el).addEventListener('pointerdown', ev => startDrag(ev, el, id));
   $('.winresize', el).addEventListener('pointerdown', ev => startResize(ev, el, id));
-  el.addEventListener('pointerdown', () => focusWin(id), true);
+  el.addEventListener('pointerdown', () => focusWin(id), true);   // focus only — focusWin never persists
   persist(); dockSync();
 }
 function closeWin(id){ const w = OPEN.get(id); if(!w) return; w.el.remove(); OPEN.delete(id);
@@ -407,11 +421,11 @@ function applyGeo(el, w, g){
   /* record a new geometry (g) or re-apply the stored one when g is empty */
   const next = {left:(g && g.left!=null)? g.left : w.geo?.left, top:(g && g.top!=null)? g.top : w.geo?.top,
                 width:(g && g.width!=null)? g.width : w.geo?.width, height:(g && g.height!=null)? g.height : w.geo?.height};
+  if(el.classList.contains('max')) return;   // maximised windows keep their normal geometry untouched
   const cur = rect(el);
   const fit = fitRect(next.left!=null?next.left:cur.left, next.top!=null?next.top:cur.top,
                       next.width||cur.width, next.height||cur.height);
   w.geo = fit;
-  if(el.classList.contains('max')) return;
   el.style.width=fit.width+'px'; el.style.height=fit.height+'px';
   el.style.left=fit.left+'px'; el.style.top=fit.top+'px';
 }
@@ -429,6 +443,7 @@ function focusWin(id){ const w=OPEN.get(id); if(!w) return; if(w.mode==='min'){ 
 function focusTop(){ let best=null; for(const [id,w] of OPEN){ if(w.mode!=='min' && (!best || +w.el.style.zIndex > +best[1].el.style.zIndex)) best=[id,w]; }
   focusedId = best? best[0] : null; dockSync(); }
 function persist(){
+  if(RESTORING) return;   // never touch storage mid-restore (see restoreLayout)
   try{
     /* previous entries, so mobile can preserve a desktop-saved layout instead of
        writing back the full-screen geometry the mobile stylesheet forces. */
@@ -456,24 +471,35 @@ function persist(){
 function dockSync(){ document.querySelectorAll('.dockbtn').forEach(b=>{ const id=b.dataset.open; b.classList.toggle('open', OPEN.has(id)); b.classList.toggle('active', focusedId===id); }); }
 
 /* drag + resize */
-function startDrag(ev, el, id){ if(MOBILE) return; if(ev.target.closest('.wl')) return; ev.preventDefault();
-  const w = OPEN.get(id); if(w.mode==='min') return;
+/* drag/resize always operate on the NORMAL geometry. w.geo keeps it; w.prev is the
+   live top/left being nudged (it is also the un-minimise target, so nothing extra to do).
+   Never call applyGeo() from here: that fit would clobber the stored normal geometry. */
+function startDrag(ev, el, id){ if(MOBILE) return; if(ev.target.closest('.wl')) return;
+  const w = OPEN.get(id); if(!w || w.mode==='min' || w.mode==='max') return;   // maximised: not movable
+  ev.preventDefault();
   const sx=ev.clientX, sy=ev.clientY, ol=parseFloat(el.style.left)||0, ot=parseFloat(el.style.top)||0;
   el.setPointerCapture?.(ev.pointerId);
   const mv = e => {
     const D=$('#desktop'); const vw=D.clientWidth, vh=D.clientHeight; const W=el.offsetWidth, H=el.offsetHeight;
     el.style.left = clamp(ol + e.clientX - sx, 0, Math.max(0, vw-W)) + 'px';
     el.style.top  = clamp(ot + e.clientY - sy, 0, Math.max(0, vh-H)) + 'px'; };
-  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); applyGeo(el, w, rect(el)); persist(); };
+  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
+    if(w.mode!=='max'){ w.geo={left:parseFloat(el.style.left)||0, top:parseFloat(el.style.top)||0,
+                               width:el.offsetWidth, height:el.offsetHeight}; w.prev={l:el.style.left, t:el.style.top}; }
+    persist(); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up); }
-function startResize(ev, el, id){ ev.preventDefault(); ev.stopPropagation();
+function startResize(ev, el, id){ const w=OPEN.get(id); if(!w || w.mode==='max') return;   // maximised: not resizable
+  ev.preventDefault(); ev.stopPropagation();
   const sw=el.offsetWidth, sh=el.offsetHeight, sx=ev.clientX, sy=ev.clientY;
   const mv = e => {
     const D=$('#desktop'); const vw=D.clientWidth, vh=D.clientHeight;
     const left=parseFloat(el.style.left)||0, top=parseFloat(el.style.top)||0;
     el.style.width  = clamp(sw + e.clientX - sx, Math.min(320, vw), Math.max(0, vw-left)) + 'px';
     el.style.height = clamp(sh + e.clientY - sy, Math.min(220, vh), Math.max(0, vh-top)) + 'px'; };
-  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); applyGeo(el, OPEN.get(id), rect(el)); persist(); };
+  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
+    if(w.mode!=='max'){ w.geo={left:parseFloat(el.style.left)||0, top:parseFloat(el.style.top)||0,
+                               width:el.offsetWidth, height:el.offsetHeight}; }
+    persist(); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up); }
 
 /* ---------- renderers ---------- */
@@ -610,7 +636,7 @@ function renderAbout(){
 
 /* ---------- dock / menu ---------- */
 function renderDock(){
-  const items = ['desk','projects','agents','reports','prds','stack','about'];
+  const items = ['desk','projects','agents','reports','prds','stack','about'].filter(id=>winDef(id));
   $('#dock').innerHTML = items.map(id=>`
     <button class="dockbtn" data-open="${id}" aria-label="Open ${escAttr(WINS[id].title)}">
       <span class="di">${WINS[id].icon}</span><span>${esc(WINS[id].title)}</span><span class="dot"></span></button>`).join('')
@@ -694,7 +720,7 @@ addEventListener('resize', dockClear);
 
 /* deep-link hash: #projects / #report:<agent> */
 (function(){ const h = decodeURIComponent(location.hash.replace('#',''));
-  if(!h) return; if(WINS[h]){ openWin(h); }
+  if(!h) return; if(winDef(h)){ openWin(h); }
   else if(h.startsWith('report:')){ openWin('reports'); setTimeout(()=>{ const q=document.querySelector('input[data-filter="reports"]'); if(q){ q.value=h.slice(7); q.dispatchEvent(new Event('input',{bubbles:true})); } }, 60); } })();
 </script>
 </body>
