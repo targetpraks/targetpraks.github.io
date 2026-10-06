@@ -348,14 +348,24 @@ function str(v){ if(typeof v==='string') return v; if(typeof v==='number' && isF
 function num(v,d){                                                             // finite number, or plain numeric string
   d=(d===undefined)?0:d;
   if(typeof v==='number') return isFinite(v) ? v : d;
-  if(typeof v==='string'){ return /^[+-]?(\d+\.?\d*|\.\d+)$/.test(v.trim()) ? Number(v) : d; }
+  if(typeof v==='string'){
+    const s=v.trim();
+    if(!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(s)) return d;
+    const n=Number(s);
+    return isFinite(n) ? n : d;                    // a huge string overflows to Infinity → missing
+  }
   return d; }
 function tidy(v){ return str(v).toLowerCase().replace(/[^a-z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,28); }
-/* date: only a COMPLETE calendar date, as a string, and only if it is a real day
-   ("2026-02-30" and "2026-13-01" are impossible dates — they normalize silently, so
-   they are rejected). A full date-time is accepted only when well-formed and is dated
-   by its calendar day. Anything else (suffix garbage, wrong format, number, null) → ''. */
-const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})(?:[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:[Zz]|[+-]\d{2}:\d{2})?)?$/;
+/* date: ONLY a bare calendar date, and only if it is a real day.
+   Decision: date-time forms are rejected outright. Every date field in today's data.js
+   is a bare `YYYY-MM-DD` (checked: 0 of reports/projects/roster/prds/meta carry a time),
+   and the two values that do carry a time — devServersStaleSince, enriched.mergedAt — are
+   rendered as raw text, not parsed. Validating a full ISO date-time correctly (hour 00-23,
+   minute/second 00-59, fraction, Z or an in-range offset) buys nothing the data needs and
+   was where the last bypass lived, so the narrow form is the honest one.
+   "2026-02-30" and "2026-13-01" are impossible days — they normalize silently in Date —
+   so they are rejected too. Anything else (suffix garbage, a time, a number, null) → ''. */
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 function nDate(v){
   if(typeof v!=='string') return '';
   const m = DATE_RE.exec(v.trim()); if(!m) return '';
@@ -769,6 +779,15 @@ function persist(){
            silently lose its maximised flag across a reload */
         max = (w.mode==='max') || (w.mode==='min' && w.state==='max');
       }
+      /* Second line of defence: never overwrite a saved entry with degenerate geometry.
+         If a window is measured before the desktop is laid out (0×0), keep whatever was
+         already saved for it instead of writing the collapsed rectangle back. */
+      if(degenerateGeo(g)){
+        const p = prev[id];
+        if(!p) continue;                       // nothing good to keep → leave it out entirely
+        g = {left:p.left, top:p.top, width:p.width, height:p.height};
+        if(p.max !== undefined) max = !!p.max;
+      }
       const e={id, left:g.left, top:g.top, width:g.width, height:g.height, max};
       if(id==='detail' && detailProject) e.project = detailProject.name;   // so the detail can be rebuilt
       out.push(e);
@@ -777,6 +796,12 @@ function persist(){
   }catch(_){}
 }
 function dockSync(){ document.querySelectorAll('.dockbtn').forEach(b=>{ const id=b.dataset.open; b.classList.toggle('open', OPEN.has(id)); b.classList.toggle('active', focusedId===id); }); }
+/* a geometry that is not a usable on-screen rectangle (0×0, negative, non-finite, missing) */
+function degenerateGeo(g){
+  if(!g) return true;
+  return !isFinite(g.width) || !isFinite(g.height) || g.width < 1 || g.height < 1
+      || (!MOBILE && (!isFinite(g.left) || !isFinite(g.top)));
+}
 
 /* drag + resize */
 /* drag/resize always operate on the NORMAL geometry. w.geo keeps it; w.prev is the
@@ -1038,11 +1063,28 @@ function deepLink(){
   if(!h) return; if(winDef(h)){ openWin(h); }
   else if(h.startsWith('report:')){ openWin('reports'); setTimeout(()=>{ const q=document.querySelector('input[data-filter="reports"]'); if(q){ q.value=h.slice(7); q.dispatchEvent(new Event('input',{bubbles:true})); } }, 60); }
 }
+/* Whatever happened before the shell ran — a pre-data.js guard may have rendered the
+   failure state and hidden the cockpit — undo it FIRST, so the desktop and dock are
+   visible and laid out before anything is measured or restored. Every path into the
+   shell goes through here (normal, late recovery, near-timeout), so a late-recovered
+   page is laid out exactly like a normally loaded one. */
+function ensureCockpitVisible(){
+  ['desktop','dock','menunav'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && el.style.display === 'none') el.style.display = '';
+  });
+  if(window.__maioDataFail){
+    const e = document.getElementById('dataerr'); if(e) e.remove();
+    window.__maioDataFail = false;
+  }
+}
 function initShell(){
+  ensureCockpitVisible();            // visible + laid out before ANY measurement
   startBoot();
-  renderDesklets(); renderDock(); dockClear(); renderGen();
+  renderDesklets(); renderDock(); renderGen();
+  dockClear();                       // desktop bottom now reflects the real dock height
   addEventListener('resize', dockClear);
-  one(restoreLayout, null);          // layout restore can never take the shell down
+  one(restoreLayout, null);          // windows restore against the real desktop size
   one(deepLink, null);
 }
 function describeRaw(v){
@@ -1062,14 +1104,6 @@ catch(err){
 }
 window.__maioShellDone = true;   // the shell ran to the end: the pre-guard's error net is no longer needed
 if(SHELL_BUILT){
-  /* A pre-data.js guard (if the data request had not finished in time) may already have
-     rendered the failure state and hidden the cockpit; undo that now that a real
-     snapshot has arrived, so the page is never half error-state and half booted. */
-  if(window.__maioDataFail){
-    ['desktop','dock','menunav'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display=''; });
-    const e=$('#dataerr'); if(e) e.remove();
-    window.__maioDataFail = false;
-  }
   if(DATA_OK){
     DATA_READY = true;
     if(!OPEN.size && !MOBILE) openWin('desk');
