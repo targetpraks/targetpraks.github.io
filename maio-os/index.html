@@ -272,10 +272,18 @@ const MOBILE = matchMedia('(max-width:760px)').matches;
    so restoring any earlier hits a TDZ ReferenceError (silently swallowed before). */
 function restoreLayout(){
   try{ const saved = JSON.parse(localStorage.getItem('maioos.layout')||'[]');
-    if(Array.isArray(saved) && saved.length){
-      /* mobile windows are CSS-forced full-screen: restore which ones were open, skip the geometry */
-      saved.forEach(o=>{ if(o && o.id && WINS[o.id]) openWin(o.id, MOBILE ? null : o); });
-    } }catch(_){}
+    if(!Array.isArray(saved)) return;
+    /* mobile windows are CSS-forced full-screen: restore which ones were open, skip the geometry */
+    saved.forEach(o=>{
+      if(!o || !o.id) return;
+      if(o.id==='detail'){
+        const p=(D.projects||[]).find(x=>x.name===o.project);
+        if(p) openDetail(p, MOBILE ? null : o);        // project gone from data.js → skip silently
+        return;
+      }
+      if(WINS[o.id] && !WINS[o.id].hidden) openWin(o.id, MOBILE ? null : o);
+    });
+  }catch(_){}
 }
 
 /* ---------- boot sequence ---------- */
@@ -380,34 +388,40 @@ function openWin(id, restore=null){
   persist(); dockSync();
 }
 function closeWin(id){ const w = OPEN.get(id); if(!w) return; w.el.remove(); OPEN.delete(id);
+  if(id==='detail') detailProject=null;
   if(focusedId===id) focusedId=null; persist(); dockSync(); focusTop(); }
 function minWin(id){ const w = OPEN.get(id); if(!w) return; w.geo = w.geo || rect(w.el); w.prev = {l:w.el.style.left,t:w.el.style.top}; w.el.style.display='none'; w.mode='min'; persist(); focusTop(); dockSync(); }
 /* geometry is stored relative to #desktop (the .win containing block); rect() converts any measurement */
 function dRect(){ const r=$('#desktop').getBoundingClientRect(); return {x:r.left, y:r.top}; }
 function rect(el){ const r=el.getBoundingClientRect(); const D=dRect();
   return {left:Math.round(r.left-D.x), top:Math.round(r.top-D.y), width:Math.round(r.width), height:Math.round(r.height)}; }
+/* fit [x,y] so a w×h box stays inside the desktop, and the box itself to the desktop.
+   Min sizes are relaxed when the desktop is smaller, so nothing is ever unreachable. */
+function fitRect(x, y, w, h){
+  const D=$('#desktop'); const vw=Math.max(1,D.clientWidth), vh=Math.max(1,D.clientHeight);
+  const W=Math.min(Math.max(w, Math.min(320, vw)), vw);
+  const H=Math.min(Math.max(h, Math.min(220, vh)), vh);
+  return {left:clamp(x!=null?x:6, 0, Math.max(0, vw-W)), top:clamp(y!=null?y:6, 0, Math.max(0, vh-H)), width:W, height:H};
+}
 function applyGeo(el, w, g){
   /* record a new geometry (g) or re-apply the stored one when g is empty */
   const next = {left:(g && g.left!=null)? g.left : w.geo?.left, top:(g && g.top!=null)? g.top : w.geo?.top,
                 width:(g && g.width!=null)? g.width : w.geo?.width, height:(g && g.height!=null)? g.height : w.geo?.height};
-  w.geo = next;
+  const cur = rect(el);
+  const fit = fitRect(next.left!=null?next.left:cur.left, next.top!=null?next.top:cur.top,
+                      next.width||cur.width, next.height||cur.height);
+  w.geo = fit;
   if(el.classList.contains('max')) return;
-  const D=$('#desktop'); const vw=D.clientWidth, vh=D.clientHeight; const cur=rect(el);
-  const W=clamp(next.width||cur.width, 320, Math.max(320, vw));
-  const H=clamp(next.height||cur.height, 220, Math.max(220, vh));
-  el.style.width=W+'px'; el.style.height=H+'px';
-  el.style.left=clamp(next.left!=null?next.left:cur.left, -40, Math.max(0, vw-60))+'px';
-  el.style.top =clamp(next.top !=null?next.top :cur.top , 0, Math.max(0, vh-40))+'px';
+  el.style.width=fit.width+'px'; el.style.height=fit.height+'px';
+  el.style.left=fit.left+'px'; el.style.top=fit.top+'px';
 }
 function applyMax(el, w){ if(!w.geo) w.geo=rect(el); w.mode='max'; el.classList.add('max'); }
 function maxWin(id){ const w = OPEN.get(id); if(!w) return; const el=w.el;
   if(el.classList.contains('max')){
     el.classList.remove('max'); w.mode='normal';
-    const D=$('#desktop'); const g=w.geo||{};
-    el.style.width=clamp(g.width||640, 320, Math.max(320, D.clientWidth))+'px';
-    el.style.height=clamp(g.height||420, 220, Math.max(220, D.clientHeight))+'px';
-    el.style.left=clamp(g.left!=null?g.left:6, -40, Math.max(0, D.clientWidth-60))+'px';
-    el.style.top =clamp(g.top !=null?g.top :6, 0, Math.max(0, D.clientHeight-40))+'px';
+    const D=$('#desktop'); const g=w.geo||{}; const fit=fitRect(g.left, g.top, g.width||640, g.height||420);
+    el.style.width=fit.width+'px'; el.style.height=fit.height+'px';
+    el.style.left=fit.left+'px'; el.style.top=fit.top+'px'; w.geo=fit;
   } else { applyMax(el, w); }
   persist(); }
 function focusWin(id){ const w=OPEN.get(id); if(!w) return; if(w.mode==='min'){ w.el.style.display=''; w.mode='normal'; if(w.prev){w.el.style.left=w.prev.l; w.el.style.top=w.prev.t;} }
@@ -416,11 +430,25 @@ function focusTop(){ let best=null; for(const [id,w] of OPEN){ if(w.mode!=='min'
   focusedId = best? best[0] : null; dockSync(); }
 function persist(){
   try{
+    /* previous entries, so mobile can preserve a desktop-saved layout instead of
+       writing back the full-screen geometry the mobile stylesheet forces. */
+    const prev={};
+    try{ JSON.parse(localStorage.getItem('maioos.layout')||'[]').forEach(e=>{ if(e&&e.id) prev[e.id]=e; }); }catch(_){}
     const out=[];
     for(const [id,w] of OPEN){
-      if(id.indexOf('detail-')===0) continue;   // transient project-detail windows cannot be rebuilt from storage
-      const g = w.geo || rect(w.el);
-      out.push({id, left:g.left, top:g.top, width:g.width, height:g.height, max: w.mode==='max'||w.el.classList.contains('max')});
+      let g, max;
+      if(MOBILE){
+        const p=prev[id];
+        g = p ? {left:p.left, top:p.top, width:p.width, height:p.height}
+              : {left:null, top:null, width:(WINS[id]&&WINS[id].w)||640, height:(WINS[id]&&WINS[id].h)||480};
+        max = p ? !!p.max : false;
+      } else {
+        g = w.geo || rect(w.el);
+        max = w.mode==='max'||w.el.classList.contains('max');
+      }
+      const e={id, left:g.left, top:g.top, width:g.width, height:g.height, max};
+      if(id==='detail' && detailProject) e.project = detailProject.name;   // so the detail can be rebuilt
+      out.push(e);
     }
     localStorage.setItem('maioos.layout', JSON.stringify(out));
   }catch(_){}
@@ -432,14 +460,19 @@ function startDrag(ev, el, id){ if(MOBILE) return; if(ev.target.closest('.wl')) 
   const w = OPEN.get(id); if(w.mode==='min') return;
   const sx=ev.clientX, sy=ev.clientY, ol=parseFloat(el.style.left)||0, ot=parseFloat(el.style.top)||0;
   el.setPointerCapture?.(ev.pointerId);
-  const mv = e => { el.style.left = clamp(ol + e.clientX - sx, -40, innerWidth-60) + 'px';
-                    el.style.top  = clamp(ot + e.clientY - sy, 0, innerHeight-140) + 'px'; };
+  const mv = e => {
+    const D=$('#desktop'); const vw=D.clientWidth, vh=D.clientHeight; const W=el.offsetWidth, H=el.offsetHeight;
+    el.style.left = clamp(ol + e.clientX - sx, 0, Math.max(0, vw-W)) + 'px';
+    el.style.top  = clamp(ot + e.clientY - sy, 0, Math.max(0, vh-H)) + 'px'; };
   const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); applyGeo(el, w, rect(el)); persist(); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up); }
 function startResize(ev, el, id){ ev.preventDefault(); ev.stopPropagation();
   const sw=el.offsetWidth, sh=el.offsetHeight, sx=ev.clientX, sy=ev.clientY;
-  const mv = e => { el.style.width = clamp(sw + e.clientX - sx, 320, innerWidth-8) + 'px';
-                    el.style.height = clamp(sh + e.clientY - sy, 220, innerHeight-8) + 'px'; };
+  const mv = e => {
+    const D=$('#desktop'); const vw=D.clientWidth, vh=D.clientHeight;
+    const left=parseFloat(el.style.left)||0, top=parseFloat(el.style.top)||0;
+    el.style.width  = clamp(sw + e.clientX - sx, Math.min(320, vw), Math.max(0, vw-left)) + 'px';
+    el.style.height = clamp(sh + e.clientY - sy, Math.min(220, vh), Math.max(0, vh-top)) + 'px'; };
   const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); applyGeo(el, OPEN.get(id), rect(el)); persist(); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up); }
 
@@ -456,7 +489,7 @@ function renderDesk(){
       <button class="copy" data-report="${escAttr(r.path)}">path ⧉</button></div>`).join('') || '<div class="empty">nothing yet</div>'}</div>
     <div class="sect">Newest activity in projects</div>
     <div class="pgrid">${big.map(p=>`
-      <div class="pcard" data-openproject="${escAttr(p.name)}" role="button" tabindex="0">
+      <div class="pcard" data-detail='${escAttr(JSON.stringify(p))}' role="button" tabindex="0">
         <div class="pn">${esc(p.name)} <span class="fam ${p.family}">${p.family}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>
         <div class="pw">${esc(p.what)}</div>
         <div class="pm"><span>${agoTxt(p.lastTouched)}</span>${p.artifact?`<span>· ${p.artifact.ext||'—'} ${p.artifact.kb}KB</span>`:''}</div>
@@ -469,7 +502,7 @@ function renderProjects(){
     .filter(p=>projFilter==='all' || p.family===projFilter)
     .sort((a,b)=>(b.lastTouched||'').localeCompare(a.lastTouched||''));
   return `
-    <input class="searchbox" data-filter="projects" placeholder="Filter ${S.projects??0} projects…" autocomplete="off" spellcheck="false">
+    <input class="searchbox" data-filter="projects" placeholder="Filter ${S.projects??0} projects…" autocomplete="off" spellcheck="false" value="${escAttr(__projq||'')}">
     <div class="chiprow">${fams.map(f=>`<button class="chip ${projFilter===f?'on':''}" data-fam="${f}">${f}</button>`).join('')}</div>
     <div class="pgrid">${list.filter(p=>{const q=(__projq||'').toLowerCase(); const hay=(p.name+' '+p.what+' '+p.family).toLowerCase(); return hay.includes(q);}).map(p=>`
       <div class="pcard" tabindex="0" role="button" data-detail='${escAttr(JSON.stringify(p))}'>
@@ -479,7 +512,7 @@ function renderProjects(){
         ${p.family==='venture'&&p.priority?`<span>· ⭐ ${esc(p.priority)}</span>`:(p.artifact?`<span>· ${p.artifact.ext||'—'} ${p.artifact.kb}KB</span>`:'')}</div>
       </div>`).join('') || '<div class="empty">no matches</div>'}</div>`;
 }
-let detailSeq = 0;
+let detailProject = null;
 function renderDetail(p){
   const a = p.artifact || {};
   const row = (k,v) => `<div class="drow"><span class="dk">${esc(k)}</span><span class="dv">${v}</span></div>`;
@@ -490,7 +523,10 @@ function renderDetail(p){
   h += row('Last touch', `${esc(fmtDate(p.lastTouched))} <span style="color:var(--dim2)">· ${esc(agoTxt(p.lastTouched))}</span>`);
   if(p.status) h += row('Status', esc(p.status));
   if(p.priority) h += row('Priority', '⭐ ' + esc(p.priority));
-  h += row('PRD', p.hasPRD ? (p.prdNewest ? esc(fmtDate(p.prdNewest)) : 'yes') : 'none');
+  const pn = p.prdNewest;                                   // {path,date} | date string | null
+  const pnDate = pn && typeof pn==='object' ? pn.date : (typeof pn==='string' ? pn : null);
+  const pnPath = pn && typeof pn==='object' ? pn.path : null;
+  h += row('PRD', p.hasPRD ? (pnDate ? esc(fmtDate(pnDate)) : 'yes')+(pnPath?` <code>${esc(pnPath)}</code>`:'') : 'none');
   if(p.what) h += row('What', esc(p.what));
   if(p.root) h += row('Root', `<code>${esc(p.root)}</code>`);
   if(a.path) h += row('Artifact', `<code>${esc(a.path)}</code>${a.ext?` <span style="color:var(--dim2)">${esc(a.ext)}${a.kb!=null?' · '+esc(a.kb)+' KB':''}</span>`:''}`);
@@ -498,13 +534,25 @@ function renderDetail(p){
   h += `</div>`;
   return h;
 }
-window.__detail = function(p){
+/* one detail window, reused and re-rendered — nothing accumulates as details open and close */
+WINS.detail = {title:'Project', icon:'▣', sub:'', hidden:true, w:640, h:480,
+               render:()=> detailProject ? renderDetail(detailProject) : '<div class="empty">no project</div>'};
+function openDetail(p, geo){
   if(!p) return;
-  const id = 'detail-' + (++detailSeq);
-  WINS[id] = {title:(p.name||'Project'), icon:'▣', sub:(p.family||'project'), render:()=>renderDetail(p), w:640, h:480};
-  openWin(id);
-  const w = OPEN.get(id); if(w){ $('.wtitle', w.el).textContent = '▣ ' + (p.name||'Project'); $('.wsub', w.el).textContent = (p.family||'project'); }
-};
+  detailProject = p;
+  const title = '▣ ' + (p.name||'Project'), fam = p.family||'project';
+  const w = OPEN.get('detail');
+  if(w){                                    // reuse: retitle + re-render for the newly picked project
+    $('.wtitle', w.el).textContent = title; $('.wsub', w.el).textContent = fam;
+    if(geo) applyGeo(w.el, w, geo);
+    w.rerender(true); focusWin('detail'); persist();
+    return;
+  }
+  openWin('detail', geo || null);
+  const nw = OPEN.get('detail');
+  if(nw){ $('.wtitle', nw.el).textContent = title; $('.wsub', nw.el).textContent = fam; }
+}
+window.__detail = function(p){ openDetail(p); };
 function renderAgents(){
   const rs = (D.roster||[]).slice().sort((a,b)=>(b.latest?.date||'').localeCompare(a.latest?.date||''));
   return `<div class="sect">Roster · latest output</div>
@@ -517,7 +565,7 @@ function renderAgents(){
 }
 function renderReports(){
   const reps=(D.reports||[]).slice();
-  return `<input class="searchbox" data-filter="reports" placeholder="Filter reports by agent / path…" autocomplete="off" spellcheck="false">
+  return `<input class="searchbox" data-filter="reports" placeholder="Filter reports by agent / path…" autocomplete="off" spellcheck="false" value="${escAttr(__repq||'')}">
   <div class="rows">${reps.filter(r=>{const q=(__repq||'').toLowerCase(); return (r.agent+' '+r.path).toLowerCase().includes(q);}).map(r=>`
     <div class="rrow"><span class="ra">${esc(r.agent)}</span><span class="rp">${esc(r.path)}</span>
     <span class="rd">${fmtDate(r.date)} · ${r.ext||'—'} ${r.kb}KB</span>
@@ -578,7 +626,7 @@ function renderDock(){
 let cmdIdx = 0, cmdItems = [];
 function buildIndex(){
   const ix = [];
-  Object.entries(WINS).forEach(([id,w])=>ix.push({k:'open', t:'Open ' + w.title, d:'window', act:()=>openWin(id)}));
+  Object.entries(WINS).forEach(([id,w])=>{ if(w.hidden) return; ix.push({k:'open', t:'Open ' + w.title, d:'window', act:()=>openWin(id)}); });
   (D.projects||[]).forEach(p=>ix.push({k:p.family, t:p.name, d:(p.lastTouched?agoTxt(p.lastTouched):''), act:()=>{ openWin('projects'); setTimeout(()=>window.__detail(p),30); }}));
   (D.roster||[]).forEach(a=>ix.push({k:'agent', t:a.name, d:(a.latest?('→ '+fmtDate(a.latest.date)):''), act:()=>openWin('agents')}));
   (D.prds||[]).forEach(p=>ix.push({k:'prd', t:p.title, d:p.project, act:()=>openWin('prds')}));
@@ -586,8 +634,7 @@ function buildIndex(){
   ix.push({k:'action', t:'About the roadmap', d:'⌘K', act:()=>openWin('about')});
   return ix;
 }
-const INDEX = [];
-function buildIndexNow(){ INDEX.length=0; INDEX.push(...buildIndex()); }
+const INDEX = buildIndex();
 function showCmd(){ $('#cmdbar-wrap').classList.add('show'); const i=$('#cmdinput'); i.value=''; cmdUpdate(''); i.focus(); }
 function hideCmd(){ $('#cmdbar-wrap').classList.remove('show'); }
 function cmdUpdate(q){
@@ -619,7 +666,6 @@ addEventListener('keydown', e => { if((e.metaKey||e.ctrlKey) && e.key.toLowerCas
 document.addEventListener('click', e => {
   const cp = e.target.closest('[data-report]'); if(cp){ navigator.clipboard?.writeText(cp.dataset.report).catch(()=>{}); const t=cp.textContent; cp.textContent='copied ✓'; setTimeout(()=>cp.textContent=t, 900); return; }
   const cd = e.target.closest('.pcard[data-detail]'); if(cd){ try{ window.__detail(JSON.parse(cd.dataset.detail)); }catch(_){ } return; }
-  const oq = e.target.closest('[data-openproject]'); if(oq){ openWin('projects'); setTimeout(()=>{ const c=[...document.querySelectorAll('.win[data-win=projects] .pcard')].find(x=>{ try{ return JSON.parse(x.dataset.detail).name===oq.dataset.openproject; }catch(_){ return false; } }); if(c) c.click(); }, 40); return; }
 });
 document.addEventListener('keydown', e => { if(e.key==='Enter'){ const dp=e.target.closest?.('.pcard[data-detail]'); if(dp){ try{ window.__detail(JSON.parse(dp.dataset.detail)); }catch(_){}} } });
 let __projq='', __repq='';
@@ -639,7 +685,7 @@ document.addEventListener('input', e => {
 function tick(){ const el=$('#clock'); if(el){ const n=new Date(); el.textContent = n.toLocaleTimeString('en-ZA',{hour12:false}); } }
 tick(); setInterval(tick, 1000);
 $('#genned').textContent = 'data: ' + (D.meta?.generatedAt || '—');
-renderDesklets(); renderDock(); dockClear(); buildIndexNow();
+renderDesklets(); renderDock(); dockClear();
 restoreLayout();
 function dockClear(){ const d=$('#dock'); if(!d) return; const cs=getComputedStyle(d);
   const clr = Math.round(parseFloat(cs.bottom||'0') + d.offsetHeight + (parseFloat(cs.marginBottom||'0')||0) + 10);
