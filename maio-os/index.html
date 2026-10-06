@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Maio OS — the household cockpit</title>
 <meta name="description" content="One sky-rim window over the whole Maio household: projects, agent reports, PRDs, live stack truth.">
 <meta name="theme-color" content="#080b12">
@@ -59,9 +59,12 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 .errbox .errhint{font-size:.8rem;color:var(--dim2);margin-bottom:0}
 
 /* ============ TOPBAR ============ */
+/* Desktop keeps the exact 40px bar. On a phone the bar sits under the status bar / notch:
+   the mobile block adds env(safe-area-inset-top) to its height and pads with the same
+   inset here, so the content always clears the system UI. */
 #topbar{position:fixed;top:0;left:0;right:0;height:40px;z-index:100;display:flex;align-items:center;gap:14px;
-        padding:0 14px;background:rgba(8,11,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-#logo{font-family:var(--grot);font-weight:600;font-size:.95rem;color:var(--ink);letter-spacing:-.01em;white-space:nowrap}
+        padding:env(safe-area-inset-top,0px) 14px 0;background:rgba(8,11,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+#logo{font-family:var(--grot);font-weight:600;font-size:.95rem;color:var(--ink);letter-spacing:-.01em;white-space:nowrap;flex:none}
 #logo em{font-style:normal;color:var(--gold)}
 .menubtn{font-size:.8rem;color:var(--dim);padding:3px 9px;border-radius:6px;white-space:nowrap}
 .menubtn:hover{background:var(--panel2);color:var(--ink)}
@@ -70,9 +73,28 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
         padding:4px 10px;border-radius:7px;background:var(--panel)}
 #cmdbtn:hover{color:var(--ink);border-color:var(--gold-dim)}
 #clock{white-space:nowrap}
+#genned{white-space:nowrap}
 #genned.stale{color:var(--warn);font-weight:500}
 #genned.fresh{color:var(--ok)}
 #genned.unknown{color:var(--dim)}
+
+/* ============ VITALS STRIP (mobile) ============ */
+/* Shown only on phones, where the desklets are hidden. One line of live numbers built
+   from the same values the desktop desklets show — same STACK counts, same snapshot age,
+   same project/agent/report counts — so there is one source of truth for each figure.
+   Hidden on desktop, so desktop rendering is untouched. */
+#vitals{position:fixed;top:40px;left:0;right:0;height:34px;z-index:99;display:none;align-items:center;
+        padding:0 12px;gap:10px;background:rgba(11,15,24,.92);backdrop-filter:blur(12px);
+        border-bottom:1px solid var(--line);font-family:var(--mono);font-size:.68rem;color:var(--dim2);
+        white-space:nowrap;overflow:hidden}
+#vitals .vsep{width:1px;height:14px;background:var(--line2);flex:none}
+#vitals .vitem{flex:none;display:flex;align-items:center;gap:5px}
+#vitals b{font-weight:500}
+#vitals .vok{color:var(--ok)} #vitals .vwarn{color:var(--warn)} #vitals .vbad{color:var(--bad)}
+#vitals .vink{color:var(--ink)} #vitals .vdim{color:var(--dim2)}
+/* only the labels shrink and clip; the numbers never move, so a narrow phone drops
+   words, not digits. Nothing here can push the strip past one line. */
+#vitals .vcap{overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
 
 /* ============ DESKTOP / DESKLETS ============ */
 #desktop{position:fixed;top:40px;left:0;right:0;bottom:var(--dock-clear,64px);overflow:hidden}
@@ -95,18 +117,37 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 .bigstat b.ok{color:var(--ok)} .bigstat b.warn{color:var(--warn)}
 
 /* ============ DOCK ============ */
+/* Design choice (PR3): the dock always SCROLLS inside itself once the buttons cannot all
+   fit, rather than squeezing labels or dropping buttons.
+   - Why: PR1 fixed the full, untruncated labels ("The Desk", "About / Roadmap"), so the
+     buttons have a real minimum width; at 360-430px eight of them cannot fit at 44x44 even
+     with zero padding. Scrolling keeps every label whole and every hit area >= 44x44
+     (item 4), which squeezing would not.
+   - Affordance: a short bar under the dock (#scroller) whose thumb tracks the real scroll
+     position and which appears only while the dock overflows. At 1440px nothing overflows,
+     so the cue is absent and desktop is unchanged.
+   - The dock is centred with left:50% + translateX(-50%) so it stays centred when it fits
+     and when it scrolls. */
 #dock{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:6px;align-items:center;
       max-width:calc(100vw - 20px);overflow-x:auto;background:rgba(16,21,31,.85);backdrop-filter:blur(14px);border:1px solid var(--line2);
       border-radius:16px;padding:7px}
-.dockbtn{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;padding:8px 10px;border-radius:11px;
-         color:var(--dim);font-size:.66rem;letter-spacing:.02em;transition:background .15s,color .15s}
+.dockbtn{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;min-height:44px;padding:8px 10px;border-radius:11px;
+         color:var(--dim);font-size:.66rem;letter-spacing:.02em;transition:background .15s,color .15s;flex:none}
 .dockbtn span{white-space:nowrap}
 .dockbtn:hover{background:var(--panel2);color:var(--ink)}
 .dockbtn .di{font-size:1.05rem}
 .dockbtn.active{color:var(--gold)}
 .dockbtn .dot{width:4px;height:4px;border-radius:50%;background:transparent}
 .dockbtn.open .dot{background:var(--gold)}
-.docksep{width:1px;height:34px;background:var(--line2);margin:0 4px}
+.docksep{width:1px;height:34px;background:var(--line2);margin:0 4px;flex:none}
+
+/* ============ SCROLL HINT (dock overflow indicator) ============ */
+/* A short centred bar under the dock, shown only while the dock overflows (the .show
+   class is set in JS). It is a passive "there is more" cue, never a control. */
+#scroller{position:fixed;bottom:calc(1px + var(--sab,0px));left:50%;transform:translateX(-50%);z-index:100;
+          height:3px;display:none;border-radius:3px;background:rgba(42,54,72,.9);overflow:hidden}
+#scroller.show{display:block}
+#scroller i{display:block;height:100%;border-radius:3px;background:var(--gold-dim)}
 
 /* ============ WINDOWS ============ */
 .win{position:absolute;min-width:320px;min-height:220px;background:var(--bg2);border:1px solid var(--line2);border-radius:13px;
@@ -204,14 +245,50 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 
 /* ============ MOBILE ============ */
 @media (max-width:760px){
-  .desklets{grid-template-columns:1fr;top:14px;left:14px;right:14px;max-width:none}
-  .win{left:4px!important;right:4px!important;top:6px!important;bottom:0!important;width:auto!important;height:auto!important;min-width:0;border-radius:12px 12px 0 0}
-  .winbar{cursor:default}
+  :root{ --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+         --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px); }
+  /* The vitals strip sits under the safe-area-padded top bar; the desktop starts at the
+     same 82px, so a phone window (which is pinned to the desktop's top) clears it. The
+     bar is 48px tall here — the 44px Search control needs a bar it can sit inside. */
+  #topbar{height:48px}
+  #vitals{display:flex;top:calc(48px + var(--sat))}
+  .desklets{display:none}
+  #desktop{top:calc(82px + var(--sat));bottom:var(--dock-clear,64px)}
+  .win{left:var(--sal)!important;right:var(--sar)!important;top:0!important;bottom:0!important;
+       width:auto!important;height:auto!important;min-width:0;border-radius:12px 12px 0 0}
+  .winbar{cursor:default;min-height:44px;gap:4px;padding:0 8px}
   .winresize{display:none}
-  #dock{max-width:calc(100vw - 12px);overflow-x:auto}
+  #dock{max-width:calc(100vw - 20px - var(--sal) - var(--sar));overflow-x:auto;bottom:calc(10px + var(--sab))}
   .menubtn{display:none}
+  /* The top-bar snapshot label is dropped here: the vitals strip carries the same
+     snapshot age, live, so the bar has room for a real 44x44 Search control. */
+  #genned{display:none}
+  #cmdbtn{padding:0 14px;min-width:44px;min-height:44px;justify-content:center}
+  #cmdbtn kbd{display:none}
   .tb-right{gap:8px}
+  #topbar{gap:10px;padding-left:calc(14px + var(--sal));padding-right:calc(14px + var(--sar))}
+  /* 44x44 lights: the coloured dot is drawn by ::after so the hit box can be full size
+     and the three controls still read as traffic lights. The hit box stays inside the
+     window, so it never overlaps the title-bar drag area or the neighbouring lights. */
+  .wl{width:44px;height:44px;min-width:44px;background:none;position:relative;flex:none}
+  .wl.wclose:hover,.wl.wmin:hover,.wl.wmax:hover{background:none}
+  .wl::after{content:'';position:absolute;top:50%;left:50%;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;
+             border-radius:50%;background:var(--line2)}
+  .wl.wclose:hover::after{background:var(--bad)} .wl.wmin:hover::after{background:var(--warn)} .wl.wmax:hover::after{background:var(--ok)}
+  /* body controls: 44x44 minimum, no overlap (cards/rows are block-level, so a taller
+     row pushes the next one down instead of overlapping it) */
+  .searchbox{min-height:44px}
+  .pcard{min-height:44px;padding:14px 15px}
+  .chip{min-height:44px;min-width:44px;padding:12px;display:inline-flex;align-items:center;justify-content:center}
+  .copy{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px}
+  .rrow{min-height:44px;padding:8px 10px}
+  .rrow .copy{align-self:stretch}
+  .agc{min-height:44px;padding:12px 14px}
+  .svc{min-height:44px}
+  .svc .sp a{min-height:44px;display:inline-flex;align-items:center}
+  .cmdrow{min-height:44px;padding:8px 12px}
 }
+
 </style>
 </head>
 <body>
@@ -235,6 +312,8 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
   </div>
 </header>
 
+<div id="vitals" role="status" aria-label="Household vitals"></div>
+
 <main id="desktop">
   <svg id="skyrim" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -254,6 +333,7 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 </main>
 
 <nav id="dock" aria-label="Dock"></nav>
+<div id="scroller" aria-hidden="true"><i></i></div>
 
 <div id="cmdbar-wrap">
   <div id="cmdbar" role="dialog" aria-label="Command bar">
@@ -493,6 +573,9 @@ const STACK = (()=>{ let ok=0,warn=0,bad=0;
 const SNAP_RAW = one(()=>str(DATA.meta.generatedAt), '');
 const SNAP_AGE = one(()=>ageDays(SNAP_RAW), null);
 const SNAP_STALE = SNAP_AGE!==null && SNAP_AGE>1;
+/* dev-server counts: read once and reused by the desklets, the boot log and the phone
+   vitals strip, so all three can only ever agree. */
+const DEV_ON = snum('devOnline',0), DEV_TOTAL = snum('devTotal', DATA.devServers.length);
 
 /* renderers are wrapped so one bad view degrades to a message instead of a blank window */
 function safeHtml(fn, fallback){
@@ -538,7 +621,7 @@ let bootTimer = null, BOOT_WATCHDOG = null, bootStarted = false;
 function startBoot(){
   bootStarted = true;
   if(!bootLog) return;
-  const devOn = snum("devOnline",0), devTotal = snum("devTotal", DATA.devServers.length);
+  const devOn = DEV_ON, devTotal = DEV_TOTAL;
   const lines = [
     ['dim','maio.os 1.0 · orchestrator build'],
     ['ok',`stack probe ......... ${STACK.ok}/${STACK.total} clean · ${STACK.warn} non-2xx · ${STACK.bad} down`],
@@ -651,8 +734,7 @@ function renderDesklets(){
   if(MOBILE){ area.style.display='none'; return; }
   const rows = DATA.stack.slice(0,5).map(s => { const p=svcPill(s);
     return `<div class="vrow"><span class="nm">${esc(s.name)}</span><span class="vl pill ${p.cls}">${esc(p.txt)}</span></div>`; }).join('');
-  const devOn = snum("devOnline",0), devTotal = snum("devTotal", DATA.devServers.length);
-  const dark = Math.max(0, DATA.devServers.length - devOn);
+  const dark = Math.max(0, DATA.devServers.length - DEV_ON);
   const snapColour = SNAP_STALE ? 'var(--warn)' : (SNAP_AGE===null ? 'var(--dim)' : 'var(--ok)');
   area.innerHTML = `
     <div class="desklet"><h4>System vitals</h4>
@@ -661,7 +743,7 @@ function renderDesklets(){
         <div class="bs"><b class="warn">${STACK.warn}</b><span>△ alive · non-2xx</span></div>
         <div class="bs"><b class="${STACK.bad?'bad':''}">${STACK.bad}</b><span>✕ down</span></div>
       </div>
-      <div class="vrow" style="margin-top:8px"><span class="nm">dev servers</span><span class="vl">${devOn}/${devTotal}</span></div>
+      <div class="vrow" style="margin-top:8px"><span class="nm">dev servers</span><span class="vl">${DEV_ON}/${DEV_TOTAL}</span></div>
       <div class="vrow"><span class="nm">snapshot</span><span class="vl" style="color:${snapColour}">${esc(ageText(SNAP_RAW))}</span></div>
     </div>
     <div class="desklet"><h4>Services</h4>${rows || '<div class="empty">no probes</div>'}</div>
@@ -681,6 +763,44 @@ function renderGen(){
   el.title = 'meta.generatedAt: ' + (SNAP_RAW || '(missing)');
   el.classList.remove('fresh','stale','unknown');
   el.classList.add(SNAP_AGE===null ? 'unknown' : (SNAP_STALE ? 'stale' : 'fresh'));
+}
+
+/* ---------- mobile vitals strip ----------
+   One line, desktop numbers. Each figure is computed by the SAME variable or call the
+   desktop desklets use (STACK, ageText(SNAP_RAW), snum(...)) — so the strip can never
+   disagree with the Desk, and PR2's honest service states and stale-snapshot logic are
+   reused rather than re-derived. Hidden on desktop by CSS.
+
+   The strip fills itself highest-priority first and stops before the row would exceed its
+   own width, so it is single-line and never overflows at any phone width. Priority:
+   service health → snapshot age → projects → agents → reports → dev servers — the numbers
+   the audit asked for survive; only the lowest-priority words are ever dropped. */
+function renderVitals(){
+  const el = $('#vitals'); if(!el) return;
+  el.innerHTML = '';
+  if(!el.clientWidth) return;                        // hidden (desktop) → nothing to render
+  const snapCls = SNAP_STALE ? 'vwarn' : (SNAP_AGE===null ? 'vdim' : 'vok');
+  const item = h => `<span class="vitem">${h}</span>`;
+  /* A real separator between items: an aria-hidden divider (the visible tick) plus a
+     literal space. The space is a whitespace-only flex child, so it is not rendered, but
+     it keeps the DOM text "stack 6 2 0 | 1 day old …" readable to assistive tech and to
+     anything reading textContent. */
+  const sep = '<span class="vsep" aria-hidden="true"></span> ';
+  const items = [
+    item(`<span class="vcap vdim">stack</span> <b class="vok">${STACK.ok}</b> <b class="vwarn">${STACK.warn}</b> <b class="vbad">${STACK.bad}</b>`),
+    item(`<b class="${snapCls}">${esc(ageText(SNAP_RAW))}</b>`),
+    item(`<span class="vcap vdim">projects</span> <b class="vink">${snum('projects', DATA.projects.length)}</b>`),
+    item(`<span class="vcap vdim">agents</span> <b class="vink">${snum('roster', DATA.roster.length)}</b>`),
+    item(`<span class="vcap vdim">reports</span> <b class="vink">${snum('reports', DATA.reports.length)}</b>`),
+    item(`<span class="vcap vdim">dev</span> <b class="vink">${DEV_ON}/${DEV_TOTAL}</b>`),
+  ];
+  el.innerHTML = items[0];                            // the health counts are never dropped
+  for(let i=1;i<items.length;i++){
+    const prev = el.innerHTML;
+    el.innerHTML = prev + sep + items[i];
+    if(el.scrollWidth > el.clientWidth + 1){ el.innerHTML = prev; break; }   // would overflow → stop
+  }
+  el.setAttribute('aria-label', el.textContent.replace(/\s+/g,' ').trim());
 }
 
 /* starfield — deterministic */
@@ -1046,10 +1166,30 @@ function renderDock(){
     const w=OPEN.get(id); if(w && w.mode!=='min' && focusedId===id){ minWin(id); } else openWin(id); };
   $('#menunav').innerHTML = items.map(id=>`<button class="menubtn" data-open="${escAttr(id)}">${esc(WINS[id].title)}</button>`).join('');
   $('#menunav').onclick = e => { const b=e.target.closest('.menubtn'); if(b) openWin(b.dataset.open); };
+  dockHint();
 }
 function dockClear(){ const d=$('#dock'); if(!d) return; const cs=getComputedStyle(d);
-  const clr = Math.round(parseFloat(cs.bottom||'0') + d.offsetHeight + (parseFloat(cs.marginBottom||'0')||0) + 10);
+  const sab = parseFloat(cs.getPropertyValue('--sab'))||0;
+  const clr = Math.round(parseFloat(cs.bottom||'0') + d.offsetHeight + (parseFloat(cs.marginBottom||'0')||0) + 10 - sab);
   document.documentElement.style.setProperty('--dock-clear', Math.max(56, clr) + 'px'); }
+/* ---------- dock overflow affordance ----------
+   The dock scrolls inside itself when the buttons cannot all fit (phones). The cue is a
+   thin track under the dock whose thumb tracks the real scroll position; the track is
+   hidden entirely when nothing overflows, which is the case at 1440px, so desktop is
+   untouched. It is a passive indicator, never a control, and it changes no layout. */
+function dockHint(){
+  const d = $('#dock'), sc = $('#scroller'); if(!d || !sc) return;
+  const total = d.scrollWidth, view = d.clientWidth;
+  const overflowing = total - view > 1;                             // 0 → everything fits
+  sc.classList.toggle('show', overflowing);
+  if(!overflowing) return;
+  const max = total - view;
+  const frac = Math.min(1, Math.max(0, d.scrollLeft / max));
+  const w = Math.max(30, view * (view/total));
+  sc.style.width = w + 'px';
+  sc.style.left = (d.getBoundingClientRect().left + frac * (view - w)) + 'px';
+}
+$('#dock').addEventListener('scroll', dockHint);
 
 /* ---------- command palette ---------- */
 let cmdIdx = 0, cmdItems = [];
@@ -1133,11 +1273,12 @@ function initShell(){
      never creates an error node — on a healthy load it is a no-op. */
   ensureCockpitVisible();
   startBoot();
-  renderDesklets(); renderDock(); renderGen();
+  renderDesklets(); renderDock(); renderGen(); renderVitals();
   dockClear();                       // desktop bottom now reflects the real dock height
-  addEventListener('resize', dockClear);
+  addEventListener('resize', () => { dockClear(); renderVitals(); dockHint(); });
   one(restoreLayout, null);          // windows restore against the real desktop size
   one(deepLink, null);
+  dockHint();                        // the dock is laid out now → fade/track reflect reality
 }
 function describeRaw(v){
   if(v === undefined) return 'undefined — data.js did not load, or it failed to parse';
@@ -1158,7 +1299,12 @@ window.__maioShellDone = true;   // the shell ran to the end: the pre-guard's er
 if(SHELL_BUILT){
   if(DATA_OK){
     markReady();                 // one owner sets READY — and disarms a prior failure
-    if(!OPEN.size && !MOBILE) openWin('desk');
+    /* PR3: a first-time phone visitor lands on The Desk open, not an empty desktop.
+       A returning visitor is left alone whenever a layout is on this device at all —
+       including an empty one, which means "I closed everything" — so a phone visit can
+       never overwrite or damage a layout saved on desktop. */
+    const hadSaved = one(()=>Array.isArray(JSON.parse(localStorage.getItem('maioos.layout')||'null')), false);
+    if(!OPEN.size && (!MOBILE || !hadSaved)) openWin('desk');
   } else {
     /* no usable snapshot: one consistent outcome is the failure state, whichever
        route got us here (404, syntax error, null/array/string, or a throw) */
