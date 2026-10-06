@@ -59,11 +59,13 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 .errbox .errhint{font-size:.8rem;color:var(--dim2);margin-bottom:0}
 
 /* ============ TOPBAR ============ */
-/* Desktop keeps the exact 40px bar. On a phone the bar sits under the status bar / notch:
-   the mobile block adds env(safe-area-inset-top) to its height and pads with the same
-   inset here, so the content always clears the system UI. */
+/* Desktop keeps the exact 40px bar and no safe-area padding. On a phone the mobile block
+   sets height = 48px + env(safe-area-inset-top) and padding-top = the same inset, so the
+   border-box bottom edge is always 48 + inset and the 48px content area (and therefore the
+   44x44 Search control) sits fully below the inset. Everything below the bar derives from
+   that same 48 + inset value, so the geometry can never disagree. */
 #topbar{position:fixed;top:0;left:0;right:0;height:40px;z-index:100;display:flex;align-items:center;gap:14px;
-        padding:env(safe-area-inset-top,0px) 14px 0;background:rgba(8,11,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+        padding:0 14px;background:rgba(8,11,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 #logo{font-family:var(--grot);font-weight:600;font-size:.95rem;color:var(--ink);letter-spacing:-.01em;white-space:nowrap;flex:none}
 #logo em{font-style:normal;color:var(--gold)}
 .menubtn{font-size:.8rem;color:var(--dim);padding:3px 9px;border-radius:6px;white-space:nowrap}
@@ -123,14 +125,18 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
      buttons have a real minimum width; at 360-430px eight of them cannot fit at 44x44 even
      with zero padding. Scrolling keeps every label whole and every hit area >= 44x44
      (item 4), which squeezing would not.
-   - Affordance: a short bar under the dock (#scroller) whose thumb tracks the real scroll
-     position and which appears only while the dock overflows. At 1440px nothing overflows,
-     so the cue is absent and desktop is unchanged.
+   - Affordance: (a) an edge fade on the side that still has hidden buttons — the dock is
+     masked only on that side, driven by --dock-fade-l / --dock-fade-r; (b) a track+thumb
+     bar under the dock (#scroller) that appears only while the dock overflows. Both cues
+     disappear when there is nothing more to scroll (and entirely at 1440px, where nothing
+     overflows), so desktop is unchanged.
    - The dock is centred with left:50% + translateX(-50%) so it stays centred when it fits
      and when it scrolls. */
 #dock{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:6px;align-items:center;
-      max-width:calc(100vw - 20px);overflow-x:auto;background:rgba(16,21,31,.85);backdrop-filter:blur(14px);border:1px solid var(--line2);
-      border-radius:16px;padding:7px}
+      max-width:calc(100vw - 20px);overflow-x:auto;overflow-y:hidden;background:rgba(16,21,31,.85);backdrop-filter:blur(14px);border:1px solid var(--line2);
+      border-radius:16px;padding:7px;
+      -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 var(--dock-fade-l,0px),#000 calc(100% - var(--dock-fade-r,0px)),transparent 100%);
+      mask-image:linear-gradient(90deg,transparent 0,#000 var(--dock-fade-l,0px),#000 calc(100% - var(--dock-fade-r,0px)),transparent 100%)}
 .dockbtn{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:64px;min-height:44px;padding:8px 10px;border-radius:11px;
          color:var(--dim);font-size:.66rem;letter-spacing:.02em;transition:background .15s,color .15s;flex:none}
 .dockbtn span{white-space:nowrap}
@@ -142,12 +148,15 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 .docksep{width:1px;height:34px;background:var(--line2);margin:0 4px;flex:none}
 
 /* ============ SCROLL HINT (dock overflow indicator) ============ */
-/* A short centred bar under the dock, shown only while the dock overflows (the .show
-   class is set in JS). It is a passive "there is more" cue, never a control. */
-#scroller{position:fixed;bottom:calc(1px + var(--sab,0px));left:50%;transform:translateX(-50%);z-index:100;
-          height:3px;display:none;border-radius:3px;background:rgba(42,54,72,.9);overflow:hidden}
+/* A track under the dock with a distinctly coloured thumb: the thumb's width is the visible
+   fraction of the dock and its offset tracks scrollLeft from the start of the track to the
+   end. The bar is never transformed, so JS sets its `left` as a viewport coordinate and the
+   whole cue stays inside the viewport; it is shown only while the dock overflows (the .show
+   class is set in JS) and is aria-hidden, since the dock itself is the control. */
+#scroller{position:fixed;bottom:calc(1px + var(--sab,0px));z-index:100;height:4px;display:none;border-radius:2px;
+          background:rgba(42,54,72,.85);overflow:hidden;pointer-events:none}
 #scroller.show{display:block}
-#scroller i{display:block;height:100%;border-radius:3px;background:var(--gold-dim)}
+#scroller i{position:absolute;top:0;left:0;height:100%;border-radius:2px;background:var(--gold)}
 
 /* ============ WINDOWS ============ */
 .win{position:absolute;min-width:320px;min-height:220px;background:var(--bg2);border:1px solid var(--line2);border-radius:13px;
@@ -247,10 +256,10 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 @media (max-width:760px){
   :root{ --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
          --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px); }
-  /* The vitals strip sits under the safe-area-padded top bar; the desktop starts at the
-     same 82px, so a phone window (which is pinned to the desktop's top) clears it. The
-     bar is 48px tall here — the 44px Search control needs a bar it can sit inside. */
-  #topbar{height:48px}
+  /* The vitals strip sits directly under the safe-area-padded top bar, and the desktop /
+     window area starts at the same line the strip ends on (48 + inset + 34). Everything
+     below the bar derives from the one (48px + inset) value the bar is sized with. */
+  #topbar{height:calc(48px + var(--sat));padding-top:var(--sat)}
   #vitals{display:flex;top:calc(48px + var(--sat))}
   .desklets{display:none}
   #desktop{top:calc(82px + var(--sat));bottom:var(--dock-clear,64px)}
@@ -281,7 +290,10 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
   .pcard{min-height:44px;padding:14px 15px}
   .chip{min-height:44px;min-width:44px;padding:12px;display:inline-flex;align-items:center;justify-content:center}
   .copy{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px}
-  .rrow{min-height:44px;padding:8px 10px}
+  /* At the narrowest phone widths (320px) a Desk row can be a few px wider than the window
+     body; letting the row wrap keeps that inner content inside the body instead of scrolling
+     it. flex-wrap is inert whenever the row already fits (all widths from 360 up). */
+  .rrow{min-height:44px;padding:8px 10px;flex-wrap:wrap}
   .rrow .copy{align-self:stretch}
   .agc{min-height:44px;padding:12px 14px}
   .svc{min-height:44px}
@@ -364,7 +376,12 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
   function paintFail(detail){
     if(window.__maioState === 'ready') return;        // never replace a healthy cockpit
     boot.remove();
+    /* hide the cockpit, and empty+hide the vitals status region so a stale "stack 0 0 0"
+       is never announced behind the error overlay (the shell restores it on recovery) */
     ['desktop','dock','menunav'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+    var vsc = document.getElementById('scroller'); if(vsc) vsc.style.display = 'none';
+    var v = document.getElementById('vitals');
+    if(v){ v.style.display = 'none'; v.textContent = ''; v.removeAttribute('aria-label'); }
     var e = document.getElementById('dataerr');
     if(!e){
       e = document.createElement('div'); e.id = 'dataerr'; e.setAttribute('role','alert');
@@ -670,13 +687,16 @@ function markFailed(detail){
 /* un-hide the cockpit after any failure paint — used on BFCache restore. Never creates
    an error node and never changes the ready/failed decision. */
 function ensureCockpitVisible(){
-  ['desktop','dock','menunav'].forEach(id => {
+  ['desktop','dock','menunav','vitals'].forEach(id => {
     const el = document.getElementById(id);
     if(el && el.style.display === 'none') el.style.display = '';
   });
+  const sc = document.getElementById('scroller'); if(sc) sc.style.display = '';
   if(window.__maioDataFail){
     const e = document.getElementById('dataerr'); if(e) e.remove();
     window.__maioDataFail = false;
+    /* the failure state cleared the vitals strip; repaint it now that data is real again */
+    one(renderVitals, null);
   }
 }
 /* plain-language failure state — never a healthy-looking empty cockpit */
@@ -690,7 +710,12 @@ function showDataError(detail){
   try{
     const b=$('#boot'); if(b && b.isConnected) b.remove();   // no fade: the failure must read immediately
     const hide = el => { if(el) el.style.display='none'; };
-    hide($('#desktop')); hide($('#dock')); hide($('#menunav')); hide($('#cmdbar-wrap'));
+    hide($('#desktop')); hide($('#dock')); hide($('#menunav')); hide($('#cmdbar-wrap')); hide($('#scroller'));
+    /* The vitals strip is a role="status" region: leaving it in the DOM behind the error
+       overlay would announce healthy-looking zeros ("stack 0 0 0"). Hide it AND empty it,
+       so it is neither visible nor in the accessibility tree. markReady() puts it back. */
+    const v = $('#vitals');
+    if(v){ v.style.display = 'none'; v.textContent = ''; v.removeAttribute('aria-label'); }
     let e = $('#dataerr');
     if(!e){ e=document.createElement('div'); e.id='dataerr'; e.setAttribute('role','alert'); document.body.appendChild(e); }
     e.innerHTML =
@@ -1168,26 +1193,46 @@ function renderDock(){
   $('#menunav').onclick = e => { const b=e.target.closest('.menubtn'); if(b) openWin(b.dataset.open); };
   dockHint();
 }
-function dockClear(){ const d=$('#dock'); if(!d) return; const cs=getComputedStyle(d);
-  const sab = parseFloat(cs.getPropertyValue('--sab'))||0;
-  const clr = Math.round(parseFloat(cs.bottom||'0') + d.offsetHeight + (parseFloat(cs.marginBottom||'0')||0) + 10 - sab);
+/* Clearance between the bottom of #desktop (where windows are pinned) and the dock: the
+   dock's own measured top edge plus a 10px breathing gap, so the safe-area inset is counted
+   exactly once — it is already part of the dock's `bottom: 10px + var(--sab)`. Measured from
+   the rect rather than recomputed from CSS, so it is correct for any inset value including
+   0. A window's bottom edge therefore lands 10px above the dock's top edge. */
+const DOCK_GAP = 10;
+function dockClear(){ const d=$('#dock'); if(!d) return;
+  const top = d.getBoundingClientRect().top;
+  const clr = Math.round(innerHeight - top) + DOCK_GAP;
   document.documentElement.style.setProperty('--dock-clear', Math.max(56, clr) + 'px'); }
 /* ---------- dock overflow affordance ----------
-   The dock scrolls inside itself when the buttons cannot all fit (phones). The cue is a
-   thin track under the dock whose thumb tracks the real scroll position; the track is
-   hidden entirely when nothing overflows, which is the case at 1440px, so desktop is
-   untouched. It is a passive indicator, never a control, and it changes no layout. */
+   The dock scrolls inside itself when the buttons cannot all fit (phones). Two cues, both
+   absent when there is nothing more to scroll (and entirely at 1440px, where nothing
+   overflows):
+     1. an edge fade on the side that still hides buttons — the dock's mask is transparent
+        at an edge only while that side has content (--dock-fade-l / --dock-fade-r);
+     2. a track + thumb bar under the dock: thumb width = the visible fraction of the dock,
+        thumb offset = scrollLeft from the start of the scrollable range to the end.
+   The bar is placed in viewport coordinates with left/width only (no transform), and its
+   extent is taken from the dock's measured rect, so it always sits inside the viewport,
+   flush under the dock. Nothing here changes layout. */
 function dockHint(){
   const d = $('#dock'), sc = $('#scroller'); if(!d || !sc) return;
   const total = d.scrollWidth, view = d.clientWidth;
-  const overflowing = total - view > 1;                             // 0 → everything fits
-  sc.classList.toggle('show', overflowing);
-  if(!overflowing) return;
   const max = total - view;
+  const overflowing = max > 1;                                      // 0 → everything fits
+  sc.classList.toggle('show', overflowing);
+  if(!overflowing){ d.style.removeProperty('--dock-fade-l'); d.style.removeProperty('--dock-fade-r'); return; }
+  /* edge fades: 22px while that side still has hidden content, 0 once it is reached */
+  d.style.setProperty('--dock-fade-l', Math.min(22, d.scrollLeft) + 'px');
+  d.style.setProperty('--dock-fade-r', Math.min(22, max - d.scrollLeft) + 'px');
+  /* track+thumb, in viewport coordinates */
+  const r = d.getBoundingClientRect();
   const frac = Math.min(1, Math.max(0, d.scrollLeft / max));
-  const w = Math.max(30, view * (view/total));
-  sc.style.width = w + 'px';
-  sc.style.left = (d.getBoundingClientRect().left + frac * (view - w)) + 'px';
+  const track = r.width;
+  const thumb = Math.min(track, Math.max(28, track * (view/total)));
+  sc.style.left = r.left + 'px';
+  sc.style.width = track + 'px';
+  const i = sc.firstElementChild;
+  if(i){ i.style.width = thumb + 'px'; i.style.left = (frac * (track - thumb)) + 'px'; }
 }
 $('#dock').addEventListener('scroll', dockHint);
 
