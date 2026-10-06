@@ -369,7 +369,6 @@ function openWin(id, restore=null){
   el.style.width = w+'px'; el.style.height = h+'px';
   el.style.left = clamp(vw/2 - w/2 + off, 6, Math.max(6, vw - w - 6)) + 'px';
   el.style.top = clamp((vh - h)/2 - 20 + off, 6, Math.max(6, vh - h - 6)) + 'px';
-  if(MOBILE){ el.classList.add('max'); }
   el.innerHTML = `
     <div class="winbar">
       <div class="wlights">
@@ -383,14 +382,15 @@ function openWin(id, restore=null){
     <div class="winbody"></div>
     <div class="winresize" aria-hidden="true"></div>`;
   $('#winlayer').appendChild(el);
-  const inst = {el, mode:'normal', prev:null, geo:(restore && restore.max)?{left:restore.left, top:restore.top, width:restore.width, height:restore.height}:null};
+  const inst = {el, mode:'normal', state:'normal', prev:null, geo:(restore && restore.max)?{left:restore.left, top:restore.top, width:restore.width, height:restore.height}:null};
   OPEN.set(id, inst);
   /* per-instance renderer — never on the shared WINS[id], so two windows can't clobber each other */
   inst.rerender = (sync=false) => { const b = $('.winbody', el); if(!b) return;
     if(sync){ b.innerHTML = def.render(id); return; }
     b.innerHTML = '<div class="empty">loading…</div>'; setTimeout(()=>{ if(el.isConnected) b.innerHTML = def.render(id); }, 0); };
-  if(restore){ applyGeo(el, inst, restore); if(restore.max) applyMax(el, inst); }
-  else if(MOBILE){ applyMax(el, inst); }
+  if(restore && restore.max){ inst.geo = inst.geo || {left:restore.left, top:restore.top, width:restore.width, height:restore.height}; }
+  else if(restore){ applyGeo(el, inst, restore); }
+  applyWinState(inst, {restore, mobile:MOBILE});
   inst.rerender();
   focusWin(id);
   $('.wl.wclose', el).onclick = () => closeWin(id);
@@ -404,7 +404,11 @@ function openWin(id, restore=null){
 function closeWin(id){ const w = OPEN.get(id); if(!w) return; w.el.remove(); OPEN.delete(id);
   if(id==='detail') detailProject=null;
   if(focusedId===id) focusedId=null; persist(); dockSync(); focusTop(); }
-function minWin(id){ const w = OPEN.get(id); if(!w) return; w.geo = w.geo || rect(w.el); w.prev = {l:w.el.style.left,t:w.el.style.top}; w.el.style.display='none'; w.mode='min'; persist(); focusTop(); dockSync(); }
+function minWin(id){ const w = OPEN.get(id); if(!w || w.mode==='min') return;
+  if(w.mode==='normal'){ w.geo = rect(w.el); w.prev = {l:w.el.style.left, t:w.el.style.top}; }
+  w.state = (w.mode==='max') ? 'max' : 'normal';      // what to come back to
+  setWinState(w, 'min');
+  persist(); focusTop(); dockSync(); }
 /* geometry is stored relative to #desktop (the .win containing block); rect() converts any measurement */
 function dRect(){ const r=$('#desktop').getBoundingClientRect(); return {x:r.left, y:r.top}; }
 function rect(el){ const r=el.getBoundingClientRect(); const D=dRect();
@@ -421,7 +425,7 @@ function applyGeo(el, w, g){
   /* record a new geometry (g) or re-apply the stored one when g is empty */
   const next = {left:(g && g.left!=null)? g.left : w.geo?.left, top:(g && g.top!=null)? g.top : w.geo?.top,
                 width:(g && g.width!=null)? g.width : w.geo?.width, height:(g && g.height!=null)? g.height : w.geo?.height};
-  if(el.classList.contains('max')) return;   // maximised windows keep their normal geometry untouched
+  if(w.mode==='max') return;                 // maximised windows keep their normal geometry untouched
   const cur = rect(el);
   const fit = fitRect(next.left!=null?next.left:cur.left, next.top!=null?next.top:cur.top,
                       next.width||cur.width, next.height||cur.height);
@@ -429,16 +433,35 @@ function applyGeo(el, w, g){
   el.style.width=fit.width+'px'; el.style.height=fit.height+'px';
   el.style.left=fit.left+'px'; el.style.top=fit.top+'px';
 }
-function applyMax(el, w){ if(!w.geo) w.geo=rect(el); w.mode='max'; el.classList.add('max'); }
-function maxWin(id){ const w = OPEN.get(id); if(!w) return; const el=w.el;
-  if(el.classList.contains('max')){
-    el.classList.remove('max'); w.mode='normal';
-    const D=$('#desktop'); const g=w.geo||{}; const fit=fitRect(g.left, g.top, g.width||640, g.height||420);
+/* ONE source of truth for normal / maximized / minimized: w.mode. The .max class is
+   derived from it here and nowhere else, so the two can never disagree. The stored
+   normal geometry (w.geo) is only ever recorded or re-applied while normal, so a
+   round-trip through maximize and/or minimize can never overwrite it. */
+function setWinState(w, state){
+  w.mode = state;                                     // 'normal' | 'max' | 'min'
+  w.el.classList.toggle('max', state==='max');        // class is derived, never set ad hoc
+  w.el.style.display = (state==='min') ? 'none' : ''; // visibility is derived too
+}
+function applyMax(el, w){ if(!w.geo) w.geo=rect(el); setWinState(w, 'max'); }
+/* initial state for a freshly created window: mobile is CSS-forced full-screen,
+   a restored entry carries its own max flag, otherwise normal. */
+function applyWinState(w, {restore, mobile}){
+  if(mobile || (restore && restore.max)) applyMax(w.el, w);
+  else setWinState(w, 'normal');
+}
+function maxWin(id){ const w = OPEN.get(id); if(!w || w.mode==='min') return; const el=w.el;
+  if(w.mode==='max'){                                 // restore to the stored normal geometry
+    const g=w.geo||{}; const fit=fitRect(g.left, g.top, g.width||640, g.height||420);
     el.style.width=fit.width+'px'; el.style.height=fit.height+'px';
     el.style.left=fit.left+'px'; el.style.top=fit.top+'px'; w.geo=fit;
+    setWinState(w, 'normal');
   } else { applyMax(el, w); }
   persist(); }
-function focusWin(id){ const w=OPEN.get(id); if(!w) return; if(w.mode==='min'){ w.el.style.display=''; w.mode='normal'; if(w.prev){w.el.style.left=w.prev.l; w.el.style.top=w.prev.t;} }
+function focusWin(id){ const w=OPEN.get(id); if(!w) return;
+  if(w.mode==='min'){                                 // un-minimise back to whatever it was before
+    if(w.state==='max'){ setWinState(w, 'max'); }
+    else { if(w.prev){ w.el.style.left=w.prev.l; w.el.style.top=w.prev.t; } setWinState(w, 'normal'); }
+  }
   w.el.style.zIndex = ++zIndex; focusedId=id; dockSync(); }
 function focusTop(){ let best=null; for(const [id,w] of OPEN){ if(w.mode!=='min' && (!best || +w.el.style.zIndex > +best[1].el.style.zIndex)) best=[id,w]; }
   focusedId = best? best[0] : null; dockSync(); }
@@ -459,7 +482,9 @@ function persist(){
         max = p ? !!p.max : false;
       } else {
         g = w.geo || rect(w.el);
-        max = w.mode==='max'||w.el.classList.contains('max');
+        /* logical state is authoritative; a window minimised *from* maximised must not
+           silently lose its maximised flag across a reload */
+        max = (w.mode==='max') || (w.mode==='min' && w.state==='max');
       }
       const e={id, left:g.left, top:g.top, width:g.width, height:g.height, max};
       if(id==='detail' && detailProject) e.project = detailProject.name;   // so the detail can be rebuilt
@@ -570,7 +595,7 @@ function openDetail(p, geo){
   const w = OPEN.get('detail');
   if(w){                                    // reuse: retitle + re-render for the newly picked project
     $('.wtitle', w.el).textContent = title; $('.wsub', w.el).textContent = fam;
-    if(geo) applyGeo(w.el, w, geo);
+    if(geo && w.mode==='normal') applyGeo(w.el, w, geo);   // never move a maximized/minimized window
     w.rerender(true); focusWin('detail'); persist();
     return;
   }
