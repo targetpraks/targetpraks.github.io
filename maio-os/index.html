@@ -273,11 +273,16 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
    the shell script below has installed its own boot handlers. */
 (function(){
   var boot = document && document.getElementById ? document.getElementById('boot') : null;
-  function fail(detail){
-    if(!boot || !boot.isConnected) return;
-    /* data.js did not arrive (or did not run) within the budget: the failure state.
-       Rebuilt here rather than called from the shell, because the shell may never have
-       run — the very case this guards. Styling comes from the #dataerr rules in <head>. */
+  /* ONE owner of the ready/failed decision, shared by this guard and the shell below.
+     'loading' → nothing decided yet; 'ready' → valid data + shell started; 'failed' → error.
+     A timer may only ever move loading → failed. Once ready, nothing may regress it. */
+  window.__maioState = 'loading';
+  function dataPresent(){
+    var d = window.MAIO_DATA;   // set by data.js, whenever it arrived
+    return d !== null && typeof d === 'object' && !Array.isArray(d);
+  }
+  function paintFail(detail){
+    if(window.__maioState === 'ready') return;        // never replace a healthy cockpit
     boot.remove();
     ['desktop','dock','menunav'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
     var e = document.getElementById('dataerr');
@@ -296,14 +301,22 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
     var dd = document.getElementById('dataerr-detail');
     if(dd) dd.textContent = detail || 'Timed out waiting for maio-os/data.js.';
     window.__maioDataFail = true;
+    window.__maioState = 'failed';
   }
-  var t = setTimeout(function(){ fail('Timed out waiting for maio-os/data.js.'); }, 7000);
+  var t = setTimeout(function(){
+    /* Re-check REAL state before failing — the timer must never mistake a slow-but-healthy
+       load for a failure. A decision already made wins; and if the data actually arrived
+       (even while the main thread was busy), this is not a data failure. */
+    if(window.__maioState !== 'loading') return;
+    if(dataPresent()) return;
+    paintFail('Timed out waiting for maio-os/data.js.');
+  }, 7000);
   window.__maioBootGuard = function(){ clearTimeout(t); };
   /* If the shell script itself throws before it finishes (whatever the cause), the page
      must still explain itself rather than sit on a boot screen. */
   window.addEventListener('error', function(ev){
-    if(window.__maioShellDone || window.__maioDataFail) return;
-    fail('The cockpit failed to start: ' + ((ev && ev.message) ? ev.message : 'unknown error'));
+    if(window.__maioState !== 'loading' || window.__maioShellDone) return;
+    paintFail('The cockpit failed to start: ' + ((ev && ev.message) ? ev.message : 'unknown error'));
   });
   /* clicking the boot screen still skips it even while data.js is still in flight */
   if(boot) boot.addEventListener('click', function(){ if(boot.isConnected) boot.classList.add('gone'); });
@@ -547,10 +560,48 @@ function endBoot(){
   if(bootEl && bootEl.isConnected){ bootEl.classList.add('gone');
     setTimeout(()=>{ if(bootEl && bootEl.isConnected) bootEl.remove(); }, 600); }
 }
+/* ---------- the single owner of the ready / failed transition ----------
+   Every route that decides whether this page is healthy or broken goes through here,
+   so no late timer can ever contradict a load that actually succeeded.
+
+   - 'ready'  : valid data and the shell is up. It is TERMINAL — once set, no timer may
+                declare a data failure, hide the cockpit, or flip DATA_READY back.
+   - 'failed' : genuinely no usable snapshot. Also terminal, so a recovered page is only
+                brought back by markReady() (late recovery), never silently.
+   - 'loading': nothing decided yet; a timer is allowed to fail into 'failed'. */
+let uiState = 'loading';
+function markReady(){
+  uiState = 'ready';
+  DATA_READY = true;
+  window.__maioState = 'ready';
+  /* If a pre-data.js guard already painted the failure state (a genuinely slow load),
+     undo it — remove the error node AND un-hide the cockpit it hid: the cockpit is the
+     truth now. This is the late-recovery path; a healthy load has nothing to undo. */
+  ensureCockpitVisible();
+}
+function markFailed(detail){
+  if(uiState === 'ready') return;    // a health-cocked page is never failed by a timer
+  uiState = 'failed';
+  showDataError(detail);
+}
+/* un-hide the cockpit after any failure paint — used on BFCache restore. Never creates
+   an error node and never changes the ready/failed decision. */
+function ensureCockpitVisible(){
+  ['desktop','dock','menunav'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && el.style.display === 'none') el.style.display = '';
+  });
+  if(window.__maioDataFail){
+    const e = document.getElementById('dataerr'); if(e) e.remove();
+    window.__maioDataFail = false;
+  }
+}
 /* plain-language failure state — never a healthy-looking empty cockpit */
 function showDataError(detail){
+  if(uiState === 'ready') return;
   DATA_READY = false;
   window.__maioDataFail = true;
+  window.__maioState = 'failed';
   if(bootTimer){ clearInterval(bootTimer); bootTimer=null; }
   if(BOOT_WATCHDOG){ clearTimeout(BOOT_WATCHDOG); BOOT_WATCHDOG=null; }
   try{
@@ -575,12 +626,19 @@ if(bootEl){
   bootEl.addEventListener('click', endBoot);
   addEventListener('keydown', () => { if(bootEl.isConnected) endBoot(); });
 }
-/* the boot screen can never block the page: if it is still showing when the watchdog
-   fires, the data did not arrive in time → show the failure state. If the boot was
-   already skipped, just stop the watchdog (the page is interactive, and a slow load no
-   longer deserves an error screen the user did not ask for). Either way the page is
-   interactive within the watchdog window. */
-BOOT_WATCHDOG = setTimeout(()=>{ if(bootStarted && bootEl && bootEl.isConnected) showDataError('Timed out waiting for maio-os/data.js.'); else endBoot(); }, 7000);
+/* Boot protection, installed BEFORE the shell asks whether data arrived, so it covers a
+   data.js that never loads, that is slow, that is not an object, or that throws
+   mid-normalisation. The timeout decision is based on REAL state — is the shell ready,
+   did valid data arrive — never on whether the boot element is still on screen: a
+   finished (or merely unfinished) boot animation is not a failed load.
+
+   - ready, or data already here → the load is fine; END BOOT so the cockpit can never be
+     blocked by the screen, and never an error over a healthy page.
+   - otherwise → the data genuinely did not arrive: show the failure state. */
+BOOT_WATCHDOG = setTimeout(()=>{
+  if(uiState === 'ready' || DATA_OK){ endBoot(); return; }   // reveal the working cockpit
+  markFailed('Timed out waiting for maio-os/data.js.');
+}, 7000);
 
 /* ---------- desklets ---------- */
 function svcPill(s){ const st=svcState(s), ms=(s.ms!=null)? ' · '+s.ms+'ms' : '';
@@ -1064,22 +1122,16 @@ function deepLink(){
   else if(h.startsWith('report:')){ openWin('reports'); setTimeout(()=>{ const q=document.querySelector('input[data-filter="reports"]'); if(q){ q.value=h.slice(7); q.dispatchEvent(new Event('input',{bubbles:true})); } }, 60); }
 }
 /* Whatever happened before the shell ran — a pre-data.js guard may have rendered the
-   failure state and hidden the cockpit — undo it FIRST, so the desktop and dock are
-   visible and laid out before anything is measured or restored. Every path into the
+   failure state and hidden the cockpit — markReady() undoes it, so the desktop and dock
+   are visible and laid out before anything is measured or restored. Every path into the
    shell goes through here (normal, late recovery, near-timeout), so a late-recovered
    page is laid out exactly like a normally loaded one. */
-function ensureCockpitVisible(){
-  ['desktop','dock','menunav'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el && el.style.display === 'none') el.style.display = '';
-  });
-  if(window.__maioDataFail){
-    const e = document.getElementById('dataerr'); if(e) e.remove();
-    window.__maioDataFail = false;
-  }
-}
 function initShell(){
-  ensureCockpitVisible();            // visible + laid out before ANY measurement
+  /* A pre-data.js guard may have already painted the failure state and hidden the
+     cockpit (a genuinely slow load). Un-hide it FIRST, before ANY measurement, so a
+     late-recovered page measures the real desktop and restores exact geometry. This
+     never creates an error node — on a healthy load it is a no-op. */
+  ensureCockpitVisible();
   startBoot();
   renderDesklets(); renderDock(); renderGen();
   dockClear();                       // desktop bottom now reflects the real dock height
@@ -1100,20 +1152,31 @@ function describeRaw(v){
 let SHELL_BUILT = false;
 try{ initShell(); SHELL_BUILT = true; }
 catch(err){
-  showDataError('The cockpit failed to start: ' + ((err && err.message) ? err.message : String(err)));
+  markFailed('The cockpit failed to start: ' + ((err && err.message) ? err.message : String(err)));
 }
 window.__maioShellDone = true;   // the shell ran to the end: the pre-guard's error net is no longer needed
 if(SHELL_BUILT){
   if(DATA_OK){
-    DATA_READY = true;
+    markReady();                 // one owner sets READY — and disarms a prior failure
     if(!OPEN.size && !MOBILE) openWin('desk');
   } else {
     /* no usable snapshot: one consistent outcome is the failure state, whichever
        route got us here (404, syntax error, null/array/string, or a throw) */
-    DATA_READY = false;
-    showDataError('window.MAIO_DATA is ' + describeRaw(RAW) + '.');
+    markFailed('window.MAIO_DATA is ' + describeRaw(RAW) + '.');
   }
 }
+/* BFCache / back-forward restore: a page restored from the cache never re-runs this
+   script, so a healthy cockpit must simply come back. If a stale timer from the original
+   load left the failure state behind, undo it and reveal the cockpit again. Nothing here
+   may fail a page that was already healthy. */
+addEventListener('pageshow', e => {
+  if(!e.persisted) return;
+  if(DATA_OK && SHELL_BUILT){
+    markReady(); endBoot(); ensureCockpitVisible();
+  } else if(uiState !== 'ready'){
+    markFailed('window.MAIO_DATA is ' + describeRaw(RAW) + '.');
+  }
+});
 </script>
 </body>
 </html>
