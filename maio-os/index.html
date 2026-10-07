@@ -425,6 +425,37 @@ button.vrow:hover .nm{color:var(--ink)}
 .libcard .lacts{display:flex;gap:7px;align-items:center;margin-top:auto;padding-top:7px;flex-wrap:wrap}
 .btn.sm{font-size:.72rem;padding:5px 10px;gap:6px}
 .shelfnote{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px}
+/* v3 — two-way actions (Stack window) + the Vault window */
+.svc-actions{display:flex;flex-direction:column;gap:6px}
+.svcrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);font-size:.8rem}
+.svcrow:last-child{border-bottom:none}
+.svcrow .snm{font-family:var(--grot);font-weight:600;font-size:.78rem;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.svcrow .smt{font-family:var(--mono);font-size:.63rem;color:var(--dim2);white-space:nowrap}
+.pill.run{color:var(--ok);border-color:var(--ok-line);background:var(--ok-soft)}
+.pill.stopped{color:var(--bad);border-color:var(--bad-line);background:var(--bad-soft)}
+#svcout,#vaultout{margin-top:8px}
+.fixhist{font-family:var(--mono);font-size:.66rem;color:var(--dim);display:flex;flex-direction:column;gap:3px}
+.fixhist .fh{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--line);padding:2px 0}
+.fixhist .fh:last-child{border-bottom:none}
+.fixhist .fht{color:var(--dim2);flex:none}
+.fixhist .fha{flex:none;font-weight:600}
+.fixhist .fhr{margin-left:auto;text-align:right;color:var(--dim2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:55%}
+/* Vault window */
+.vaultbar{display:flex;gap:8px;align-items:center;margin:2px 0 10px}
+.vaultbar .searchbox{flex:1}
+.vreslist{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.vres{display:flex;gap:10px;align-items:baseline;padding:8px 10px;border:var(--hair) solid var(--line);border-radius:var(--radius-sm);background:var(--panel);cursor:pointer}
+.vres:hover{border-color:var(--gold-dim);box-shadow:var(--shadow-1)}
+.vres .vt{font-family:var(--grot);font-weight:600;font-size:.83rem;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vres .vk{font-family:var(--mono);font-size:.6rem;padding:1px 7px;border-radius:999px;border:1px solid var(--line2);color:var(--dim2);flex:none}
+.vres .vp{font-family:var(--mono);font-size:.62rem;color:var(--dim2);flex:none;max-width:38%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vinfo{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:4px 0 8px}
+.vnotetext{font-family:var(--mono);font-size:.72rem;color:var(--body);white-space:pre-wrap;word-break:break-word;
+           background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;
+           max-height:420px;overflow:auto;line-height:1.55}
+.vbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.64rem;
+        padding:2px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--dim2)}
+.vbadge.ro{color:var(--cyber-cyan-ink);border-color:rgba(15,181,201,.4);background:var(--cyber-cyan-soft)}
 </style>
 </head>
 <body>
@@ -912,7 +943,7 @@ function LOCAL_REFRESH(){
       else { LOCAL_STATUS = LOCAL ? 'offline' : 'absent'; }   // keep last good data, flag the miss
       LOCAL_TS = Date.now(); LOCAL_REFRESH._busy = false;
       one(renderGen, null);
-      ['machine','kanban','reports'].forEach(id => { const w=OPEN.get(id); if(w && w.rerender) w.rerender(true); });
+      ['machine','kanban','reports','stack'].forEach(id => { const w=OPEN.get(id); if(w && w.rerender) w.rerender(true); });
       resolve(LOCAL);
     };
     s.src = LOCAL_SRC + '?t=' + Math.floor(Date.now()/1000);
@@ -1024,6 +1055,7 @@ function renderMachine(){
   const up = LOCAL_STATUS==='live';
   const m = LSEC('machine');
   const host = m ? LS(m.hostname).replace(/\.local$/,'') : 'Ricardos-Mac-mini';
+  setTimeout(()=>loadFixLog(), 0);   // paint the action history once the body is in the DOM
   return `<div class="sect" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <b style="color:var(--ink);font-size:.86rem">This machine — ${esc(host)}</b> ${localBadge()}
       <span class="lbadge">updated ${esc(LOCAL&&LOCAL.generatedAt? agoTxt2(LOCAL.generatedAt) : '—')}</span></div>
@@ -1033,17 +1065,22 @@ function renderMachine(){
       ${machineModelsCard()}
       ${machineSessionsCard()}
       ${machineSystemCard()}
+    </div>
+    <div class="mcard" style="margin-top:10px"><h5>Recent actions</h5>
+      <div class="fixhist" id="fixhist"><div class="empty">loading…</div></div>
+      <div class="mnote">Every gated action (trim, model load/unload, service restarts, refresh) is logged locally — last 12 shown.</div>
     </div>`;
 }
 /* Where the fix action lives: same-origin when the page IS the local build (9111 or
    through the tailnet proxy); otherwise the loopback address, which the server accepts
    only when the request's Origin matches its allow-list — so the public Pages copy can
-   never fire a fix. */
-const FIX_URL = (() => {
+   never fire a fix. LOCAL_BASE is the same rule for the vault reads. */
+const LOCAL_BASE = (() => {
   try{ const h=location.hostname, p=location.port;
-    if(location.protocol.indexOf('http')===0 && (p==='9111' || h.endsWith('.ts.net'))) return '/api/fix'; }catch(_){}
-  return 'http://127.0.0.1:9111/api/fix';
+    if(location.protocol.indexOf('http')===0 && (p==='9111' || h.endsWith('.ts.net'))) return ''; }catch(_){}
+  return 'http://127.0.0.1:9111';
 })();
+const FIX_URL = LOCAL_BASE + '/api/fix';
 /* Last action message, kept outside the DOM: window rerenders (every 30 s, and
    after each action) rebuild the cards, so a plain assignment to #fixout would
    vanish within seconds. fixSay() updates both the store and the live node. */
@@ -1126,7 +1163,99 @@ document.addEventListener('click', e => {
   const s = e.target.closest('[data-stop]'); if(s){ runModelFix(s, 'ollama-stop', s.getAttribute('data-stop')); return; }
   const w2 = e.target.closest('[data-warm]'); if(w2){ runModelFix(w2, 'ollama-warm', w2.getAttribute('data-warm')); return; }
   const r = e.target.closest('#ramrefresh'); if(r){ LOCAL_REFRESH(); const o=$('#fixout'); if(o) o.textContent='refreshing…'; return; }
+  const sr = e.target.closest('[data-svc]'); if(sr){ runServiceFix(sr, sr.getAttribute('data-svc')); return; }
+  const rf = e.target.closest('#refreshdata'); if(rf){ runRefreshData(rf); return; }
+  const vl = e.target.closest('[data-vopen]'); if(vl){ vaultOpen(vl.getAttribute('data-vopen')); return; }
+  const vb = e.target.closest('#vaultback'); if(vb){ vaultView=null; const w=OPEN.get('vault'); if(w && w.rerender) w.rerender(true); return; }
 });
+
+/* ---------- v3: two-way actions — service restart + data refresh (Stack window)
+   These post to the SAME guarded /api/fix lane as the ollama actions; the server
+   owns the allowlist, cooldowns and origin checks. Message store per window so a
+   30-s rebuild never loses the last result. */
+let SVC_MSG = '';
+const svcSay = html => { SVC_MSG = String(html); const o=$('#svcout'); if(o) o.innerHTML = SVC_MSG; };
+async function runServiceFix(btn, label){
+  if(btn.dataset.armed !== '1'){
+    if(!btn.dataset.lbl) btn.dataset.lbl = btn.textContent;
+    btn.dataset.armed = '1';
+    btn.textContent = '⚠ sure?';
+    if(label==='com.maio.gate-mcp') svcSay(`Restart <b>Gate MCP</b>? Live agent MCP sessions using the gates drop briefly while it respawns.`);
+    else if(label==='com.maio.ok-vault-server') svcSay(`Restart <b>OK vault server</b>? Vault reads (and the Vault window's search) pause for a few seconds.`);
+    else svcSay(`Restart <b>${esc(label)}</b>? launchd relaunches it; the service blinks for a few seconds.`);
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed='0'; btn.textContent = btn.dataset.lbl || '↻'; } }, 4500);
+    return;
+  }
+  btn.dataset.armed='0'; btn.disabled = true;
+  const t0 = btn.dataset.lbl || '↻';
+  btn.textContent = '…restarting';
+  svcSay(`Restarting <b>${esc(label)}</b> — working…`);
+  try{
+    const r = await fetch(FIX_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'service-restart', label, confirm:true }) });
+    const j = await r.json().catch(()=>({}));
+    if(j && j.ok && j.report){
+      const f = j.report;
+      svcSay(`<b style="color:var(--ok)">✓ restarted</b> ${esc(f.name||label)} — pid ${esc(String(num(f.beforePid,'—')))} → ${esc(String(num(f.afterPid,'—')))}${f.afterRunning?' · running':''}.`);
+    } else {
+      const extra = j.error==='cooldown' ? ` — wait ${esc(String(num(j.retryInSec,'')))}s before restarting this again.` :
+                    j.error==='busy' ? ' — another fix is running, try again in a few seconds.' : '';
+      svcSay(`<b style="color:var(--warn)">✗ ${esc(LS(j.error)||'restart failed')}</b>${extra}${j.report&&j.report.error?` — ${esc(LS(j.report.error))}`:''}`);
+    }
+  }catch(e){ svcSay(`<b style="color:var(--bad)">✗ unreachable</b> — is the local server still running on 9111?`); }
+  btn.disabled = false; btn.textContent = t0;
+  LOCAL_REFRESH();
+}
+async function runRefreshData(btn){
+  if(btn.dataset.armed !== '1'){
+    btn.dataset.armed = '1'; const t = btn.textContent;
+    btn.textContent = '⚠ confirm refresh — click again';
+    svcSay(`Re-scan the machine and regenerate <b>data.js</b> now (the generator also runs on its own schedule). Takes ~10–25 s.`);
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed='0'; btn.textContent = t; } }, 4500);
+    return;
+  }
+  btn.dataset.armed='0'; btn.disabled = true; btn.textContent = '…refreshing';
+  svcSay('Refreshing data — scanning services and regenerating data.js…');
+  try{
+    const r = await fetch(FIX_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'refresh-data', confirm:true }) });
+    const j = await r.json().catch(()=>({}));
+    if(j && j.ok && j.report){
+      const f = j.report;
+      if(f.noChange) svcSay(`<b style="color:var(--ok)">✓ refreshed</b> — ran ${esc(String(f.lastDone||''))}; no data change (everything already current).`);
+      else if(f.pushed) svcSay(`<b style="color:var(--ok)">✓ refreshed</b> — data.js regenerated and pushed at ${esc(String(f.lastDone||''))}.`);
+      else if(f.regenerated) svcSay(`<b style="color:var(--warn)">✓ regenerated</b> — data.js updated at ${esc(String(f.lastDone||''))}, but the auto-commit/push did not confirm. Check the refresh log.`);
+      else svcSay(`<b style="color:var(--warn)">✓ ran</b> — refresh completed at ${esc(String(f.lastDone||''))}; no file change detected yet.`);
+    } else {
+      const extra = j.error==='cooldown' ? ` — wait ${esc(String(num(j.retryInSec,'')))}s before refreshing again.` :
+                    j.error==='busy' ? ' — another fix is running, try again in a few seconds.' : '';
+      svcSay(`<b style="color:var(--warn)">✗ ${esc(LS(j.error)||'refresh failed')}</b>${extra}`);
+    }
+  }catch(e){ svcSay(`<b style="color:var(--bad)">✗ unreachable</b> — is the local server still running on 9111?`); }
+  btn.disabled = false; btn.textContent = '↻ Refresh data';
+  LOCAL_REFRESH();
+}
+/* Recent actions (the fix log, read-only) — rendered in the Machine window so the
+   two-way layer is auditable at a glance. Fetched from /api/fix/log (last 50). */
+async function loadFixLog(){
+  const out = $('#fixhist');
+  if(!out) return;
+  try{
+    const r = await fetch(FIX_URL.replace(/\/api\/fix$/, '/api/fix/log'), { method:'GET' });
+    const j = await r.json().catch(()=>null);
+    if(!Array.isArray(j)){ out.innerHTML = '<div class="empty">no action history yet</div>'; return; }
+    out.innerHTML = j.slice(-12).reverse().map(e=>{
+      const ts = LS(e.ts||'').replace('T',' ').slice(0,16);
+      const act = LS(e.action||'').replace('ollama-','');
+      const target = LS(e.label || e.model || '');
+      let res = '';
+      if(e.action==='service-restart') res = e.ok ? `pid ${num(e.beforePid,'—')}→${num(e.afterPid,'—')}` : LS(e.error||'failed');
+      else if(e.action==='refresh-data') res = e.pushed ? 'regenerated + pushed' : e.noChange ? 'no change' : (e.ran ? 'ran' : LS(e.error||'failed'));
+      else res = e.freedGb!=null ? `freed ${fmtGb(e.freedGb)}` : (e.ok===false && e.error ? LS(e.error) : (e.ok ? 'ok' : ''));
+      return `<div class="fh"><span class="fht">${esc(ts)}</span><span class="fha" style="color:${e.ok===false?'var(--bad)':'var(--ok)'}">${esc(act)}</span><span>${esc(target)}</span><span class="fhr">${esc(String(res))}</span></div>`;
+    }).join('') || '<div class="empty">no action history yet</div>';
+  }catch(e){ out.innerHTML = '<div class="empty">action history needs the local server</div>'; }
+}
 
 /* ---------- Kanban window (local live board, snapshot fallback) ---------- */
 const KB_ORDER = ['running','ready','todo','blocked','done'];
@@ -1281,6 +1410,7 @@ const WINS = {
   reports:{title:'Reports', icon:'▤', sub:'the deliverable library', render:renderReports, w:980, h:600},
   kanban:{title:'Kanban', icon:'▦', sub:'the fleet board', render:renderKanban, w:980, h:600},
   machine:{title:'Machine', icon:'⚙', sub:'RAM · models · sessions', render:renderMachine, w:880, h:580},
+  vault:{title:'Vault', icon:'📖', sub:'read-only · search + read', render:renderVault, w:920, h:600},
   prds:{title:'PRDs', icon:'✎', sub:`${snum("prds",DATA.prds.length)} found`, render:renderPRDs, w:700, h:440},
   stack:{title:'Stack', icon:'◉', sub:'live truth', render:renderStack, w:780, h:500},
   about:{title:'About / Roadmap', icon:'☆', sub:'what this is + where it goes', render:renderAbout, w:660, h:520},
@@ -1808,6 +1938,35 @@ function renderPRDs(){
 }
 const enriched = DATA.enriched;
 const ENRICH_PRDS = Array.isArray(enriched.prds) ? enriched.prds : [];
+/* v3 — two-way card: restart an allowlisted service from the cockpit. Rendered
+   from the local payload (services section); on the public build it degrades to
+   an honest note. The server owns the allowlist/cooldowns; this only draws. */
+function stackServicesCard(){
+  const svc = LSEC('services');
+  if(!svc || !Array.isArray(svc.items) || !svc.items.length){
+    return `<div class="sect">Two-way — service control</div>
+      <div class="notebox">Restarting services needs the local server (127.0.0.1:9111) on the machine. This public build is read-only by design.</div>`;
+  }
+  const rows = svc.items.map(s=>{
+    const st = isObj(s.status)? s.status : {};
+    const run = st.running === true;
+    const pid = num(st.pid, null);
+    return `<div class="svcrow">
+      <span class="snm">${esc(LS(s.name))}</span>
+      <span class="smt">${esc(LS(s.label))}${pid!=null?` · pid ${pid}`:''}${s.port?` · :${esc(String(s.port))}`:''}</span>
+      <span class="pill ${run?'run':'stopped'}">${run?'● up':'○ down'}</span>
+      <button class="obtn" data-svc="${escAttr(LS(s.label))}" aria-label="Restart ${escAttr(LS(s.name))}">↻ Restart</button>
+    </div>`;
+  }).join('');
+  return `<div class="sect">Two-way — service control</div>
+    <div class="notebox">Restart is gated: fixed allowlist, confirm step, per-service cool-down, origin-checked, one action at a time. launchd relaunches the service itself.</div>
+    <div class="svc-actions" style="margin-top:10px">${rows}</div>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn sm" id="refreshdata" aria-label="Regenerate the cockpit data now">↻ Refresh data</button>
+      <span class="smt" style="font-family:var(--mono);font-size:.64rem;color:var(--dim2)">regenerates data.js · the generator also runs on its own schedule</span>
+    </div>
+    <div id="svcout" class="mnote" aria-live="polite">${SVC_MSG}</div>`;
+}
 function renderStack(){
   const st=DATA.stack, dev=DATA.devServers;
   /* v2: the generator's system snapshot (launchd/docker/tailnet/kanban counts) rides along
@@ -1850,8 +2009,134 @@ function renderStack(){
       return `
       <div class="svc"><div class="sn"><b>${esc(d.name)}</b><span class="pill ${d.ok?'ok':'bad'}">${d.ok? '✓ 200' : '✕ dark'}</span></div>
       <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${urlLink(d.url, label)}</div></div>`; }).join('')}</div>
-    ${sysHtml}`;
+    ${sysHtml}
+    ${stackServicesCard()}`;
 }
+/* ---------- v3: Vault window (P4) — read-only Obsidian vault browser ----------
+   Search runs against the OK MCP server through the local companion; note bodies
+   come from disk through the same server. The cockpit NEVER writes the vault —
+   Beast is the only writer; this window is a reader with an escape hatch to the
+   real Obsidian app (deep links built inline, zero external requests). */
+let vaultQ = '';          // last committed query (per this shell session)
+let vaultView = null;     // {path,title,bytes,mtime,text} of the open note
+let vaultErr = '';        // last search/read error, shown honestly
+let vaultBusy = false;
+let vaultResults = null;  // last results array
+let vaultSeq = 0;         // stale-response guard for the debounced search
+let vaultKeepFocus = false; // restore input focus after a repaint triggered by typing
+function vaultUrls(path){
+  // Built inline from the vault/path — same format as jump.html, no fetch.
+  // The path is already vault-relative (validated server-side on read; search
+  // results come from OK). encodeURIComponent keeps it query-safe.
+  const enc = encodeURIComponent(path||'');
+  return {
+    obsidian: 'obsidian://open?vault=' + encodeURIComponent('Maio Hub') + '&file=' + enc,
+    ok: 'openknowledge://open?doc=' + enc + '&vault=' + encodeURIComponent('Maio Hub'),
+  };
+}
+async function vaultSearch(q){
+  q = str(q).trim();
+  if(!q){ vaultQ=''; vaultResults=null; vaultErr=''; vaultBusy=false; vaultRepaint(); return; }
+  const my = ++vaultSeq;
+  vaultBusy = true; vaultErr = ''; vaultQ = q;
+  vaultRepaint();
+  try{
+    const r = await fetch(LOCAL_BASE + '/api/vault/search?q=' + encodeURIComponent(q) + '&limit=12', { method:'GET' });
+    if(my !== vaultSeq) return;                       // a newer search won
+    const j = await r.json().catch(()=>({}));
+    if(j && j.ok && Array.isArray(j.results)){ vaultResults = j.results; vaultErr=''; }
+    else if(r.status===403) { vaultResults = null; vaultErr = 'this page cannot read the vault — open the local build (127.0.0.1:9111) on the machine or via the tailnet'; }
+    else { vaultResults = null; vaultErr = LS(j.error) || ('search failed (' + r.status + ')'); }
+  }catch(e){ if(my !== vaultSeq) return; vaultResults = null;
+    vaultErr = (LOCAL_BASE !== '') ? 'this page cannot read the vault — open the local build (127.0.0.1:9111) on the machine or via the tailnet'
+                                   : 'unreachable — the local server or OK vault server is down'; }
+  if(my !== vaultSeq) return;
+  vaultBusy = false; vaultRepaint();
+}
+async function vaultOpen(path){
+  if(!path) return;
+  // Search results come from OK with the extension stripped (doc paths); the
+  // note endpoint only serves .md/.mdx — add the .md back when it is missing.
+  let p = str(path);
+  if(!/\.(md|mdx)$/i.test(p)) p = p + '.md';
+  vaultBusy = true; vaultErr=''; vaultView = {path:p, loading:true};
+  vaultRepaint();
+  try{
+    const r = await fetch(LOCAL_BASE + '/api/vault/note?path=' + encodeURIComponent(p), { method:'GET' });
+    const j = await r.json().catch(()=>({}));
+    if(j && j.ok){ vaultView = {path:j.path, title:p.split('/').pop(), bytes:j.bytes, mtime:j.mtime, text:j.text}; }
+    else { vaultView = null; vaultErr = LS(j.error) || ('read failed (' + r.status + ')'); }
+  }catch(e){ vaultView = null; vaultErr = 'unreachable while reading the note'; }
+  vaultBusy = false; vaultRepaint();
+}
+function vaultRepaint(){
+  const w = OPEN.get('vault');
+  if(!w || !w.rerender) return;
+  // A repaint rebuilds the body; if the user is typing in the search box,
+  // keep the focus and the caret exactly where they were.
+  const inp = document.querySelector('.winbody input[data-vq]');
+  const wasActive = inp && document.activeElement === inp;
+  const caret = wasActive ? inp.selectionStart : null;
+  w.rerender(true);
+  if(wasActive){
+    const q = document.querySelector('.winbody input[data-vq]');
+    if(q){ q.focus(); try{ q.setSelectionRange(caret, caret); }catch(_){} }
+  }
+}
+/* Debounce: ~400 ms after typing stops (council: server limit 20/min + client debounce). */
+let vaultDebounce = null;
+function vaultDebounced(v){
+  vaultQ = str(v);   // keep the input value across repaints
+  clearTimeout(vaultDebounce);
+  vaultDebounce = setTimeout(()=>{ vaultSearch(v); }, 400);
+}
+function renderVault(){
+  const up = LOCAL_STATUS==='live';
+  const head = `<div class="sect" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <b style="color:var(--ink);font-size:.86rem">Vault — Maio Hub</b>
+      <span class="vbadge ro">read-only · Beast is the only writer</span>
+      ${localBadge()}</div>
+    ${up?'':'<div class="notebox" style="margin-top:10px"><b>Snapshot view</b> — the vault browser is served by the local companion (127.0.0.1:9111) with the OK vault server. This public build cannot read the vault by design — open the local build on the machine.</div>'}`;
+  if(vaultView || (vaultBusy && vaultView)){
+    const v = vaultView;
+    if(v && v.loading){
+      return head + `<div class="vinfo"><span class="vbadge">loading note…</span></div>`;
+    }
+    const u = vaultUrls(v.path);
+    return head + `
+      <div class="vinfo">
+        <button class="btn sm ghost" id="vaultback" aria-label="Back to results">← Results</button>
+        <span class="vt" style="font-family:var(--grot);font-weight:600;font-size:.84rem;color:var(--ink)">${esc(v.title||v.path)}</span>
+        <span class="vbadge">${esc(v.path||'')}</span>
+        <span class="vbadge">${esc(fmtBytes(v.bytes))}${v.mtime?(' · '+esc(fmtDate(LS(v.mtime).slice(0,10)))):''}</span>
+        <a class="btn sm" href="${escAttr(u.obsidian)}">Open in Obsidian</a>
+        <a class="btn sm ghost" href="${escAttr(u.ok)}">Open in OK</a>
+      </div>
+      ${vaultErr?`<div class="notebox" style="border-color:var(--bad-line)">${esc(vaultErr)}</div>`:''}
+      <div class="vnotetext">${esc(v.text||'')}</div>
+      <div class="mnote" style="margin-top:8px">Rendered as plain text on purpose — no HTML executes from vault content.</div>`;
+  }
+  const results = Array.isArray(vaultResults)? vaultResults : null;
+  const rows = results ? (results.length ? results.map(x=>`
+    <div class="vres" data-vopen="${escAttr(x.path)}" role="button" tabindex="0" aria-label="Open ${escAttr(x.title)}">
+      <span class="vt">${esc(x.title||x.path)}</span>
+      ${x.kind?`<span class="vk">${esc(x.kind)}</span>`:''}
+      <span class="vp">${esc(x.path||'')}</span>
+    </div>${x.snippet?`<div class="mnote" style="margin:-2px 0 2px 10px;font-size:.66rem">${esc(x.snippet)}</div>`:''}`).join('')
+    : '<div class="empty">nothing matched — try different words</div>')
+    : '';
+  return head + `
+    <div class="vaultbar">
+      <input class="searchbox" data-vq="1" placeholder="Search the vault — notes, PRDs, reports, MOCs…" autocomplete="off" spellcheck="false" value="${escAttr(vaultQ)}">
+      <button class="btn sm" id="vaultgo" aria-label="Search">Search</button>
+    </div>
+    ${vaultBusy?`<div class="mnote">searching…</div>`:''}
+    ${vaultErr?`<div class="notebox" style="border-color:var(--bad-line)"><b style="color:var(--warn)">✗ ${esc(vaultErr)}</b></div>`:''}
+    ${vaultQ && !vaultBusy && results===null && !vaultErr ? '<div class="mnote">type a query and press Enter — ranked search via OpenKnowledge</div>' : ''}
+    <div class="vreslist">${rows}</div>
+    <div class="mnote" style="margin-top:10px">Searches the Maio Hub vault through OpenKnowledge (ranked, with snippets). Notes open read-only; “Open in Obsidian” jumps to the real app. Writes always route through Beast.</div>`;
+}
+function fmtBytes(n){ const x=num(n,null); if(x==null) return '—'; if(x<1024) return x+' B'; if(x<1048576) return (x/1024).toFixed(1)+' KB'; return (x/1048576).toFixed(1)+' MB'; }
 function renderAbout(){
   return `
     <p class="aboutp"><b>Maio OS</b> is the cockpit for the household: every project, every agent's latest output, every PRD, and the honest state of the stack — one window, refreshed by a generator instead of a stale heartbeat.</p>
@@ -1861,8 +2146,9 @@ function renderAbout(){
       <div class="phase"><span class="pn2">P1</span><div><div class="pt">Live data, shipped ✅</div><div class="pd">Generator + OS shell + vault PRD index + roster + ventures + ⌘K over everything — this build. Deployed to GitHub Pages, verified in-browser with zero console errors.</div></div></div>
       <div class="phase"><span class="pn2">P2</span><div><div class="pt">Auto-fresh + PRD reader ✅</div><div class="pd">launchd regenerates data.js several times a day; the vault PRD index and scout-merge insights feed the PRDs view.</div></div></div>
       <div class="phase"><span class="pn2">P2.5</span><div><div class="pt">Daylight + live local layer ✅ (v2)</div><div class="pd">Light theme, the new maio.os mark, and two new windows: Kanban (the live fleet board) and Machine (RAM gauge, top processes, local models, sessions &amp; spend). On this Mac a local companion (127.0.0.1:9111, tailnet :9443) streams the live numbers and carries the first two-way actions — ⚡ Trim RAM unloads Ollama models to free memory, and the Local models card now gives every model its own Unload / Warm up button (decision models route via the System One endpoint; v2.1, 2026-10-07).</div></div></div>
-      <div class="phase"><span class="pn2">P3</span><div><div class="pt">Two-way, one more step</div><div class="pd">More gated actions from the windows — e.g. restart a dead service from Stack, pull a fresh digest — each behind a confirm step and the decision gates.</div></div></div>
-      <div class="phase"><span class="pn2">P4</span><div><div class="pt">Vault view</div><div class="pd">Read-only Obsidian vault browser (MOCs, agent notes) via OpenKnowledge search — Beast stays the only writer.</div></div></div>
+      <div class="phase"><span class="pn2">P3</span><div><div class="pt">Two-way, one more step ✅ (v3)</div><div class="pd">The Stack window now restarts allowlisted services (Gate MCP, OK vault, Hermes dashboard, Read room, Ollama console, Snappier, Browser-Use MCP) and pulls a fresh data.js — each behind the two-click confirm, a per-action cool-down and the same origin-gated fix lane as Trim RAM. Every action lands in the Machine window's Recent actions list. Deliberately excluded: anything money/legal-adjacent, and the cockpit never restarts itself.</div></div></div>
+      <div class="phase"><span class="pn2">P4</span><div><div class="pt">Vault view ✅ (v3)</div><div class="pd">Read-only vault browser over OpenKnowledge search: ranked results with snippets, note reading with an "Open in Obsidian" jump, and an explicit read-only badge — Beast stays the only writer, and writes stay a request-to-Beast flow.</div></div></div>
+      <div class="phase"><span class="pn2">Next</span><div><div class="pt">Feature-complete — additions only when asked</div><div class="pd">The cockpit is now feature-complete per the original brainstorm: live data, auto-fresh, daylight theme, local layer, two-way actions, vault view. What stays open by design: the public Pages build is read-only (no spend/sessions/actions), and anything that writes — vault, money, legal — stays outside the cockpit.</div></div></div>
     </div>
     <div class="sect">Keyboard &amp; links</div>
     <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> closes the palette, then blurs a focused filter box — it never closes a window. The browser <b>Back</b> button closes the window you are in, one press per window, so you can leave the cockpit with a normal Back only once the desk is clear. Windows: drag the bar, resize from bottom-right corner, lights close/min/max.</p>
@@ -1872,11 +2158,11 @@ function renderAbout(){
 /* ---------- dock / menu ----------
    the dock's own order — a single list, resolved against winDef, so a window added to WINS
    joins the dock, the menu and the command index without a second edit */
-const WINS_DOCK = ['desk','projects','agents','reports','kanban','machine','prds','stack'].filter(id=>winDef(id));
+const WINS_DOCK = ['desk','projects','agents','reports','kanban','machine','vault','prds','stack'].filter(id=>winDef(id));
 /* icon sprite: fetched once and inlined, so <use href="#i-…"> resolves on http, https
    and file:// alike; until it lands the windows' own text glyph is the fallback */
 const DICON = {desk:'i-desk', projects:'i-projects', agents:'i-agents', reports:'i-reports',
-  kanban:'i-kanban', machine:'i-machine', prds:'i-prds', stack:'i-stack', about:'i-about'};
+  kanban:'i-kanban', machine:'i-machine', vault:'i-vault', prds:'i-prds', stack:'i-stack', about:'i-about'};
 let SPRITE_READY = false;
 fetch('assets/icons.svg').then(r => r.ok ? r.text() : '').then(txt => {
   if(!txt || txt.indexOf('<svg') < 0) return;
@@ -2026,7 +2312,10 @@ document.addEventListener('keydown', e => {
 });
 let __projq='', __repq='';
 document.addEventListener('input', e => {
-  const f = e.target.dataset && e.target.dataset.filter; if(!f) return;
+  const f = e.target.dataset && e.target.dataset.filter;
+  const isVaultQ = e.target.dataset && e.target.dataset.vq;
+  if(isVaultQ){ vaultDebounced(e.target.value); return; }   // vault: debounced live search, input keeps its own value
+  if(!f) return;
   if(f==='projects') __projq = e.target.value;
   else if(f==='reports') __repq = e.target.value;
   else return;
@@ -2035,6 +2324,24 @@ document.addEventListener('input', e => {
   w.rerender(true);
   const el2 = $('.winbody', w.el) && $('.winbody', w.el).querySelector(`input[data-filter="${f}"]`);
   if(el2){ el2.value = val; el2.focus(); try{ el2.setSelectionRange(pos, pos); }catch(_){} }
+});
+/* vault search: Enter commits immediately (same as the Search button). The
+   debounce timer is cleared first so a pending keystroke timer cannot fire a
+   second search on top of the committed one. */
+document.addEventListener('keydown', e => {
+  if(e.target && e.target.dataset && e.target.dataset.vq && e.key==='Enter'){
+    e.preventDefault();
+    clearTimeout(vaultDebounce);
+    vaultSearch(e.target.value);
+    setTimeout(()=>{ const q=document.querySelector('.winbody input[data-vq]'); if(q){ q.value = vaultQ; q.focus(); } }, 30);
+    return;
+  }
+  if(e.target && e.target.dataset && e.target.dataset.vq && e.key==='Escape'){ e.target.blur(); return; }
+});
+document.addEventListener('click', e => {
+  const g = e.target.closest('#vaultgo');
+  if(g){ const inp=document.querySelector('.winbody input[data-vq]'); clearTimeout(vaultDebounce); vaultSearch(inp? inp.value : vaultQ);
+    setTimeout(()=>{ const q=document.querySelector('.winbody input[data-vq]'); if(q){ q.value=vaultQ; q.focus(); } }, 30); return; }
 });
 
 /* ---------- clock ---------- */
@@ -2046,7 +2353,7 @@ tick(); setInterval(tick, 1000);
    Grammar (the whole fragment, after ONE decodeURIComponent; the leading '#' is stripped):
 
      #<window-id>          open + focus that dock window.
-                           ids: desk, projects, agents, reports, prds, stack, about.
+                           ids: desk, projects, agents, reports, kanban, machine, vault, prds, stack, about.
      #project:<name>       open the project detail. <name> is URL-encoded; the first record
      #project:<name>@<n>   with that name, or the n-th (1-based, in data.js order).
                            n must be a plain integer 1..99 — "@2" disambiguates the eight
