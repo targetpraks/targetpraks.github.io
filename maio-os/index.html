@@ -399,6 +399,15 @@ button.vrow:hover .nm{color:var(--ink)}
 .mgauge i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#127248,#4FB183)}
 .mgauge.warn i{background:linear-gradient(90deg,#8A5807,#E7B84B)}
 .mgauge.bad i{background:linear-gradient(90deg,#B02A2A,#E8735F)}
+/* Ollama rows in the Machine window: per-model unload / warm up (v2.1) */
+.orow{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--line);font-size:.8rem}
+.orow:last-child{border-bottom:none}
+.orow .onm{font-family:var(--mono);font-size:.72rem;color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.orow .omt{font-family:var(--mono);font-size:.66rem;color:var(--dim2);white-space:nowrap}
+.obtn{font-family:var(--mono);font-size:.64rem;padding:2px 8px;border-radius:var(--radius-xs);border:1px solid var(--line2);background:var(--panel);color:var(--dim2);cursor:pointer;white-space:nowrap}
+.obtn:hover{border-color:var(--gold-dim);color:var(--gold);background:var(--gold-soft)}
+.obtn.warn:hover{border-color:var(--bad-line);color:var(--bad);background:var(--bad-soft)}
+.obtn:disabled{opacity:.5;cursor:default}
 /* desklet polish on the light theme: one-line names, tidy pills, breathing room */
 .desklet{padding-bottom:16px}
 .vrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -932,7 +941,7 @@ function machineRamCard(L){
       <button class="btn danger" id="trimbtn" aria-label="Unload local Ollama models to trim memory">⚡ Trim RAM</button>
       <button class="btn ghost" id="ramrefresh" aria-label="Refresh local readings">↻ Refresh</button>
     </div>
-    <div id="fixout" class="mnote" aria-live="polite"></div>
+    <div id="fixout" class="mnote" aria-live="polite">${FIX_MSG}</div>
     <div class="sect" style="margin:12px 0 4px">Top processes</div>
     ${top.map(t=>`<div class="mkv"><span>${esc(LS(t.name))}</span><b>${esc(fmtGb(t.rssGb))} · ${esc(String(t.pctOfUsed))}%</b></div>`).join('') || '<div class="empty">no readings</div>'}
   </div>`;
@@ -940,12 +949,20 @@ function machineRamCard(L){
 function machineModelsCard(){
   const oll = LSEC('ollama'); const olx = LSEC('omlx');
   const rows = [];
-  if(oll){ const ps = Array.isArray(oll.ps)? oll.ps : [];
-    rows.push(`<div class="sect" style="margin:2px 0 4px">Ollama ${oll.version?('v'+esc(LS(oll.version))):''}</div>`);
-    rows.push(ps.length ? ps.map(m=>`<div class="mkv"><span>${esc(LS(m.name))}</span><b>${esc(fmtGb(m.sizeGb))} · ${esc(LS(m.processor))}${m.until?(' · '+esc(LS(m.until))):''}</b></div>`).join('')
-                        : `<div class="mnote">no models loaded right now (${esc(String(num(oll.localCount,'—')))} installed${Array.isArray(oll.cloudModels)&&oll.cloudModels.length?` · ${oll.cloudModels.length} cloud`:''})</div>`);
-    if(Array.isArray(oll.cloudModels) && oll.cloudModels.length)
-      rows.push(`<div class="mnote">cloud models: ${oll.cloudModels.slice(0,8).map(x=>esc(LS(x))).join(' · ')}</div>`);
+  if(oll){
+    const ps = Array.isArray(oll.ps)? oll.ps : [];
+    const rn = Array.isArray(oll.runners)? oll.runners : [];
+    const inst = Array.isArray(oll.installed)? oll.installed : [];
+    const local = inst.filter(x=>x && !x.cloud);
+    rows.push(`<div class="sect" style="margin:2px 0 4px">Ollama ${oll.version?('v'+esc(LS(oll.version))):''} — running</div>`);
+    rows.push(ps.length
+      ? ps.map(m=>`<div class="orow"><span class="onm">${esc(LS(m.name))}</span><span class="omt">${esc(fmtGb(m.sizeGb))}${m.processor?(' · '+esc(LS(m.processor))):''}${m.context?(' · ctx '+esc(String(m.context))):''}${m.until?(' · '+esc(LS(m.until))):''}</span><button class="obtn warn" data-stop="${escAttr(LS(m.name))}" aria-label="Unload ${escAttr(LS(m.name))}">Unload</button></div>`).join('')
+      : `<div class="mnote">nothing loaded right now — models unload themselves ~5 min after the last request.</div>`);
+    if(rn.length) rows.push(`<div class="sect" style="margin:8px 0 3px">runner workers · real RAM</div>` +
+      rn.map(r=>`<div class="orow"><span class="onm">${esc(LS(r.model)||'(unmapped)')}</span><span class="omt">pid ${esc(String(num(r.pid,'—')))} · ${esc(fmtGb(r.rssGb))}${r.port?(' · :'+esc(String(r.port))):''}${r.uptime?(' · up '+esc(LS(r.uptime))):''}</span></div>`).join(''));
+    rows.push(`<div class="sect" style="margin:8px 0 3px">installed · warm up</div>` +
+      (local.slice(0,8).map(x=>`<div class="orow"><span class="onm">${esc(LS(x.name))}</span><span class="omt">${esc(fmtGb(x.sizeGb))}</span><button class="obtn" data-warm="${escAttr(LS(x.name))}" aria-label="Warm up ${escAttr(LS(x.name))}">Warm</button></div>`).join('') || '<div class="mnote">no local models listed</div>') +
+      (Array.isArray(oll.cloudModels)&&oll.cloudModels.length?`<div class="mnote">+ ${oll.cloudModels.length} cloud: ${oll.cloudModels.slice(0,8).map(x=>esc(LS(x))).join(' · ')}</div>`:''));
   }
   if(olx){ rows.push(`<div class="sect" style="margin:10px 0 4px">oMLX</div>`);
     rows.push(`<div class="mkv"><span>server</span><b>${olx.running?'● running :8000':'○ not running'}</b></div>`);
@@ -1009,18 +1026,23 @@ const FIX_URL = (() => {
     if(location.protocol.indexOf('http')===0 && (p==='9111' || h.endsWith('.ts.net'))) return '/api/fix'; }catch(_){}
   return 'http://127.0.0.1:9111/api/fix';
 })();
+/* Last action message, kept outside the DOM: window rerenders (every 30 s, and
+   after each action) rebuild the cards, so a plain assignment to #fixout would
+   vanish within seconds. fixSay() updates both the store and the live node. */
+let FIX_MSG = '';
+const fixSay = html => { FIX_MSG = String(html); const o = $('#fixout'); if(o) o.innerHTML = FIX_MSG; };
 async function runFix(action, confirmLabel){
-  const out = $('#fixout'); const btn = $('#trimbtn');
-  if(!out) return;
+  const btn = $('#trimbtn');
+  if(!$('#fixout')) return;
   if(btn && btn.dataset.armed !== '1'){
     btn.dataset.armed = '1'; const t0 = btn.textContent;
     btn.textContent = '⚠ ' + (confirmLabel || 'Confirm?') + ' — click again';
-    out.textContent = 'This unloads local Ollama models to free memory. They reload automatically on next use.';
+    fixSay('This unloads local Ollama models to free memory. They reload automatically on next use.');
     setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed='0'; btn.textContent = t0; } }, 4500);
     return;
   }
   if(btn){ btn.dataset.armed='0'; btn.disabled = true; }
-  out.textContent = 'working — unloading…';
+  fixSay('working — unloading…');
   try{
     const r = await fetch(FIX_URL, { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action, confirm: true }) });
@@ -1029,20 +1051,62 @@ async function runFix(action, confirmLabel){
       const f = j.report;
       const freed = num(f.freedGb, 0);
       const un = Array.isArray(f.unloaded) ? f.unloaded : [];
-      out.innerHTML = (freed >= 0.05 || un.length)
+      fixSay((freed >= 0.05 || un.length)
         ? `<b style="color:var(--ok)">✓ trimmed</b> — memory ${esc(String(f.beforeUsedPct))}% → ${esc(String(f.afterUsedPct))}%, freed <b>${esc(fmtGb(freed))}</b>` +
           (un.length ? ` · unloaded ${un.map(x=>esc(LS(x))).join(', ')}` : '')
-        : `<b style="color:var(--ok)">✓ nothing to unload</b> — no Ollama models were loaded (memory stays at ${esc(String(f.beforeUsedPct))}%).`;
+        : `<b style="color:var(--ok)">✓ nothing to unload</b> — no Ollama models were loaded (memory stays at ${esc(String(f.beforeUsedPct))}%).`);
     } else {
-      out.innerHTML = `<b style="color:var(--warn)">✗ ${esc(LS(j.error)||'fix failed')}</b>` + (j.error==='busy'?' — another fix is already running, try again in a few seconds.':'');
+      fixSay(`<b style="color:var(--warn)">✗ ${esc(LS(j.error)||'fix failed')}</b>` + (j.error==='busy'?' — another fix is already running, try again in a few seconds.':''));
     }
-  }catch(e){ out.innerHTML = `<b style="color:var(--bad)">✗ unreachable</b> — the local server answered the page but not the action. Is it still running on 9111?`; }
+  }catch(e){ fixSay(`<b style="color:var(--bad)">✗ unreachable</b> — the local server answered the page but not the action. Is it still running on 9111?`); }
   if(btn){ btn.disabled = false; btn.textContent = '⚡ Trim RAM'; }
+  LOCAL_REFRESH();
+}
+/* Per-model actions from the Local models card: Unload (data-stop) / Warm (data-warm).
+   Two-click confirm on the row button itself; output goes to the RAM card's #fixout. */
+async function runModelFix(btn, action, model){
+  const out = $('#fixout');
+  const say = html => { FIX_MSG = String(html); if(out) out.innerHTML = FIX_MSG; };
+  if(btn.dataset.armed !== '1'){
+    // remember the pristine label once, so it can be restored after the action
+    if(!btn.dataset.lbl) btn.dataset.lbl = btn.textContent;
+    btn.dataset.armed = '1';
+    btn.textContent = '⚠ sure?';
+    say(action==='ollama-stop'
+      ? `Unload <b>${esc(model)}</b>? Frees its RAM now; it reloads on next use.`
+      : `Warm up <b>${esc(model)}</b>? Loads it into memory (first load can take ~1 min).`);
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed='0'; btn.textContent = btn.dataset.lbl || 'Warm'; } }, 4500);
+    return;
+  }
+  if(btn.dataset.armed==='1'){ btn.dataset.armed='0'; }
+  btn.disabled = true;
+  const t0 = btn.dataset.lbl || (action==='ollama-stop' ? 'Unload' : 'Warm');
+  btn.textContent = action==='ollama-stop' ? '…unloading' : '…warming';
+  say(`${action==='ollama-stop'?'Unloading':'Warming up'} <b>${esc(model)}</b> — working…`);
+  try{
+    const r = await fetch(FIX_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action, model, confirm: true }) });
+    const j = await r.json().catch(()=>({}));
+    if(j && j.ok && j.report){
+      const f = j.report;
+      if(action==='ollama-stop'){
+        const freed = num(f.freedGb, 0);
+        say(`<b style="color:var(--ok)">✓ unloaded</b> ${esc(model)}${freed>0.01?` — freed <b>${esc(fmtGb(freed))}</b>`:''}. Reloads on next use.`);
+      } else {
+        say(`<b style="color:var(--ok)">✓ warmed</b> ${esc(model)} in ${esc(String(num(f.tookSec,'—')))}s${f.route==='systemone'?' (decision-model route)':''}.`);
+      }
+    } else {
+      say(`<b style="color:var(--warn)">✗ ${esc(LS(j.error)||'fix failed')}</b>${j.error==='busy'?' — another fix is running, try again in a few seconds.':''}${j.report&&j.report.error?` — ${esc(LS(j.report.error))}`:''}`);
+    }
+  }catch(e){ say(`<b style="color:var(--bad)">✗ unreachable</b> — is the local server still running on 9111?`); }
+  btn.disabled = false; btn.textContent = t0;
   LOCAL_REFRESH();
 }
 /* delegated: works because window bodies are rebuilt, listeners can't be per-render */
 document.addEventListener('click', e => {
   const t = e.target.closest('#trimbtn'); if(t){ runFix('ollama-unload','Confirm trim'); return; }
+  const s = e.target.closest('[data-stop]'); if(s){ runModelFix(s, 'ollama-stop', s.getAttribute('data-stop')); return; }
+  const w2 = e.target.closest('[data-warm]'); if(w2){ runModelFix(w2, 'ollama-warm', w2.getAttribute('data-warm')); return; }
   const r = e.target.closest('#ramrefresh'); if(r){ LOCAL_REFRESH(); const o=$('#fixout'); if(o) o.textContent='refreshing…'; return; }
 });
 
@@ -1656,7 +1720,7 @@ function renderAbout(){
     <div class="phases">
       <div class="phase"><span class="pn2">P1</span><div><div class="pt">Live data, shipped ✅</div><div class="pd">Generator + OS shell + vault PRD index + roster + ventures + ⌘K over everything — this build. Deployed to GitHub Pages, verified in-browser with zero console errors.</div></div></div>
       <div class="phase"><span class="pn2">P2</span><div><div class="pt">Auto-fresh + PRD reader ✅</div><div class="pd">launchd regenerates data.js several times a day; the vault PRD index and scout-merge insights feed the PRDs view.</div></div></div>
-      <div class="phase"><span class="pn2">P2.5</span><div><div class="pt">Daylight + live local layer ✅ (v2)</div><div class="pd">Light theme, the new maio.os mark, and two new windows: Kanban (the live fleet board) and Machine (RAM gauge, top processes, local models, sessions &amp; spend). On this Mac a local companion (127.0.0.1:9111, tailnet :9443) streams the live numbers and carries the first two-way action — ⚡ Trim RAM unloads Ollama models to free memory (they reload on next use).</div></div></div>
+      <div class="phase"><span class="pn2">P2.5</span><div><div class="pt">Daylight + live local layer ✅ (v2)</div><div class="pd">Light theme, the new maio.os mark, and two new windows: Kanban (the live fleet board) and Machine (RAM gauge, top processes, local models, sessions &amp; spend). On this Mac a local companion (127.0.0.1:9111, tailnet :9443) streams the live numbers and carries the first two-way actions — ⚡ Trim RAM unloads Ollama models to free memory, and the Local models card now gives every model its own Unload / Warm up button (decision models route via the System One endpoint; v2.1, 2026-10-07).</div></div></div>
       <div class="phase"><span class="pn2">P3</span><div><div class="pt">Two-way, one more step</div><div class="pd">More gated actions from the windows — e.g. restart a dead service from Stack, pull a fresh digest — each behind a confirm step and the decision gates.</div></div></div>
       <div class="phase"><span class="pn2">P4</span><div><div class="pt">Vault view</div><div class="pd">Read-only Obsidian vault browser (MOCs, agent notes) via OpenKnowledge search — Beast stays the only writer.</div></div></div>
     </div>
