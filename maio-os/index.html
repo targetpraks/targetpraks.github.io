@@ -392,7 +392,7 @@ button.vrow:hover .nm{color:var(--ink)}
 .kbcard .kbt{color:var(--ink);line-height:1.35}
 .kbcard .kbm{margin-top:5px;display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:.66rem;color:var(--dim2)}
 .kbcard .kbm .as{color:var(--gold)}
-.slowchip{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-family:var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--line2);color:var(--dim2)}
+.slowchip{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-family:var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--line2);color:var(--dim2);max-width:100%;flex-wrap:wrap;overflow-wrap:anywhere}
 .slowchip.hi{color:var(--warn);border-color:var(--warn-line);background:var(--warn-soft)}
 /* mini RAM gauge in the Machine window */
 .mgauge{height:11px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);overflow:hidden;margin:7px 0 3px}
@@ -919,6 +919,9 @@ function localBadge(){
 }
 const fmtMoney = v => { const n=num(v,null); return n==null ? '—' : '$'+(n<100? n.toFixed(2) : Math.round(n).toLocaleString('en-US')); };
 const fmtGb = v => { const n=num(v,null); return n==null ? '—' : (n>=10 ? n.toFixed(1) : n.toFixed(2)) + ' GB'; };
+/* Long process names (com.apple.Virtualization.VirtualMachine) cannot wrap cleanly
+   inside the memory chip — shorten to head…tail so both ends stay identifiable. */
+const bigName = s => { s = str(s); return s.length <= 26 ? s : s.slice(0,15) + '…' + s.slice(-9); };
 function agoTxt2(t){ const s=str(t); if(!s) return ''; const d=new Date(s); if(isNaN(d)) return ''; const mins=Math.floor((Date.now()-d)/60000);
   if(mins<2) return 'just now'; if(mins<60) return mins+' min ago';
   const h=Math.floor(mins/60); if(h<24) return h+'h ago';
@@ -936,7 +939,7 @@ function machineRamCard(L){
     <div class="mkv"><span>used</span><b>${esc(pct.toFixed(1))}%</b></div>
     <div class="mkv"><span>swap</span><b>${esc(fmtGb(ram.swapUsedGb))} / ${esc(fmtGb(ram.swapTotalGb))}</b></div>
     <div class="mkv"><span>pressure free</span><b>${esc(String(num(ram.pressureFreePct,'—')))}%</b></div>
-    ${slow?`<div class="mnote"><span class="slowchip ${slow.level==='HIGH'?'hi':''}">${slow.level==='HIGH'?'⚠ slow machine':'✓ OK'} — ${esc(LS(slow.why))}${slow.biggest?` · biggest: <b>${esc(LS(slow.biggest.name))}</b> ${esc(fmtGb(slow.biggest.sizeGb))}`:''}</span></div>`:''}
+    ${slow?`<div class="mnote"><span class="slowchip ${slow.level==='HIGH'?'hi':''}">${slow.level==='HIGH'?'⚠ slow machine':'✓ OK'} — ${esc(LS(slow.why))}${slow.biggest?` · biggest: <b>${esc(bigName(LS(slow.biggest.name)))}</b> ${esc(fmtGb(slow.biggest.sizeGb))}`:''}</span></div>`:''}
     <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <button class="btn danger" id="trimbtn" aria-label="Unload local Ollama models to trim memory">⚡ Trim RAM</button>
       <button class="btn ghost" id="ramrefresh" aria-label="Refresh local readings">↻ Refresh</button>
