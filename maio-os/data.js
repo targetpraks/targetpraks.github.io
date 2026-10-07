@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 10,
+   "ms": 17,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 7,
+   "ms": 18,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 2,
+   "ms": 5,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 15,
+   "ms": 233,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 2,
+   "ms": 7,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 17,
+   "ms": 33,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 7,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 18,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 9,
+   "ms": 25,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 4,
+   "ms": 43,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 5,
+   "ms": 97,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 4,
+   "ms": 5,
    "ok": true,
    "note": "agent host"
   }
@@ -121,70 +121,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2,
+   "ms": 1145,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 197,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 197,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 196,
    "ok": false
   }
  ],
@@ -283,10 +283,10 @@ var MAIO_DATA = {
   },
   {
    "agent": "builder",
-   "path": "AI-Drive/Agent-Output/builder/vault-filing-handoff-2026-10-07-publish-tool-exit-codes.md",
+   "path": "AI-Drive/Agent-Output/builder/published.csv",
    "date": "2026-10-07",
-   "ext": "md",
-   "kb": 2
+   "ext": "csv",
+   "kb": 3
   },
   {
    "agent": "beast",
@@ -297,24 +297,24 @@ var MAIO_DATA = {
   },
   {
    "agent": "baymax",
-   "path": "AI-Drive/Agent-Output/baymax/2026-10-07-weekly-score.md",
+   "path": "AI-Drive/Agent-Output/baymax/2026-10-07-paba-grey-hair-assessment.md",
    "date": "2026-10-07",
    "ext": "md",
-   "kb": 13
+   "kb": 49
   },
   {
    "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/beast-handoff-bank-funding-v2.txt",
+   "path": "AI-Drive/Agent-Output/batman/published.csv",
    "date": "2026-10-07",
-   "ext": "txt",
+   "ext": "csv",
    "kb": 2
   },
   {
    "agent": "adrianna",
-   "path": "AI-Drive/Agent-Output/adrianna/published.csv",
+   "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
    "date": "2026-10-07",
-   "ext": "csv",
-   "kb": 4
+   "ext": "json",
+   "kb": 15
   },
   {
    "agent": "stack-setup",
@@ -534,7 +534,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "path": "DevMini/targetpraks.github.io/maio-os/index.html",
     "date": "2026-10-07",
     "ext": "html",
     "kb": 0
@@ -648,10 +648,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/maio-tools/README.md",
+    "path": "DevMini/maio-tools/tools/publish_document.py",
     "date": "2026-10-07",
-    "ext": "md",
-    "kb": 5
+    "ext": "py",
+    "kb": 48
    }
   },
   {
@@ -1185,7 +1185,7 @@ var MAIO_DATA = {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
-    "path": "AI-Drive/Agent-Output/adrianna/published.csv",
+    "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
     "date": "2026-10-07"
    }
   },
@@ -1193,7 +1193,7 @@ var MAIO_DATA = {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/beast-handoff-bank-funding-v2.txt",
+    "path": "AI-Drive/Agent-Output/batman/published.csv",
     "date": "2026-10-07"
    }
   },
@@ -1201,7 +1201,7 @@ var MAIO_DATA = {
    "name": "baymax",
    "role": "Fitness & wellness \u00b7 weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/baymax/2026-10-07-weekly-score.md",
+    "path": "AI-Drive/Agent-Output/baymax/2026-10-07-paba-grey-hair-assessment.md",
     "date": "2026-10-07"
    }
   },
@@ -1225,7 +1225,7 @@ var MAIO_DATA = {
    "name": "builder",
    "role": "Builds feature work & PRs",
    "latest": {
-    "path": "AI-Drive/Agent-Output/builder/vault-filing-handoff-2026-10-07-publish-tool-exit-codes.md",
+    "path": "AI-Drive/Agent-Output/builder/published.csv",
     "date": "2026-10-07"
    }
   },
@@ -1429,7 +1429,7 @@ var MAIO_DATA = {
    "jobs": [
     {
      "label": "com.maio.snappier-playlists",
-     "pid": 835,
+     "pid": 900,
      "exit": 0
     },
     {
@@ -1438,12 +1438,12 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.omlx-watchdog",
+     "label": "com.maio.keep-awake-guard",
      "pid": null,
      "exit": 0
     },
     {
-     "label": "com.maio.keep-awake-guard",
+     "label": "com.maio.omlx-watchdog",
      "pid": null,
      "exit": 0
     },
@@ -1454,27 +1454,22 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-local",
-     "pid": 45690,
+     "pid": 904,
      "exit": 0
     },
     {
      "label": "com.maio.copilot-mcp",
-     "pid": 21608,
+     "pid": 926,
      "exit": 0
     },
     {
      "label": "com.hermes.serve",
-     "pid": 852,
+     "pid": 927,
      "exit": 0
     },
     {
      "label": "com.maio.wheel-xavier",
      "pid": null,
-     "exit": 0
-    },
-    {
-     "label": "application.com.nousresearch.hermes.6065554.6065559",
-     "pid": 64570,
      "exit": 0
     },
     {
@@ -1484,7 +1479,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": null,
+     "pid": 62653,
      "exit": 0
     },
     {
@@ -1494,6 +1489,11 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.brief-fallback",
+     "pid": null,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.cua-driver-supervisor",
      "pid": null,
      "exit": 0
     },
@@ -1509,13 +1509,8 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.ollama-console",
-     "pid": 30456,
+     "pid": 938,
      "exit": 0
-    },
-    {
-     "label": "com.maio.hermes-dashboard",
-     "pid": 67547,
-     "exit": -15
     },
     {
      "label": "com.maio.mount-nas",
@@ -1524,8 +1519,13 @@ var MAIO_DATA = {
     },
     {
      "label": "ai.hermes.gateway",
-     "pid": 7168,
-     "exit": 75
+     "pid": 946,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.hermes-dashboard",
+     "pid": 947,
+     "exit": 0
     },
     {
      "label": "com.maio.wheel-johnny",
@@ -1534,27 +1534,27 @@ var MAIO_DATA = {
     },
     {
      "label": "ing.paperclip.paperclipai",
-     "pid": 836,
+     "pid": 901,
      "exit": 0
     },
     {
      "label": "com.maio.docs-mcp",
-     "pid": 841,
+     "pid": 908,
      "exit": 0
     },
     {
      "label": "com.maio.read-room",
-     "pid": 93491,
-     "exit": 0
+     "pid": null,
+     "exit": 1
     },
     {
      "label": "com.maio.ok-vault-server",
-     "pid": null,
-     "exit": 0
+     "pid": 3399,
+     "exit": -15
     },
     {
      "label": "com.maio.composio-mcp",
-     "pid": 858,
+     "pid": 933,
      "exit": 0
     },
     {
@@ -1579,12 +1579,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.cloudflare-mcp",
-     "pid": 1814,
+     "pid": 912,
      "exit": 0
     },
     {
      "label": "com.maio.vault-agent",
-     "pid": 845,
+     "pid": 916,
      "exit": 0
     },
     {
@@ -1599,8 +1599,8 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.krea-mcp",
-     "pid": 91939,
-     "exit": -15
+     "pid": 950,
+     "exit": 0
     },
     {
      "label": "com.maio.watchtower",
@@ -1609,7 +1609,7 @@ var MAIO_DATA = {
     },
     {
      "label": "ai.omnigent.host",
-     "pid": 839,
+     "pid": 906,
      "exit": 0
     },
     {
@@ -1624,12 +1624,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.todoist-mcp",
-     "pid": 21762,
+     "pid": 920,
      "exit": 0
     },
     {
      "label": "com.maio.pipedream-mcp",
-     "pid": 849,
+     "pid": 922,
      "exit": 0
     },
     {
@@ -1644,8 +1644,13 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.browseruse-mcp",
-     "pid": 52636,
-     "exit": 1
+     "pid": 934,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.superhuman-mcp",
+     "pid": 38376,
+     "exit": 0
     },
     {
      "label": "com.maio.meta-reap",
@@ -1654,7 +1659,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.snappier-server",
-     "pid": 877,
+     "pid": 954,
      "exit": 0
     },
     {
@@ -1664,17 +1669,17 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.agent-desktop-guard",
-     "pid": 30008,
-     "exit": 0
-    },
-    {
-     "label": "com.maio.magnific-mcp",
-     "pid": 91943,
+     "pid": 37843,
      "exit": -15
     },
     {
+     "label": "com.maio.magnific-mcp",
+     "pid": 914,
+     "exit": 0
+    },
+    {
      "label": "com.maio.gate-mcp",
-     "pid": 855,
+     "pid": 930,
      "exit": 0
     },
     {
@@ -1689,7 +1694,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.qmd-mcp",
-     "pid": 866,
+     "pid": 942,
      "exit": 0
     },
     {
@@ -1704,54 +1709,54 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.keep-awake",
-     "pid": 876,
+     "pid": 953,
      "exit": 0
     },
     {
      "label": "com.maio.status-agent",
-     "pid": 31653,
-     "exit": -15
+     "pid": 956,
+     "exit": 0
     }
    ],
    "counts": {
-    "loaded": 57,
-    "running": 26
+    "loaded": 58,
+    "running": 27
    }
   },
   "docker": [
    {
+    "name": "litellm-litellm-1",
+    "status": "Up About an hour (healthy)",
+    "ports": "127.0.0.1:4000->4000/tcp"
+   },
+   {
     "name": "hindsight",
-    "status": "Up 8 hours (healthy)",
+    "status": "Up About an hour (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 26 minutes (healthy)",
+    "status": "Up 32 minutes (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
-    "name": "litellm-litellm-1",
-    "status": "Up 8 hours (healthy)",
-    "ports": "127.0.0.1:4000->4000/tcp"
-   },
-   {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 8 hours (healthy)",
+    "status": "Up About an hour (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 8 hours",
+    "status": "Up About an hour",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 8 hours (healthy)",
+    "status": "Up About an hour (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 8 hours",
+    "status": "Up About an hour",
     "ports": "5432/tcp"
    }
   ],
@@ -1787,83 +1792,81 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 52,
+    "done": 62,
     "blocked": 1,
-    "todo": 1,
-    "running": 2,
-    "ready": 1
+    "running": 1
    },
-   "total": 57,
+   "total": 64,
    "recent": [
+    {
+     "id": "t_ae89ac17",
+     "title": "Vault: file 'Air\u2194Mini Setup \u2014 full parity run (2026-10-07)' to AI-Space/2.Automations-Skills/Reports/2026-10-07-air-mini-setup-full-parity-run-2026-10-07-2.md \u2014",
+     "status": "running",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_c5f0eb15",
+     "title": "Vault: file 'Air\u2194Mini Setup \u2014 full parity run (2026-10-07)' to AI-Space/2.Automations-Skills/Reports/2026-10-07-air-mini-setup-full-parity-run-2026-10-07.md \u2014 r",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_69a88113",
+     "title": "Vault: file 'Fleet Software Update Sweep \u2014 built and first run complete' to AI-Space/2.Automations-Skills/Reports/2026-10-07-fleet-software-update-sweep-built-a",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_5c73e211",
+     "title": "Vault: file 'Desktop guard v2 \u2014 the reboot exposed two more silent CUA killers (both fixed)' to AI-Space/1.Setup-Config/Systems/2026-10-07-desktop-guard-v2-the-",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_cf46c638",
+     "title": "File the staged OK-vault-server watchdog-fix report to AI-Space/2.Automations-Skills/Reports",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_9026b247",
+     "title": "File the staged OK-vault-server outage report to AI-Space/2.Automations-Skills/Reports",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_e9441279",
+     "title": "Fix ok-vault-server auto-restart: watchdog's backgrounded launcher is killed before start() (port 64200 stays down)",
+     "status": "done",
+     "assignee": "builder"
+    },
     {
      "id": "t_c015142b",
      "title": "Restart + verify the OpenKnowledge vault server (port 64200) \u2014 OK MCP lane is parked fleet-wide",
-     "status": "running",
+     "status": "done",
      "assignee": "courage"
     },
     {
      "id": "t_0c8b682e",
      "title": "Vault: UPDATE 'Bank Funding Explained' to v2 (adds \u00a78 priority order + readable md) \u2014 rule-4 handoff from Bruce Wayne",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_379ac934",
      "title": "Vault cleanup (t_32f9becf follow-up): seam stitch + delete beast-write-probe-3 + change-log entry",
-     "status": "todo",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_16abae67",
      "title": "Vault: file 'Maio OS v2.1 \u2014 Ollama console folded in (build report)' to AI-Space/2.Automations-Skills/Reports/2026-10-07-maio-os-v2-1-ollama-console-folded-in-b",
-     "status": "running",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_32f9becf",
      "title": "Vault: file 'Locked-desktop prevention \u2014 so CUA can never be blind-sided again' to AI-Space/1.Setup-Config/Systems/2026-10-07-locked-desktop-prevention-so-cua-c",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_4a650c1a",
-     "title": "Vault: file 'Zoho Sign \u00d7 CUA \u2014 exercise result: blocked by a locked screen (and a standing rule)' to AI-Space/2.Automations-Skills/Reports/2026-10-07-zoho-sign-",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_38589c05",
-     "title": "Vault: file 'Apple Notes format fix \u2014 Telegram, API Keys & Channels notes' to AI-Space/2.Automations-Skills/Reports/2026-10-07-apple-notes-format-fix-telegram-a",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_7167c62d",
-     "title": "Re-file the publishing-convention spec into the vault (\u00a72.3 shelf-name rule; now matches the code)",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_48943afb",
-     "title": "Fix publish-document: read-room shelf name disagrees with the document name (link-vs-basename + re-publish repoints a delivered URL)",
-     "status": "done",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_484f181b",
-     "title": "Read-Room: publish public HTTPS link for 'Bank Funding Explained' HTML (follow-up of t_5a4c6a90)",
-     "status": "done",
-     "assignee": "splinter"
-    },
-    {
-     "id": "t_feed6942",
-     "title": "Fix publish-document handoff: never creates the Beast card + writer cannot read /Volumes (EPERM)",
-     "status": "done",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_5a4c6a90",
-     "title": "Vault: file 'Bank Funding Explained' (HTML + md) to Work/4.Research \u2014 rule-4 handoff from Bruce Wayne",
      "status": "done",
      "assignee": "beast"
     }
@@ -2779,7 +2782,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-07T10:45:05Z"
+  "mergedAt": "2026-10-07T16:45:05Z"
  },
  "summary": {
   "projects": 57,
@@ -2790,7 +2793,7 @@ var MAIO_DATA = {
   "devTotal": 10,
   "reports": 24,
   "roster": 34,
-  "launchdLoaded": 57,
+  "launchdLoaded": 58,
   "dockerUp": 7,
   "libraryPublic": 13,
   "libraryInternal": 200,
