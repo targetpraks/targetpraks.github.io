@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 17,
+   "ms": 10,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 19,
+   "ms": 7,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 7,
+   "ms": 2,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 255,
+   "ms": 15,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 2,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 41,
+   "ms": 17,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 1,
+   "ms": 0,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 18,
+   "ms": 0,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 10,
+   "ms": 9,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 8,
+   "ms": 4,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 101,
+   "ms": 5,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 95,
+   "ms": 4,
    "ok": true,
    "note": "agent host"
   }
@@ -121,70 +121,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1132,
+   "ms": 2,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 1,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 1,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 0,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 0,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 1,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 1,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 1,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 1,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 1,
    "ok": false
   }
  ],
@@ -213,7 +213,7 @@ var MAIO_DATA = {
   },
   {
    "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/crons-plan-2026-10-06.md",
+   "path": "AI-Drive/Agent-Output/splinter/2026-10-07-read-room-bank-funding-https-link.md",
    "date": "2026-10-07",
    "ext": "md",
    "kb": 6
@@ -276,10 +276,10 @@ var MAIO_DATA = {
   },
   {
    "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+   "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
    "date": "2026-10-07",
-   "ext": "",
-   "kb": 1
+   "ext": "json",
+   "kb": 4
   },
   {
    "agent": "builder",
@@ -290,10 +290,10 @@ var MAIO_DATA = {
   },
   {
    "agent": "beast",
-   "path": "AI-Drive/Agent-Output/beast/create-jobs.sh",
+   "path": "AI-Drive/Agent-Output/beast/gates-pending.csv",
    "date": "2026-10-07",
-   "ext": "sh",
-   "kb": 11
+   "ext": "csv",
+   "kb": 1
   },
   {
    "agent": "baymax",
@@ -304,17 +304,17 @@ var MAIO_DATA = {
   },
   {
    "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/2026-10-07-publish-instruction-acceptance.md",
+   "path": "AI-Drive/Agent-Output/batman/beast-handoff-bank-funding-v2.txt",
    "date": "2026-10-07",
-   "ext": "md",
-   "kb": 7
+   "ext": "txt",
+   "kb": 2
   },
   {
    "agent": "adrianna",
-   "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
+   "path": "AI-Drive/Agent-Output/adrianna/published.csv",
    "date": "2026-10-07",
-   "ext": "json",
-   "kb": 15
+   "ext": "csv",
+   "kb": 4
   },
   {
    "agent": "stack-setup",
@@ -648,10 +648,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/maio-tools/tests/test_publish_document.py",
+    "path": "DevMini/maio-tools/README.md",
     "date": "2026-10-07",
-    "ext": "py",
-    "kb": 24
+    "ext": "md",
+    "kb": 5
    }
   },
   {
@@ -1185,7 +1185,7 @@ var MAIO_DATA = {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
-    "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
+    "path": "AI-Drive/Agent-Output/adrianna/published.csv",
     "date": "2026-10-07"
    }
   },
@@ -1193,7 +1193,7 @@ var MAIO_DATA = {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/2026-10-07-publish-instruction-acceptance.md",
+    "path": "AI-Drive/Agent-Output/batman/beast-handoff-bank-funding-v2.txt",
     "date": "2026-10-07"
    }
   },
@@ -1209,7 +1209,7 @@ var MAIO_DATA = {
    "name": "beast",
    "role": "Vault steward \u2014 hygiene & lifecycle",
    "latest": {
-    "path": "AI-Drive/Agent-Output/beast/create-jobs.sh",
+    "path": "AI-Drive/Agent-Output/beast/gates-pending.csv",
     "date": "2026-10-07"
    }
   },
@@ -1272,7 +1272,7 @@ var MAIO_DATA = {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+    "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
     "date": "2026-10-07"
    }
   },
@@ -1387,7 +1387,7 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/crons-plan-2026-10-06.md",
+    "path": "AI-Drive/Agent-Output/splinter/2026-10-07-read-room-bank-funding-https-link.md",
     "date": "2026-10-07"
    }
   },
@@ -1453,6 +1453,16 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.maio-os-local",
+     "pid": 45690,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.copilot-mcp",
+     "pid": 21608,
+     "exit": 0
+    },
+    {
      "label": "com.hermes.serve",
      "pid": 852,
      "exit": 0
@@ -1474,7 +1484,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 63381,
+     "pid": null,
      "exit": 0
     },
     {
@@ -1495,6 +1505,11 @@ var MAIO_DATA = {
     {
      "label": "com.maio.paperclip-briefing-collector",
      "pid": null,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.ollama-console",
+     "pid": 30456,
      "exit": 0
     },
     {
@@ -1534,7 +1549,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.ok-vault-server",
-     "pid": 844,
+     "pid": null,
      "exit": 0
     },
     {
@@ -1608,6 +1623,11 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.todoist-mcp",
+     "pid": 21762,
+     "exit": 0
+    },
+    {
      "label": "com.maio.pipedream-mcp",
      "pid": 849,
      "exit": 0
@@ -1640,6 +1660,11 @@ var MAIO_DATA = {
     {
      "label": "com.maio.ok-vault-server-watchdog",
      "pid": null,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.agent-desktop-guard",
+     "pid": 30008,
      "exit": 0
     },
     {
@@ -1684,49 +1709,49 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.status-agent",
-     "pid": 879,
-     "exit": 0
+     "pid": 31653,
+     "exit": -15
     }
    ],
    "counts": {
-    "loaded": 52,
-    "running": 23
+    "loaded": 57,
+    "running": 26
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 8 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 46 minutes (healthy)",
+    "status": "Up 26 minutes (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 8 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 8 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 3 hours",
+    "status": "Up 8 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 8 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 3 hours",
+    "status": "Up 8 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1747,87 +1772,98 @@ var MAIO_DATA = {
     {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:8787",
      "target": "http://127.0.0.1:8787"
+    },
+    {
+     "url": "https://ricardos-mac-mini.taile9f837.ts.net:8788",
+     "target": "http://127.0.0.1:8788"
+    },
+    {
+     "url": "https://ricardos-mac-mini.taile9f837.ts.net:9443",
+     "target": "http://127.0.0.1:9111"
     }
    ],
-   "count": 4
+   "count": 6
   },
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 44,
-    "blocked": 1
+    "done": 52,
+    "blocked": 1,
+    "todo": 1,
+    "running": 2,
+    "ready": 1
    },
-   "total": 45,
+   "total": 57,
    "recent": [
     {
-     "id": "t_9dfa7b98",
-     "title": "Vault backfill: file Ollama-UI explainer \u2014 jump link unresolved (published 11:11) \u2014 rule-4 handoff from Adrianna",
+     "id": "t_c015142b",
+     "title": "Restart + verify the OpenKnowledge vault server (port 64200) \u2014 OK MCP lane is parked fleet-wide",
+     "status": "running",
+     "assignee": "courage"
+    },
+    {
+     "id": "t_0c8b682e",
+     "title": "Vault: UPDATE 'Bank Funding Explained' to v2 (adds \u00a78 priority order + readable md) \u2014 rule-4 handoff from Bruce Wayne",
+     "status": "ready",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_379ac934",
+     "title": "Vault cleanup (t_32f9becf follow-up): seam stitch + delete beast-write-probe-3 + change-log entry",
+     "status": "todo",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_16abae67",
+     "title": "Vault: file 'Maio OS v2.1 \u2014 Ollama console folded in (build report)' to AI-Space/2.Automations-Skills/Reports/2026-10-07-maio-os-v2-1-ollama-console-folded-in-b",
+     "status": "running",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_32f9becf",
+     "title": "Vault: file 'Locked-desktop prevention \u2014 so CUA can never be blind-sided again' to AI-Space/1.Setup-Config/Systems/2026-10-07-locked-desktop-prevention-so-cua-c",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_3008196d",
-     "title": "File Obsidian-HTML capability explainer to vault (AI-Space/1.Setup-Config/Systems) \u2014 rule-4 handoff from Adrianna",
+     "id": "t_4a650c1a",
+     "title": "Vault: file 'Zoho Sign \u00d7 CUA \u2014 exercise result: blocked by a locked screen (and a standing rule)' to AI-Space/2.Automations-Skills/Reports/2026-10-07-zoho-sign-",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_87618a12",
-     "title": "File PRD \u2014 Fleet Publishing Workflow v2 plan to vault (AI-Space/3.PRD/Active) \u2014 rule-4 handoff from Adrianna",
+     "id": "t_38589c05",
+     "title": "Vault: file 'Apple Notes format fix \u2014 Telegram, API Keys & Channels notes' to AI-Space/2.Automations-Skills/Reports/2026-10-07-apple-notes-format-fix-telegram-a",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_ad520132",
-     "title": "File into the vault: publish-tool exit-code fixes report (rule-4 handoff from t_902cb7f8)",
+     "id": "t_7167c62d",
+     "title": "Re-file the publishing-convention spec into the vault (\u00a72.3 shelf-name rule; now matches the code)",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_4c4b76f2",
-     "title": "File go-live acceptance report to vault (AI-Space/2.Automations-Skills/Reports) \u2014 rule-4 handoff from Adrianna (root t_f7779134)",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_0fda479a",
-     "title": "File AI-platform comparison report to vault (AI-Space/4.Research) \u2014 rule-4 handoff from Adrianna",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_902cb7f8",
-     "title": "Fix publish tool: exit-3 stderr omits the jump URL; decide exit 5 vs 6 precedence",
+     "id": "t_48943afb",
+     "title": "Fix publish-document: read-room shelf name disagrees with the document name (link-vs-basename + re-publish repoints a delivered URL)",
      "status": "done",
      "assignee": "builder"
     },
     {
-     "id": "t_2ca19f0d",
-     "title": "File verification report to vault (AI-Space/2.Automations-Skills/Reports)",
+     "id": "t_484f181b",
+     "title": "Read-Room: publish public HTTPS link for 'Bank Funding Explained' HTML (follow-up of t_5a4c6a90)",
      "status": "done",
-     "assignee": "beast"
+     "assignee": "splinter"
     },
     {
-     "id": "t_6429e4f6",
-     "title": "Vault: replace pool-cleaner deck (HTML+PDF) with the data-driven build + add pool-cleaner-data.json and render.py \u2014 follow-up to t_062614ef",
-     "status": "blocked",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_ed807c71",
-     "title": "File to vault (rule 4): publish-instruction acceptance report + block",
+     "id": "t_feed6942",
+     "title": "Fix publish-document handoff: never creates the Beast card + writer cannot read /Volumes (EPERM)",
      "status": "done",
-     "assignee": "beast"
+     "assignee": "builder"
     },
     {
-     "id": "t_9b20e294",
-     "title": "File publish-tool acceptance report to vault (AI-Space/2.Automations-Skills/Reports) \u2014 rule-4 handoff from builder",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_4a143453",
-     "title": "File document-publishing convention to vault (AI-Space/2.Automations-Skills) \u2014 rule-4 handoff from Splinter",
+     "id": "t_5a4c6a90",
+     "title": "Vault: file 'Bank Funding Explained' (HTML + md) to Work/4.Research \u2014 rule-4 handoff from Bruce Wayne",
      "status": "done",
      "assignee": "beast"
     }
@@ -2754,7 +2790,110 @@ var MAIO_DATA = {
   "devTotal": 10,
   "reports": 24,
   "roster": 34,
-  "launchdLoaded": 52,
-  "dockerUp": 7
+  "launchdLoaded": 57,
+  "dockerUp": 7,
+  "libraryPublic": 13,
+  "libraryInternal": 200,
+  "docs": 135
+ },
+ "library": {
+  "public": [
+   {
+    "title": "The Maio Cosmos \u2014 Five Charts, One Sky",
+    "url": "maio-cosmos/",
+    "dir": "maio-cosmos",
+    "date": "2026-09-26",
+    "kb": 605
+   },
+   {
+    "title": "Maio Cosmos \u2014 UK &amp; Europe",
+    "url": "maio-cosmos-europe/",
+    "dir": "maio-cosmos-europe",
+    "date": "2026-09-26",
+    "kb": 473
+   },
+   {
+    "title": "Breastfeeding \u2014 a guide from the first days through the first year",
+    "url": "breastfeeding-guide/",
+    "dir": "breastfeeding-guide",
+    "date": "2026-09-24",
+    "kb": 257
+   },
+   {
+    "title": "The Best-Town Explorer \u2014 Where in the World",
+    "url": "best-town/",
+    "dir": "best-town",
+    "date": "2026-09-20",
+    "kb": 659
+   },
+   {
+    "title": "\ud83c\udf31 Welgemoed Garden Plan \u2014 Ricardo & Julie",
+    "url": "garden-plan/",
+    "dir": "garden-plan",
+    "date": "2026-09-20",
+    "kb": 44
+   },
+   {
+    "title": "Ricardo &amp; Julie \u2014 Written in the Stars",
+    "url": "rj-cosmos/",
+    "dir": "rj-cosmos",
+    "date": "2026-09-20",
+    "kb": 26
+   },
+   {
+    "title": "The Harvest File \u2014 The Local Farmer VIP Recipe Book \u00b7 Concept & Marketing Pack",
+    "url": "tlf-harvest-file.html",
+    "dir": "tlf-harvest-file.html",
+    "date": "2026-09-20",
+    "kb": 51
+   },
+   {
+    "title": "Julie &mdash; The Charts of a Life",
+    "url": "julie-charts/",
+    "dir": "julie-charts",
+    "date": "2026-09-12",
+    "kb": 64
+   },
+   {
+    "title": "Ricardo &mdash; The Charts of a Life",
+    "url": "ricardo-charts/",
+    "dir": "ricardo-charts",
+    "date": "2026-09-12",
+    "kb": 61
+   },
+   {
+    "title": "Soul Hotel \u2014 Kalithea, Rhodes \u00b7 Interactive 3D Concept",
+    "url": "soul-hotel/",
+    "dir": "soul-hotel",
+    "date": "2026-09-12",
+    "kb": 13
+   },
+   {
+    "title": "Ricardo Maio \u2014 Live Projects Dashboard",
+    "url": "index.html",
+    "dir": "index.html",
+    "date": "2026-09-11",
+    "kb": 25
+   },
+   {
+    "title": "Maio Hub Jump",
+    "url": "jump.html",
+    "dir": "jump.html",
+    "date": "2026-09-03",
+    "kb": 1
+   },
+   {
+    "title": "TLF App \u2014 INFX Solutions Team Feedback Report",
+    "url": "tlf-feedback-report.html",
+    "dir": "tlf-feedback-report.html",
+    "date": "2026-07-24",
+    "kb": 29
+   }
+  ],
+  "counts": {
+   "public": 13,
+   "internal": 200,
+   "docs": 135
+  }
  }
 };

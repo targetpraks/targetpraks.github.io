@@ -412,6 +412,19 @@ button.vrow:hover .nm{color:var(--ink)}
 .desklet{padding-bottom:16px}
 .vrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vrow .pill{font-size:.66rem;padding:1px 7px;white-space:nowrap}
+/* v2.2 — the Library (Reports window): shelves + cards that say where each thing lives */
+.lbadge.pub{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-soft)}
+.lbadge.vault{color:var(--cyber-magenta-ink);border-color:rgba(244,63,122,.45);background:var(--cyber-magenta-soft)}
+.libgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));margin-top:10px}
+.libcard{background:var(--panel);border:var(--hair) solid var(--line);border-radius:var(--radius-sm);
+         box-shadow:var(--shadow-1);padding:12px 14px;display:flex;flex-direction:column;gap:7px}
+.libcard:hover{border-color:var(--gold-dim);box-shadow:var(--shadow-2), var(--ring-gold)}
+.libcard .lt{font-family:var(--grot);font-weight:600;color:var(--ink);font-size:.87rem;line-height:1.32;overflow-wrap:anywhere}
+.libcard .lm{font-family:var(--mono);font-size:.66rem;color:var(--dim2);display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.libcard .lp{font-family:var(--mono);font-size:.64rem;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.libcard .lacts{display:flex;gap:7px;align-items:center;margin-top:auto;padding-top:7px;flex-wrap:wrap}
+.btn.sm{font-size:.72rem;padding:5px 10px;gap:6px}
+.shelfnote{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:14px}
 </style>
 </head>
 <body>
@@ -530,7 +543,7 @@ button.vrow:hover .nm{color:var(--ink)}
   if(boot) boot.addEventListener('click', function(){ if(boot.isConnected) boot.classList.add('gone'); });
 })();
 </script>
-<script src="data.js"></script>
+<script src="data.js?v=daylight2"></script>
 <script>
 'use strict';
 /* The shell now owns boot protection: stop the pre-data.js guard's timer. */
@@ -684,6 +697,7 @@ const DATA = {
   roster: normAll(()=>D.roster, normAgent),
   prds: normAll(()=>D.prds, normPRD),
   summary: one(()=> isObj(D.summary) ? D.summary : {}, {}),
+  library: one(()=> isObj(D.library) ? D.library : {}, {}),
   devServersStaleSince: one(()=>str(D.devServersStaleSince), ''),
   enriched: one(()=> isObj(D.enriched) ? D.enriched : {}, {}),
 };
@@ -768,7 +782,7 @@ function startBoot(){
   if(!bootLog) return;
   const devOn = DEV_ON, devTotal = DEV_TOTAL;
   const lines = [
-    ['dim','maio.os 2.0 · daylight build'],
+    ['dim','maio.os 2.2 · daylight build'],
     ['ok',`stack probe ......... ${STACK.ok}/${STACK.total} clean · ${STACK.warn} non-2xx · ${STACK.bad} down`],
     [devOn? 'ok':'bad',`dev servers ......... ${devOn}/${devTotal} online`],
     ['ok',`projects indexed .... ${snum("projects", DATA.projects.length)}`],
@@ -806,6 +820,7 @@ function markReady(){
      undo it — remove the error node AND un-hide the cockpit it hid: the cockpit is the
      truth now. This is the late-recovery path; a healthy load has nothing to undo. */
   ensureCockpitVisible();
+  armGuard();          // healthy shell → Back now closes a window first (see armGuard)
 }
 function markFailed(detail){
   if(uiState === 'ready') return;    // a health-cocked page is never failed by a timer
@@ -897,7 +912,7 @@ function LOCAL_REFRESH(){
       else { LOCAL_STATUS = LOCAL ? 'offline' : 'absent'; }   // keep last good data, flag the miss
       LOCAL_TS = Date.now(); LOCAL_REFRESH._busy = false;
       one(renderGen, null);
-      ['machine','kanban'].forEach(id => { const w=OPEN.get(id); if(w && w.rerender) w.rerender(true); });
+      ['machine','kanban','reports'].forEach(id => { const w=OPEN.get(id); if(w && w.rerender) w.rerender(true); });
       resolve(LOCAL);
     };
     s.src = LOCAL_SRC + '?t=' + Math.floor(Date.now()/1000);
@@ -1263,7 +1278,7 @@ const WINS = {
   desk:{title:'The Desk', icon:'◆', sub:'what changed lately', render:renderDesk, w:640, h:420},
   projects:{title:'Projects', icon:'▣', sub:`${snum("projects",DATA.projects.length)} indexed`, render:renderProjects, w:820, h:520},
   agents:{title:'Agents', icon:'✦', sub:`${snum("roster",DATA.roster.length)} on roster`, render:renderAgents, w:760, h:480},
-  reports:{title:'Reports', icon:'▤', sub:`${snum("reports",DATA.reports.length)} artifacts`, render:renderReports, w:820, h:520},
+  reports:{title:'Reports', icon:'▤', sub:'the deliverable library', render:renderReports, w:980, h:600},
   kanban:{title:'Kanban', icon:'▦', sub:'the fleet board', render:renderKanban, w:980, h:600},
   machine:{title:'Machine', icon:'⚙', sub:'RAM · models · sessions', render:renderMachine, w:880, h:580},
   prds:{title:'PRDs', icon:'✎', sub:`${snum("prds",DATA.prds.length)} found`, render:renderPRDs, w:700, h:440},
@@ -1322,6 +1337,7 @@ function openWin(id, restore=null){
   $('.winresize', el).addEventListener('pointerdown', ev => startResize(ev, el, id));
   el.addEventListener('pointerdown', () => focusWin(id), true);   // focus only — focusWin never persists
   persist(); dockSync();
+  armGuard();                                       // Back now means "close this window"
 }
 function closeWin(id){ const w = OPEN.get(id); if(!w) return; w.el.remove(); OPEN.delete(id);
   if(id==='detail') detailProject=null;
@@ -1392,6 +1408,33 @@ function focusTop(){ let best=null; for(const [id,w] of OPEN){ if(w.mode!=='min'
    Writes go through history.replaceState only, never location.hash: assigning the hash
    pushes a history entry and fires hashchange, so it would spam Back and re-enter the
    parser. replaceState changes the address bar without either. */
+/* ---------- Back button: "get out of what you're in" ----------
+   The browser Back button closes the window you are in — one window per press — instead
+   of dumping you out of the cockpit. One guard history entry is pushed when the shell is
+   healthy; each Back that lands on it closes the top window and re-arms the guard. When
+   nothing is open, the guard is consumed silently and Back leaves the page like normal.
+   Never armed on a broken-data page, so a caller's link is never trapped. */
+let GUARD_ARMED = false;
+function armGuard(){
+  if(GUARD_ARMED || !DATA_OK || uiState !== 'ready') return;
+  try{ history.pushState({maioGuard:1}, '', location.href); GUARD_ARMED = true; }catch(_){}
+}
+function closeTopWindow(){
+  let target = (focusedId && OPEN.has(focusedId)) ? focusedId : null;
+  if(!target){ let best=null; for(const [id,w] of OPEN){ if(w.mode!=='min' && (!best || +w.el.style.zIndex > +best[1].el.style.zIndex)) best=[id,w]; }
+    target = best ? best[0] : null; }
+  if(target) closeWin(target);
+}
+let HASH_SUPPRESS = 0;   // while a Back press is closing a window, do not let its URL re-open one
+addEventListener('popstate', e => {
+  if(uiState !== 'ready' || !DATA_OK) return;      // broken page: never interfere
+  const st = (e.state && typeof e.state === 'object') ? e.state : {};
+  if(!st.maioGuard && !GUARD_ARMED) return;        // not our entry — a real navigation
+  GUARD_ARMED = false;                             // the guard entry was just consumed
+  HASH_SUPPRESS = Date.now() + 250;                // the destination URL names a window; don't reopen it
+  if(OPEN.size){ closeTopWindow(); if(OPEN.size) armGuard(); return; }  // stay: peel one window off
+  /* nothing left to close: the user has already navigated back — leave them there */
+});
 function hashFor(){
   if(focusedId === 'detail'){
     if(detailAgent)  return '#agent:'  + encodeURIComponent(str(detailAgent.name));
@@ -1652,15 +1695,109 @@ function renderAgents(){
       <div class="al">${a.latest&&a.latest.date?`latest <b>${esc(fmtDate(a.latest.date))}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}${n?` <b>· ${n} report${n===1?'':'s'}</b>`:''}</div>
     </button>`; }).join('')}</div>`;
 }
-function renderReports(){
-  const reps=DATA.reports.slice();
-  const q=str(__repq).toLowerCase();
-  return `<input class="searchbox" data-filter="reports" placeholder="Filter reports by agent / path…" autocomplete="off" spellcheck="false" value="${escAttr(__repq||'')}">
-  <div class="rows">${reps.filter(r=>(r.agent+' '+r.path).toLowerCase().includes(q)).map(r=>`
-    <div class="rrow"><span class="ra">${esc(r.agent)}</span><span class="rp">${esc(r.path)}</span>
-    <span class="rd">${esc(fmtDate(r.date))} · ${esc(r.ext||'—')} ${esc(r.kb!=null?r.kb+'KB':'—')}</span>
-    <button class="copy" data-report="${escAttr(r.path)}">⧉</button></div>`).join('') || '<div class="empty">no reports</div>'}</div>`;
+/* ---------- Reports → the Library ----------
+   Three shelves, each item says exactly where it lives:
+     · Machine — HTML deliverables that exist only on this Mac (agent reports + project
+       work). Links go through the local server's read-only /files/ view; on the public
+       build they show as "machine-only" with no dead link.
+     · Public — the live pages of targetpraks.github.io (data.js carries this list on
+       every build; it is public information).
+     · Docs — PRDs and markdown: vault items open in Obsidian via jump.html; agent
+       markdown is machine-only like the internal HTML.
+   Search filters across all shelves (agent / title / path). */
+let libShelf = 'machine';
+const LSERVER = (() => { try{
+    if(location.protocol.indexOf('http')===0 && (location.port==='9111' || location.hostname.endsWith('.ts.net'))) return '';
+  }catch(_){}
+  return 'http://127.0.0.1:9111';
+})();
+function libLive(){ return LOCAL_STATUS==='live' && LSEC('library'); }
+function fileHref(rel){ return LSERVER + '/files/' + String(rel).split('/').map(encodeURIComponent).join('/'); }
+function libPretty(s){
+  /* filenames → display titles: drop a leading date, swap separators for spaces */
+  s = str(s).replace(/^\d{4}-\d{2}-\d{2}[-_ ]*/, '').replace(/[-_]+/g, ' ').trim();
+  return s || str(s);
 }
+function libCard(title, meta, pathLine, actions, cls){
+  return `<div class="libcard ${cls||''}">
+    <div class="lt" title="${escAttr(title)}">${esc(libPretty(title))}</div>
+    <div class="lm">${meta}</div>
+    ${pathLine?`<div class="lp" title="${escAttr(pathLine)}">${esc(pathLine)}</div>`:''}
+    <div class="lacts">${actions}</div></div>`;
+}
+function renderLibrary(){
+  const q = str(__repq).toLowerCase();
+  const pub = Array.isArray(DATA.library && DATA.library.public) ? DATA.library.public : [];
+  const lib = libLive();
+  const internal = lib && Array.isArray(lib.internal) ? lib.internal : [];
+  const docsAll  = lib && Array.isArray(lib.docs) ? lib.docs : [];
+  const counts = one(()=>isObj(DATA.library.counts)? DATA.library.counts : null, null);
+  const hit = (hay) => !q || hay.toLowerCase().includes(q);
+
+  const chips = [
+    {id:'machine', label:`Machine · ${lib? internal.length : (counts? counts.internal : '?')}`},
+    {id:'public',  label:`Public · ${pub.length}`},
+    {id:'docs',    label:`Docs · ${lib? docsAll.length : (counts? counts.docs : '?')}`},
+  ].map(c=>`<button class="chip ${libShelf===c.id?'on':''}" data-lib="${escAttr(c.id)}">${esc(c.label)}</button>`).join('');
+
+  let shelfHtml = '';
+  if(libShelf==='machine'){
+    if(!lib){
+      shelfHtml = `<div class="notebox" style="margin-top:10px"><b>Machine-only shelf</b> — ${counts? `${counts.internal} deliverables exist`:'deliverables live'} on this Mac. Open the cockpit from the local server (<span style="font-family:var(--mono)">http://127.0.0.1:9111/</span>${location.hostname.endsWith('.ts.net')?' — you are on the tailnet, so this should already be live; try Refresh':''}) to browse and open them here.</div>`;
+    } else {
+      const items = internal.filter(i=>hit(i.title+' '+(i.agent||'')+' '+i.rel));
+      shelfHtml = `<div class="libgrid">${items.slice(0,120).map(i=>libCard(
+        i.title,
+        `<span class="lbadge">${esc(i.where==='report'?'agent report':'project work')}</span><span>${esc(i.agent||'')}</span><span>${esc(fmtDate(i.date))}</span><span>${esc(i.kb+'KB')}</span>`,
+        i.path,
+        `<a class="btn sm" href="${escAttr(fileHref(i.rel))}" target="_blank" rel="noopener noreferrer">Open ↗</a><button class="copy" data-report="${escAttr(i.path)}">path ⧉</button>`
+      )).join('') || '<div class="empty">nothing matches</div>'}</div>`;
+    }
+  } else if(libShelf==='public'){
+    const items = pub.filter(p=>hit(p.title+' '+p.url));
+    shelfHtml = `<div class="shelfnote"><span class="mnote">Live on <b>targetpraks.github.io</b> — anyone with the link can open these.</span></div>
+      <div class="libgrid">${items.map(p=>libCard(
+        p.title,
+        `<span class="lbadge pub">public</span><span>${esc(fmtDate(p.date))}</span><span>${esc(p.kb+'KB')}</span>`,
+        'targetpraks.github.io/' + (p.url==='index.html'?'':p.url),
+        `<a class="btn sm" href="${escAttr(p.url)}" target="_blank" rel="noopener noreferrer">Open ↗</a><a class="btn sm ghost" href="${escAttr('https://targetpraks.github.io/'+p.url)}" target="_blank" rel="noopener noreferrer">Public URL</a>`
+      )).join('') || '<div class="empty">nothing matches</div>'}</div>`;
+  } else {
+    /* Docs: with the local server we have the full list (vault PRDs + agent markdown).
+       On the public build we still have DATA.prds — the vault PRD index — and a jump
+       link to Obsidian works from anywhere, so that shelf is useful there too. */
+    const fallbackDocs = (!lib ? (DATA.prds||[]).map(p=>{
+      const path = str(p.path); let jump = '';
+      if(path.indexOf('Vault/Maio Hub/')===0){
+        const rel = path.slice('Vault/Maio Hub/'.length).replace(/\.md$/i,'');
+        const fq = encodeURIComponent(rel);
+        jump = 'https://targetpraks.github.io/jump.html?vault=Maio%20Hub&file='+fq+'&doc='+fq+'&t='+encodeURIComponent(str(p.title).slice(0,150));
+      }
+      return {title:p.title, project:p.project, area:p.area, vault:!!jump, jump, path, date:p.date};
+    }) : []);
+    const src = lib ? docsAll : fallbackDocs;
+    const items = src.filter(d=>hit((d.title||'')+' '+(d.project||'')+' '+(d.area||'')+' '+(d.path||'')));
+    shelfHtml = `<div class="shelfnote"><span class="mnote">${
+      lib ? 'Vault items open in Obsidian (jump link); agent markdown opens read-only from this machine.'
+          : 'PRD vault items open in Obsidian via the jump link. Agent markdown + the full list need the local server.'}</span></div>
+      <div class="libgrid">${items.slice(0,120).map(d=>libCard(
+        d.title||'(untitled)',
+        `${d.vault?'<span class="lbadge vault">vault → Obsidian</span>':'<span class="lbadge">agent markdown</span>'}<span>${esc(d.project||'')}${d.area?` · ${esc(d.area)}`:''}</span><span>${esc(fmtDate(d.date))}</span>`,
+        d.path,
+        d.vault
+          ? `<a class="btn sm" href="${escAttr(d.jump||'')}" target="_blank" rel="noopener noreferrer">Open in Obsidian ↗</a><button class="copy" data-report="${escAttr(d.path)}">path ⧉</button>`
+          : `<a class="btn sm" href="${escAttr(fileHref((d.path||'').replace(/^AI-Drive\//,'')))}" target="_blank" rel="noopener noreferrer">Open ↗</a><button class="copy" data-report="${escAttr(d.path)}">path ⧉</button>`
+      )).join('') || `<div class="empty">${lib?'nothing matches':'no vault PRDs indexed'}</div>`}</div>`;
+  }
+  const stamp = lib ? `local data · ${esc(agoTxt2(lib.generatedAt))}` : 'snapshot build';
+  return `<div class="sect" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <b style="color:var(--ink);font-size:.86rem">Reports &amp; deliverables</b> ${localBadge()}
+      <span class="lbadge">${stamp}</span></div>
+    <div class="chiprow" style="margin:10px 0 4px">${chips}</div>
+    <input class="searchbox" data-filter="reports" placeholder="Filter by title / agent / path…" autocomplete="off" spellcheck="false" value="${escAttr(__repq||'')}">
+    ${shelfHtml}`;
+}
+function renderReports(){ return renderLibrary(); }
 function renderPRDs(){
   const ps=DATA.prds.slice();
   return `<div class="notebox"><b>${ps.length} PRD / product docs</b> — vault 3.PRD trees (Work + AI-Space) merged with disk scans. Newest first. Click copy to grab the path.</div>
@@ -1728,7 +1865,7 @@ function renderAbout(){
       <div class="phase"><span class="pn2">P4</span><div><div class="pt">Vault view</div><div class="pd">Read-only Obsidian vault browser (MOCs, agent notes) via OpenKnowledge search — Beast stays the only writer.</div></div></div>
     </div>
     <div class="sect">Keyboard &amp; links</div>
-    <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> closes the palette, then blurs a focused filter box — it never closes a window; use a window's close light for that. Windows: drag the bar, resize from bottom-right corner, lights close/min/max.</p>
+    <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> closes the palette, then blurs a focused filter box — it never closes a window. The browser <b>Back</b> button closes the window you are in, one press per window, so you can leave the cockpit with a normal Back only once the desk is clear. Windows: drag the bar, resize from bottom-right corner, lights close/min/max.</p>
     <p class="aboutp">Every window, project and agent has a link you can share or bookmark: <span style="font-family:var(--mono)">#projects</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta@2</span> for the second record of a duplicated name, <span style="font-family:var(--mono)">#agent:beast</span>. Opening a window by hand keeps the address bar in step.</p>`;
 }
 
@@ -1881,6 +2018,8 @@ document.addEventListener('click', e => {
   const cw = e.target.closest('[data-open]'); if(cw){ lastOpenAt = Date.now(); openTarget(cw); return; }
   const cf = e.target.closest('.chip[data-fam]'); if(cf){ projFilter = cf.dataset.fam || 'all';
     const w = OPEN.get('projects'); if(w && w.rerender) w.rerender(true); return; }
+  const cl = e.target.closest('.chip[data-lib]'); if(cl){ libShelf = cl.dataset.lib || 'machine';
+    const w = OPEN.get('reports'); if(w && w.rerender) w.rerender(true); return; }
 });
 document.addEventListener('keydown', e => {
   if(e.key === 'Enter'){ const dp=e.target.closest?.('.pcard[data-detail]'); if(dp){ try{ window.__detail(JSON.parse(dp.dataset.detail)); }catch(_){}} }
@@ -2008,6 +2147,10 @@ function openAgentByName(name){
 }
 function applyHash(){                              // onload and on every hashchange
   if(!DATA_OK) return;                             // no data → no window from a link
+  if(Date.now() < HASH_SUPPRESS){                   // a Back press just consumed this URL
+    try{ history.replaceState(history.state, '', location.pathname + location.search); }catch(_){}
+    return;
+  }
   let p; try{ p = parseHash(location.hash); }catch(_){ p = null; }
   if(!p) return;
   LINKING = true;
@@ -2037,6 +2180,7 @@ function initShell(){
   one(applyHash, null);
   one(syncHash, null);               // a link-less URL keeps whatever the restore focused
   dockHint();                        // the dock is laid out now → fade/track reflect reality
+  armGuard();                        // the first Back press closes a window instead of leaving
 }
 function describeRaw(v){
   if(v === undefined) return 'undefined — data.js did not load, or it failed to parse';
