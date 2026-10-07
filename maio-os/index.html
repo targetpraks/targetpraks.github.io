@@ -983,8 +983,10 @@ function machineSystemCard(){
 }
 function renderMachine(){
   const up = LOCAL_STATUS==='live';
+  const m = LSEC('machine');
+  const host = m ? LS(m.hostname).replace(/\.local$/,'') : 'Ricardos-Mac-mini';
   return `<div class="sect" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <b style="color:var(--ink);font-size:.86rem">This machine — ${esc('Ricardos-Mac-mini')}</b> ${localBadge()}
+      <b style="color:var(--ink);font-size:.86rem">This machine — ${esc(host)}</b> ${localBadge()}
       <span class="lbadge">updated ${esc(LOCAL&&LOCAL.generatedAt? agoTxt2(LOCAL.generatedAt) : '—')}</span></div>
     ${up?'':'<div class="notebox" style="margin-top:10px"><b>Snapshot view</b> — the live local server (127.0.0.1:9111) is not reachable from this page, so memory, sessions and the trim action are read-only/absent. Open <span style="font-family:var(--mono)">http://127.0.0.1:9111/</span> on the machine itself for the live build.</div>'}
     <div class="mgrid">
@@ -994,6 +996,15 @@ function renderMachine(){
       ${machineSystemCard()}
     </div>`;
 }
+/* Where the fix action lives: same-origin when the page IS the local build (9111 or
+   through the tailnet proxy); otherwise the loopback address, which the server accepts
+   only when the request's Origin matches its allow-list — so the public Pages copy can
+   never fire a fix. */
+const FIX_URL = (() => {
+  try{ const h=location.hostname, p=location.port;
+    if(location.protocol.indexOf('http')===0 && (p==='9111' || h.endsWith('.ts.net'))) return '/api/fix'; }catch(_){}
+  return 'http://127.0.0.1:9111/api/fix';
+})();
 async function runFix(action, confirmLabel){
   const out = $('#fixout'); const btn = $('#trimbtn');
   if(!out) return;
@@ -1007,13 +1018,17 @@ async function runFix(action, confirmLabel){
   if(btn){ btn.dataset.armed='0'; btn.disabled = true; }
   out.textContent = 'working — unloading…';
   try{
-    const r = await fetch('http://127.0.0.1:9111/api/fix', { method:'POST', headers:{'Content-Type':'application/json'},
+    const r = await fetch(FIX_URL, { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ action, confirm: true }) });
     const j = await r.json().catch(()=>({}));
     if(j && j.ok && j.report){
       const f = j.report;
-      out.innerHTML = `<b style="color:var(--ok)">✓ trimmed</b> — memory ${esc(String(f.beforeUsedPct))}% → ${esc(String(f.afterUsedPct))}%, freed <b>${esc(fmtGb(f.freedGb))}</b>` +
-        (Array.isArray(f.unloaded)&&f.unloaded.length ? ` · unloaded ${f.unloaded.map(x=>esc(LS(x))).join(', ')}` : '');
+      const freed = num(f.freedGb, 0);
+      const un = Array.isArray(f.unloaded) ? f.unloaded : [];
+      out.innerHTML = (freed >= 0.05 || un.length)
+        ? `<b style="color:var(--ok)">✓ trimmed</b> — memory ${esc(String(f.beforeUsedPct))}% → ${esc(String(f.afterUsedPct))}%, freed <b>${esc(fmtGb(freed))}</b>` +
+          (un.length ? ` · unloaded ${un.map(x=>esc(LS(x))).join(', ')}` : '')
+        : `<b style="color:var(--ok)">✓ nothing to unload</b> — no Ollama models were loaded (memory stays at ${esc(String(f.beforeUsedPct))}%).`;
     } else {
       out.innerHTML = `<b style="color:var(--warn)">✗ ${esc(LS(j.error)||'fix failed')}</b>` + (j.error==='busy'?' — another fix is already running, try again in a few seconds.':'');
     }
