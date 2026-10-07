@@ -1,0 +1,471 @@
+/* =============================================================================
+   maio.os — v2 "daylight" theme
+   -----------------------------------------------------------------------------
+   Link this AFTER the page's inline <style>. It redefines every :root variable
+   the page already uses (same names, light values) and then re-skins the
+   components on top. No build step, system fonts only, no external requests.
+
+   Reading order:
+     1. tokens (:root)
+     2. base + backdrop
+     3. window chrome
+     4. surfaces: cards, rows, panels
+     5. dock + dock buttons
+     6. buttons, chips, badges
+     7. meters / gauges
+     8. status colours + notes
+     9. command bar, boot, error, misc chrome
+    10. interaction polish: focus ring, hover glow, selection, scrollbars
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   1. TOKENS
+   Every name below already exists in the page's dark :root and is re-pointed
+   here; the cyber / radius / shadow additions are clearly prefixed.
+   Contrast: every value used for TEXT holds >= 4.5:1 on the worst surface it
+   can land on (paper #F7F4EC / panel2 #F1ECDF). Values marked (graphic) are
+   fills, borders or meter ink and are not used for text.
+   -------------------------------------------------------------------------- */
+:root{
+  /* surfaces — warm paper */
+  --bg:#F7F4EC;          /* warm paper                */
+  --bg2:#FDFBF5;         /* window body, one step up  */
+  --panel:#FFFFFF;       /* cards, bars               */
+  --panel2:#F1ECDF;      /* sunken / hover fill       */
+  --line:#E6DFD2;        /* hairlines                 */
+  --line2:#D9D0BE;       /* stronger separators       */
+
+  /* ink */
+  --ink:#23262E;         /* 13.8:1 on paper           */
+  --body:#444B5A;        /*  7.9:1                    */
+  --dim:#565E6C;         /*  5.9:1                    */
+  --dim2:#616A78;        /*  5.0:1 (min label size)   */
+
+  /* brand gold — the accent is split so text can stay AA while the signature
+     #C9A227 remains available for fills, borders and the logo. */
+  --gold:#82650F;        /* text-safe gold      5.0:1 */
+  --gold-dim:#9A7B10;    /* borders/edges       3.7:1 (graphic) */
+  --gold-bright:#C9A227; /* the brand accent    (graphic) */
+  --gold-soft:#FBF5E3;   /* gold-tinted surface  */
+
+  /* status — same names as the page used; darkened for light backgrounds */
+  --ok:#127248;          /* 5.4:1 */
+  --warn:#8A5807;        /* 5.5:1 */
+  --bad:#B02A2A;         /* 5.9:1 */
+  --blue:#2A5A97;        /* 6.3:1 */
+  --venture:#6D4497;     /* 6.5:1 — replaces the dark theme's #c9a0e8 */
+
+  /* status surfaces + edges */
+  --ok-soft:#E9F6F0;   --ok-line:rgba(18,114,72,.34);
+  --warn-soft:#FBF3E2; --warn-line:rgba(138,88,7,.32);
+  --bad-soft:#FBEDEB;  --bad-line:rgba(176,42,42,.32);
+
+  /* cyberpunk pops — small doses only */
+  --cyber-cyan:#0FB5C9;        /* meters, edges, glow  (graphic)  */
+  --cyber-cyan-ink:#096E7B;   /* when it must carry text  5.4:1  */
+  --cyber-cyan-soft:#E7F7F9;
+  --cyber-magenta:#F43F7A;     /* badges, alerts       (graphic)  */
+  --cyber-magenta-ink:#C2184F; /* text                5.4:1       */
+  --cyber-magenta-soft:#FDEFF4;
+
+  /* shape + elevation — chunky cartoon rounding, soft warm shadows */
+  --radius-xs:7px;
+  --radius-sm:10px;
+  --radius:14px;
+  --radius-lg:18px;
+  --radius-pill:999px;
+  --hair:1.5px;                        /* the chunky outline weight */
+  --shadow-1:0 1px 2px rgba(35,38,46,.05), 0 2px 8px rgba(35,38,46,.05);
+  --shadow-2:0 6px 18px rgba(35,38,46,.08), 0 2px 5px rgba(35,38,46,.05);
+  --shadow-3:0 18px 44px rgba(35,38,46,.13), 0 4px 12px rgba(35,38,46,.07);
+  --shadow-4:0 30px 80px rgba(35,38,46,.20), 0 6px 18px rgba(35,38,46,.09);
+  --ring:0 0 0 3px rgba(15,181,201,.20);   /* the cyan halo  */
+  --ring-gold:0 0 0 3px rgba(201,162,39,.22);
+
+  /* type — system stacks only, no external fonts */
+  --grot:'Avenir Next','Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;
+  --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+}
+
+/* ---------------------------------------------------------------------------
+   2. BASE + BACKDROP
+   Paper, plus a texture made only of CSS gradients: two faint colour blooms
+   and one barely-there scanline weave. Nothing here is an image request.
+   -------------------------------------------------------------------------- */
+body{
+  background:
+    radial-gradient(1100px 620px at 12% -8%,  rgba(201,162,39,.10), rgba(201,162,39,0) 62%),
+    radial-gradient(900px 560px at 92% 104%,   rgba(15,181,201,.075), rgba(15,181,201,0) 60%),
+    repeating-linear-gradient(0deg, rgba(35,38,46,.016) 0 1px, transparent 1px 3px),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--body);
+}
+#boot,#dataerr{background:var(--bg);}
+#boot{
+  background:
+    radial-gradient(900px 520px at 50% 0%, rgba(201,162,39,.10), rgba(201,162,39,0) 65%),
+    repeating-linear-gradient(0deg, rgba(35,38,46,.02) 0 1px, transparent 1px 3px),
+    var(--bg);
+}
+/* the desk "sky rim": warm light rather than a night sky */
+#skyrim{opacity:.75;}
+#skyrim #starfield{fill:#9A7B10;}
+
+/* ---------------------------------------------------------------------------
+   3. WINDOW CHROME
+   White window, chunky warm outline, cartoon traffic lights, soft lift.
+   -------------------------------------------------------------------------- */
+.win{
+  background:var(--bg2);
+  border:var(--hair) solid var(--line2);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-3);
+}
+.win.focused{
+  border-color:var(--gold-dim);
+  box-shadow:var(--shadow-3), 0 0 0 3px rgba(201,162,39,.16);
+}
+.winbar{
+  height:40px;
+  background:linear-gradient(180deg,#FFFDF8,#F7F2E6);
+  border-bottom:var(--hair) solid var(--line);
+  position:relative;
+}
+.winbar::after{                       /* scanline micro-detail, 1px, 4% ink */
+  content:'';position:absolute;left:0;right:0;top:0;height:3px;pointer-events:none;
+  background:repeating-linear-gradient(90deg, rgba(35,38,46,.05) 0 1px, transparent 1px 3px);
+  border-radius:var(--radius) var(--radius) 0 0;
+}
+.wtitle{color:var(--ink);font-weight:600;}
+.wsub{color:var(--dim2);}
+.winresize{background:linear-gradient(135deg,transparent 50%,var(--line2) 50%);}
+.winbody{padding:16px 18px;}
+
+/* traffic lights: coloured on the desktop, always visible (playful, not a
+   surprise on hover); the mobile block keeps its 44px hit boxes and draws the
+   dot with ::after, so the fills are re-pointed there too. */
+@media (min-width:761px){
+  .wl{background:#CFC7B6;}
+  .wl.wclose{background:#E8735F;}
+  .wl.wmin {background:#E7B84B;}
+  .wl.wmax {background:#4FB183;}
+  .wl.wclose:hover{background:#D65B47;}
+  .wl.wmin:hover {background:#D6A63A;}
+  .wl.wmax:hover {background:#3F9E70;}
+}
+@media (max-width:760px){
+  .wl::after{background:#CFC7B6;}
+  .wl.wclose::after{background:#E8735F;}
+  .wl.wmin::after {background:#E7B84B;}
+  .wl.wmax::after {background:#4FB183;}
+  .wl.wclose:hover::after,.wl.wclose:active::after{background:#D65B47;}
+  .wl.wmin:hover::after,.wl.wmin:active::after  {background:#D6A63A;}
+  .wl.wmax:hover::after,.wl.wmax:active::after  {background:#3F9E70;}
+  .win{border-radius:12px 12px 0 0;}
+}
+.win.max{border-radius:0;}
+
+/* ---------------------------------------------------------------------------
+   4. SURFACES — desklets, cards, service tiles, rows
+   -------------------------------------------------------------------------- */
+.desklet{
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(10px);
+  border:var(--hair) solid var(--line2);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-2);
+  padding:14px 16px;
+}
+.desklet h4{color:var(--dim2);font-weight:600;}
+
+button.vrow:hover{background:var(--gold-soft);}
+.bigstat button.bs:hover{background:rgba(35,38,46,.05);}
+.bigstat b{font-weight:600;}
+#vitals button.vitem:hover{background:rgba(35,38,46,.06);}
+#vitals button.vitem:active{background:rgba(35,38,46,.10);}
+
+.pcard,.svc,.agc,.phase,.errbox{
+  background:var(--panel);
+  border:var(--hair) solid var(--line);
+  border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-1);
+}
+.pcard:hover,.agc:hover{
+  border-color:var(--gold-dim);
+  box-shadow:var(--shadow-2), var(--ring-gold);
+  transform:translateY(-2px);
+}
+.pcard .fam{background:var(--panel2);color:var(--dim);}
+.fam.dev{color:var(--blue);} .fam.work{color:var(--gold);}
+.fam.pages{color:var(--ok);} .fam.venture{color:var(--venture);}
+.tagprd{color:var(--gold);border:1px solid var(--gold-dim);border-radius:var(--radius-xs);}
+.searchbox{
+  background:var(--panel);
+  border:var(--hair) solid var(--line2);
+  border-radius:var(--radius-sm);
+  box-shadow:inset 0 1px 2px rgba(35,38,46,.04);
+}
+.searchbox:focus{border-color:var(--cyber-cyan);box-shadow:var(--ring);outline:none;}
+
+.rrow,.drow{border-bottom:1px solid var(--line);}
+.rrow{border-radius:var(--radius-sm);}
+.rrow:hover{
+  background:var(--gold-soft);
+  box-shadow:inset 3px 0 0 var(--cyber-cyan);   /* the quiet neon tick */
+}
+.copy{border:1px solid var(--line2);border-radius:var(--radius-xs);background:var(--panel);}
+.copy:hover{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-soft);}
+.sect{color:var(--dim2);}
+.dv code{color:var(--dim);}
+.empty{color:var(--dim2);}
+
+/* ---------------------------------------------------------------------------
+   5. DOCK — lifted and playful
+   -------------------------------------------------------------------------- */
+#dock{
+  background:rgba(255,255,255,.90);
+  backdrop-filter:blur(16px);
+  border:var(--hair) solid var(--line2);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-3);
+  padding:8px;
+  gap:7px;
+}
+.dockbtn{
+  border-radius:var(--radius-sm);
+  color:var(--dim);
+  transition:background .16s,color .16s,box-shadow .16s,transform .16s;
+}
+.dockbtn:hover{
+  background:var(--panel2);
+  color:var(--ink);
+  box-shadow:inset 0 -2px 0 rgba(15,181,201,.55);   /* cyan underline pop */
+  transform:translateY(-1px);
+}
+.dockbtn.active{color:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold-dim);}
+.dockbtn.open .dot{
+  background:var(--cyber-cyan);
+  box-shadow:0 0 6px rgba(15,181,201,.9), 0 0 2px rgba(15,181,201,1);
+}
+.docksep{background:var(--line2);}
+#scroller{background:rgba(35,38,46,.12);}
+#scroller i{background:var(--gold-bright);}
+.menubtn{border-radius:var(--radius-xs);}
+.menubtn:hover{background:var(--panel2);color:var(--ink);}
+
+/* ---------------------------------------------------------------------------
+   6. BUTTONS / CHIPS / BADGES
+   The page has no .btn class yet; these are the v2 kit buttons. Primary is
+   gold with ink text (6.2:1); danger flips to a solid --bad fill (6.5:1).
+   -------------------------------------------------------------------------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font:500 .82rem/1 var(--sans);letter-spacing:.005em;
+  padding:9px 15px;border-radius:var(--radius-sm);
+  border:var(--hair) solid var(--line2);
+  background:linear-gradient(180deg,#FFFFFF,#FBF8F1);
+  color:var(--ink);cursor:pointer;
+  box-shadow:0 1.5px 0 rgba(35,38,46,.07), var(--shadow-1);
+  transition:background .15s,border-color .15s,box-shadow .15s,transform .12s,color .15s;
+}
+.btn:hover{border-color:var(--gold-dim);background:var(--gold-soft);box-shadow:var(--shadow-2);transform:translateY(-1px);}
+.btn:active{transform:translateY(1px);box-shadow:0 0 0 rgba(0,0,0,0);}
+.btn:focus-visible{outline:2px solid var(--cyber-cyan-ink);outline-offset:2px;}
+
+.btn.primary{
+  background:linear-gradient(180deg,#DFBC4C,var(--gold-bright));
+  border-color:#A88410;color:#23262E;font-weight:600;
+  box-shadow:0 2px 0 #A88410, 0 6px 14px rgba(201,162,39,.30);
+}
+.btn.primary:hover{background:linear-gradient(180deg,#E8C75C,#D0A82B);box-shadow:0 2px 0 #A88410, 0 8px 18px rgba(201,162,39,.38);}
+.btn.primary:active{box-shadow:0 1px 0 #A88410;transform:translateY(1px);}
+
+.btn.danger{background:#FFFFFF;border-color:rgba(176,42,42,.34);color:var(--bad);}
+.btn.danger:hover{background:var(--bad);border-color:var(--bad);color:#FFFFFF;box-shadow:0 4px 12px rgba(176,42,42,.28);}
+
+.btn.ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--dim);}
+.btn.ghost:hover{background:var(--panel2);color:var(--ink);border-color:transparent;transform:none;}
+
+.btn:disabled,.btn[aria-disabled="true"]{
+  opacity:.5;cursor:not-allowed;box-shadow:none;transform:none;
+  border-color:var(--line);color:var(--dim2);background:var(--panel2);
+}
+
+.chip{
+  background:var(--panel);
+  border:var(--hair) solid var(--line2);
+  border-radius:var(--radius-pill);
+  padding:4px 13px;
+  color:var(--dim);
+  transition:border-color .15s,color .15s,background .15s,box-shadow .15s;
+}
+.chip:hover{color:var(--ink);border-color:var(--gold-dim);}
+.chip.on{
+  color:var(--gold);border-color:var(--gold-dim);background:var(--gold-soft);
+  box-shadow:inset 0 -2px 0 rgba(15,181,201,.45);
+}
+.pill{
+  border:1px solid var(--line2);border-radius:var(--radius-pill);
+  background:var(--panel);
+}
+.pill.ok  {color:var(--ok);  border-color:var(--ok-line);  background:var(--ok-soft);}
+.pill.bad {color:var(--bad); border-color:var(--bad-line); background:var(--bad-soft);}
+.pill.warn{color:var(--warn);border-color:var(--warn-line);background:var(--warn-soft);}
+
+/* badge — the kit's small labelled tag; .cyber gets the neon ring */
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font:600 .66rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 9px;border-radius:var(--radius-pill);
+  border:1px solid var(--line2);background:var(--panel);color:var(--dim);
+}
+.badge.gold{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-soft);}
+.badge.ok  {color:var(--ok);  border-color:var(--ok-line);  background:var(--ok-soft);}
+.badge.bad {color:var(--bad); border-color:var(--bad-line); background:var(--bad-soft);}
+.badge.cyber{
+  color:var(--cyber-cyan-ink);border-color:rgba(15,181,201,.55);background:var(--cyber-cyan-soft);
+  box-shadow:0 0 0 1px rgba(15,181,201,.14), 0 0 10px rgba(15,181,201,.20);
+}
+.badge.magenta{
+  color:var(--cyber-magenta-ink);border-color:rgba(244,63,122,.45);background:var(--cyber-magenta-soft);
+}
+
+/* ---------------------------------------------------------------------------
+   7. METERS / GAUGES
+   .meter > i  — i's width is the value. Cyan by default; status variants.
+   -------------------------------------------------------------------------- */
+.meter{
+  position:relative;height:9px;width:100%;
+  background:var(--panel2);border:1px solid var(--line);
+  border-radius:var(--radius-pill);overflow:hidden;
+}
+.meter>i{
+  display:block;height:100%;width:0;border-radius:inherit;
+  background:linear-gradient(90deg,#0FB5C9,#5BD5E3);
+  box-shadow:0 0 8px rgba(15,181,201,.45);
+  transition:width .35s ease;
+}
+.meter.gold>i{background:linear-gradient(90deg,#C9A227,#E8C75C);box-shadow:0 0 8px rgba(201,162,39,.40);}
+.meter.ok>i  {background:linear-gradient(90deg,#127248,#4FB183);box-shadow:0 0 8px rgba(18,114,72,.35);}
+.meter.warn>i{background:linear-gradient(90deg,#8A5807,#E7B84B);box-shadow:0 0 8px rgba(138,88,7,.35);}
+.meter.bad>i {background:linear-gradient(90deg,#B02A2A,#E8735F);box-shadow:0 0 8px rgba(176,42,42,.35);}
+.meter.magenta>i{background:linear-gradient(90deg,#C2184F,#F43F7A);box-shadow:0 0 8px rgba(244,63,122,.40);}
+.meterrow{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:.7rem;color:var(--dim2);}
+.meterrow .mk{flex:none;min-width:74px;color:var(--dim);}
+.meterrow .mv{flex:none;min-width:40px;text-align:right;color:var(--ink);}
+
+/* ---------------------------------------------------------------------------
+   8. STATUS + NOTES
+   -------------------------------------------------------------------------- */
+.notebox{
+  background:var(--gold-soft);
+  border:1px solid rgba(154,123,16,.30);
+  border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-1);
+}
+.notebox b{color:var(--gold);}
+.notebox.warnbox{background:var(--warn-soft);border-color:rgba(138,88,7,.36);}
+.notebox.warnbox b{color:var(--warn);}
+
+#genned.stale{color:var(--warn);}
+#genned.fresh{color:var(--ok);}
+#genned.unknown{color:var(--dim);}
+.phase .pn2{color:var(--gold);}
+.dname{color:var(--ink);}
+.aboutp b{color:var(--ink);}
+
+kbd{
+  background:var(--panel);
+  border:1px solid var(--line2);
+  border-bottom-width:2px;
+  border-radius:var(--radius-xs);
+  color:var(--dim);
+}
+a{color:var(--gold);}
+a:hover{color:#6A5008;}
+
+/* ---------------------------------------------------------------------------
+   9. COMMAND BAR, BOOT, ERROR, MISC CHROME
+   -------------------------------------------------------------------------- */
+#cmdbar-wrap{background:rgba(35,38,46,.30);backdrop-filter:blur(4px);}
+#cmdbar{
+  background:var(--panel);
+  border:var(--hair) solid var(--line2);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-4);
+}
+#cmdinput{color:var(--ink);}
+#cmdinput::placeholder{color:var(--dim2);}
+.cmdrow{border-radius:var(--radius-sm);}
+.cmdrow.sel{background:var(--gold-soft);box-shadow:inset 3px 0 0 var(--cyber-cyan);}
+.cmdrow .cl{color:var(--ink);}
+#cmdlist{border-top:1px solid var(--line);}
+#cmdfoot{border-top:1px solid var(--line);color:var(--dim2);}
+
+.bootlogo,.errlogo{color:var(--ink);}
+.bootlogo em,.errlogo em{color:var(--gold);}
+#bootlog .ok{color:var(--ok);} #bootlog .bad{color:var(--bad);} #bootlog .dim{color:var(--dim2);}
+.errbox{box-shadow:var(--shadow-4);}
+.errbox .errdetail{background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius-xs);}
+
+#topbar{
+  background:rgba(247,244,236,.86);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+#vitals{
+  background:rgba(253,251,245,.92);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+#logo{color:var(--ink);font-size:.98rem;}
+#logo em{color:var(--gold);}
+#cmdbtn{
+  background:var(--panel);
+  border:var(--hair) solid var(--line2);
+  border-radius:var(--radius-xs);
+  color:var(--dim);
+  box-shadow:var(--shadow-1);
+}
+#cmdbtn:hover{color:var(--ink);border-color:var(--gold-dim);background:var(--gold-soft);}
+
+/* ---------------------------------------------------------------------------
+   10. INTERACTION POLISH
+   Focus ring first: 2px deep-gold outline (5.0:1 on paper) plus the cyan
+   halo on the ring offset, so keyboard focus is unmistakable on every
+   surface without relying on colour alone (the outline is a solid shape).
+   -------------------------------------------------------------------------- */
+:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:2px;
+  border-radius:var(--radius-xs);
+  box-shadow:var(--ring);
+}
+#cmdinput:focus-visible{outline:none;box-shadow:none;}
+
+::selection{background:rgba(15,181,201,.22);color:var(--ink);}
+
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{
+  background:#D3C9B4;border-radius:var(--radius-pill);
+  border:2px solid transparent;background-clip:padding-box;
+}
+::-webkit-scrollbar-thumb:hover{background:#BEB29A;background-clip:padding-box;}
+::-webkit-scrollbar-track{background:transparent;}
+*{scrollbar-color:#D3C9B4 transparent;scrollbar-width:thin;}
+
+/* ---------------------------------------------------------------------------
+   kit utilities — small helpers used by preview.html and available to the
+   page. Kept additive and prefixed so they can never collide.
+   -------------------------------------------------------------------------- */
+.mo-scan{
+  background-image:repeating-linear-gradient(0deg, rgba(35,38,46,.05) 0 1px, transparent 1px 3px);
+}
+.mo-glow-cyan{box-shadow:0 0 0 1px rgba(15,181,201,.30), 0 0 12px rgba(15,181,201,.25);}
+.mo-glow-gold{box-shadow:0 0 0 1px rgba(201,162,39,.35), 0 0 12px rgba(201,162,39,.28);}
+.mo-mono{font-family:var(--mono);}
+.mo-dim{color:var(--dim);}
+.mo-dim2{color:var(--dim2);}
+.mo-ink{color:var(--ink);}

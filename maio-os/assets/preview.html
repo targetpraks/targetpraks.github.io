@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>maio.os v2 — daylight kit QA</title>
+<meta name="theme-color" content="#F7F4EC">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./theme.css">
+<style>
+/* preview-only layout. Everything visual comes from theme.css. */
+body{overflow:auto;margin:0;padding:34px 26px 90px;font-size:14px}
+.qa{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:34px}
+.qa h1{font-family:var(--grot);font-size:1.5rem;color:var(--ink);font-weight:600;letter-spacing:-.015em;margin:0}
+.qa h1 em{font-style:normal;color:var(--gold)}
+.qa .sub{font-family:var(--mono);font-size:.74rem;color:var(--dim2);margin-top:5px}
+section{background:var(--panel);border:var(--hair) solid var(--line);border-radius:var(--radius);
+        box-shadow:var(--shadow-1);padding:20px 22px}
+section>h2{font-family:var(--grot);font-size:.72rem;font-weight:600;letter-spacing:.15em;
+           text-transform:uppercase;color:var(--dim2);margin:0 0 15px;
+           display:flex;align-items:center;gap:9px}
+section>h2::after{content:'';flex:1;height:1.5px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 11px)}
+.row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:26px}
+.row.mid{align-items:center}
+.note{font-family:var(--mono);font-size:.68rem;color:var(--dim2);margin-top:10px}
+.note b{color:var(--dim);font-weight:500}
+/* logo lab */
+.logohero{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px 18px}
+.logohero img{display:block;height:64px;width:auto}
+.logo64 img{height:64px}.logo24 img{height:24px}
+.caption{font-family:var(--mono);font-size:.66rem;color:var(--dim2);margin-top:8px}
+.glyphbox{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px;display:flex;align-items:center;gap:18px}
+.glyphbox img{display:block}
+/* swatches */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}
+.sw{border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:var(--panel)}
+.sw .chipc{height:44px;display:flex;align-items:center;justify-content:center;
+           font-family:var(--mono);font-size:.72rem;font-weight:600;border-bottom:1px solid var(--line)}
+.sw .meta{padding:7px 9px}
+.sw .nm{font-family:var(--mono);font-size:.68rem;color:var(--ink)}
+.sw .hx{font-family:var(--mono);font-size:.62rem;color:var(--dim2);margin-top:2px}
+.sw .aa{font-family:var(--mono);font-size:.6rem;color:var(--ok);margin-top:3px}
+.sw .aa.na{color:var(--dim2)}
+/* type */
+.typescale>div{border-bottom:1px dashed var(--line);padding:9px 0;display:flex;align-items:baseline;gap:16px}
+.typescale>div:last-child{border-bottom:none}
+.typescale .lab{font-family:var(--mono);font-size:.62rem;color:var(--dim2);flex:none;width:96px}
+.t-display{font-family:var(--grot);font-weight:600;color:var(--ink);font-size:1.4rem;letter-spacing:-.015em}
+.t-h2{font-family:var(--grot);font-weight:600;color:var(--ink);font-size:1.05rem}
+.t-body{font-size:.9rem;color:var(--body)}
+.t-dim{font-size:.82rem;color:var(--dim)}
+.t-dim2{font-size:.78rem;color:var(--dim2)}
+.t-mono{font-family:var(--mono);font-size:.8rem;color:var(--ink)}
+.t-sect{font-family:var(--grot);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim2)}
+/* card mock */
+.cardgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.pcard.qa-static{cursor:default}
+.pcard.qa-static:hover{transform:none;border-color:var(--line);box-shadow:var(--shadow-1)}
+.pcard .pn{font-family:var(--grot);font-weight:600;color:var(--ink);font-size:.92rem;display:flex;align-items:center;gap:8px}
+.pcard .pw{font-size:.78rem;color:var(--dim);margin-top:5px}
+.pcard .pm{display:flex;gap:8px;align-items:center;margin-top:11px;font-family:var(--mono);font-size:.66rem;color:var(--dim2)}
+.fam{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:var(--radius-xs);background:var(--panel2);color:var(--dim)}
+.fam.dev{color:var(--blue)}.fam.work{color:var(--gold)}.fam.pages{color:var(--ok)}.fam.venture{color:var(--venture)}
+/* window mock */
+.win.qa-static{position:relative;width:100%;height:auto;min-height:0;box-shadow:var(--shadow-3);z-index:1}
+.win.qa-static .winbar{cursor:default}
+.win.qa-static .winbody{overflow:visible}
+/* the mock needs the chrome geometry that lives in the page's own inline <style>
+   (theme.css is a skin only, so the preview supplies the layout it mocks) */
+.win.qa-static .wl{width:12px;height:12px;border-radius:50%;border:none;flex:none;cursor:pointer}
+.win.qa-static .winresize{position:absolute;right:0;bottom:0;width:16px;height:16px}
+.win-qa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+/* rows */
+.rrow{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:var(--radius-sm);font-size:.82rem;border-bottom:1px solid var(--line)}
+.rrow .ra{font-family:var(--grot);color:var(--ink);min-width:92px;font-weight:500}
+.rrow .rp{flex:1;min-width:0;color:var(--dim);font-family:var(--mono);font-size:.7rem}
+.rrow .rd{font-family:var(--mono);font-size:.7rem;color:var(--dim2)}
+/* dock mock */
+.dockmock{display:flex;gap:7px;align-items:center;background:rgba(255,255,255,.90);
+          border:var(--hair) solid var(--line2);border-radius:var(--radius-lg);
+          box-shadow:var(--shadow-3);padding:8px;overflow-x:auto}
+.dockbtn{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:66px;padding:9px 10px;
+         border-radius:var(--radius-sm);color:var(--dim);font-size:.66rem;letter-spacing:.02em;
+         border:none;background:none;cursor:pointer;font-family:inherit}
+.dockbtn .di{font-size:1.15rem;line-height:1}
+.dockbtn .dot{width:4px;height:4px;border-radius:50%;background:transparent}
+.dockbtn.open .dot{background:var(--cyber-cyan);box-shadow:0 0 6px rgba(15,181,201,.9)}
+.dockbtn.active{color:var(--gold);box-shadow:inset 0 0 0 1.5px var(--gold-dim)}
+.docksep{width:1px;height:34px;background:var(--line2);margin:0 4px;flex:none}
+/* icon grid */
+.icongrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.ic-cell{display:flex;flex-direction:column;align-items:center;gap:7px;padding:13px 6px;
+         border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--panel)}
+.ic-cell:hover{border-color:var(--gold-dim);background:var(--gold-soft)}
+.ic-cell svg.ic{width:22px;height:22px;color:var(--ink)}
+.ic-cell .icn{font-family:var(--mono);font-size:.6rem;color:var(--dim2)}
+.ic-strip{display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+          border-top:1px dashed var(--line);margin-top:14px;padding-top:14px}
+.ic-strip svg.ic{color:var(--dim)}
+.ic-strip .big{width:22px;height:22px}
+.ic-strip .small{width:18px;height:18px}
+/* meter rows */
+.meters{display:flex;flex-direction:column;gap:12px;max-width:560px}
+.meterrow{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:.68rem;color:var(--dim2)}
+.meterrow .mk{flex:none;width:88px;color:var(--dim)}
+.meterrow .mv{flex:none;width:44px;text-align:right;color:var(--ink)}
+.meterrow .meter{flex:1}
+/* buttons */
+.btnrow{display:flex;flex-wrap:wrap;gap:11px;align-items:center}
+.btn.qa-hover{background:var(--gold-soft);border-color:var(--gold-dim);box-shadow:var(--shadow-2);
+              transform:translateY(-1px)}
+.btn.primary.qa-hover{background:linear-gradient(180deg,#E8C75C,#D0A82B);box-shadow:0 2px 0 #A88410,0 8px 18px rgba(201,162,39,.38)}
+.btn.danger.qa-hover{background:var(--bad);border-color:var(--bad);color:#fff;box-shadow:0 4px 12px rgba(176,42,42,.28)}
+/* swatch chip text colours are set inline from the token values */
+.qa-foot{font-size:.78rem;color:var(--dim);line-height:1.7}
+.qa-foot code{font-family:var(--mono);font-size:.72rem;color:var(--ink);background:var(--panel2);
+              padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+.qa-foot ul{margin:0;padding-left:20px}
+</style>
+</head>
+<body>
+<div class="qa">
+
+  <header>
+    <h1>maio<em>.</em>os — v2 <span class="mo-dim2">“daylight”</span> visual kit</h1>
+    <div class="sub">theme.css · logo.svg · glyph.svg · favicon.svg · icons.svg — QA sheet, everything below is rendered by the kit itself</div>
+  </header>
+
+  <!-- ============ 1. LOGO ============ -->
+  <section>
+    <h2>Brand — logo / glyph / favicon</h2>
+    <div class="logohero"><img src="./logo.svg" alt="maio.os" width="268"></div>
+    <div class="note">hero lockup — <b>logo.svg</b>, 320×96, drawn to sit on light paper</div>
+
+    <div class="row" style="margin-top:20px">
+      <div class="logo64"><img src="./logo.svg" alt="maio.os at 64px" width="179"></div>
+      <div class="logo24"><img src="./logo.svg" alt="maio.os at 24px" width="67"></div>
+    </div>
+    <div class="caption">64px scale ▴ · 24px scale ▴ — must stay legible at both</div>
+
+    <div class="row" style="margin-top:20px">
+      <div>
+        <div class="glyphbox">
+          <img src="./glyph.svg" alt="maio.os mark, 64px" width="64" height="64">
+          <img src="./glyph.svg" alt="maio.os mark, 32px" width="32" height="32">
+          <img src="./favicon.svg" alt="maio.os favicon, 32px" width="32" height="32">
+        </div>
+        <div class="caption">glyph.svg at 64 &amp; 32 ▴ · favicon.svg at 32 ▴ — dark plate reads on a light tab (the 64px tile is the icon; the two smaller squares are the same mark at 32)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. PALETTE ============ -->
+  <section>
+    <h2>Palette <span class="mo-dim2" style="letter-spacing:0;text-transform:none;font-family:var(--mono);font-size:.62rem">— every token, with computed WCAG contrast vs. the paper it lands on</span></h2>
+    <div class="swatches" id="swatches"></div>
+    <div class="note">Ratios are computed live from the CSS custom properties. <b>AA ✓</b> = ≥ 4.5:1 (normal text); <b class="mo-dim2">graphic</b> = fill/edge token, never used for text.</div>
+  </section>
+
+  <!-- ============ 3. TYPE ============ -->
+  <section>
+    <h2>Type scale — system stacks only</h2>
+    <div class="typescale">
+      <div><span class="lab">display</span><span class="t-display">Avenir Next · Segoe UI · system-ui</span></div>
+      <div><span class="lab">heading</span><span class="t-h2">The Desk — what changed lately</span></div>
+      <div><span class="lab">body</span><span class="t-body">Body copy sits at 7.9:1 on the paper background — comfortable for long windows at 14px.</span></div>
+      <div><span class="lab">dim / dim2</span><span class="t-dim">secondary · 5.5:1</span> <span class="t-dim2">tertiary · 4.6:1</span></div>
+      <div><span class="lab">mono</span><span class="t-mono">stack 7/8 clean · 1 non-2xx · 0 down</span></div>
+      <div><span class="lab">section</span><span class="t-sect">system vitals</span></div>
+      <div><span class="lab">inline</span><span class="t-body">Press <kbd>⌘K</kbd> or follow <a href="#">a link</a>.</span></div>
+    </div>
+  </section>
+
+  <!-- ============ 4. BUTTONS ============ -->
+  <section>
+    <h2>Buttons</h2>
+    <div class="btnrow">
+      <button class="btn">Default</button>
+      <button class="btn primary">Primary action</button>
+      <button class="btn danger">Danger</button>
+      <button class="btn ghost">Ghost</button>
+      <button class="btn" disabled>Disabled</button>
+    </div>
+    <div class="btnrow" style="margin-top:14px">
+      <button class="btn qa-hover">Hover state ▴</button>
+      <button class="btn primary" id="btn-focus">Focus-visible (tab to me)</button>
+      <button class="btn danger qa-hover">Danger hover ▴</button>
+    </div>
+    <div class="note">Primary is gold with ink text — <b>6.2:1</b>. Danger fills solid <span class="mo-mono">--bad</span> on hover — <b>6.5:1</b> with white. The two “▴” buttons are the hover skin shown statically.</div>
+  </section>
+
+  <!-- ============ 5. CHIPS / BADGES ============ -->
+  <section>
+    <h2>Chips, pills, badges</h2>
+    <div class="row mid">
+      <div class="chiprow" style="display:flex;gap:8px;flex-wrap:wrap;margin:0">
+        <span class="chip">All</span>
+        <span class="chip on">Dev</span>
+        <span class="chip">Work</span>
+        <span class="chip">Pages</span>
+        <span class="chip">Venture</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="pill ok">200 · clean</span>
+        <span class="pill warn">alive</span>
+        <span class="pill bad">down</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge">default</span>
+        <span class="badge gold">gold</span>
+        <span class="badge ok">ok</span>
+        <span class="badge bad">bad</span>
+        <span class="badge cyber">cyber</span>
+        <span class="badge magenta">alert</span>
+      </div>
+    </div>
+    <div class="note">The <b>cyan / magenta</b> badges are the whole of the cyberpunk budget — reserved for state that matters, never as decoration.</div>
+  </section>
+
+  <!-- ============ 6. CARD ============ -->
+  <section>
+    <h2>Cards</h2>
+    <div class="cardgrid">
+      <article class="pcard qa-static">
+        <div class="pn">Snappier <span class="fam work">work</span></div>
+        <div class="pw">IPTV service — playlist health, EPG freshness, and the box that keeps dropping streams.</div>
+        <div class="pm"><span class="tagprd">PRD</span><span>12 commits</span><span>· 2h ago</span></div>
+      </article>
+      <article class="pcard qa-static">
+        <div class="pn">Maio OS <span class="fam dev">dev</span></div>
+        <div class="pw">The household cockpit itself — one window over every project, agent, report and PRD.</div>
+        <div class="pm"><span class="tagprd">PRD</span><span>46 commits</span><span>· 20m ago</span></div>
+      </article>
+      <article class="pcard qa-static">
+        <div class="pn">Best Town Explorer <span class="fam pages">pages</span></div>
+        <div class="pw">Static site with world-view tables and leaderboards — published, indexed, quietly ticking.</div>
+        <div class="pm"><span>8 commits</span><span>· yesterday</span></div>
+      </article>
+    </div>
+    <div class="note">Cards lift 2px on hover with a soft warm shadow and a faint gold halo; the outline is the chunky <b>1.5px</b> kit weight.</div>
+  </section>
+
+  <!-- ============ 7. WINDOW CHROME ============ -->
+  <section>
+    <h2>Window chrome</h2>
+    <section class="win qa-static">
+      <div class="winbar">
+        <div class="wlights">
+          <button class="wl wclose" aria-label="Close"></button>
+          <button class="wl wmin" aria-label="Minimise"></button>
+          <button class="wl wmax" aria-label="Maximise"></button>
+        </div>
+        <span class="wtitle">◆ The Desk</span>
+        <span class="wsub">what changed lately</span>
+      </div>
+      <div class="winbody">
+        <div class="rows">
+          <div class="rrow"><span class="ra">14:02</span><span class="rp">maio-os · navigation pass — dock, desklets, command bar</span><span class="rd">today</span></div>
+          <div class="rrow"><span class="ra">13:47</span><span class="rp">snappier · EPG refresh job back to green</span><span class="rd">today</span></div>
+          <div class="rrow"><span class="ra">11:20</span><span class="rp">best-town-explorer · world view tables regenerated</span><span class="rd">today</span></div>
+        </div>
+        <div class="note">Rows wear a cyan neon tick on hover — one 3px inset edge, nothing more.</div>
+      </div>
+      <div class="winresize" aria-hidden="true"></div>
+    </section>
+  </section>
+
+  <!-- ============ 8. METERS ============ -->
+  <section>
+    <h2>Vitals — meters</h2>
+    <div class="meters">
+      <div class="meterrow"><span class="mk">stack</span><span class="mv">7/8</span><span class="meter"><i style="width:88%"></i></span></div>
+      <div class="meterrow"><span class="mk">dev servers</span><span class="mv">3/4</span><span class="meter gold"><i style="width:75%"></i></span></div>
+      <div class="meterrow"><span class="mk">disk</span><span class="mv">62%</span><span class="meter ok"><i style="width:62%"></i></span></div>
+      <div class="meterrow"><span class="mk">memory</span><span class="mv">81%</span><span class="meter warn"><i style="width:81%"></i></span></div>
+      <div class="meterrow"><span class="mk">backups</span><span class="mv">2/5</span><span class="meter bad"><i style="width:40%"></i></span></div>
+      <div class="meterrow"><span class="mk">agents</span><span class="mv">6</span><span class="meter magenta"><i style="width:52%"></i></span></div>
+    </div>
+    <div class="note">Cyan is the default gauge; <b>gold / ok / warn / bad / magenta</b> are severity variants. Fills only — labels stay ink-on-paper.</div>
+  </section>
+
+  <!-- ============ 9. DOCK ============ -->
+  <section>
+    <h2>Dock</h2>
+    <nav class="dockmock">
+      <button class="dockbtn active"><span class="di">◆</span><span>The Desk</span><span class="dot"></span></button>
+      <button class="dockbtn open"><span class="di">▣</span><span>Projects</span><span class="dot"></span></button>
+      <button class="dockbtn"><span class="di">✦</span><span>Agents</span><span class="dot"></span></button>
+      <button class="dockbtn"><span class="di">▤</span><span>Reports</span><span class="dot"></span></button>
+      <button class="dockbtn"><span class="di">✎</span><span>PRDs</span><span class="dot"></span></button>
+      <button class="dockbtn"><span class="di">◉</span><span>Stack</span><span class="dot"></span></button>
+      <button class="dockbtn"><span class="di">☆</span><span>About / Roadmap</span><span class="dot"></span></button>
+      <span class="docksep"></span>
+      <button class="dockbtn"><span class="di">⌘</span><span>Search</span><span class="dot"></span></button>
+    </nav>
+    <div class="note">Lifted white glass, 18px radius, soft warm shadow. <b>active</b> = gold ring · <b>open</b> = glowing cyan LED · hover = cyan underline pop, lift 1px.</div>
+  </section>
+
+  <!-- ============ 10. ICONS ============ -->
+  <section>
+    <h2>Icon set — icons.svg sprite</h2>
+    <div class="icongrid" id="icongrid"></div>
+    <div class="ic-strip">
+      <span class="note" style="margin:0">at 18px ▸</span>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-desk"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-projects"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-agents"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-reports"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-prds"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-stack"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-about"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-search"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-kanban"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-machine"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-bolt"/></svg>
+      <svg class="ic small" aria-hidden="true"><use href="./icons.svg#i-bolt-ok"/></svg>
+      <span class="note" style="margin:0">▸ status colours: <span style="color:var(--ok)">ok</span> · <span style="color:var(--warn)">warn</span> · <span style="color:var(--bad)">bad</span> · <span style="color:var(--cyber-cyan-ink)">cyan</span></span>
+    </div>
+    <div class="note">Sprite is referenced over <code>use href</code>, so serve the folder over http(s) (or open in Safari/Firefox) — Chrome blocks cross-file <code>use</code> on <code>file://</code>.</div>
+  </section>
+
+  <!-- ============ 11. CAVEATS ============ -->
+  <section>
+    <h2>Kit notes &amp; caveats</h2>
+    <div class="qa-foot">
+      <ul>
+        <li><code>theme.css</code> re-declares all <b>19</b> of the page's <code>:root</code> names with light values, then adds <b>27</b> kit tokens (<code>--cyber-*</code>, <code>--radius*</code>, <code>--shadow-*</code>, <code>--*-soft</code>, <code>--*-line</code>, <code>--gold-bright</code>, <code>--gold-soft</code>, <code>--venture</code>, <code>--hair</code>, <code>--ring*</code>). Link it <b>after</b> the inline <code>&lt;style&gt;</code>.</li>
+        <li>Contrast is audited against <code>--panel2</code> (the darkest surface a text token can land on): the worst text token is <b>4.64:1</b>, and every text token clears 4.5:1.</li>
+        <li>Zero <code>!important</code>. The mobile block's <code>.win{…!important}</code> geometry is left untouched — none of these rules set the same properties.</li>
+        <li><code>--gold</code> is now two tokens: <code>--gold</code> #82650F carries text (5.0:1); <code>--gold-bright</code> #C9A227 is the original brand accent, kept for fills, borders and the logo.</li>
+        <li>The page's dark-theme <code>#c9a0e8</code> venture swatch is replaced by the token <code>--venture</code> #6D4497.</li>
+        <li>Traffic lights go from grey-on-hover to always-coloured — a deliberate cartoon touch; revert by deleting the <code>.wl</code> block.</li>
+        <li><code>@media (prefers-reduced-motion:reduce)</code> in the page already kills all animation; the kit adds only short transform/shadow transitions.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---- palette: read the tokens straight off the cascade and score them ------- */
+const SW = [
+  ['--bg',        'bg',          'paper'],
+  ['--bg2',       'bg2',         'window body'],
+  ['--panel',     'panel',       'cards / bars'],
+  ['--panel2',    'panel2',      'sunken fill'],
+  ['--line',      'line',        'hairline'],
+  ['--line2',     'line2',       'separator'],
+  ['--ink',       'ink',         'text 1'],
+  ['--body',      'body',        'text 2'],
+  ['--dim',       'dim',         'text 3'],
+  ['--dim2',      'dim2',        'text 4'],
+  ['--gold',      'gold',        'brand text'],
+  ['--gold-dim',  'gold-dim',    'brand edge'],
+  ['--gold-bright','gold-bright','brand accent'],
+  ['--ok',        'ok',          'status ok'],
+  ['--warn',      'warn',        'status warn'],
+  ['--bad',       'bad',         'status bad'],
+  ['--blue',      'blue',        'dev'],
+  ['--venture',   'venture',     'venture'],
+  ['--cyber-cyan','cyber-cyan',  'cyber pop'],
+  ['--cyber-cyan-ink','cyber-cyan-ink','cyber text'],
+  ['--cyber-magenta','cyber-magenta','cyber alert'],
+  ['--cyber-magenta-ink','cyber-magenta-ink','alert text'],
+  ['--ok-soft',   'ok-soft',     'ok wash'],
+  ['--warn-soft', 'warn-soft',   'warn wash'],
+  ['--bad-soft',  'bad-soft',    'bad wash'],
+  ['--gold-soft', 'gold-soft',   'gold wash'],
+  ['--cyber-cyan-soft','cyber-cyan-soft','cyan wash'],
+  ['--cyber-magenta-soft','cyber-magenta-soft','magenta wash'],
+];
+const GRAPHIC = new Set(['--line','--line2','--gold-dim','--gold-bright','--cyber-cyan','--cyber-magenta']);
+const SURFACE = new Set(['--bg','--bg2','--panel','--panel2']);
+const rs = getComputedStyle(document.documentElement);
+const tok = v => rs.getPropertyValue(v).trim();
+
+function hex2rgb(h){
+  h = h.trim().replace('#','');
+  if(h.length === 3) h = h.split('').map(c=>c+c).join('');
+  return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16));
+}
+function lum(rgb){
+  const [r,g,b] = rgb.map(v => { v/=255; return v<=0.04045 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); });
+  return 0.2126*r + 0.7152*g + 0.0722*b;
+}
+function contrast(a,b){
+  const la = lum(hex2rgb(a)), lb = lum(hex2rgb(b));
+  const hi = Math.max(la,lb), lo = Math.min(la,lb);
+  return (hi+0.05)/(lo+0.05);
+}
+const paper = tok('--bg'), panel2v = tok('--panel2');
+const host = document.getElementById('swatches');
+if(host && rs.getPropertyValue('--cyber-cyan')){
+  SW.forEach(([varname, cls, label])=>{
+    const val = tok(varname);
+    const isText   = !GRAPHIC.has(varname) && !SURFACE.has(varname) && !/soft$/.test(varname);
+    const isWash   = /soft$/.test(varname);
+    const isSurf   = SURFACE.has(varname);
+    // worst realistic background for a text token; graphic/wash/surface are scored on their role
+    const worst = panel2v;
+    const ratio = contrast(val, worst);
+    const ok = ratio >= 4.5;
+    const verdict = isText   ? ((ok ? 'AA ✓ ' : 'AA ✗ ') + ratio.toFixed(2) + ':1 vs panel2')
+                  : isWash   ? ('wash · ' + ratio.toFixed(2) + ':1 vs white')
+                  : isSurf   ? ('surface · ' + ratio.toFixed(2) + ':1 vs paper')
+                             : ('graphic · ' + ratio.toFixed(2) + ':1 vs paper');
+    const d = document.createElement('div');
+    d.className = 'sw';
+    // 'Aa' must stay legible on the swatch itself: pick ink or near-white by luminance
+    const swL = lum(hex2rgb(val));
+    const aCol = swL < 0.42 ? '#FDFBF5' : tok('--ink');
+    // the faint checkerboard only helps on near-white swatches; on dark ones it would tint the fill
+    const chipbg = swL >= 0.42
+      ? 'background-color:'+val+';background-image:repeating-conic-gradient(rgba(35,38,46,.055) 0% 25%, transparent 0% 50%);background-size:12px 12px'
+      : 'background-color:'+val;
+    d.innerHTML =
+      '<div class="chipc" style="background-image:none;'+chipbg+'">'+
+        '<span style="color:'+aCol+'">Aa</span></div>'+
+      '<div class="meta"><div class="nm">'+varname+'</div>'+
+      '<div class="hx">'+val+' · '+label+'</div>'+
+      '<div class="aa'+(isText&&!ok?' na':'')+'">'+verdict+'</div></div>';
+    host.appendChild(d);
+  });
+}else if(host){
+  host.innerHTML = '<div class="note">theme.css not loaded — open the folder from a web server, not as a bare file.</div>';
+}
+
+/* ---- icon grid ---- */
+const ICONS = ['i-desk','i-projects','i-agents','i-reports','i-prds','i-stack',
+               'i-about','i-search','i-kanban','i-machine','i-bolt','i-bolt-ok'];
+const LABEL = {'i-bolt':'i-bolt','i-bolt-ok':'i-bolt-ok'};
+const ig = document.getElementById('icongrid');
+if(ig){
+  ig.innerHTML = ICONS.map(n =>
+    '<div class="ic-cell"><svg class="ic" aria-hidden="true"><use href="./icons.svg#'+n+'"/></svg>'+
+    '<span class="icn">'+n+'</span></div>').join('');
+}
+</script>
+</body>
+</html>

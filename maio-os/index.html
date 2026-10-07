@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Maio OS — the household cockpit</title>
 <meta name="description" content="One sky-rim window over the whole Maio household: projects, agent reports, PRDs, live stack truth.">
-<meta name="theme-color" content="#080b12">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- v2 daylight: favicon + system-font kit. No Google Fonts — the light theme
+     uses the OS stacks (Avenir Next / system-ui / ui-monospace) so the page
+     makes zero external requests. -->
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta name="theme-color" content="#F7F4EC">
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -354,12 +356,56 @@ button.vrow:hover .nm{color:var(--ink)}
 }
 
 </style>
+
+<link rel="stylesheet" href="assets/theme.css">
+
+<!-- ============ v2 daylight integration ============================
+     Local layer + new windows. Everything here is optional garnish that
+     never touches the shell's data contract: local.js (written by the local
+     server on 127.0.0.1:9111, absent on the public site) upgrades the
+     Machine + Kanban windows from "generator snapshot" to "live". -->
+<style>
+/* logo marks (kit) */
+#logo .lg{border-radius:5px;vertical-align:-3px;margin-right:7px}
+.bootmark{display:block;width:min(225px,60vw);height:auto}
+/* window icons from the sprite share .di's slot; nudge down 1px */
+.dockbtn .di.ic{line-height:1}
+.di.ic svg{width:20px;height:20px;display:block}
+/* local badges + the Machine window layout */
+.lbadge{font-size:.62rem;font-family:var(--mono);letter-spacing:.04em;padding:2px 7px;border-radius:999px;border:1px solid var(--line2);color:var(--dim2);white-space:nowrap}
+.lbadge.live{color:var(--ok);border-color:var(--ok-line);background:var(--ok-soft)}
+.lbadge.off{color:var(--warn);border-color:var(--warn-line);background:var(--warn-soft)}
+.lbadge.err{color:var(--bad);border-color:var(--bad-line);background:var(--bad-soft)}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:10px}
+.mcard{background:var(--panel);border:var(--hair) solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-1);padding:12px 14px}
+.mcard h5{font-family:var(--grot);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);margin-bottom:8px}
+.mkv{display:flex;justify-content:space-between;gap:10px;font-size:.8rem;padding:2.5px 0}
+.mkv b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.mnote{font-size:.72rem;color:var(--dim2);margin-top:7px}
+.msess{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid var(--line);font-size:.82rem}
+.msess:last-child{border-bottom:none}
+.msess .mico{width:20px;text-align:center;flex:none;color:var(--gold)}
+.msess .mmeta{margin-left:auto;font-family:var(--mono);font-size:.7rem;color:var(--dim2);text-align:right}
+.kbcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:6px}
+.kbcol h5{font-family:var(--grot);font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2);margin:0 0 6px}
+.kbcard{background:var(--panel);border:var(--hair) solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-1);padding:8px 10px;margin-bottom:7px;font-size:.78rem}
+.kbcard .kbt{color:var(--ink);line-height:1.35}
+.kbcard .kbm{margin-top:5px;display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:.66rem;color:var(--dim2)}
+.kbcard .kbm .as{color:var(--gold)}
+.slowchip{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-family:var(--mono);padding:3px 10px;border-radius:999px;border:1px solid var(--line2);color:var(--dim2)}
+.slowchip.hi{color:var(--warn);border-color:var(--warn-line);background:var(--warn-soft)}
+/* mini RAM gauge in the Machine window */
+.mgauge{height:11px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);overflow:hidden;margin:7px 0 3px}
+.mgauge i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#127248,#4FB183)}
+.mgauge.warn i{background:linear-gradient(90deg,#8A5807,#E7B84B)}
+.mgauge.bad i{background:linear-gradient(90deg,#B02A2A,#E8735F)}
+</style>
 </head>
 <body>
 
 <div id="boot" role="status" aria-label="Maio OS booting">
   <div class="bootbox">
-    <div class="bootlogo">maio<em>.</em>os</div>
+    <img class="bootmark" src="assets/logo.svg" alt="maio.os" width="225" height="68">
     <div class="bootsub">the household cockpit — one window over everything</div>
     <div id="bootlog"></div>
     <div class="bootskip">click anywhere to skip</div>
@@ -367,7 +413,7 @@ button.vrow:hover .nm{color:var(--ink)}
 </div>
 
 <header id="topbar">
-  <span id="logo">maio<em>.</em>os</span>
+  <span id="logo"><img class="lg" src="assets/glyph.svg" alt="" width="20" height="20" aria-hidden="true">maio<em>.</em>os</span>
   <nav id="menunav" aria-label="Open windows"></nav>
   <div class="tb-right">
     <span id="genned" title="when this data was scanned"></span>
@@ -709,7 +755,7 @@ function startBoot(){
   if(!bootLog) return;
   const devOn = DEV_ON, devTotal = DEV_TOTAL;
   const lines = [
-    ['dim','maio.os 1.0 · orchestrator build'],
+    ['dim','maio.os 2.0 · daylight build'],
     ['ok',`stack probe ......... ${STACK.ok}/${STACK.total} clean · ${STACK.warn} non-2xx · ${STACK.bad} down`],
     [devOn? 'ok':'bad',`dev servers ......... ${devOn}/${devTotal} online`],
     ['ok',`projects indexed .... ${snum("projects", DATA.projects.length)}`],
@@ -817,6 +863,205 @@ BOOT_WATCHDOG = setTimeout(()=>{
   markFailed('Timed out waiting for maio-os/data.js.');
 }, 7000);
 
+/* ============ v2 daylight: local layer + Machine & Kanban windows ============
+   local.js is written by the local server (127.0.0.1:9111) that runs on the
+   machine; on the public GitHub Pages build it simply isn't there and every
+   local panel degrades to the generator snapshot / an honest "open the local
+   build" note. Nothing here touches the MAIO_DATA contract or the shell. */
+const LS = v => str(v);                    // local strings pass through str() first
+const LOCAL_SRC = './local.js';
+let LOCAL = null;                          // last good MAIO_LOCAL payload
+let LOCAL_STATUS = 'loading';              // loading | live | offline | absent
+let LOCAL_TS = 0;
+function LOCAL_REFRESH(){
+  if(LOCAL_REFRESH._busy) return Promise.resolve(LOCAL);
+  LOCAL_REFRESH._busy = true;
+  return new Promise(resolve => {
+    const s = document.createElement('script');
+    const done = ok => {
+      s.remove();
+      if(ok && isObj(window.MAIO_LOCAL)){ LOCAL = window.MAIO_LOCAL; LOCAL_STATUS = 'live'; }
+      else { LOCAL_STATUS = LOCAL ? 'offline' : 'absent'; }   // keep last good data, flag the miss
+      LOCAL_TS = Date.now(); LOCAL_REFRESH._busy = false;
+      one(renderGen, null);
+      ['machine','kanban'].forEach(id => { const w=OPEN.get(id); if(w && w.rerender) w.rerender(true); });
+      resolve(LOCAL);
+    };
+    s.src = LOCAL_SRC + '?t=' + Math.floor(Date.now()/1000);
+    s.onload = () => done(true);
+    s.onerror = () => done(false);
+    setTimeout(()=>{ if(LOCAL_REFRESH._busy) done(false); }, 6000);
+    document.head.appendChild(s);
+  });
+}
+LOCAL_REFRESH();
+setInterval(LOCAL_REFRESH, 30000);
+addEventListener('focus', () => { if(Date.now()-LOCAL_TS > 25000) LOCAL_REFRESH(); });
+const LSEC = k => { const v = LOCAL && one(()=>LOCAL[k], null); return isObj(v) ? v : null; };
+function localBadge(){
+  if(LOCAL_STATUS==='live')   return `<span class="lbadge live">local · live</span>`;
+  if(LOCAL_STATUS==='offline') return `<span class="lbadge err">local · unreachable</span>`;
+  if(LOCAL_STATUS==='loading') return `<span class="lbadge">local · checking…</span>`;
+  return `<span class="lbadge off">snapshot build — open the local server for live</span>`;
+}
+const fmtMoney = v => { const n=num(v,null); return n==null ? '—' : '$'+(n<100? n.toFixed(2) : Math.round(n).toLocaleString('en-US')); };
+const fmtGb = v => { const n=num(v,null); return n==null ? '—' : (n>=10 ? n.toFixed(1) : n.toFixed(2)) + ' GB'; };
+function agoTxt2(t){ const s=str(t); if(!s) return ''; const d=new Date(s); if(isNaN(d)) return ''; const mins=Math.floor((Date.now()-d)/60000);
+  if(mins<2) return 'just now'; if(mins<60) return mins+' min ago';
+  const h=Math.floor(mins/60); if(h<24) return h+'h ago';
+  return Math.floor(h/24)+'d ago'; }
+
+/* ---------- Machine window (local-only) ---------- */
+function machineRamCard(L){
+  const ram = LSEC('ram'); const slow = LSEC('slow');
+  if(!ram) return `<div class="mcard"><h5>Memory</h5><div class="empty">live RAM needs the local server (127.0.0.1:9111)</div></div>`;
+  const pct = num(ram.usedPct, 0);
+  const cls = slow && slow.level==='HIGH' ? 'bad' : (pct>=75 ? 'warn' : '');
+  const top = Array.isArray(ram.top) ? ram.top.slice(0,6) : [];
+  return `<div class="mcard"><h5>Memory · ${esc(fmtGb(ram.usedPct!=null? (num(ram.totalGb,0)*num(ram.usedPct,0)/100) : null))} of ${esc(fmtGb(ram.totalGb))} used</h5>
+    <div class="mgauge ${cls}"><i style="width:${clamp(pct,0,100).toFixed(1)}%"></i></div>
+    <div class="mkv"><span>used</span><b>${esc(pct.toFixed(1))}%</b></div>
+    <div class="mkv"><span>swap</span><b>${esc(fmtGb(ram.swapUsedGb))} / ${esc(fmtGb(ram.swapTotalGb))}</b></div>
+    <div class="mkv"><span>pressure free</span><b>${esc(String(num(ram.pressureFreePct,'—')))}%</b></div>
+    ${slow?`<div class="mnote"><span class="slowchip ${slow.level==='HIGH'?'hi':''}">${slow.level==='HIGH'?'⚠ slow machine':'✓ OK'} — ${esc(LS(slow.why))}${slow.biggest?` · biggest: <b>${esc(LS(slow.biggest.name))}</b> ${esc(fmtGb(slow.biggest.sizeGb))}`:''}</span></div>`:''}
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn danger" id="trimbtn" aria-label="Unload local Ollama models to trim memory">⚡ Trim RAM</button>
+      <button class="btn ghost" id="ramrefresh" aria-label="Refresh local readings">↻ Refresh</button>
+    </div>
+    <div id="fixout" class="mnote" aria-live="polite"></div>
+    <div class="sect" style="margin:12px 0 4px">Top processes</div>
+    ${top.map(t=>`<div class="mkv"><span>${esc(LS(t.name))}</span><b>${esc(fmtGb(t.rssGb))} · ${esc(String(t.pctOfUsed))}%</b></div>`).join('') || '<div class="empty">no readings</div>'}
+  </div>`;
+}
+function machineModelsCard(){
+  const oll = LSEC('ollama'); const olx = LSEC('omlx');
+  const rows = [];
+  if(oll){ const ps = Array.isArray(oll.ps)? oll.ps : [];
+    rows.push(`<div class="sect" style="margin:2px 0 4px">Ollama ${oll.version?('v'+esc(LS(oll.version))):''}</div>`);
+    rows.push(ps.length ? ps.map(m=>`<div class="mkv"><span>${esc(LS(m.name))}</span><b>${esc(fmtGb(m.sizeGb))} · ${esc(LS(m.processor))}${m.until?(' · '+esc(LS(m.until))):''}</b></div>`).join('')
+                        : `<div class="mnote">no models loaded right now (${esc(String(num(oll.localCount,'—')))} installed${Array.isArray(oll.cloudModels)&&oll.cloudModels.length?` · ${oll.cloudModels.length} cloud`:''})</div>`);
+    if(Array.isArray(oll.cloudModels) && oll.cloudModels.length)
+      rows.push(`<div class="mnote">cloud models: ${oll.cloudModels.slice(0,8).map(x=>esc(LS(x))).join(' · ')}</div>`);
+  }
+  if(olx){ rows.push(`<div class="sect" style="margin:10px 0 4px">oMLX</div>`);
+    rows.push(`<div class="mkv"><span>server</span><b>${olx.running?'● running :8000':'○ not running'}</b></div>`);
+    const st = isObj(olx.stats)? olx.stats : null;
+    if(st){ rows.push(`<div class="mkv"><span>lifetime requests</span><b>${esc(String(num(st.requests,0)))}</b></div>`);
+      rows.push(`<div class="mkv"><span>tokens in / out</span><b>${esc(String(num(st.promptTokens,0)))} / ${esc(String(num(st.completionTokens,0)))}</b></div>`); }
+    const ms = Array.isArray(olx.models)? olx.models : [];
+    if(ms.length) rows.push(`<div class="mnote">models: ${ms.slice(0,8).map(x=>esc(LS(x))).join(' · ')}</div>`);
+  }
+  return `<div class="mcard"><h5>Local models</h5>${rows.join('') || '<div class="empty">needs the local server</div>'}</div>`;
+}
+function machineSessionsCard(){
+  const se = LSEC('sessions'); const sp = LSEC('spend');
+  if(!se && !sp) return `<div class="mcard"><h5>Sessions &amp; spend</h5><div class="empty">live sessions need the local server</div></div>`;
+  const cl = se && isObj(se.claude)? se.claude : null, cx = se && isObj(se.codex)? se.codex : null;
+  const sess = (icon,name,sub,meta)=>`<div class="msess"><span class="mico">${icon}</span><span><b style="color:var(--ink)">${esc(name)}</b> <span style="color:var(--dim2)">· ${esc(sub)}</span></span><span class="mmeta">${meta}</span></div>`;
+  let out = `<div class="mcard"><h5>Sessions &amp; spend</h5>`;
+  if(cl) out += sess('✳','Claude',`${num(cl.sessions7d,0)} sessions · 7d`, `${esc(agoTxt2(cl.lastActivity))}${cl.lastProject?`<br>${esc(LS(cl.lastProject).replace(/^-/,'').slice(0,28))}`:''}`);
+  if(cx) out += sess('⌘','Codex',`${num(cx.sessions7d,0)} sessions · 7d`, esc(agoTxt2(cx.lastActivity)));
+  out += sess('✳','ChatGPT','no local usage API','—');
+  if(sp){ out += `<div class="sect" style="margin:10px 0 2px">LiteLLM spend</div>
+    <div class="mkv"><span>${esc(LS(sp.keyAlias)||'key')} — all time</span><b>${esc(fmtMoney(sp.spendUsd))}</b></div>
+    ${Array.isArray(sp.models)?`<div class="mnote">aliases: ${sp.models.map(m=>esc(LS(m))).join(' · ')}</div>`:''}`; }
+  out += `<div class="mnote">Claude/ChatGPT subscription quota isn't readable locally — check their sites. Ollama Cloud credit: ollama.com/settings.</div></div>`;
+  return out;
+}
+function machineSystemCard(){
+  const ld = LSEC('launchd'), dk = LSEC('docker'), sv = LSEC('serves'), m = LSEC('machine');
+  let out = `<div class="mcard"><h5>System</h5>`;
+  if(m){ out += `<div class="mkv"><span>host</span><b>${esc(LS(m.hostname))}</b></div>
+    <div class="mkv"><span>uptime</span><b>${esc(String(num(m.uptimeHours,0)))} h</b></div>
+    <div class="mkv"><span>load</span><b>${Array.isArray(m.load)?m.load.map(x=>esc(String(x))).join(' / '):'—'}</b></div>`; }
+  if(ld && isObj(ld.counts)) out += `<div class="mkv"><span>launchd jobs</span><b>${esc(String(num(ld.counts.loaded,0)))} loaded · ${esc(String(num(ld.counts.running,0)))} running</b></div>`;
+  if(Array.isArray(dk) && dk.ok !== false){ const cs = Array.isArray(dk.containers)? dk.containers:[]; out += `<div class="mkv"><span>docker</span><b>${cs.length} up</b></div>
+    ${cs.slice(0,7).map(c=>`<div class="mkv"><span style="color:var(--dim2)">${esc(LS(c.name))}</span><b style="font-size:.72rem">${esc(LS(c.status).split('(')[0].trim())}</b></div>`).join('')}`; }
+  if(sv && Array.isArray(sv.items) && sv.items.length) out += `<div class="sect" style="margin:10px 0 2px">Tailnet serves</div>
+    ${sv.items.slice(0,6).map(i=>`<div class="mkv"><span style="font-size:.72rem;color:var(--dim2)">${esc(LS(i.target)).replace(/^http:\/\//,'')}</span><b style="font-size:.7rem">${esc(LS(i.url).replace(/^https:\/\//,'').slice(0,34))}</b></div>`).join('')}`;
+  return out + `</div>`;
+}
+function renderMachine(){
+  const up = LOCAL_STATUS==='live';
+  return `<div class="sect" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <b style="color:var(--ink);font-size:.86rem">This machine — ${esc('Ricardos-Mac-mini')}</b> ${localBadge()}
+      <span class="lbadge">updated ${esc(LOCAL&&LOCAL.generatedAt? agoTxt2(LOCAL.generatedAt) : '—')}</span></div>
+    ${up?'':'<div class="notebox" style="margin-top:10px"><b>Snapshot view</b> — the live local server (127.0.0.1:9111) is not reachable from this page, so memory, sessions and the trim action are read-only/absent. Open <span style="font-family:var(--mono)">http://127.0.0.1:9111/</span> on the machine itself for the live build.</div>'}
+    <div class="mgrid">
+      ${machineRamCard()}
+      ${machineModelsCard()}
+      ${machineSessionsCard()}
+      ${machineSystemCard()}
+    </div>`;
+}
+async function runFix(action, confirmLabel){
+  const out = $('#fixout'); const btn = $('#trimbtn');
+  if(!out) return;
+  if(btn && btn.dataset.armed !== '1'){
+    btn.dataset.armed = '1'; const t0 = btn.textContent;
+    btn.textContent = '⚠ ' + (confirmLabel || 'Confirm?') + ' — click again';
+    out.textContent = 'This unloads local Ollama models to free memory. They reload automatically on next use.';
+    setTimeout(()=>{ if(btn.dataset.armed==='1'){ btn.dataset.armed='0'; btn.textContent = t0; } }, 4500);
+    return;
+  }
+  if(btn){ btn.dataset.armed='0'; btn.disabled = true; }
+  out.textContent = 'working — unloading…';
+  try{
+    const r = await fetch('http://127.0.0.1:9111/api/fix', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action, confirm: true }) });
+    const j = await r.json().catch(()=>({}));
+    if(j && j.ok && j.report){
+      const f = j.report;
+      out.innerHTML = `<b style="color:var(--ok)">✓ trimmed</b> — memory ${esc(String(f.beforeUsedPct))}% → ${esc(String(f.afterUsedPct))}%, freed <b>${esc(fmtGb(f.freedGb))}</b>` +
+        (Array.isArray(f.unloaded)&&f.unloaded.length ? ` · unloaded ${f.unloaded.map(x=>esc(LS(x))).join(', ')}` : '');
+    } else {
+      out.innerHTML = `<b style="color:var(--warn)">✗ ${esc(LS(j.error)||'fix failed')}</b>` + (j.error==='busy'?' — another fix is already running, try again in a few seconds.':'');
+    }
+  }catch(e){ out.innerHTML = `<b style="color:var(--bad)">✗ unreachable</b> — the local server answered the page but not the action. Is it still running on 9111?`; }
+  if(btn){ btn.disabled = false; btn.textContent = '⚡ Trim RAM'; }
+  LOCAL_REFRESH();
+}
+/* delegated: works because window bodies are rebuilt, listeners can't be per-render */
+document.addEventListener('click', e => {
+  const t = e.target.closest('#trimbtn'); if(t){ runFix('ollama-unload','Confirm trim'); return; }
+  const r = e.target.closest('#ramrefresh'); if(r){ LOCAL_REFRESH(); const o=$('#fixout'); if(o) o.textContent='refreshing…'; return; }
+});
+
+/* ---------- Kanban window (local live board, snapshot fallback) ---------- */
+const KB_ORDER = ['running','ready','todo','blocked','done'];
+const KB_LABEL = {running:'Running', ready:'Ready', todo:'Todo', blocked:'Blocked', scheduled:'Scheduled', triage:'Triage', done:'Done'};
+function kbStamp(){
+  const k = LSEC('kanban');
+  if(k) return `<span class="lbadge live">live board · default</span>`;
+  const sy = one(()=>isObj(D.system)? D.system : null, null);
+  if(sy && isObj(sy.kanban)) return `<span class="lbadge off">snapshot ${esc(LS(sy.kanban.counts? '· '+Object.values(sy.kanban.counts).reduce((a,b)=>a+(num(b,0)),0)+' tasks':'') )}</span>`;
+  return `<span class="lbadge off">needs the local server for the live board</span>`;
+}
+function renderKanban(){
+  const k = LSEC('kanban');
+  const sy = one(()=>isObj(D.system)? D.system : null, null);
+  const snap = sy && isObj(sy.kanban) ? sy.kanban : null;
+  const counts = k && isObj(k.counts) ? k.counts : (snap && isObj(snap.counts) ? snap.counts : null);
+  const tasks  = k && Array.isArray(k.tasks) ? k.tasks : (snap && Array.isArray(snap.recent) ? snap.recent : []);
+  if(!counts) return `<div class="sect">Hermes Kanban</div>${localBadge()}
+    <div class="empty" style="margin-top:14px">No board data — run the local server on the machine, or wait for the next generator snapshot.</div>`;
+  const cols = KB_ORDER.map(s => ({s, n:num(counts[s],0)})).filter(c => c.n>0 || c.s!=='done');
+  const total = Object.values(counts).reduce((a,b)=>a+(num(b,0)),0);
+  return `<div class="sect" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <b style="color:var(--ink);font-size:.86rem">Hermes kanban — default board</b> ${kbStamp()}
+      <span class="lbadge">${esc(String(total))} tasks</span></div>
+    <div class="kbcols">
+      ${cols.map(c=>{
+        const list = tasks.filter(t => LS(t.status)===c.s).slice(0, c.s==='done' ? 10 : 25);
+        return `<div class="kbcol"><h5>${esc(KB_LABEL[c.s]||c.s)} · ${c.n}</h5>
+          ${list.map(t=>`<div class="kbcard"><div class="kbt">${esc(LS(t.title))}</div>
+            <div class="kbm"><span class="as">@${esc(LS(t.assignee)||'—')}</span><span>${esc(str(t.updated||t.updated_at||'').slice(0,10))}</span></div></div>`).join('') || `<div class="mnote">none</div>`}
+        </div>`; }).join('')}
+    </div>
+    <div class="mnote" style="margin-top:8px">Read-only mirror of <span style="font-family:var(--mono)">hermes kanban</span> — ${
+      k? 'refreshes with this page (30 s) and on focus':'showing the last generator snapshot'}. The dashboard with full history is at <a href="http://127.0.0.1:9110/" target="_blank" rel="noopener noreferrer">127.0.0.1:9110</a>.</div>`;
+}
+
 /* ---------- desklets ----------
    PR4 item 3: the counters are controls. A counter that names a window is rendered as a
    <button class="vrow" data-open="..."> so it is focusable, activated by Enter and Space,
@@ -864,7 +1109,8 @@ function renderDesklets(){
 /* ---------- meta clock / snapshot age ---------- */
 function renderGen(){
   const el = $('#genned'); if(!el) return;
-  el.textContent = 'snapshot: ' + ageText(SNAP_RAW) + (SNAP_STALE ? ' ⚠' : '');
+  const lb = localBadge();
+  el.innerHTML = 'snapshot: ' + esc(ageText(SNAP_RAW)) + (SNAP_STALE ? ' ⚠' : '') + ' · ' + lb;
   el.title = 'meta.generatedAt: ' + (SNAP_RAW || '(missing)');
   el.classList.remove('fresh','stale','unknown');
   el.classList.add(SNAP_AGE===null ? 'unknown' : (SNAP_STALE ? 'stale' : 'fresh'));
@@ -932,6 +1178,8 @@ const WINS = {
   projects:{title:'Projects', icon:'▣', sub:`${snum("projects",DATA.projects.length)} indexed`, render:renderProjects, w:820, h:520},
   agents:{title:'Agents', icon:'✦', sub:`${snum("roster",DATA.roster.length)} on roster`, render:renderAgents, w:760, h:480},
   reports:{title:'Reports', icon:'▤', sub:`${snum("reports",DATA.reports.length)} artifacts`, render:renderReports, w:820, h:520},
+  kanban:{title:'Kanban', icon:'▦', sub:'the fleet board', render:renderKanban, w:980, h:600},
+  machine:{title:'Machine', icon:'⚙', sub:'RAM · models · sessions', render:renderMachine, w:880, h:580},
   prds:{title:'PRDs', icon:'✎', sub:`${snum("prds",DATA.prds.length)} found`, render:renderPRDs, w:700, h:440},
   stack:{title:'Stack', icon:'◉', sub:'live truth', render:renderStack, w:780, h:500},
   about:{title:'About / Roadmap', icon:'☆', sub:'what this is + where it goes', render:renderAbout, w:660, h:520},
@@ -1339,6 +1587,25 @@ const enriched = DATA.enriched;
 const ENRICH_PRDS = Array.isArray(enriched.prds) ? enriched.prds : [];
 function renderStack(){
   const st=DATA.stack, dev=DATA.devServers;
+  /* v2: the generator's system snapshot (launchd/docker/tailnet/kanban counts) rides along
+     in the Stack window, so the public build shows the machine's shape even without the
+     local server; the Kanban/Machine windows carry the live versions. */
+  const sy = one(()=>isObj(D.system)? D.system : null, null);
+  let sysHtml = '';
+  if(sy){
+    const ld = isObj(sy.launchd)? sy.launchd : null;
+    const dk = Array.isArray(sy.docker)? sy.docker : null;
+    const sv = Array.isArray(sy.serves)? sy.serves : null;
+    const kb = isObj(sy.kanban)? sy.kanban : null;
+    const tn = isObj(sy.tailnet)? sy.tailnet : null;
+    sysHtml = `<div class="sect">Machine — generator snapshot (live version in the Machine window)</div>
+      <div class="svcgrid">
+        <div class="svc"><div class="sn"><b>launchd jobs</b><span class="pill ${ld&&ld.counts&&num(ld.counts.running,0)>0?'ok':'warn'}">${ld&&ld.counts?esc(String(num(ld.counts.loaded,0))+' loaded · '+String(num(ld.counts.running,0))+' running'):'—'}</span></div><div class="snote">com.maio / hermes / paperclip / omnigent / snappier</div></div>
+        <div class="svc"><div class="sn"><b>docker</b><span class="pill ${dk&&dk.length?'ok':'warn'}">${dk?esc(String(dk.length)+' up'):'—'}</span></div><div class="snote">${dk?dk.slice(0,4).map(c=>esc(str(c.name))).join(' · '):''}</div></div>
+        <div class="svc"><div class="sn"><b>kanban board</b><span class="pill ${kb&&kb.counts&&num(kb.counts.blocked,0)>0?'warn':'ok'}">${kb&&kb.counts?esc(String(Object.values(kb.counts).reduce((a,b)=>a+(num(b,0)),0))+' tasks'):'—'}</span></div><div class="snote">${kb&&kb.counts?['running','blocked','done'].map(k=>esc(k)+' '+esc(String(num(kb.counts[k],0)))).join(' · '):''}</div></div>
+        <div class="svc"><div class="sn"><b>tailnet</b><span class="pill ok">${tn?esc(str(tn.hostname).split('.')[0]):'—'}</span></div><div class="snote">${sv?sv.slice(0,4).map(s=>esc(str(s.url).replace(/^https:\/\//,''))).join(' · '):''}</div></div>
+      </div>`;
+  }
   /* PR4 item 5 — every URL already shown becomes a real link, and only through PR2's
      safeUrl allow-list (http / https / mailto / relative). Anything else — javascript:,
      data:, a missing or non-string url — stays plain text, and a link is never invented
@@ -1359,7 +1626,8 @@ function renderStack(){
     <div class="svcgrid">${dev.map(d=>{ const u=safeUrl(d.url); const label=str(d.url).replace(/^https?:\/\//i,'');
       return `
       <div class="svc"><div class="sn"><b>${esc(d.name)}</b><span class="pill ${d.ok?'ok':'bad'}">${d.ok? '✓ 200' : '✕ dark'}</span></div>
-      <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${urlLink(d.url, label)}</div></div>`; }).join('')}</div>`;
+      <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${urlLink(d.url, label)}</div></div>`; }).join('')}</div>
+    ${sysHtml}`;
 }
 function renderAbout(){
   return `
@@ -1380,12 +1648,29 @@ function renderAbout(){
 /* ---------- dock / menu ----------
    the dock's own order — a single list, resolved against winDef, so a window added to WINS
    joins the dock, the menu and the command index without a second edit */
-const WINS_DOCK = ['desk','projects','agents','reports','prds','stack','about'].filter(id=>winDef(id));
+const WINS_DOCK = ['desk','projects','agents','reports','kanban','machine','prds','stack'].filter(id=>winDef(id));
+/* icon sprite: fetched once and inlined, so <use href="#i-…"> resolves on http, https
+   and file:// alike; until it lands the windows' own text glyph is the fallback */
+const DICON = {desk:'i-desk', projects:'i-projects', agents:'i-agents', reports:'i-reports',
+  kanban:'i-kanban', machine:'i-machine', prds:'i-prds', stack:'i-stack', about:'i-about'};
+let SPRITE_READY = false;
+fetch('assets/icons.svg').then(r => r.ok ? r.text() : '').then(txt => {
+  if(!txt || txt.indexOf('<svg') < 0) return;
+  const host = document.createElement('div');
+  host.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+  host.setAttribute('aria-hidden','true');
+  host.innerHTML = txt;
+  document.body.appendChild(host);
+  SPRITE_READY = true; one(renderDock, null);
+}).catch(()=>{});
+const dockIcon = id => (SPRITE_READY && DICON[id])
+  ? `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#${DICON[id]}"></use></svg>`
+  : esc(WINS[id].icon);
 function renderDock(){
   const items = WINS_DOCK;
   $('#dock').innerHTML = items.map(id=>`
     <button class="dockbtn" data-open="${escAttr(id)}" data-toggle="1" aria-label="Open ${escAttr(WINS[id].title)}">
-      <span class="di">${esc(WINS[id].icon)}</span><span>${esc(WINS[id].title)}</span><span class="dot"></span></button>`).join('')
+      <span class="di ic">${dockIcon(id)}</span><span>${esc(WINS[id].title)}</span><span class="dot"></span></button>`).join('')
     + `<span class="docksep"></span><button class="dockbtn" data-cmd="1" aria-label="Command bar"><span class="di">⌘</span><span>Search</span></button>`;
   $('#dock').onclick = e => { const b = e.target.closest('.dockbtn');   // the Search dock button
     if(b && b.dataset.cmd){ e.stopPropagation(); showCmd(); } };
