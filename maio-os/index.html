@@ -2023,7 +2023,7 @@ let vaultErr = '';        // last search/read error, shown honestly
 let vaultBusy = false;
 let vaultResults = null;  // last results array
 let vaultSeq = 0;         // stale-response guard for the debounced search
-let vaultKeepFocus = false; // restore input focus after a repaint triggered by typing
+let vaultOpenSeq = 0;     // stale-response guard for note opens
 function vaultUrls(path){
   // Built inline from the vault/path — same format as jump.html, no fetch.
   // The path is already vault-relative (validated server-side on read; search
@@ -2059,14 +2059,17 @@ async function vaultOpen(path){
   // note endpoint only serves .md/.mdx — add the .md back when it is missing.
   let p = str(path);
   if(!/\.(md|mdx)$/i.test(p)) p = p + '.md';
+  const my = ++vaultOpenSeq;
   vaultBusy = true; vaultErr=''; vaultView = {path:p, loading:true};
   vaultRepaint();
   try{
     const r = await fetch(LOCAL_BASE + '/api/vault/note?path=' + encodeURIComponent(p), { method:'GET' });
+    if(my !== vaultOpenSeq) return;                   // a newer open won
     const j = await r.json().catch(()=>({}));
     if(j && j.ok){ vaultView = {path:j.path, title:p.split('/').pop(), bytes:j.bytes, mtime:j.mtime, text:j.text}; }
     else { vaultView = null; vaultErr = LS(j.error) || ('read failed (' + r.status + ')'); }
-  }catch(e){ vaultView = null; vaultErr = 'unreachable while reading the note'; }
+  }catch(e){ if(my !== vaultOpenSeq) return; vaultView = null; vaultErr = 'unreachable while reading the note'; }
+  if(my !== vaultOpenSeq) return;
   vaultBusy = false; vaultRepaint();
 }
 function vaultRepaint(){
