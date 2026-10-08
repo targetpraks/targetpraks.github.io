@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bank Funding Explained — the shapes of money, and what each one costs</title>
+<link rel="icon" href="data:,">
+<style>
+  :root{
+    --paper:#F7F4EE; --card:#FFFDF9; --band:#EFE9DC; --band-2:#E6DFCE;
+    --ink:#191715; --ink-soft:#514C46; --muted:#8B8377; --line:#DCD4C3; --line-soft:#EAE3D4;
+    --accent:#9C3D18; --accent-deep:#6E2A10; --pos:#2F6B46; --warn:#8A6A12; --neg:#A22B22;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:"Avenir Next","Segoe UI","Helvetica Neue",Helvetica,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    font-size:16.5px; line-height:1.62; -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(circle at 12% -8%, rgba(156,61,24,.05), transparent 42%);
+  }
+  .page{max-width:1060px;margin:0 auto;padding:64px 28px 96px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+  h1{font-family:var(--serif);font-size:clamp(36px,6vw,60px);font-weight:700;line-height:1.03;letter-spacing:-.015em;margin:16px 0 20px}
+  h2{font-family:var(--serif);font-size:clamp(25px,3.2vw,34px);font-weight:700;line-height:1.14;letter-spacing:-.01em;margin:0 0 10px}
+  h3{font-family:var(--sans);font-size:15px;font-weight:700;letter-spacing:.01em;margin-bottom:6px}
+  .dek{font-size:19px;color:var(--ink-soft);max-width:720px;line-height:1.58}
+  .dek strong{color:var(--ink);font-weight:600}
+  .meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:22px;letter-spacing:.04em;line-height:1.9}
+  .rule{height:1px;background:var(--line);border:0;margin:44px 0}
+
+  section{margin-top:14px}
+  .lead{font-size:17px;color:var(--ink-soft);max-width:800px}
+  .lead strong{color:var(--ink);font-weight:600}
+
+  /* ---------- section headings ---------- */
+  .sec-head{display:flex;align-items:baseline;gap:14px;margin:54px 0 18px}
+  .sec-head .no{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.14em;padding-top:6px}
+
+  /* ---------- the ladder ---------- */
+  .ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:6px}
+  .rung{background:var(--card);padding:20px 18px 18px;position:relative;min-height:172px;display:flex;flex-direction:column}
+  .rung .lv{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--muted)}
+  .rung h3{margin:12px 0 6px;font-size:15.5px}
+  .rung p{font-size:13.5px;color:var(--ink-soft);line-height:1.5;flex:1}
+  .rung .own{margin-top:12px;font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--accent-deep);border-top:1px solid var(--line-soft);padding-top:9px}
+  .rung.best{background:linear-gradient(180deg,#FFFDF9,#FBF6EA)}
+  .rung.best .lv{color:var(--accent)}
+
+  /* ---------- the two families ---------- */
+  .families{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  .fam{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 22px}
+  .fam .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+  .fam h3{font-family:var(--serif);font-size:22px;font-weight:700;margin:9px 0 8px}
+  .fam p{font-size:14.5px;color:var(--ink-soft)}
+  .fam ul{list-style:none;margin-top:14px;border-top:1px solid var(--line-soft);padding-top:12px}
+  .fam li{font-size:13.5px;color:var(--ink-soft);padding:5px 0 5px 20px;position:relative}
+  .fam li:before{content:"";position:absolute;left:0;top:12px;width:8px;height:1.5px;background:var(--accent)}
+  .fam .verdict{margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--accent-deep);border-top:1px solid var(--line-soft);padding-top:11px;line-height:1.6}
+
+  /* ---------- the seven cards ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-top:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px;display:flex;flex-direction:column}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .card .idx{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em}
+  .card h3{font-family:var(--serif);font-size:21px;font-weight:700;margin:8px 0 4px;letter-spacing:-.01em}
+  .card .aka{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.06em;margin-bottom:12px}
+  .pill{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;padding:4px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .pill.sec{border-color:#B9CDBD;color:var(--pos);background:#F0F6F1}
+  .pill.uns{border-color:#E0C9A6;color:var(--warn);background:#FBF5E8}
+  .pill.dfi{border-color:#CBB9C4;color:#6E3F5E;background:#F8F1F5}
+  .pill.grt{border-color:#B9CDBD;color:var(--pos);background:#F0F6F1}
+  .card p.desc{font-size:14px;color:var(--ink-soft);flex:1}
+  .card dl{margin-top:14px;border-top:1px solid var(--line-soft);padding-top:12px;display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:12.5px}
+  .card dt{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;padding-top:2px}
+  .card dd{color:var(--ink);font-weight:500}
+  .card .cost{margin-top:14px;background:var(--band);border-radius:9px;padding:12px 14px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+  .card .cost b{font-family:var(--mono);font-weight:600;color:var(--accent-deep);font-size:12px}
+
+  /* ---------- the comparison table ---------- */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card);margin-top:10px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px}
+  thead th{background:var(--band);text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);padding:13px 14px;font-weight:600;border-bottom:1px solid var(--line)}
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:nth-child(even){background:#FCFAF4}
+  td.name{font-weight:600}
+  td.name span{display:block;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:.05em;font-weight:400;margin-top:2px}
+  td.num{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+  td.num .big{font-size:13.5px;font-weight:600}
+  .flag{font-family:var(--mono);font-size:10px;letter-spacing:.06em}
+  .flag.good{color:var(--pos)} .flag.mid{color:var(--warn)} .flag.bad{color:var(--neg)}
+
+  /* ---------- worked example ---------- */
+  .worked{background:var(--band);border-radius:16px;padding:28px 26px;margin-top:14px;border:1px solid var(--band-2)}
+  .worked .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px;margin-top:18px}
+  .stat{background:var(--card);border-radius:11px;padding:16px 16px 14px;border:1px solid var(--line-soft)}
+  .stat .k{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:var(--serif);font-size:27px;font-weight:700;margin:7px 0 3px;letter-spacing:-.01em}
+  .stat .n{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+  .split .opt{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--line-soft)}
+  .split .opt h3{font-size:13.5px;font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:8px}
+  .split .opt .big{font-family:var(--serif);font-size:26px;font-weight:700;letter-spacing:-.01em}
+  .split .opt .big small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--muted);letter-spacing:0}
+  .split .opt p{font-size:12.5px;color:var(--ink-soft);margin-top:7px}
+
+  /* ---------- checklist ---------- */
+  .checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:8px}
+  .check{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .check h3{font-family:var(--serif);font-size:19px;font-weight:700;margin:6px 0 10px}
+  .check .tag{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
+  .check ol{margin:0;padding-left:0;list-style:none;counter-reset:c}
+  .check li{counter-increment:c;position:relative;padding:7px 0 7px 30px;font-size:13.5px;color:var(--ink-soft);border-bottom:1px solid var(--line-soft)}
+  .check li:last-child{border-bottom:0}
+  .check li:before{content:counter(c,decimal-leading-zero);position:absolute;left:0;top:8px;font-family:var(--mono);font-size:10.5px;color:var(--accent);letter-spacing:.06em}
+
+  /* ---------- traps ---------- */
+  .traps{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:8px}
+  .trap{background:var(--card);padding:20px}
+  .trap h3{font-size:14.5px;font-family:var(--serif);font-weight:700;margin-bottom:6px}
+  .trap p{font-size:13.5px;color:var(--ink-soft)}
+
+  /* ---------- the priority order (§8) ---------- */
+  .rank{margin-top:10px;display:flex;flex-direction:column;gap:12px}
+  .rank-item{display:flex;gap:18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;align-items:flex-start}
+  .rank-no{font-family:var(--serif);font-size:34px;font-weight:700;line-height:1;color:var(--accent);min-width:40px;padding-top:2px}
+  .rank-body{flex:1;min-width:0}
+  .rank-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .rank-head h3{font-family:var(--serif);font-size:20px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .rank-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid;white-space:nowrap}
+  .rank-tag.best{border-color:#9CC2A8;color:var(--pos);background:#EFF7F1}
+  .rank-tag.good{border-color:#B9CDBD;color:var(--pos);background:#F3F8F4}
+  .rank-tag.mid{border-color:#E0C9A6;color:var(--warn);background:#FBF5E8}
+  .rank-tag.bad{border-color:#E3BBB4;color:var(--neg);background:#FBF0EE}
+  .rank-body > p{font-size:14px;color:var(--ink-soft);margin-top:9px}
+  .rank-body > p.ask{font-size:13px;border-top:1px solid var(--line-soft);padding-top:10px;margin-top:11px}
+  .rank-body p b{color:var(--accent-deep)}
+
+  .neverbox{margin-top:16px;background:#FBF0EE;border:1px solid #E3BBB4;border-radius:14px;padding:20px 22px}
+  .neverbox h3{font-family:var(--serif);font-size:19px;font-weight:700;margin-bottom:8px;color:var(--neg)}
+  .neverbox p{font-size:14px;color:var(--ink-soft)}
+  .neverbox b{color:var(--ink)}
+
+  .stackbox{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .stackbox h3{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:8px}
+  .stackbox > p{font-size:14px;color:var(--ink-soft)}
+  .stack{margin-top:16px;border-top:1px solid var(--line-soft)}
+  .stack-row{display:grid;grid-template-columns:1fr auto;gap:4px 16px;padding:12px 0;border-bottom:1px solid var(--line-soft);align-items:baseline}
+  .stack-row:last-child{border-bottom:0}
+  .stack-row .sl{font-size:14px;font-weight:600}
+  .stack-row .sv{font-family:var(--mono);font-size:12.5px;color:var(--accent-deep);white-space:nowrap}
+  .stack-row .sn{grid-column:1/-1;font-size:12.5px;color:var(--muted)}
+
+  .rulebox{margin-top:16px;background:var(--band);border:1px solid var(--band-2);border-radius:14px;padding:22px}
+  .rulebox h3{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:12px}
+  .rulebox ol{margin:0;padding-left:0;list-style:none;counter-reset:r}
+  .rulebox li{counter-increment:r;position:relative;padding:9px 0 9px 34px;font-size:14px;color:var(--ink-soft);border-bottom:1px solid var(--band-2)}
+  .rulebox li:last-child{border-bottom:0;padding-bottom:0}
+  .rulebox li:before{content:counter(r);position:absolute;left:0;top:9px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;display:flex;align-items:center;justify-content:center}
+  .rulebox li strong{color:var(--ink);font-weight:600}
+
+  .callout{margin-top:44px;background:var(--card);border:1px solid var(--band-2);border-left:3px solid var(--accent);border-radius:12px;padding:22px 24px}
+  .callout h3{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:8px}
+  .callout p{font-size:14.5px;color:var(--ink-soft)}
+
+  footer{margin-top:56px;border-top:1px solid var(--line);padding-top:22px;font-size:12.5px;color:var(--muted)}
+  footer .src{font-family:var(--mono);font-size:11px;line-height:2}
+  footer strong{color:var(--ink-soft);font-weight:600}
+
+  @media (max-width:720px){
+    .families,.split,.traps{grid-template-columns:1fr}
+    .rank-item{flex-direction:column;gap:8px}
+    .rank-no{font-size:28px}
+    .page{padding:44px 18px 72px}
+  }
+  @media print{
+    body{background:#fff;font-size:11pt}
+    .page{max-width:none;padding:0}
+    .card,.fam,.worked,.check,.trap,.tablewrap{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <p class="kicker">Infinity Brands · Finance · Pamela Fourie, CFO</p>
+  <h1>Bank Funding, Explained</h1>
+  <p class="dek">There is no such thing as "a bank loan". There are <strong>seven distinct shapes of funding</strong>,
+  and each one asks a different question of your business. This is the map: what each shape is, what it
+  costs, what the bank takes as security, and which one fits which need.</p>
+  <p class="meta">
+    Prepared for Pamela Fourie (CFO) — funding applications, multiple banks and funders<br>
+    Rate anchor: SARB prime <strong style="color:var(--ink-soft)">10.75%</strong> (repo 7.25% + 350bp) · September 2026<br>
+    Every rand figure below is computed, not estimated — formulas shown in §5
+  </p>
+
+  <hr class="rule">
+
+  <!-- ============ 1. THE LADDER ============ -->
+  <section id="ladder">
+    <div class="sec-head"><span class="no">§1</span><h2>The first question: whose money is at risk?</h2></div>
+    <p class="lead">Every funder sits somewhere on one ladder — from <strong>money you never repay</strong> at the top,
+    down to <strong>money secured against the business itself</strong> at the bottom. The further up the ladder, the
+    harder it is to qualify and the longer it takes. The further down, the faster and easier — but the more
+    you pay, and the more you personally stand behind.</p>
+
+    <div class="ladder">
+      <div class="rung best">
+        <span class="lv">RUNG 1 — CHEAPEST</span>
+        <h3>Grant</h3>
+        <p>Non-repayable lump sum. No interest, no capital returned. Usually capped, competitive, and tied to a
+        policy goal (jobs, youth, township, export).</p>
+        <div class="own">YOU CARRY: nothing</div>
+      </div>
+      <div class="rung best">
+        <span class="lv">RUNG 2</span>
+        <h3>Blended finance</h3>
+        <p>Part grant + part concessional loan in one package. The grant portion reduces how much loan you
+        actually carry.</p>
+        <div class="own">YOU CARRY: nothing on the grant part</div>
+      </div>
+      <div class="rung">
+        <span class="lv">RUNG 3</span>
+        <h3>Soft / concessional loan</h3>
+        <p>Below-market fixed rate (e.g. 5% fixed), longer terms, moratorium on repayments for the first months.
+        The DFI route.</p>
+        <div class="own">YOU CARRY: capital + low interest</div>
+      </div>
+      <div class="rung">
+        <span class="lv">RUNG 4</span>
+        <h3>Secured asset finance</h3>
+        <p>The asset bought <em>is</em> the security. Equipment, machinery, vehicles, fit&nbsp;out. Best commercial
+        rate because the bank can repossess the thing.</p>
+        <div class="own">YOU CARRY: capital + interest, asset pledged</div>
+      </div>
+      <div class="rung">
+        <span class="lv">RUNG 5 — DEAREST</span>
+        <h3>Unsecured / cash-flow loan</h3>
+        <p>No asset behind it. Priced off your trading record and projections — or off a personal surety.
+        Highest bank rate.</p>
+        <div class="own">YOU CARRY: capital + interest + personal risk</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 2. THE TWO FAMILIES ============ -->
+  <section id="families">
+    <div class="sec-head"><span class="no">§2</span><h2>Then: does it fund the P&amp;L, or the balance sheet?</h2></div>
+    <p class="lead">This is the distinction that decides the <em>shape</em> of the money — a lump sum that sits on
+    your balance sheet for years, or a revolving facility that breathes with your cash flow.</p>
+
+    <div class="families">
+      <div class="fam">
+        <span class="tag">Balance-sheet funding</span>
+        <h3>CAPEX funding</h3>
+        <p>Money for a thing you buy and keep: the extruder, the wok cookers, the fit-out, the van, the
+        freezers. Drawn as a <strong>lump sum</strong>, repaid over a fixed term. The asset usually secures it.</p>
+        <ul>
+          <li>Term loan — fixed monthly instalments, 12–84 months</li>
+          <li>Asset finance / instalment sale — the asset is the security</li>
+          <li>Commercial property finance / leasehold improvement loan</li>
+        </ul>
+        <div class="verdict">BEST WHEN → the spend is one-off, large, and the thing bought can be sold again if it fails.</div>
+      </div>
+      <div class="fam">
+        <span class="tag">P&amp;L / cash-flow funding</span>
+        <h3>Working-capital funding</h3>
+        <p>Money for the trading cycle: stock, wages, the gap between paying a supplier and being paid by
+        customers. <strong>You only pay for what you draw</strong>, and you can draw it again.</p>
+        <ul>
+          <li>Overdraft — interest on the drawn balance only</li>
+          <li>Revolving credit facility — access again once 15% is repaid</li>
+          <li>Invoice discounting / debtor finance — funded against your book</li>
+          <li>Merchant cash advance — repaid from card sales</li>
+        </ul>
+        <div class="verdict">BEST WHEN → the need repeats and is unpredictable. Never fund a permanent asset with an overdraft.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 3. THE SEVEN ============ -->
+  <section id="seven">
+    <div class="sec-head"><span class="no">§3</span><h2>The seven shapes you will actually be offered</h2></div>
+    <p class="lead">These are the products Pamela will meet across the big four banks, the DFIs (SEDFA, NEF,
+    IDC, Land Bank), and the alternative lenders. Each carries a different repayment shape.</p>
+
+    <div class="cards">
+
+      <div class="card">
+        <div class="top"><span class="idx">SHAPE 01</span><span class="pill grt">Non-repayable</span></div>
+        <h3>Grant</h3>
+        <div class="aka">lump sum · no interest · no capital</div>
+        <p class="desc">A lump sum you never repay. Funders include SEDFA's Asset Assist (to R250k), NYDA
+        (youth, lifetime cap R200k), dtic incentives (APSS/EMIA/BIS cost-share), the Jobs Fund, and the SAB
+        Foundation (to R2m). Usually competitive, cycle-based, and tied to a policy target.</p>
+        <dl>
+          <dt>Shape</dt><dd>Lump sum, once</dd>
+          <dt>Cost</dt><dd>Nothing</dd>
+          <dt>Security</dt><dd>None</dd>
+          <dt>Turnaround</dt><dd>Weeks to months (cycles)</dd>
+        </dl>
+        <div class="cost">On R1m: <b>R0 repayable</b>. But grants rarely cover 100% of a project — they are
+        usually a part-contribution.</div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="idx">SHAPE 02</span><span class="pill dfi">Blended</span></div>
+        <h3>Blended finance</h3>
+        <div class="aka">part grant + part soft loan</div>
+        <p class="desc">One package, two instruments. Example: SEDFA's TREP for township/rural businesses —
+        a grant component up to R100k plus a loan portion to R1m at 5% <em>fixed</em>, over 36 months, with a
+        3-month repayment moratorium.</p>
+        <dl>
+          <dt>Shape</dt><dd>Grant slice + loan slice</dd>
+          <dt>Cost</dt><dd>0% on the grant, ~5% on the loan</dd>
+          <dt>Security</dt><dd>Depends on the loan slice</dd>
+          <dt>Turnaround</dt><dd>~12–15 weeks</dd>
+        </dl>
+        <div class="cost">On R1m all-loan at 5% fixed / 36m: <b>R29 971/month</b>, R78 952 total interest.</div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="idx">SHAPE 03</span><span class="pill sec">Secured</span></div>
+        <h3>Asset finance</h3>
+        <div class="aka">instalment sale · equipment · vehicles</div>
+        <p class="desc">The workhorse for CAPEX. The bank buys the asset and you pay it off monthly; the asset
+        itself is the security, so the rate is the lowest commercial rate you will get. For a QSR build this
+        covers the extruder, cookers, warmers, refrigeration, POS and the vehicle.</p>
+        <dl>
+          <dt>Shape</dt><dd>Lump sum, fixed instalments</dd>
+          <dt>Cost</dt><dd>Typically prime to prime + 2%</dd>
+          <dt>Security</dt><dd>The asset, plus usually a personal surety</dd>
+          <dt>Term</dt><dd>12–72 months (to 84 on larger deals)</dd>
+        </dl>
+        <div class="cost">On R1m at prime+1 (11.75%) / 60m: <b>R22 118/month</b>, R327 099 total interest.</div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="idx">SHAPE 04</span><span class="pill uns">Unsecured</span></div>
+        <h3>Term loan (unsecured)</h3>
+        <div class="aka">cash-flow loan · P&amp;L loan</div>
+        <p class="desc">A lump sum with nothing behind it but your trading record and your projections. This is
+        the loan a bank offers when the business is strong enough to repay but has no asset to pledge — or when
+        you personally sign surety. Highest of the bank rates.</p>
+        <dl>
+          <dt>Shape</dt><dd>Lump sum, fixed instalments</dd>
+          <dt>Cost</dt><dd>Typically prime + 2% to prime + 5%</dd>
+          <dt>Security</dt><dd>Personal surety, cession of debtors, or nothing</dd>
+          <dt>Term</dt><dd>12–60 months</dd>
+        </dl>
+        <div class="cost">On R1m at prime+3 (13.75%) / 48m: <b>R27 201/month</b>, R305 659 total interest.</div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="idx">SHAPE 05</span><span class="pill uns">Revolving</span></div>
+        <h3>Overdraft &amp; revolving facility</h3>
+        <div class="aka">only pay for what you draw</div>
+        <p class="desc">A pre-approved limit on your current account you can dip into and clear as cash flows.
+        Interest runs only on the drawn balance. Most banks want 6–12 months of business banking history and
+        12 months of management accounts. Limits commonly R10k – R5m.</p>
+        <dl>
+          <dt>Shape</dt><dd>Revolving limit, no fixed instalments</dd>
+          <dt>Cost</dt><dd>Prime + 1% to prime + 4%, on the drawn balance</dd>
+          <dt>Security</dt><dd>Often unsecured at low limits; cession/surety above</dd>
+          <dt>Review</dt><dd>Annual</dd>
+        </dl>
+        <div class="cost">R1m limit, R400k drawn at 13.75%: <b>R4 583/month interest</b> — not R11 458.</div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="idx">SHAPE 06</span><span class="pill uns">Bullet</span></div>
+        <h3>Interest-only / balloon loan</h3>
+        <div class="aka">pay the interest, the capital waits</div>
+        <p class="desc">You service only the interest each month; the full capital falls due at the end of the
+        term. It protects cash flow during a build, but it defers the hardest part — and it costs the most in
+        total interest of any shape here.</p>
+        <dl>
+          <dt>Shape</dt><dd>Monthly interest only + balloon</dd>
+          <dt>Cost</dt><dd>Prime + margins</dd>
+          <dt>Security</dt><dd>Usually a pledge that converts, or a bond</dd>
+          <dt>Risk</dt><dd>You must have the capital — or a refinancing — at the end</dd>
+        </dl>
+        <div class="cost">On R1m at 13.75% / 60m: <b>R11 458/month</b>, but <b>R1 687 500</b> repaid in total.</div>
+      </div>
+
+      <div class="card">
+        <div class="top"><span class="idx">SHAPE 07</span><span class="pill dfi">DFI direct</span></div>
+        <h3>Development finance (SEDFA / NEF / IDC / Land Bank)</h3>
+        <div class="aka">the state lending ladder</div>
+        <p class="desc">Direct lending from the development finance institutions, priced below commercial banks
+        and structured for businesses the banks decline. SEDFA lends R50k–R15m directly; the NEF R250k–R75m;
+        the IDC from R1m; the Land Bank for agriculture and agribusiness.</p>
+        <dl>
+          <dt>Shape</dt><dd>Term loan, sometimes blended</dd>
+          <dt>Cost</dt><dd>Concessional — SEDFA reports prime to prime + 5%; TREP at 5% fixed</dd>
+          <dt>Security</dt><dd>Scales with size; no collateral on micro loans</dd>
+          <dt>Turnaround</dt><dd>Target decision under 21 days below R500k</dd>
+        </dl>
+        <div class="cost">Pricing is the point: <b>8–12% vs 15–20%</b> at a commercial bank on the same ask.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 4. WHAT A MILLION COSTS ============ -->
+  <section id="compare">
+    <div class="sec-head"><span class="no">§4</span><h2>What R1 000 000 actually costs you</h2></div>
+    <p class="lead">The same million rand, borrowed five different ways. This is the table to hold in your head
+    when a bank quotes you a rate — the <strong>rate</strong> is only half the answer; the <strong>shape</strong>
+    (term, moratorium, balloon) decides the rest.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Structure</th>
+            <th>Rate</th>
+            <th>Term</th>
+            <th>Monthly</th>
+            <th>Total interest</th>
+            <th>Total repaid</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">Grant<span>no repayment at all</span></td>
+            <td class="num">0%</td>
+            <td class="num">—</td>
+            <td class="num"><span class="big">R0</span></td>
+            <td class="num flag good">R0</td>
+            <td class="num"><span class="big">R1 000 000</span></td>
+          </tr>
+          <tr>
+            <td class="name">Soft loan (SEDFA TREP-style)<span>fixed, 3-month moratorium</span></td>
+            <td class="num">5.00% fixed</td>
+            <td class="num">36 mo</td>
+            <td class="num"><span class="big">R29 971</span></td>
+            <td class="num flag good">R78 952</td>
+            <td class="num"><span class="big">R1 078 952</span></td>
+          </tr>
+          <tr>
+            <td class="name">Asset finance (secured)<span>equipment, vehicles, fit-out</span></td>
+            <td class="num">11.75%<br><span style="color:var(--muted)">prime + 1</span></td>
+            <td class="num">60 mo</td>
+            <td class="num"><span class="big">R22 118</span></td>
+            <td class="num flag mid">R327 099</td>
+            <td class="num"><span class="big">R1 327 099</span></td>
+          </tr>
+          <tr>
+            <td class="name">Unsecured term loan<span>cash-flow / P&amp;L</span></td>
+            <td class="num">13.75%<br><span style="color:var(--muted)">prime + 3</span></td>
+            <td class="num">48 mo</td>
+            <td class="num"><span class="big">R27 201</span></td>
+            <td class="num flag mid">R305 659</td>
+            <td class="num"><span class="big">R1 305 659</span></td>
+          </tr>
+          <tr>
+            <td class="name">Interest-only balloon<span>capital due at the end</span></td>
+            <td class="num">13.75%<br><span style="color:var(--muted)">prime + 3</span></td>
+            <td class="num">60 mo</td>
+            <td class="num"><span class="big">R11 458</span></td>
+            <td class="num flag bad">R687 500</td>
+            <td class="num"><span class="big">R1 687 500</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta" style="margin-top:14px">
+      Read the last row against the first: the balloon looks like the cheapest monthly at R11 458 — and it is the
+      most expensive loan on the page. That is the trap. Monthly affordability and total cost are two different
+      questions.
+    </p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 5. WORKED EXAMPLE ============ -->
+  <section id="worked">
+    <div class="sec-head"><span class="no">§5</span><h2>Worked example: what the bank does with a franchise ask</h2></div>
+    <p class="lead">Standard Bank's franchise funding rules are the useful template, because they are public.
+    A franchisee is expected to put in <strong>roughly 50% of the total investment in unencumbered own funds</strong>,
+    with the bank financing the remainder — and often taking security over up to 100% of the loan.</p>
+
+    <div class="worked">
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:700;margin-bottom:4px">Papa Pasta Store 1 — the shape of the ask</h3>
+      <p style="font-size:14px;color:var(--ink-soft);max-width:720px">Entry ticket R1 800 000 = R300 000 licence + R1 500 000 capex. Under the 50% own-funds rule the bank would want to see roughly R900 000 of the applicant's own money, and finance the other R900 000.</p>
+
+      <div class="grid">
+        <div class="stat">
+          <div class="k">Entry ticket</div>
+          <div class="v">R1.80m</div>
+          <div class="n">R300k licence + R1.50m store capex</div>
+        </div>
+        <div class="stat">
+          <div class="k">Own funds (50%)</div>
+          <div class="v">R900k</div>
+          <div class="n">Unencumbered — not borrowed, not bonded</div>
+        </div>
+        <div class="stat">
+          <div class="k">Bank finances (50%)</div>
+          <div class="v">R900k</div>
+          <div class="n">Against the equipment and a personal surety</div>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="opt">
+          <h3>If structured as asset finance</h3>
+          <div class="big">R19 906<small> /month</small></div>
+          <p>Prime + 1 (11.75%) over 60 months, secured on the equipment. Total interest <strong>R294 389</strong>.<br>
+          Annual debt service ≈ <strong>R238 878</strong>.</p>
+        </div>
+        <div class="opt">
+          <h3>If structured as an unsecured loan</h3>
+          <div class="big">R24 481<small> /month</small></div>
+          <p>Prime + 3 (13.75%) over 48 months. Total interest <strong>R275 093</strong> — slightly less in total,
+          but the monthly burden is <strong>23% heavier</strong> and it clears a year sooner.<br>
+          Annual debt service ≈ <strong>R293 773</strong>.</p>
+        </div>
+      </div>
+
+      <p style="font-size:13px;color:var(--ink-soft);margin-top:18px;max-width:760px">
+        <strong>The finance lesson:</strong> the secured route costs <em>more</em> in total interest (R294k vs R275k)
+        but asks <em>less</em> of the monthly cash flow (R19 906 vs R24 481). At R600 000/month mature store revenue
+        at a 20–25% EBITDA band, the secured structure is the one that survives a slow opening quarter.
+        Structure to the cash flow, then optimise the rate.</p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 6. CHECKLIST ============ -->
+  <section id="checklist">
+    <div class="sec-head"><span class="no">§6</span><h2>What goes in the pack</h2></div>
+    <p class="lead">Every bank and funder asks for the same documents in a different order. Assemble them once
+    and you run every application off the same shelf.</p>
+
+    <div class="checks">
+      <div class="check">
+        <span class="tag">The applicant</span>
+        <h3>Who you are</h3>
+        <ol>
+          <li>CIPC registration and shareholding certificates</li>
+          <li>Directors' IDs and a CV-style background note</li>
+          <li>Personal balance sheet — assets and liabilities, signed</li>
+          <li>Personal credit record and debt-to-income picture</li>
+          <li>Proof of the origin of your own contribution</li>
+        </ol>
+      </div>
+      <div class="check">
+        <span class="tag">The business</span>
+        <h3>What it earns</h3>
+        <ol>
+          <li>2–3 years of signed financial statements, or management accounts if younger</li>
+          <li>6–12 months of bank statements on the trading account</li>
+          <li>Valid SARS Tax Compliance Status PIN</li>
+          <li>12-month cash-flow projection, plus 3-year projections</li>
+          <li>A business plan you wrote and can defend yourself</li>
+        </ol>
+      </div>
+      <div class="check">
+        <span class="tag">The specific deal</span>
+        <h3>What the money buys</h3>
+        <ol>
+          <li>Equipment breakdown with a rand value per item</li>
+          <li>Quotes or a signed agreement of sale for the assets</li>
+          <li>Lease agreement or offer to lease for the premises</li>
+          <li>Franchisor approval letter (pending finance), where franchise</li>
+          <li>A schedule of exactly how the loan will be spent</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 7. TRAPS ============ -->
+  <section id="traps">
+    <div class="sec-head"><span class="no">§7</span><h2>Four traps that cost real money</h2></div>
+    <div class="traps">
+      <div class="trap">
+        <h3>Funding a permanent asset on an overdraft</h3>
+        <p>An overdraft is repayable on demand and reviewed annually. Fund a five-year asset with it and a
+        single bad review can call the money while the asset is still in the store.</p>
+      </div>
+      <div class="trap">
+        <h3>Mistaking the balloon for cheap</h3>
+        <p>The interest-only structure has the lowest monthly and the highest total. It costs R687 500 in interest
+        on R1m — more than double the secured loan — and leaves the full capital standing at the end.</p>
+      </div>
+      <div class="trap">
+        <h3>Signing a personal surety without pricing it</h3>
+        <p>Most owner-managed loans ask the director to stand surety personally, and for franchises the security
+        demand can reach 100% of the loan. That is not paperwork — it is your house on the line. Price it as a
+        cost of the deal, every time.</p>
+      </div>
+      <div class="trap">
+        <h3>Taking the cheapest rate that ignores the ramp</h3>
+        <p>A short, cheap-looking term with no moratorium can be worse than a longer, dearer one. Match the
+        repayment schedule to the revenue ramp — a store that opens in November should not be at full
+        instalment in December.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ============ 8. THE PRIORITY ORDER ============ -->
+  <section id="priority">
+    <div class="sec-head"><span class="no">§8</span><h2>What I would actually do — the funding priority order</h2></div>
+    <p class="lead">Everything above is the map. This is the route. <strong>Work down this list and stop at the
+    first rung that genuinely qualifies.</strong> The order is not a preference — it is the price of money,
+    cheapest first. Skipping a rung costs real rand.</p>
+
+    <div class="rank">
+
+      <div class="rank-item">
+        <div class="rank-no">1</div>
+        <div class="rank-body">
+          <div class="rank-head">
+            <h3>Grant — free money, ask first</h3>
+            <span class="rank-tag best">Best possible</span>
+          </div>
+          <p>Non-repayable. Nothing to service, nothing to give back. SEDFA Asset Assist (to R250k for
+          machinery and equipment), NYDA for owners under 35, dtic incentives, the SAB Foundation.</p>
+          <p class="ask"><b>Ask for:</b> Asset Assist · current dtic incentive rounds · any grant programme open now.
+          <b>Why first:</b> every rand granted is a rand you never borrow — it shrinks the loan before you apply for it.</p>
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-no">2</div>
+        <div class="rank-body">
+          <div class="rank-head">
+            <h3>Blended finance — part grant, part cheap loan</h3>
+            <span class="rank-tag best">Best priced</span>
+          </div>
+          <p>SEDFA's TREP for township and rural businesses: a grant component up to R100k plus a loan portion
+          to R1m at <strong>5% fixed</strong>, over 36 months, with a 3-month moratorium.</p>
+          <p class="ask"><b>Ask for:</b> TREP · Integrated SMME Finance.
+          <b>Why here:</b> 5% fixed against a bank's 13.75% is the cheapest capital on the market — and the
+          moratorium is exactly what an opening store needs.</p>
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-no">3</div>
+        <div class="rank-body">
+          <div class="rank-head">
+            <h3>Concessional DFI loan — the state lending ladder</h3>
+            <span class="rank-tag good">Half the bank's price</span>
+          </div>
+          <p>SEDFA direct lending (R50k–R15m), the NEF, the IDC, the Land Bank. Reports put SEDFA pricing at
+          roughly <strong>8–12% against 15–20% at a commercial bank</strong> for the same ask, with no
+          collateral on smaller amounts.</p>
+          <p class="ask"><b>Ask for:</b> SEDFA direct lending. <b>Why here:</b> a concessional loan halves your
+          interest cost versus the bank and is built for businesses the banks decline.</p>
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-no">4</div>
+        <div class="rank-body">
+          <div class="rank-head">
+            <h3>Secured asset finance — for the CAPEX line</h3>
+            <span class="rank-tag good">Cheapest commercial rate</span>
+          </div>
+          <p>The extruder, cookers, warmers, refrigeration, POS, the vehicle. The asset <em>is</em> the security,
+          so this is the lowest commercial rate you will be offered — around <strong>prime + 1 (11.75%)</strong>.</p>
+          <p class="ask"><b>Ask for:</b> instalment sale / asset finance, sized against the equipment breakdown.
+          <b>Why here:</b> it prices the kit properly and keeps the monthly at R22 118 on R1m rather than R27 201.</p>
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-no">5</div>
+        <div class="rank-body">
+          <div class="rank-head">
+            <h3>Working-capital facility — for the trading cycle only</h3>
+            <span class="rank-tag mid">Right tool, narrow job</span>
+          </div>
+          <p>An overdraft or revolving facility for stock, wages, and the gap between paying suppliers and being
+          paid. Interest runs <strong>only on what you draw</strong> — R4 583 a month on a R400k draw, not R11 458.</p>
+          <p class="ask"><b>Ask for:</b> overdraft or revolving credit, sized to your monthly turnover.
+          <b>Never use it to fund a five-year asset</b> — it is repayable on demand and reviewed annually.</p>
+        </div>
+      </div>
+
+      <div class="rank-item">
+        <div class="rank-no">6</div>
+        <div class="rank-body">
+          <div class="rank-head">
+            <h3>Unsecured term loan — only if 1 to 5 fail</h3>
+            <span class="rank-tag bad">Last resort</span>
+          </div>
+          <p>No asset behind it, so it carries the highest bank rate — <strong>prime + 2% to + 5%</strong> — and
+          almost always a personal surety from a director.</p>
+          <p class="ask"><b>Ask for:</b> this only after the cheaper rungs have been declined in writing.
+          <b>Price the surety</b> as a real cost of the deal before you sign it.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="neverbox">
+      <h3>The one to refuse</h3>
+      <p>An <strong>interest-only / balloon loan</strong>. It shows the lowest monthly of anything on this page
+      and is the most expensive loan you can take — <strong>R687 500 in interest on R1m</strong>, with the entire
+      capital still standing at the end. Only consider it with a concrete, already-agreed refinancing plan.</p>
+    </div>
+
+    <div class="stackbox">
+      <h3>How a real franchise application stacks up</h3>
+      <p>These are not alternatives to pick one from — a strong application <strong>layers</strong> them:</p>
+      <div class="stack">
+        <div class="stack-row"><span class="sl">Own contribution</span><span class="sv">≈ 50% unencumbered</span><span class="sn">What the bank insists on seeing first</span></div>
+        <div class="stack-row"><span class="sl">Grant slice</span><span class="sv">to R250k</span><span class="sn">Reduces the amount you must borrow</span></div>
+        <div class="stack-row"><span class="sl">Concessional / asset finance</span><span class="sv">11.75%</span><span class="sn">Carries the CAPEX, secured on the equipment</span></div>
+        <div class="stack-row"><span class="sl">Revolving facility</span><span class="sv">draw as needed</span><span class="sn">Covers the opening-quarter working capital</span></div>
+      </div>
+      <p style="margin-top:16px;font-size:13.5px;color:var(--ink-soft)">On Papa Pasta Store 1 — an R1.8m entry
+      ticket — that stack turns the headline ask from "lend me R1.8m" into "I am bringing half; help me fund the
+      equipment; and cover my working capital for one quarter." That is a materially easier application to approve.</p>
+    </div>
+
+    <div class="rulebox">
+      <h3>The three rules, if you remember nothing else</h3>
+      <ol>
+        <li><strong>Cheapest money first.</strong> Grant → blended → concessional → secured → unsecured. Always.</li>
+        <li><strong>Match the shape to the need.</strong> A permanent asset takes a term loan; a cash-flow gap takes a revolving facility. Never swap them.</li>
+        <li><strong>Judge the total, not the monthly.</strong> Convert every quote to a monthly and a total, and compare it on one line. The lowest monthly is often the dearest loan.</li>
+      </ol>
+    </div>
+  </section>
+
+  <div class="callout">
+    <h3>How to use this document</h3>
+    <p>Work down the ladder in §1 and stop at the first rung the application genuinely qualifies for, then run
+    the priority order in §8. Use §4 to sanity-check whatever a bank quotes you: convert it to a monthly and a
+    total, and compare it on the same line. Never send an application that has not been put through §6. And
+    remember the standing rule in this house — <strong>no facility is signed and no money moves without
+    Ricardo.</strong></p>
+  </div>
+
+  <footer>
+    <p style="margin-bottom:12px"><strong>Sources &amp; basis.</strong> Rate anchor: SARB prime lending rate 10.75% (repo 7.25% + 350bp), September 2026; SARB MPC raised 25bp at the September 2026 meeting. Bank product structures and pricing bands: published Standard Bank, FNB, Nedbank, Absa and Capitec business-banking material; SEDFA/sefa direct-lending terms; dtic incentive schemes; FASA and the 2026 South African Franchise Market Inquiry on the 50% unencumbered-contribution rule. All repayment figures were computed in Python on the annuity and interest-only formulas — no figure here is estimated.</p>
+    <p class="src">
+      <strong>The formulas used</strong><br>
+      Amortising loan → &nbsp;PMT = P × r / (1 − (1 + r)<sup>−n</sup>),&nbsp; r = annual rate ÷ 12<br>
+      Interest-only → &nbsp;monthly = P × r,&nbsp; capital P repaid as a balloon at month n<br>
+      Revolving → &nbsp;monthly = drawn balance × r (interest on the drawn balance only)
+    </p>
+    <p style="margin-top:16px">Prepared by Bruce Wayne (Chief of Staff) for Pamela Fourie, CFO — Infinity Brands.
+    7 October 2026. Internal working document; not a bank offer and not financial advice. Rate bands are indicative
+    and move with the prime rate — requote before any application.</p>
+  </footer>
+
+</div>
+</body>
+</html>
