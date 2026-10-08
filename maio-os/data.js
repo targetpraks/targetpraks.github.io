@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 15,
+   "ms": 20,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 6,
+   "ms": 5,
    "ok": true,
    "note": "tool hub"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 283,
+   "ms": 81,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 2,
+   "ms": 3,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 41,
+   "ms": 33,
    "ok": true,
    "note": "local models"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 17,
+   "ms": 1,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 186,
+   "ms": 8,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 9,
+   "ms": 6,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 121,
+   "ms": 12,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 74,
+   "ms": 50,
    "ok": true,
    "note": "agent host"
   }
@@ -121,14 +121,14 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1142,
+   "ms": 1147,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 195,
    "ok": false
   },
   {
@@ -142,49 +142,49 @@ var MAIO_DATA = {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 187,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 194,
    "ok": false
   }
  ],
@@ -193,6 +193,20 @@ var MAIO_DATA = {
   {
    "agent": "splinter",
    "path": "AI-Drive/Agent-Output/splinter/published.csv",
+   "date": "2026-10-08",
+   "ext": "csv",
+   "kb": 1
+  },
+  {
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
+   "date": "2026-10-08",
+   "ext": "csv",
+   "kb": 1
+  },
+  {
+   "agent": "dexter",
+   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
    "date": "2026-10-08",
    "ext": "csv",
    "kb": 1
@@ -209,7 +223,7 @@ var MAIO_DATA = {
    "path": "AI-Drive/Agent-Output/batman/published.csv",
    "date": "2026-10-08",
    "ext": "csv",
-   "kb": 3
+   "kb": 4
   },
   {
    "agent": "adrianna",
@@ -254,13 +268,6 @@ var MAIO_DATA = {
    "kb": 2
   },
   {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/crypto-agents-2026-10-11.md",
-   "date": "2026-10-07",
-   "ext": "md",
-   "kb": 29
-  },
-  {
    "agent": "poppins",
    "path": "AI-Drive/Agent-Output/poppins/2026-10-07-weekly-score.md",
    "date": "2026-10-07",
@@ -287,13 +294,6 @@ var MAIO_DATA = {
    "date": "2026-10-07",
    "ext": "md",
    "kb": 14
-  },
-  {
-   "agent": "dexter",
-   "path": "AI-Drive/Agent-Output/dexter/metrics/capacity-2026-10.md",
-   "date": "2026-10-07",
-   "ext": "md",
-   "kb": 1
   },
   {
    "agent": "builder",
@@ -534,7 +534,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/index.html",
+    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
     "date": "2026-10-08",
     "ext": "html",
     "kb": 0
@@ -1295,8 +1295,8 @@ var MAIO_DATA = {
    "name": "dexter",
    "role": "Quantified researcher \u2014 metrics & telemetry",
    "latest": {
-    "path": "AI-Drive/Agent-Output/dexter/metrics/capacity-2026-10.md",
-    "date": "2026-10-07"
+    "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
+    "date": "2026-10-08"
    }
   },
   {
@@ -1358,8 +1358,8 @@ var MAIO_DATA = {
    "name": "research",
    "role": "Research arm",
    "latest": {
-    "path": "AI-Drive/Agent-Output/research/crypto-agents-2026-10-11.md",
-    "date": "2026-10-07"
+    "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
+    "date": "2026-10-08"
    }
   },
   {
@@ -1479,7 +1479,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 90362,
+     "pid": 51077,
      "exit": 0
     },
     {
@@ -1638,11 +1638,6 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.ram-guard",
-     "pid": null,
-     "exit": 0
-    },
-    {
      "label": "com.maio.browseruse-mcp",
      "pid": 1210,
      "exit": 0
@@ -1719,44 +1714,44 @@ var MAIO_DATA = {
     }
    ],
    "counts": {
-    "loaded": 58,
+    "loaded": 57,
     "running": 28
    }
   },
   "docker": [
    {
     "name": "litellm-litellm-1",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "hindsight",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 9 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 11 hours",
+    "status": "Up 17 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 11 hours",
+    "status": "Up 17 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1792,11 +1787,40 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 89,
-    "blocked": 1
+    "done": 94
    },
-   "total": 90,
+   "total": 94,
    "recent": [
+    {
+     "id": "t_f22d2d50",
+     "title": "Vault: file 'Constellation HR \u2014 dev data reset: real staff provisioned (2026-10-08)' to Work/2.Automations-Skills/Reports/2026-10-08-constellation-hr-dev-data-r",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_00e9a931",
+     "title": "Constellation dev-env hygiene \u2014 move screenshots default port off :3214; pin the dev-server start convention (prevent wedged-server recurrence)",
+     "status": "done",
+     "assignee": "reviewer"
+    },
+    {
+     "id": "t_90b773d7",
+     "title": "Constellation dev data reset \u2014 clear ALL synthetic demo data; provision ONLY the real Infinity Brands staff list (45) + 11 departments",
+     "status": "done",
+     "assignee": "reviewer"
+    },
+    {
+     "id": "t_0ec357ad",
+     "title": "Vault: file 'Zoho Projects Report \u2014 External Sharing Plan' to Work/2.Automations-Skills/Reports/2026-10-08-zoho-projects-report-external-sharing-plan.md \u2014 rule-",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_d516879e",
+     "title": "Vault: file 'Zoho Projects \u2014 Overdue & Undated Audit (Infinity Brands)' to Work/2.Automations-Skills/Reports/2026-10-08-zoho-projects-overdue-undated-audit-infi",
+     "status": "done",
+     "assignee": "beast"
+    },
     {
      "id": "t_4613b375",
      "title": "Vault: file 'Stack health check \u2014 2026-10-08' to AI-Space/2.Automations-Skills/Reports/2026-10-08-stack-health-check-2026-10-08.md \u2014 rule-4 handoff from courage",
@@ -1838,36 +1862,6 @@ var MAIO_DATA = {
      "title": "Vault: file 'RAM guard cause-check \u2014 2026-10-08 03:22 (Mac mini 89.0%)' to AI-Space/2.Automations-Skills/2026-10-08-ram-guard-cause-check-2026-10-08-03-22-mac-m",
      "status": "done",
      "assignee": "beast"
-    },
-    {
-     "id": "t_733ab219",
-     "title": "Vault: file 'Robot lawn mower \u2014 best value, South Africa' to Personal/4.Research/2026-10-08-robot-lawn-mower-best-value-south-africa-2.md \u2014 rule-4 handoff from ",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_32d72d48",
-     "title": "Vault: file 'RAM guard cause-check \u2014 2026-10-08 00:01' to AI-Space/2.Automations-Skills/2026-10-08-ram-guard-cause-check-2026-10-08-00-01.md \u2014 rule-4 handoff fr",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_2c0271e5",
-     "title": "Vault: file 'Robot lawn mower \u2014 best value, South Africa' to Personal/4.Research/2026-10-08-robot-lawn-mower-best-value-south-africa.md \u2014 rule-4 handoff from sp",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_73e1d5be",
-     "title": "Vault: file 'Constellation Enhancements \u2014 Program Launch (chain map + recon)' to Work/3.PRD/Active/Constellation/2026-10-07-constellation-enhancements-launch.md",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_c57d2a86",
-     "title": "W7 \u2014 Constellation: program close-out (full 11-gate sweep, audit follow-up closure, Mini-IP terms record, report + evidence pack)",
-     "status": "done",
-     "assignee": "reviewer"
     }
    ]
   },
@@ -2795,7 +2789,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-08T04:45:05Z"
+  "mergedAt": "2026-10-08T10:45:05Z"
  },
  "summary": {
   "projects": 57,
@@ -2806,7 +2800,7 @@ var MAIO_DATA = {
   "devTotal": 10,
   "reports": 24,
   "roster": 34,
-  "launchdLoaded": 58,
+  "launchdLoaded": 57,
   "dockerUp": 7,
   "libraryPublic": 14,
   "libraryInternal": 200,
