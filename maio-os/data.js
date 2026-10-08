@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 10,
+   "ms": 15,
    "ok": true,
    "note": "router"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 3,
+   "ms": 5,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 35,
+   "ms": 283,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 2,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 31,
+   "ms": 41,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 5,
+   "ms": 1,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 2,
+   "ms": 17,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 13,
+   "ms": 186,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 4,
+   "ms": 9,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 10,
+   "ms": 121,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 8,
+   "ms": 74,
    "ok": true,
    "note": "agent host"
   }
@@ -121,70 +121,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2,
+   "ms": 1142,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 192,
    "ok": false
   }
  ],
@@ -199,17 +199,17 @@ var MAIO_DATA = {
   },
   {
    "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
+   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
    "date": "2026-10-08",
-   "ext": "json",
-   "kb": 4
+   "ext": "",
+   "kb": 1
   },
   {
    "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/constellation-enhancements-2026-10-07/w4-small-team-privacy/quick.txt",
+   "path": "AI-Drive/Agent-Output/batman/published.csv",
    "date": "2026-10-08",
-   "ext": "txt",
-   "kb": 1
+   "ext": "csv",
+   "kb": 3
   },
   {
    "agent": "adrianna",
@@ -534,7 +534,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "path": "DevMini/targetpraks.github.io/maio-os/index.html",
     "date": "2026-10-08",
     "ext": "html",
     "kb": 0
@@ -1193,7 +1193,7 @@ var MAIO_DATA = {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/constellation-enhancements-2026-10-07/w4-small-team-privacy/quick.txt",
+    "path": "AI-Drive/Agent-Output/batman/published.csv",
     "date": "2026-10-08"
    }
   },
@@ -1272,7 +1272,7 @@ var MAIO_DATA = {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
+    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
     "date": "2026-10-08"
    }
   },
@@ -1479,7 +1479,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": null,
+     "pid": 90362,
      "exit": 0
     },
     {
@@ -1720,43 +1720,43 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 58,
-    "running": 27
+    "running": 28
    }
   },
   "docker": [
    {
     "name": "litellm-litellm-1",
-    "status": "Up 7 hours (healthy)",
+    "status": "Up 11 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "hindsight",
-    "status": "Up 7 hours (healthy)",
+    "status": "Up 3 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 7 hours (healthy)",
+    "status": "Up 11 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 7 hours (healthy)",
+    "status": "Up 11 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 7 hours",
+    "status": "Up 11 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 7 hours (healthy)",
+    "status": "Up 11 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 7 hours",
+    "status": "Up 11 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1792,13 +1792,53 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 77,
-    "blocked": 1,
-    "todo": 4,
-    "running": 1
+    "done": 89,
+    "blocked": 1
    },
-   "total": 83,
+   "total": 90,
    "recent": [
+    {
+     "id": "t_4613b375",
+     "title": "Vault: file 'Stack health check \u2014 2026-10-08' to AI-Space/2.Automations-Skills/Reports/2026-10-08-stack-health-check-2026-10-08.md \u2014 rule-4 handoff from courage",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_3398b7f3",
+     "title": "Vault: file 'Constellation Enhancements \u2014 Program Report (8 Oct 2026)' to Work/3.PRD/Active/Constellation/2026-10-08-constellation-enhancements-program-report.m",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_8200b893",
+     "title": "Vault: file 'RAM alert diagnosis \u2014 2026-10-08 04:01 (Mac mini 89.0%)' to AI-Space/2.Automations-Skills/Reports/2026-10-08-ram-alert-diagnosis-2026-10-08-04-01-m",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_8297debc",
+     "title": "Vault: file 'Backup check \u2014 2026-10-08 (last night)' to AI-Space/2.Automations-Skills/Reports/2026-10-08-backup-check-2026-10-08-last-night.md \u2014 rule-4 handoff ",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_145a69fa",
+     "title": "Vault: file 'Backup check \u2014 2026-10-08 (last night)' to AI-Space/2.Automations-Skills/Reports/2026-10-08-backup-check-2026-10-08-last-night.md \u2014 rule-4 handoff ",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_796952ea",
+     "title": "Vault: file 'MacBook Air \u2014 setup completion run (2026-10-08)' to AI-Space/2.Automations-Skills/Reports/2026-10-08-macbook-air-setup-completion-run-2026-10-08.md",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_aef4b689",
+     "title": "Vault: file 'RAM guard cause-check \u2014 2026-10-08 03:22 (Mac mini 89.0%)' to AI-Space/2.Automations-Skills/2026-10-08-ram-guard-cause-check-2026-10-08-03-22-mac-m",
+     "status": "done",
+     "assignee": "beast"
+    },
     {
      "id": "t_733ab219",
      "title": "Vault: file 'Robot lawn mower \u2014 best value, South Africa' to Personal/4.Research/2026-10-08-robot-lawn-mower-best-value-south-africa-2.md \u2014 rule-4 handoff from ",
@@ -1826,48 +1866,6 @@ var MAIO_DATA = {
     {
      "id": "t_c57d2a86",
      "title": "W7 \u2014 Constellation: program close-out (full 11-gate sweep, audit follow-up closure, Mini-IP terms record, report + evidence pack)",
-     "status": "todo",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_70cf8ddd",
-     "title": "W8 \u2014 Constellation: pair &amp; team chemistry (\"Work together\") cards \u2014 enhancements",
-     "status": "todo",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_8db6f38a",
-     "title": "W6 \u2014 Constellation: O*NET occupation suggestions + template top-up to 20+ \u2014 enhancements",
-     "status": "todo",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_4338680e",
-     "title": "W5 \u2014 Constellation: performance loop (quarterly ratings + fit-vs-performance validation) \u2014 enhancements",
-     "status": "todo",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_759c66e3",
-     "title": "W4 \u2014 Constellation: small-team privacy (MIN_GROUP suppression across group surfaces) \u2014 enhancements",
-     "status": "running",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_c597606a",
-     "title": "W3 \u2014 Constellation: POPIA self-service (download, correction/deletion requests, Information Officer) \u2014 enhancements",
-     "status": "done",
-     "assignee": "reviewer"
-    },
-    {
-     "id": "t_bc1a48a3",
-     "title": "W2 \u2014 Constellation: retakes + change timeline \u2014 enhancements",
-     "status": "done",
-     "assignee": "reviewer"
-    },
-    {
-     "id": "t_acd0c3ce",
-     "title": "W1 \u2014 Constellation: staff management (edit, move, archive, bulk, reportsTo, multi-team scopes) \u2014 enhancements",
      "status": "done",
      "assignee": "reviewer"
     }
@@ -1879,6 +1877,13 @@ var MAIO_DATA = {
   }
  },
  "prds": [
+  {
+   "title": "2026-10-08-constellation-enhancements-program-report",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/2026-10-08-constellation-enhancements-program-report.md",
+   "date": "2026-10-08",
+   "area": "Work"
+  },
   {
    "title": "2026-10-07-constellation-enhancements-launch",
    "project": "Constellation",
@@ -2274,6 +2279,13 @@ var MAIO_DATA = {
  ],
  "enriched": {
   "vaultPrds": [
+   {
+    "title": "2026-10-08-constellation-enhancements-program-report",
+    "project": "Constellation",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/2026-10-08-constellation-enhancements-program-report.md",
+    "date": "2026-10-08"
+   },
    {
     "title": "2026-10-07-constellation-enhancements-launch",
     "project": "Constellation",
@@ -2686,13 +2698,6 @@ var MAIO_DATA = {
     "area": "Work",
     "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/Company-Brain/voice.md",
     "date": "2026-09-14"
-   },
-   {
-    "title": "offer",
-    "project": "Company-Brain",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/Company-Brain/offer.md",
-    "date": "2026-09-14"
    }
   ],
   "roles": {
@@ -2790,11 +2795,11 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-08T01:25:27Z"
+  "mergedAt": "2026-10-08T04:45:05Z"
  },
  "summary": {
   "projects": 57,
-  "prds": 56,
+  "prds": 57,
   "stackLive": 12,
   "stackTotal": 12,
   "devOnline": 0,
@@ -2805,7 +2810,7 @@ var MAIO_DATA = {
   "dockerUp": 7,
   "libraryPublic": 14,
   "libraryInternal": 200,
-  "docs": 136
+  "docs": 137
  },
  "library": {
   "public": [
@@ -2911,7 +2916,7 @@ var MAIO_DATA = {
   "counts": {
    "public": 14,
    "internal": 200,
-   "docs": 136
+   "docs": 137
   }
  }
 };
