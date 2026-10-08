@@ -97,22 +97,57 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 /* only the labels shrink and clip; the numbers never move, so a narrow phone drops
    words, not digits. Nothing here can push the strip past one line. */
 #vitals .vcap{overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+/* PR4 item 3 — the strip's counters are real controls. The strip keeps PR3's approved
+   34px height and its single line; each counter is a button the full height of the strip
+   and at least 44px wide, with a visible hover/active box. Nothing here changes the
+   layout: the padding is cancelled by an equal negative margin, so every number stays on
+   exactly the pixel PR3 put it on and the gap between two counters stays clear (a button's
+   box reaches 6px into a 10px gap, leaving 9px between neighbouring counter boxes).
+   A 44px-TALL target is not achievable in a 34px strip: the box would have to grow 10px,
+   and above the strip sits the top bar (whose 44px-high Search control crosses that band)
+   while below it sits the focused window (whose 44px close/min/max lights begin at the
+   desktop's first pixel). The strip paints above both, so a taller counter would silently
+   steal those taps. Measured overlap is in the PR body, with the one-line proposal. */
+#vitals button.vitem{padding:0 6px;margin:0 -6px;border-radius:9px;min-width:44px;min-height:34px;justify-content:center}
+#vitals button.vitem:hover{background:rgba(42,54,72,.55)}
+#vitals button.vitem:active{background:rgba(42,54,72,.8)}
 
 /* ============ DESKTOP / DESKLETS ============ */
 #desktop{position:fixed;top:40px;left:0;right:0;bottom:var(--dock-clear,64px);overflow:hidden}
 #skyrim{position:absolute;inset:0;pointer-events:none;opacity:.5}
+/* #winlayer is the windows' container, not a surface. It is the last child of #desktop, so
+   as a normal box it sits on top of the Desk's counters (#desklets-area comes earlier in the
+   DOM) and swallows every click and tap meant for them — including on a phone, where a
+   window is full-bleed across the whole desktop. With the layer transparent to pointers,
+   only real windows take input: a point that is inside no window now reaches the counters.
+   This is what makes PR4's clickable counters actually clickable rather than merely
+   script-clickable; PR3's drag/resize/close (all inside a .win) are unaffected. */
+#winlayer{pointer-events:none}
+.win{pointer-events:auto}
 .desklets{position:absolute;top:22px;left:22px;display:grid;gap:12px;grid-template-columns:repeat(2,minmax(210px,240px));max-width:calc(100% - 44px)}
 .desklet{background:rgba(16,21,31,.82);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:13px 15px;pointer-events:auto}
 .desklet h4{font-family:var(--grot);font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--dim2);margin-bottom:9px}
-.vrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0;font-size:.8rem}
+.vrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 0;font-size:.8rem;
+      width:100%;text-align:left}
 .vrow .nm{color:var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
 .vrow .vl{font-family:var(--mono);font-size:.72rem}
+/* PR4 item 3 — a household counter that opens its window: the whole row is the control, so
+   it is reachable with the mouse anywhere along the row, by Enter/Space when focused, and
+   by tap on a phone (the mobile block below gives it the 44px hit height). Only the rows
+   that name a window become buttons; a plain row keeps the same look and is still a div. */
+button.vrow{cursor:pointer;border-radius:7px}
+button.vrow:hover{background:var(--panel)}
+button.vrow:hover .nm{color:var(--ink)}
 .pill{font-family:var(--mono);font-size:.66rem;padding:1px 7px;border-radius:20px;border:1px solid var(--line2)}
 .pill.ok{color:var(--ok);border-color:rgba(111,191,139,.35)}
 .pill.bad{color:var(--bad);border-color:rgba(224,122,106,.35)}
 .pill.warn{color:var(--warn);border-color:rgba(224,179,76,.35)}
 .bigstat{display:flex;gap:16px}
 .bigstat .bs{flex:1}
+/* PR4 item 3 — each stack-status counter is a button. Padding with an equal negative
+   margin keeps the numbers exactly where PR3 drew them while widening the hit box. */
+.bigstat button.bs{padding:2px 6px;margin:-2px -6px;border-radius:8px;text-align:left;cursor:pointer}
+.bigstat button.bs:hover{background:rgba(42,54,72,.45)}
 .bigstat b{display:block;font-family:var(--mono);font-size:1.35rem;font-weight:500;color:var(--ink);line-height:1.2}
 .bigstat span{font-size:.68rem;color:var(--dim2);letter-spacing:.05em}
 .bigstat b.gold{color:var(--gold)} .bigstat b.bad{color:var(--bad)}
@@ -207,12 +242,24 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 .svc .sp{font-family:var(--mono);font-size:.68rem;color:var(--dim2);margin-top:4px}
 .svc .snote{font-size:.68rem;color:var(--dim2);margin-top:6px}
 .agentgrid{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
-.agc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+/* PR4 item 4 — an agent card is a real control that opens the agent's detail window.
+   Cards are block-level in a grid, so a taller card pushes the row down instead of
+   overlapping its neighbour (the same rule PR3 used for .pcard/.rrow). */
+.agc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+     cursor:pointer;transition:border-color .15s,transform .15s;text-align:left}
+.agc:hover{border-color:var(--gold-dim);transform:translateY(-1px)}
+.agc:hover .an{color:var(--gold)}
 .agc .an{font-family:var(--grot);font-weight:500;color:var(--ink);font-size:.85rem}
 .agc .ar{font-size:.7rem;color:var(--dim);margin-top:3px;min-height:2.1em}
 .agc .al{font-family:var(--mono);font-size:.64rem;color:var(--dim2);margin-top:6px}
 .agc .al b{color:var(--gold);font-weight:500}
+.adev{display:flex;gap:12px;align-items:flex-start}
+.aglyph{font-size:1.15rem;flex:none;line-height:1.2}
 .empty{color:var(--dim2);font-size:.8rem;padding:22px;text-align:center}
+/* PR4 item 5 — a stack URL is a real link under PR2's allow-list, so the ones that are
+   not allowed through (or missing) stay plain text. These are localhost / LAN addresses
+   that only resolve on Ricardo's own network; that is expected and nothing is added. */
+.svcurl{display:inline-block;word-break:break-all;max-width:100%}
 .sect{font-family:var(--grot);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim2);margin:18px 0 9px}
 .sect:first-child{margin-top:2px}
 .notebox{background:rgba(212,168,83,.07);border:1px solid rgba(212,168,83,.25);border-radius:10px;padding:11px 14px;font-size:.78rem;color:var(--body)}
@@ -287,6 +334,9 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
   /* body controls: 44x44 minimum, no overlap (cards/rows are block-level, so a taller
      row pushes the next one down instead of overlapping it) */
   .searchbox{min-height:44px}
+  /* PR4 item 3: a desklet counter is a block-level row, so its 44px hit height pushes the
+     next row down (no overlap) and the desklet above it is pushed down too. */
+  button.vrow{min-height:44px}
   .pcard{min-height:44px;padding:14px 15px}
   .chip{min-height:44px;min-width:44px;padding:12px;display:inline-flex;align-items:center;justify-content:center}
   .copy{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 12px}
@@ -297,6 +347,8 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
   .rrow .copy{align-self:stretch}
   .agc{min-height:44px;padding:12px 14px}
   .svc{min-height:44px}
+  /* PR4 item 5: a stack URL is a tap target too — 44px tall, inside its own block-level
+     .sp row, so a taller link pushes the card's height instead of overlapping a neighbour. */
   .svc .sp a{min-height:44px;display:inline-flex;align-items:center}
   .cmdrow{min-height:44px;padding:8px 12px}
 }
@@ -607,6 +659,16 @@ const OPEN = new Map();      // id -> {el, prev, mode, geo}
 let zIndex = 10; let focusedId = null;
 let RESTORING = false;       // true only while restoreLayout() is repopulating OPEN
 let DATA_READY = false;      // shell finished starting against a valid snapshot
+/* PR4: true only while a deep link (first load or hashchange) is being applied. Following a
+   link is a VIEW request, not a layout edit, so persist() is suppressed for its duration.
+   That is what keeps a phone link from overwriting a desktop-saved layout, and it is why the
+   acceptance rule is "storage byte-identical after following a link with no other
+   interaction": the next real interaction (open, drag, resize, min/max, close) writes the
+   live set — now including the linked window — as usual. */
+let LINKING = false;
+/* PR4 item 4: the one reusable detail window shows either a project or an agent; these two
+   are mutually exclusive owners of it (openDetail/openAgent clear the other). */
+let detailAgent = null;
 const MOBILE = matchMedia('(max-width:760px)').matches;
 /* layout restored on load: [{id,left,top,width,height,max}].
    Called from the bottom of the script — openWin touches the const WINS/_WINS state,
@@ -622,6 +684,13 @@ function restoreLayout(){
     saved.forEach(o=>{
       if(!o || typeof o.id!=='string') return;
       if(o.id==='detail'){
+        /* PR4 item 4: an agent detail saved on reload is rebuilt here. It is only ever
+           rebuilt as the agent view: the saved entry names an agent, and openAgent is the
+           only path that would set that name, so the two can never disagree. */
+        if(typeof o.agent==='string'){
+          const a=DATA.roster.find(x=>x.name===o.agent);
+          if(a){ openAgent(a, MOBILE ? null : o); return; }   // agent gone from data.js → skip silently
+        }
         const p=DATA.projects.find(x=>x.name===o.project);
         if(p) openDetail(p, MOBILE ? null : o);        // project gone from data.js → skip silently
         return;
@@ -748,7 +817,11 @@ BOOT_WATCHDOG = setTimeout(()=>{
   markFailed('Timed out waiting for maio-os/data.js.');
 }, 7000);
 
-/* ---------- desklets ---------- */
+/* ---------- desklets ----------
+   PR4 item 3: the counters are controls. A counter that names a window is rendered as a
+   <button class="vrow" data-open="..."> so it is focusable, activated by Enter and Space,
+   carries an accessible name, and opens its window from the shared delegated handler. A
+   counter with no window behind it (the snapshot age) stays a plain row. */
 function svcPill(s){ const st=svcState(s), ms=(s.ms!=null)? ' · '+s.ms+'ms' : '';
   if(st==='ok')   return {cls:'ok',   txt:'✓ '+(s.code!=null? s.code : '200')+ms};
   if(st==='warn') return {cls:'warn', txt:'△ '+(s.code!=null? s.code : 'no code')+ms};
@@ -761,23 +834,30 @@ function renderDesklets(){
     return `<div class="vrow"><span class="nm">${esc(s.name)}</span><span class="vl pill ${p.cls}">${esc(p.txt)}</span></div>`; }).join('');
   const dark = Math.max(0, DATA.devServers.length - DEV_ON);
   const snapColour = SNAP_STALE ? 'var(--warn)' : (SNAP_AGE===null ? 'var(--dim)' : 'var(--ok)');
+  /* the dev-server count is a live stack value, so its row is a counter too — but only when
+     there is one to open (an empty data.js must not offer a button with nothing behind it) */
+  const devRow = DEV_TOTAL > 0
+    ? `<button class="vrow" data-open="stack" style="margin-top:8px" aria-label="${escAttr(`dev servers ${DEV_ON} of ${DEV_TOTAL} online — open Stack`)}"><span class="nm">dev servers</span><span class="vl" style="color:${DEV_ON?'var(--ok)':'var(--bad)'}">${esc(DEV_ON+'/'+DEV_TOTAL)}</span></button>`
+    : '';
+  const vrow = (open, label, value, colour) =>
+    `<button class="vrow" data-open="${escAttr(open)}" aria-label="${escAttr(label)} — open ${escAttr(WINS[open].title)}">` +
+    `<span class="nm">${esc(label)}</span><span class="vl" style="color:${colour}">${esc(value)}</span></button>`;
   area.innerHTML = `
     <div class="desklet"><h4>System vitals</h4>
-      <div class="bigstat">
-        <div class="bs"><b class="ok">${STACK.ok}</b><span>✓ clean 2xx</span></div>
-        <div class="bs"><b class="warn">${STACK.warn}</b><span>△ alive · non-2xx</span></div>
-        <div class="bs"><b class="${STACK.bad?'bad':''}">${STACK.bad}</b><span>✕ down</span></div>
+      <div class="bigstat">        <button class="bs" data-open="stack" aria-label="${escAttr(`${STACK.ok} services clean (2xx) — open Stack`)}"><b class="ok">${STACK.ok}</b><span>✓ clean 2xx</span></button>
+        <button class="bs" data-open="stack" aria-label="${escAttr(`${STACK.warn} services alive with a non-2xx answer — open Stack`)}"><b class="warn">${STACK.warn}</b><span>△ alive · non-2xx</span></button>
+        <button class="bs" data-open="stack" aria-label="${escAttr(`${STACK.bad} services down — open Stack`)}"><b class="${STACK.bad?'bad':''}">${STACK.bad}</b><span>✕ down</span></button>
       </div>
-      <div class="vrow" style="margin-top:8px"><span class="nm">dev servers</span><span class="vl">${DEV_ON}/${DEV_TOTAL}</span></div>
+      ${devRow}
       <div class="vrow"><span class="nm">snapshot</span><span class="vl" style="color:${snapColour}">${esc(ageText(SNAP_RAW))}</span></div>
     </div>
     <div class="desklet"><h4>Services</h4>${rows || '<div class="empty">no probes</div>'}</div>
     <div class="desklet"><h4>Household</h4>
-      <div class="vrow"><span class="nm">Projects</span><span class="vl" style="color:var(--ink)">${snum("projects", DATA.projects.length)}</span></div>
-      <div class="vrow"><span class="nm">Agent reports</span><span class="vl" style="color:var(--ink)">${snum("reports", DATA.reports.length)}</span></div>
-      <div class="vrow"><span class="nm">PRDs</span><span class="vl" style="color:var(--ink)">${snum("prds", DATA.prds.length)}</span></div>
-      <div class="vrow"><span class="nm">Agents on roster</span><span class="vl" style="color:var(--ink)">${snum("roster", DATA.roster.length)}</span></div>
-      <div class="vrow"><span class="nm">Legacy vhosts dark</span><span class="vl" style="color:${dark?'var(--bad)':'var(--ok)'}">${dark}</span></div>
+      ${vrow('projects','Projects', snum('projects', DATA.projects.length), 'var(--ink)')}
+      ${vrow('reports','Agent reports', snum('reports', DATA.reports.length), 'var(--ink)')}
+      ${vrow('prds','PRDs', snum('prds', DATA.prds.length), 'var(--ink)')}
+      ${vrow('agents','Agents on roster', snum('roster', DATA.roster.length), 'var(--ink)')}
+      ${vrow('stack','Legacy vhosts dark', dark, dark?'var(--bad)':'var(--ok)')}
     </div>`;
 }
 
@@ -805,20 +885,32 @@ function renderVitals(){
   el.innerHTML = '';
   if(!el.clientWidth) return;                        // hidden (desktop) → nothing to render
   const snapCls = SNAP_STALE ? 'vwarn' : (SNAP_AGE===null ? 'vdim' : 'vok');
-  const item = h => `<span class="vitem">${h}</span>`;
+  /* PR4 item 3 — the counters are real buttons: focusable, Enter/Space activated, named,
+     and >= 44px wide. Only the items that name a window become buttons (the snapshot age
+     has no window behind it). */
+  const item = (open, name, h) => open
+    ? `<button class="vitem" data-open="${escAttr(open)}" aria-label="${escAttr(name)}">${h}</button>`
+    : `<span class="vitem">${h}</span>`;
   /* A real separator between items: an aria-hidden divider (the visible tick) plus a
      literal space. The space is a whitespace-only flex child, so it is not rendered, but
      it keeps the DOM text "stack 6 2 0 | 1 day old …" readable to assistive tech and to
      anything reading textContent. */
   const sep = '<span class="vsep" aria-hidden="true"></span> ';
-  const items = [
-    item(`<span class="vcap vdim">stack</span> <b class="vok">${STACK.ok}</b> <b class="vwarn">${STACK.warn}</b> <b class="vbad">${STACK.bad}</b>`),
-    item(`<b class="${snapCls}">${esc(ageText(SNAP_RAW))}</b>`),
-    item(`<span class="vcap vdim">projects</span> <b class="vink">${snum('projects', DATA.projects.length)}</b>`),
-    item(`<span class="vcap vdim">agents</span> <b class="vink">${snum('roster', DATA.roster.length)}</b>`),
-    item(`<span class="vcap vdim">reports</span> <b class="vink">${snum('reports', DATA.reports.length)}</b>`),
-    item(`<span class="vcap vdim">dev</span> <b class="vink">${DEV_ON}/${DEV_TOTAL}</b>`),
+  const projName = 'projects ' + snum('projects', DATA.projects.length) + ' — open Projects';
+  const itemDefs = [
+    {open:'stack',    name:`services ${STACK.ok} clean, ${STACK.warn} non-2xx, ${STACK.bad} down — open Stack`,
+     h:`<span class="vcap vdim">stack</span> <b class="vok">${STACK.ok}</b> <b class="vwarn">${STACK.warn}</b> <b class="vbad">${STACK.bad}</b>`},
+    {open:null,       name:'',  h:`<b class="${snapCls}">${esc(ageText(SNAP_RAW))}</b>`},
+    {open:'projects', name:projName,
+     h:`<span class="vcap vdim">projects</span> <b class="vink">${snum('projects', DATA.projects.length)}</b>`},
+    {open:'agents',   name:'agents ' + snum('roster', DATA.roster.length) + ' — open Agents',
+     h:`<span class="vcap vdim">agents</span> <b class="vink">${snum('roster', DATA.roster.length)}</b>`},
+    {open:'reports',  name:'reports ' + snum('reports', DATA.reports.length) + ' — open Reports',
+     h:`<span class="vcap vdim">reports</span> <b class="vink">${snum('reports', DATA.reports.length)}</b>`},
+    {open:'stack',    name:`dev servers ${DEV_ON} of ${DEV_TOTAL} online — open Stack`,
+     h:`<span class="vcap vdim">dev</span> <b class="vink">${DEV_ON}/${DEV_TOTAL}</b>`},
   ];
+  const items = itemDefs.map(it => item(it.open, it.name, it.h));
   el.innerHTML = items[0];                            // the health counts are never dropped
   for(let i=1;i<items.length;i++){
     const prev = el.innerHTML;
@@ -958,11 +1050,45 @@ function focusWin(id){ const w=OPEN.get(id); if(!w) return;
     if(w.state==='max'){ setWinState(w, 'max'); }
     else { if(w.prev){ w.el.style.left=w.prev.l; w.el.style.top=w.prev.t; } setWinState(w, 'normal'); }
   }
-  w.el.style.zIndex = ++zIndex; focusedId=id; dockSync(); }
+  w.el.style.zIndex = ++zIndex; focusedId=id; dockSync(); syncHash(); }
 function focusTop(){ let best=null; for(const [id,w] of OPEN){ if(w.mode!=='min' && (!best || +w.el.style.zIndex > +best[1].el.style.zIndex)) best=[id,w]; }
-  focusedId = best? best[0] : null; dockSync(); }
+  focusedId = best? best[0] : null; dockSync(); syncHash(); }
+
+/* ---------- PR4 item 1: the address bar is a shareable link to the focused view ----------
+   Writes go through history.replaceState only, never location.hash: assigning the hash
+   pushes a history entry and fires hashchange, so it would spam Back and re-enter the
+   parser. replaceState changes the address bar without either. */
+function hashFor(){
+  if(focusedId === 'detail'){
+    if(detailAgent)  return '#agent:'  + encodeURIComponent(str(detailAgent.name));
+    if(detailProject) return '#project:' + projectHashRef(detailProject);
+  }
+  if(focusedId && winDef(focusedId)) return '#' + focusedId;
+  return '';
+}
+function syncHash(){
+  if(LINKING || RESTORING) return;            // driven by the link/restore, not by us
+  let want; try{ want = hashFor(); }catch(_){ return; }
+  const cur = location.hash || '';
+  if(cur === want) return;
+  if(want === ''){
+    /* Clearing is only ours to do when the shell is healthy AND the fragment is one this
+       shell owns (a window, a project, an agent). A broken-data page must not eat the
+       caller's link, and a hand-typed fragment we never understood stays untouched. */
+    if(!DATA_OK) return;
+    let p = null; try{ p = parseHash(cur); }catch(_){}
+    if(!p || (p.kind !== 'win' && p.kind !== 'project' && p.kind !== 'agent')) return;
+  }
+  try{
+    /* '' means "no focused view": drop the fragment but keep the path and query, so the
+       URL goes back to being the plain page rather than a stale window link. */
+    history.replaceState(history.state, '',
+      want || (location.pathname + location.search));
+  }catch(_){}
+}
 function persist(){
   if(RESTORING) return;   // never touch storage mid-restore (see restoreLayout)
+  if(LINKING) return;     // a followed deep link is a view, not a layout edit (see LINKING)
   try{
     /* previous entries, so mobile can preserve a desktop-saved layout instead of
        writing back the full-screen geometry the mobile stylesheet forces. */
@@ -992,7 +1118,12 @@ function persist(){
         if(p.max !== undefined) max = !!p.max;
       }
       const e={id, left:g.left, top:g.top, width:g.width, height:g.height, max};
-      if(id==='detail' && detailProject) e.project = detailProject.name;   // so the detail can be rebuilt
+      /* PR4: one detail window, two kinds of subject — remember which, so a reload can
+         rebuild it (an agent detail is only ever rebuilt as a project detail today). */
+      if(id==='detail'){
+        if(detailAgent) e.agent = detailAgent.name;
+        else if(detailProject) e.project = detailProject.name;
+      }
       out.push(e);
     }
     localStorage.setItem('maioos.layout', JSON.stringify(out));
@@ -1071,7 +1202,13 @@ function renderProjects(){
   const list = DATA.projects
     .filter(p=>projFilter==='all' || p.family===projFilter)
     .sort((a,b)=>(b.lastTouched||'').localeCompare(a.lastTouched||''));
+  /* emitted once for a #project: link that matched nothing, then cleared (escaped) */
+  const note = projNotice
+    ? `<div class="notebox warnbox">No project matches “${esc(projNotice)}” — showing all ${DATA.projects.length} projects.</div>`
+    : '';
+  projNotice = null;
   return `
+    ${note}
     <input class="searchbox" data-filter="projects" placeholder="Filter ${snum("projects",DATA.projects.length)} projects…" autocomplete="off" spellcheck="false" value="${escAttr(__projq||'')}">
     <div class="chiprow">${fams.map(f=>`<button class="chip ${projFilter===f?'on':''}" data-fam="${escAttr(f)}">${esc(f)}</button>`).join('')}</div>
     <div class="pgrid">${list.filter(p=>{ const hay=(p.name+' '+p.what+' '+p.family).toLowerCase(); return hay.includes(q); }).map(p=>`
@@ -1083,53 +1220,103 @@ function renderProjects(){
       </div>`).join('') || '<div class="empty">no matches</div>'}</div>`;
 }
 let detailProject = null;
-function renderDetail(p){
-  const a = p.artifact || {};
-  const row = (k,v) => `<div class="drow"><span class="dk">${esc(k)}</span><span class="dv">${v}</span></div>`;
-  const fam = p.family || 'project';
+/* ---------- the one detail window (PR4 item 4) ----------
+   One reusable window shows either a project's or an agent's detail: both are built from the
+   SAME data the list views already read, so nothing here adds a field or a source. Every
+   value goes through esc() on the way in, and a missing field renders as its "—" placeholder
+   rather than breaking the view ("safe with missing fields"). */
+function drow(k, v){ return `<div class="drow"><span class="dk">${esc(k)}</span><span class="dv">${v}</span></div>`; }
+function renderProjectBody(p){
+  const a = p.artifact || {}, fam = p.family || 'project';
   let h = `<div class="dhead"><span class="dname">${esc(p.name||'Untitled')}</span><span class="fam ${escAttr(p.famKey||'project')}">${esc(fam)}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>`;
   h += `<div class="drows">`;
-  h += row('Family', esc(fam));
-  h += row('Last touch', `${esc(fmtDate(p.lastTouched))} <span style="color:var(--dim2)">· ${esc(agoTxt(p.lastTouched))}</span>`);
-  if(p.status) h += row('Status', esc(p.status));
-  if(p.priority) h += row('Priority', '⭐ ' + esc(p.priority));
+  h += drow('Family', esc(fam));
+  h += drow('Last touch', `${esc(fmtDate(p.lastTouched))} <span style="color:var(--dim2)">· ${esc(agoTxt(p.lastTouched))}</span>`);
+  if(p.status) h += drow('Status', esc(p.status));
+  if(p.priority) h += drow('Priority', '⭐ ' + esc(p.priority));
   const pn = p.prdNewest;                                   // {path,date} | null
-  h += row('PRD', p.hasPRD ? (pn&&pn.date ? esc(fmtDate(pn.date)) : 'yes')+(pn&&pn.path?` <code>${esc(pn.path)}</code>`:'') : 'none');
-  if(p.what) h += row('What', esc(p.what));
-  if(p.root) h += row('Root', `<code>${esc(p.root)}</code>`);
-  if(a.path) h += row('Artifact', `<code>${esc(a.path)}</code>${a.ext?` <span style="color:var(--dim2)">${esc(a.ext)}${a.kb!=null?' · '+esc(a.kb)+' KB':''}</span>`:''}`);
+  h += drow('PRD', p.hasPRD ? (pn&&pn.date ? esc(fmtDate(pn.date)) : 'yes')+(pn&&pn.path?` <code>${esc(pn.path)}</code>`:'') : 'none');
+  if(p.what) h += drow('What', esc(p.what));
+  if(p.root) h += drow('Root', `<code>${esc(p.root)}</code>`);
+  if(a.path) h += drow('Artifact', `<code>${esc(a.path)}</code>${a.ext?` <span style="color:var(--dim2)">${esc(a.ext)}${a.kb!=null?' · '+esc(a.kb)+' KB':''}</span>`:''}`);
   if(a.path) h += `<div class="dfoot"><button class="copy" data-report="${escAttr(a.path)}">copy artifact path ⧉</button></div>`;
   h += `</div>`;
   return h;
 }
+function renderAgentBody(a){
+  const l = a.latest;                                       // {path,date} | null
+  let h = `<div class="dhead"><span class="aglyph" aria-hidden="true">✦</span><span class="dname">${esc(a.name||'unnamed agent')}</span><span class="fam">agent</span></div>`;
+  h += `<div class="drows">`;
+  h += drow('Role', a.role ? esc(a.role) : '—');
+  h += drow('Reports', String(num(a._count, 0)));           // counted from the same reports list
+  h += drow('Latest output', l && l.date ? `${esc(fmtDate(l.date))} <span style="color:var(--dim2)">· ${esc(agoTxt(l.date))}</span>` : '—');
+  h += drow('Path', l && l.path ? `<code>${esc(l.path)}</code>` : '—');
+  h += `</div>`;
+  if(l && l.path) h += `<div class="dfoot"><button class="copy" data-report="${escAttr(l.path)}">copy latest path ⧉</button></div>`;
+  return h;
+}
+function renderDetail(p){
+  /* kept for back-compat: the project path through the single window */
+  return p ? renderProjectBody(p) : '<div class="empty">no project</div>';
+}
+function agentReports(a){
+  if(!a || !a.name) return [];
+  return DATA.reports.filter(r => r.agent === a.name);      // the roster's name is the report's agent key
+}
 /* one detail window, reused and re-rendered — nothing accumulates as details open and close */
 WINS.detail = {title:'Project', icon:'▣', sub:'', hidden:true, w:640, h:480,
-               render:()=> detailProject ? renderDetail(detailProject) : '<div class="empty">no project</div>'};
+               render:()=> detailAgent ? renderAgentBody(detailAgent)
+                         : (detailProject ? renderProjectBody(detailProject) : '<div class="empty">no selection</div>')};
+function setDetailTitle(icon, title, sub){
+  const w = OPEN.get('detail'); if(!w) return;
+  const t = $('.wtitle', w.el), s = $('.wsub', w.el);
+  if(t) t.textContent = icon + ' ' + title;
+  if(s) s.textContent = sub;
+}
 function openDetail(p, geo){
   if(!p) return;
-  detailProject = p;
-  const title = '▣ ' + (p.name||'Project'), fam = p.family||'project';
+  detailProject = p; detailAgent = null;
   const w = OPEN.get('detail');
   if(w){                                    // reuse: retitle + re-render for the newly picked project
-    $('.wtitle', w.el).textContent = title; $('.wsub', w.el).textContent = fam;
+    setDetailTitle('▣', p.name||'Project', p.family||'project');
     if(geo && w.mode==='normal') applyGeo(w.el, w, geo);   // never move a maximized/minimized window
     w.rerender(true); focusWin('detail'); persist();
     return;
   }
   openWin('detail', geo || null);
-  const nw = OPEN.get('detail');
-  if(nw){ $('.wtitle', nw.el).textContent = title; $('.wsub', nw.el).textContent = fam; }
+  setDetailTitle('▣', p.name||'Project', p.family||'project');
+}
+/* PR4 item 4 — the agent's own detail, in that same window */
+function openAgent(a, geo){
+  if(!a) return;
+  detailAgent = a; detailProject = null;
+  a._count = agentReports(a).length;
+  const w = OPEN.get('detail');
+  if(w){
+    setDetailTitle('✦', a.name||'Agent', 'agent');
+    if(geo && w.mode==='normal') applyGeo(w.el, w, geo);
+    w.rerender(true); focusWin('detail'); persist();
+    return;
+  }
+  openWin('detail', geo || null);
+  setDetailTitle('✦', a.name||'Agent', 'agent');
 }
 window.__detail = function(p){ openDetail(p); };
 function renderAgents(){
   const rs = DATA.roster.slice().sort((a,b)=>((b.latest&&b.latest.date)||'').localeCompare((a.latest&&a.latest.date)||''));
-  return `<div class="sect">Roster · latest output</div>
-  <div class="agentgrid">${rs.map(a=>`
-    <div class="agc" data-openreport="${a.latest?escAttr(a.latest.path):''}">
+  /* emitted once for an #agent: link that matched nothing, then cleared (escaped) */
+  const note = agentNotice
+    ? `<div class="notebox warnbox">No agent matches “${esc(agentNotice)}” — showing all ${rs.length} on the roster.</div>`
+    : '';
+  agentNotice = null;
+  return `${note}<div class="sect">Roster · latest output</div>
+  <div class="agentgrid">${rs.map(a=>{
+    const n = agentReports(a).length;
+    return `<button class="agc" data-agent="${escAttr(a.name)}" aria-label="${escAttr('Agent ' + a.name + (a.role ? ' — ' + a.role : '') + ' — open detail')}">
       <div class="an">${esc(a.name)}</div>
       <div class="ar">${esc(a.role||'—')}</div>
-      <div class="al">${a.latest&&a.latest.date?`latest <b>${esc(fmtDate(a.latest.date))}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}</div>
-    </div>`).join('')}</div>`;
+      <div class="al">${a.latest&&a.latest.date?`latest <b>${esc(fmtDate(a.latest.date))}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}${n?` <b>· ${n} report${n===1?'':'s'}</b>`:''}</div>
+    </button>`; }).join('')}</div>`;
 }
 function renderReports(){
   const reps=DATA.reports.slice();
@@ -1152,17 +1339,27 @@ const enriched = DATA.enriched;
 const ENRICH_PRDS = Array.isArray(enriched.prds) ? enriched.prds : [];
 function renderStack(){
   const st=DATA.stack, dev=DATA.devServers;
+  /* PR4 item 5 — every URL already shown becomes a real link, and only through PR2's
+     safeUrl allow-list (http / https / mailto / relative). Anything else — javascript:,
+     data:, a missing or non-string url — stays plain text, and a link is never invented
+     from a name, a port or a note that is not already in data.js. Localhost / LAN hosts
+     resolve only on Ricardo's own network; that is the point of them. */
+  const urlLink = (u0, label0) => {
+    const u = safeUrl(u0), label = label0 || str(u0);
+    return u ? `<a class="svcurl" href="${escAttr(u)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`
+             : esc(label);
+  };
   return `
     <div class="sect">Local stack · probed live at generation</div>
     <div class="svcgrid">${st.map(s=>{ const p=svcPill(s); return `
       <div class="svc"><div class="sn"><b>${esc(s.name)}</b><span class="pill ${p.cls}">${esc(p.txt)}</span></div>
-      <div class="sp">${esc(s.port)}</div><div class="snote">${esc(s.note||'')}</div></div>`; }).join('')}</div>
+      <div class="sp">${urlLink(s.url, str(s.url) || str(s.port))}</div>
+      <div class="snote">${esc(s.note||'')}</div></div>`; }).join('')}</div>
     <div class="sect">Legacy dev-host vhosts · status.json said "running" since ${esc(DATA.devServersStaleSince||'Oct 1')} — this is the live truth</div>
     <div class="svcgrid">${dev.map(d=>{ const u=safeUrl(d.url); const label=str(d.url).replace(/^https?:\/\//i,'');
-      const shown = u ? `<a href="${escAttr(u)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>` : esc(label);
       return `
       <div class="svc"><div class="sn"><b>${esc(d.name)}</b><span class="pill ${d.ok?'ok':'bad'}">${d.ok? '✓ 200' : '✕ dark'}</span></div>
-      <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${shown}</div></div>`; }).join('')}</div>`;
+      <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${urlLink(d.url, label)}</div></div>`; }).join('')}</div>`;
 }
 function renderAbout(){
   return `
@@ -1175,22 +1372,25 @@ function renderAbout(){
       <div class="phase"><span class="pn2">P3</span><div><div class="pt">Two-way</div><div class="pd">Buttons that talk back — "ask Scrooge for the latest market digest" posts to the right bot; restart a dead dev server from the Stack window (with gate + approval).</div></div></div>
       <div class="phase"><span class="pn2">P4</span><div><div class="pt">Vault view</div><div class="pd">Read-only Obsidian vault browser (MOCs, agent notes) via OpenKnowledge search — Beast stays the only writer.</div></div></div>
     </div>
-    <div class="sect">Keyboard</div>
-    <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> close palette / focused window · windows: drag the bar, resize from bottom-right corner, lights close/min/max.</p>`;
+    <div class="sect">Keyboard &amp; links</div>
+    <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> closes the palette, then blurs a focused filter box — it never closes a window; use a window's close light for that. Windows: drag the bar, resize from bottom-right corner, lights close/min/max.</p>
+    <p class="aboutp">Every window, project and agent has a link you can share or bookmark: <span style="font-family:var(--mono)">#projects</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta@2</span> for the second record of a duplicated name, <span style="font-family:var(--mono)">#agent:beast</span>. Opening a window by hand keeps the address bar in step.</p>`;
 }
 
-/* ---------- dock / menu ---------- */
+/* ---------- dock / menu ----------
+   the dock's own order — a single list, resolved against winDef, so a window added to WINS
+   joins the dock, the menu and the command index without a second edit */
+const WINS_DOCK = ['desk','projects','agents','reports','prds','stack','about'].filter(id=>winDef(id));
 function renderDock(){
-  const items = ['desk','projects','agents','reports','prds','stack','about'].filter(id=>winDef(id));
+  const items = WINS_DOCK;
   $('#dock').innerHTML = items.map(id=>`
-    <button class="dockbtn" data-open="${escAttr(id)}" aria-label="Open ${escAttr(WINS[id].title)}">
+    <button class="dockbtn" data-open="${escAttr(id)}" data-toggle="1" aria-label="Open ${escAttr(WINS[id].title)}">
       <span class="di">${esc(WINS[id].icon)}</span><span>${esc(WINS[id].title)}</span><span class="dot"></span></button>`).join('')
     + `<span class="docksep"></span><button class="dockbtn" data-cmd="1" aria-label="Command bar"><span class="di">⌘</span><span>Search</span></button>`;
-  $('#dock').onclick = e => { const b = e.target.closest('.dockbtn'); if(!b) return;
-    if(b.dataset.cmd){ showCmd(); return; } const id=b.dataset.open;
-    const w=OPEN.get(id); if(w && w.mode!=='min' && focusedId===id){ minWin(id); } else openWin(id); };
+  $('#dock').onclick = e => { const b = e.target.closest('.dockbtn');   // the Search dock button
+    if(b && b.dataset.cmd){ e.stopPropagation(); showCmd(); } };
   $('#menunav').innerHTML = items.map(id=>`<button class="menubtn" data-open="${escAttr(id)}">${esc(WINS[id].title)}</button>`).join('');
-  $('#menunav').onclick = e => { const b=e.target.closest('.menubtn'); if(b) openWin(b.dataset.open); };
+  $('#menunav').onclick = e => { const b = e.target.closest('.menubtn'); if(b && winDef(b.dataset.open)) openWin(b.dataset.open); };
   dockHint();
 }
 /* Clearance between the bottom of #desktop (where windows are pinned) and the dock: the
@@ -1274,15 +1474,45 @@ $('#cmdbar-wrap').addEventListener('click', e => { if(e.target.id==='cmdbar-wrap
 $('#cmdlist').addEventListener('click', e => { const r=e.target.closest('.cmdrow'); if(!r) return;
   const it=cmdItems[+r.dataset.i]; if(it){ hideCmd(); it.act(); } });
 $('#cmdbtn').onclick = showCmd;
-addEventListener('keydown', e => { if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); showCmd(); }
-  else if(e.key==='Escape' && !$('#cmdbar-wrap').classList.contains('show') && focusedId){ const w=OPEN.get(focusedId); if(w && !MOBILE) closeWin(focusedId); } });
+/* PR4 item 2 — Esc must never destroy a window. It closes the command palette if that is
+   what is open; otherwise it blurs a focused window search box (so the filter box loses the
+   keyboard without losing its text) and is otherwise a no-op. Windows close from their own
+   close button only; there is no bare-Esc close and no other close shortcut in this build. */
+addEventListener('keydown', e => {
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); showCmd(); return; }
+  if(e.key !== 'Escape') return;
+  if($('#cmdbar-wrap').classList.contains('show')){ hideCmd(); return; }   // palette first
+  const t = e.target;
+  if(t && typeof t.matches === 'function' && t.matches('input[data-filter]')){ t.blur(); return; }
+  /* nothing else: the focused window stays open */
+});
 
-/* ---------- delegated clicks ---------- */
+/* ---------- delegated clicks ----------
+   One handler covers every "open something" affordance in the shell: the dock and menu,
+   the desklet counters, the vitals-strip counters, project cards and agent cards. Buttons
+   and role="button" elements fire click on Enter/Space by themselves, so the keyboard path
+   and the pointer path share this code and can never drift apart. */
+let lastOpenAt = 0;
+function openTarget(el){
+  const id = el.dataset.open;
+  if(!id || !winDef(id)) return;                    // never open from an unknown id
+  if(el.dataset.toggle !== undefined){              // dock buttons toggle minimize
+    const w = OPEN.get(id);
+    if(w && w.mode!=='min' && focusedId===id){ minWin(id); return; }
+  }
+  openWin(id);
+}
 document.addEventListener('click', e => {
   const cp = e.target.closest('[data-report]'); if(cp){ navigator.clipboard?.writeText(cp.dataset.report).catch(()=>{}); const t=cp.textContent; cp.textContent='copied ✓'; setTimeout(()=>cp.textContent=t, 900); return; }
   const cd = e.target.closest('.pcard[data-detail]'); if(cd){ try{ window.__detail(JSON.parse(cd.dataset.detail)); }catch(_){ } return; }
+  const cg = e.target.closest('.agc[data-agent]'); if(cg){ const a=DATA.roster.find(x=>x.name===cg.dataset.agent); if(a) openAgent(a); return; }
+  const cw = e.target.closest('[data-open]'); if(cw){ lastOpenAt = Date.now(); openTarget(cw); return; }
+  const cf = e.target.closest('.chip[data-fam]'); if(cf){ projFilter = cf.dataset.fam || 'all';
+    const w = OPEN.get('projects'); if(w && w.rerender) w.rerender(true); return; }
 });
-document.addEventListener('keydown', e => { if(e.key==='Enter'){ const dp=e.target.closest?.('.pcard[data-detail]'); if(dp){ try{ window.__detail(JSON.parse(dp.dataset.detail)); }catch(_){}} } });
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ const dp=e.target.closest?.('.pcard[data-detail]'); if(dp){ try{ window.__detail(JSON.parse(dp.dataset.detail)); }catch(_){}} }
+});
 let __projq='', __repq='';
 document.addEventListener('input', e => {
   const f = e.target.dataset && e.target.dataset.filter; if(!f) return;
@@ -1301,11 +1531,118 @@ function tick(){ const el=$('#clock'); if(el){ const n=new Date(); el.textConten
 tick(); setInterval(tick, 1000);
 
 /* ---------- start ---------- */
-function deepLink(){
-  let h=''; try{ h = decodeURIComponent(location.hash.replace('#','')); }catch(_){ return; }
-  if(!h) return; if(winDef(h)){ openWin(h); }
-  else if(h.startsWith('report:')){ openWin('reports'); setTimeout(()=>{ const q=document.querySelector('input[data-filter="reports"]'); if(q){ q.value=h.slice(7); q.dispatchEvent(new Event('input',{bubbles:true})); } }, 60); }
+/* ================= PR4 item 1: deep links =================
+   Grammar (the whole fragment, after ONE decodeURIComponent; the leading '#' is stripped):
+
+     #<window-id>          open + focus that dock window.
+                           ids: desk, projects, agents, reports, prds, stack, about.
+     #project:<name>       open the project detail. <name> is URL-encoded; the first record
+     #project:<name>@<n>   with that name, or the n-th (1-based, in data.js order).
+                           n must be a plain integer 1..99 — "@2" disambiguates the eight
+                           names that occur twice, and every one of the 56 records is
+                           reachable: the 48 unique names via #project:<name>, the eight
+                           duplicated names via <name> (1st) and <name>@2 (2nd).
+     #agent:<name>         open that agent's detail (same safety rules as #project:).
+     #report:<text>        keep the pre-PR4 behaviour: open Reports with the filter prefilled.
+     anything else         nothing at all: unknown id, malformed/partial percent-encoding, an
+                           over-long fragment, a name that doesn't exist as a project or
+                           agent. No exception, no window, and nothing from the fragment ever
+                           reaches the DOM unescaped (a link that matched no project opens
+                           Projects with a short, escaped note; a link that matched no agent
+                           does the same in Agents).
+
+   Why an exact '@n' token and not a "contains" guess: a name may itself be any text, so the
+   index is only read off a trailing token that is `@` + digits, the digits are 1..99, and the
+   remaining name is matched exactly. A leading 1 can be written either way (x, x@1) — x@1 and
+   x must land on the same record, and the test checks both.
+
+   Unknown fragments deliberately stay silent: a shared link is not a form, so there is no one
+   to tell, and a popup or a status line on someone else's URL would be worse than a no-op.
+   A #project:/#agent: link is the one case where the user explicitly asked for an object, so
+   that case answers with the list window plus a note instead of nothing. */
+const HASH_MAX = 1000;
+const PROJ_IDX_RE = /@(\d{1,2})$/;
+function projectHashRef(p){            // the shareable form of one specific record
+  let n = 1; for(const q of DATA.projects){ if(q.name===p.name){ if(q===p) break; n++; } }
+  const base = encodeURIComponent(str(p.name||''));
+  return n > 1 ? base + '@' + n : base;
 }
+function parseHash(hash){
+  let raw = str(hash); if(raw.charAt(0)==='#') raw = raw.slice(1);
+  if(!raw) return null;
+  if(raw.length > HASH_MAX) return {kind:'invalid'};
+  let h; try{ h = decodeURIComponent(raw); }catch(_){ return {kind:'invalid'}; }  // bad %-encoding
+  if(!h) return null;
+  /* window ids are matched as own properties of WINS only (never 'toString'/'__proto__').
+     'detail' is excluded on purpose: it IS a real window, but only as the shell's own
+     single reused detail view — a subjectless #detail would open an empty one, so it is a
+     no-op like any other unknown fragment. */
+  if(h.indexOf(':') < 0) return (h !== 'detail' && winDef(h)) ? {kind:'win', id:h} : {kind:'invalid'};
+  const c = h.indexOf(':'), head = h.slice(0, c), rest = h.slice(c + 1);
+  if(head === 'project'){
+    if(!rest) return {kind:'invalid'};
+    let n = 1, name = rest;
+    const m = PROJ_IDX_RE.exec(rest);
+    if(m && m.index > 0){ const k = parseInt(m[1],10); if(k < 1 || k > 99) return {kind:'invalid'}; name = rest.slice(0, m.index); n = k; }
+    return DATA.projects.some(p => p.name === name) ? {kind:'project', name, n} : {kind:'projectMiss', name};
+  }
+  if(head === 'agent'){
+    if(!rest) return {kind:'invalid'};
+    return DATA.roster.some(a => a.name === rest) ? {kind:'agent', name:rest} : {kind:'agentMiss', name:rest};
+  }
+  if(head === 'report') return rest ? {kind:'report', q:rest} : {kind:'invalid'};
+  return {kind:'invalid'};                       // #detail too: a subjectless detail is a no-op
+}
+let LINKED_DETAIL = null;                        // what the current window hash points at
+/* A #project:/#agent: link that matched nothing answers with the list window plus one small,
+   non-blocking line. The name waits in projNotice/agentNotice and the window's OWN renderer
+   emits it — escaped — on its next pass, then clears it, so the note appears exactly once and
+   can never race the window's deferred first render. Nothing from the URL is ever treated as
+   markup. */
+let projNotice = null, agentNotice = null;
+function trunc(s, n){ s = str(s); return s.length > n ? s.slice(0, n) + '…' : s; }
+function noticeWindow(id){
+  const w = OPEN.get(id);
+  if(w && w.rerender) w.rerender(true);           // already open → repaint it with the note
+  else openWin(id);                               // fresh → its first render emits the note
+}
+function applyLink(p){
+  if(!p) return;
+  if(p.kind === 'win'){ openWin(p.id); return; }
+  if(p.kind === 'project'){ openProjectByName(p.name, p.n); return; }
+  if(p.kind === 'agent'){ openAgentByName(p.name); return; }
+  if(p.kind === 'report'){
+    openWin('reports');
+    setTimeout(()=>{
+      const q = document.querySelector('input[data-filter="reports"]');
+      if(q){ q.value = p.q; q.dispatchEvent(new Event('input', { bubbles:true })); } }, 60);
+    return; }
+  if(p.kind === 'projectMiss'){ projNotice = trunc(p.name, 80); noticeWindow('projects'); return; }
+  if(p.kind === 'agentMiss'){ agentNotice = trunc(p.name, 80); noticeWindow('agents'); return; }
+  /* invalid / unknown: deliberately nothing — no window, no DOM, no throw */
+}
+function openProjectByName(name, n){
+  n = n || 1; let seen = 0, hit = null;
+  for(const p of DATA.projects){ if(p.name === name){ seen++; if(seen === n){ hit = p; break; } } }
+  if(!hit) return applyLink({kind:'projectMiss', name});
+  LINKED_DETAIL = {kind:'project', name, n};
+  openDetail(hit);
+}
+function openAgentByName(name){
+  const a = DATA.roster.find(x => x.name === name);
+  if(!a) return applyLink({kind:'agentMiss', name});
+  LINKED_DETAIL = {kind:'agent', name};
+  openAgent(a);
+}
+function applyHash(){                              // onload and on every hashchange
+  if(!DATA_OK) return;                             // no data → no window from a link
+  let p; try{ p = parseHash(location.hash); }catch(_){ p = null; }
+  if(!p) return;
+  LINKING = true;
+  try{ applyLink(p); } finally { LINKING = false; }
+}
+addEventListener('hashchange', applyHash);
+addEventListener('pagehide', () => { LINKING = false; });   // never carry the flag across a page lifecycle
 /* Whatever happened before the shell ran — a pre-data.js guard may have rendered the
    failure state and hidden the cockpit — markReady() undoes it, so the desktop and dock
    are visible and laid out before anything is measured or restored. Every path into the
@@ -1322,7 +1659,11 @@ function initShell(){
   dockClear();                       // desktop bottom now reflects the real dock height
   addEventListener('resize', () => { dockClear(); renderVitals(); dockHint(); });
   one(restoreLayout, null);          // windows restore against the real desktop size
-  one(deepLink, null);
+  /* The link is applied last, so a linked window lands focused ON TOP of the restored
+     layout instead of being buried under it. LINKING suppresses persist() for the whole
+     application: following a link must not rewrite the saved layout. */
+  one(applyHash, null);
+  one(syncHash, null);               // a link-less URL keeps whatever the restore focused
   dockHint();                        // the dock is laid out now → fade/track reflect reality
 }
 function describeRaw(v){
