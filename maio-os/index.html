@@ -45,6 +45,19 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 @keyframes bline{to{opacity:1}}
 .bootskip{margin-top:18px;font-size:.72rem;color:var(--dim2)}
 
+/* ============ DATA ERROR STATE ============ */
+#dataerr{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;
+         background:var(--bg);padding:22px;overflow:auto}
+.errbox{width:min(640px,94vw);max-height:90vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);
+        border-radius:14px;padding:24px 26px;box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.errlogo{font-family:var(--grot);font-weight:600;font-size:1.1rem;color:var(--ink);letter-spacing:-.01em}
+.errlogo em{font-style:normal;color:var(--gold)}
+.errbox h1{font-family:var(--grot);font-size:1.32rem;font-weight:600;color:var(--bad);margin:13px 0 11px;letter-spacing:-.01em}
+.errbox p{font-size:.88rem;color:var(--body);margin-bottom:10px;max-width:64ch}
+.errbox .errdetail{font-family:var(--mono);font-size:.74rem;color:var(--dim);word-break:break-word;
+                   background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+.errbox .errhint{font-size:.8rem;color:var(--dim2);margin-bottom:0}
+
 /* ============ TOPBAR ============ */
 #topbar{position:fixed;top:0;left:0;right:0;height:40px;z-index:100;display:flex;align-items:center;gap:14px;
         padding:0 14px;background:rgba(8,11,18,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
@@ -57,6 +70,9 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
         padding:4px 10px;border-radius:7px;background:var(--panel)}
 #cmdbtn:hover{color:var(--ink);border-color:var(--gold-dim)}
 #clock{white-space:nowrap}
+#genned.stale{color:var(--warn);font-weight:500}
+#genned.fresh{color:var(--ok)}
+#genned.unknown{color:var(--dim)}
 
 /* ============ DESKTOP / DESKLETS ============ */
 #desktop{position:fixed;top:40px;left:0;right:0;bottom:var(--dock-clear,64px);overflow:hidden}
@@ -76,6 +92,7 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 .bigstat b{display:block;font-family:var(--mono);font-size:1.35rem;font-weight:500;color:var(--ink);line-height:1.2}
 .bigstat span{font-size:.68rem;color:var(--dim2);letter-spacing:.05em}
 .bigstat b.gold{color:var(--gold)} .bigstat b.bad{color:var(--bad)}
+.bigstat b.ok{color:var(--ok)} .bigstat b.warn{color:var(--warn)}
 
 /* ============ DOCK ============ */
 #dock{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:100;display:flex;gap:6px;align-items:center;
@@ -150,6 +167,8 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
 .sect:first-child{margin-top:2px}
 .notebox{background:rgba(212,168,83,.07);border:1px solid rgba(212,168,83,.25);border-radius:10px;padding:11px 14px;font-size:.78rem;color:var(--body)}
 .notebox b{color:var(--gold)}
+.notebox.warnbox{background:rgba(224,179,76,.10);border-color:rgba(224,179,76,.42)}
+.notebox.warnbox b{color:var(--warn)}
 .aboutp{font-size:.84rem;color:var(--body);max-width:70ch;margin-bottom:11px}
 .aboutp b{color:var(--ink)}
 .phases{display:grid;gap:10px;margin-top:6px}
@@ -244,29 +263,250 @@ kbd{font-family:var(--mono);font-size:.72rem;background:var(--panel2);border:1px
   </div>
 </div>
 
+<script>
+/* Boot guard — must run BEFORE the data.js request is issued.
+
+   A synchronous <script src="data.js"> blocks the parser, so if that request is slow or
+   never answered, nothing after it runs: no watchdog, no click-to-skip, no failure state.
+   The boot screen would stay up for good. So the protection lives here, ahead of the
+   request: a self-contained inline script with its own timeout. It is removed as soon as
+   the shell script below has installed its own boot handlers. */
+(function(){
+  var boot = document && document.getElementById ? document.getElementById('boot') : null;
+  /* ONE owner of the ready/failed decision, shared by this guard and the shell below.
+     'loading' → nothing decided yet; 'ready' → valid data + shell started; 'failed' → error.
+     A timer may only ever move loading → failed. Once ready, nothing may regress it. */
+  window.__maioState = 'loading';
+  function dataPresent(){
+    var d = window.MAIO_DATA;   // set by data.js, whenever it arrived
+    return d !== null && typeof d === 'object' && !Array.isArray(d);
+  }
+  function paintFail(detail){
+    if(window.__maioState === 'ready') return;        // never replace a healthy cockpit
+    boot.remove();
+    ['desktop','dock','menunav'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+    var e = document.getElementById('dataerr');
+    if(!e){
+      e = document.createElement('div'); e.id = 'dataerr'; e.setAttribute('role','alert');
+      e.innerHTML = '<div class="errbox">' +
+        '<div class="errlogo">maio<em>.</em>os</div>' +
+        '<h1>Data could not be loaded</h1>' +
+        '<p>This cockpit needs <b>maio-os/data.js</b> to show anything real. When the page loaded, that file was missing, unreadable, or did not answer — so there is nothing to display.</p>' +
+        '<p>This is not an empty cockpit and the household has not disappeared — the snapshot simply did not arrive.</p>' +
+        '<p class="errdetail" id="dataerr-detail"></p>' +
+        '<p class="errhint">data.js is generated by a script that is not part of this repository. Regenerate it, then reload this page.</p>' +
+        '</div>';
+      document.body.appendChild(e);
+    }
+    var dd = document.getElementById('dataerr-detail');
+    if(dd) dd.textContent = detail || 'Timed out waiting for maio-os/data.js.';
+    window.__maioDataFail = true;
+    window.__maioState = 'failed';
+  }
+  var t = setTimeout(function(){
+    /* Re-check REAL state before failing — the timer must never mistake a slow-but-healthy
+       load for a failure. A decision already made wins; and if the data actually arrived
+       (even while the main thread was busy), this is not a data failure. */
+    if(window.__maioState !== 'loading') return;
+    if(dataPresent()) return;
+    paintFail('Timed out waiting for maio-os/data.js.');
+  }, 7000);
+  window.__maioBootGuard = function(){ clearTimeout(t); };
+  /* If the shell script itself throws before it finishes (whatever the cause), the page
+     must still explain itself rather than sit on a boot screen. */
+  window.addEventListener('error', function(ev){
+    if(window.__maioState !== 'loading' || window.__maioShellDone) return;
+    paintFail('The cockpit failed to start: ' + ((ev && ev.message) ? ev.message : 'unknown error'));
+  });
+  /* clicking the boot screen still skips it even while data.js is still in flight */
+  if(boot) boot.addEventListener('click', function(){ if(boot.isConnected) boot.classList.add('gone'); });
+})();
+</script>
 <script src="data.js"></script>
 <script>
 'use strict';
+/* The shell now owns boot protection: stop the pre-data.js guard's timer. */
+if(window.__maioBootGuard) window.__maioBootGuard();
 /* ================= Maio OS shell =================
    OS metaphor over real household data (MAIO_DATA from data.js).
    Windows: draggable / focusable / closable / resizable.
-   ⌘K palette indexes windows + projects + agents + prds + reports. */
+   ⌘K palette indexes windows + projects + agents + prds + reports.
 
-const D = window.MAIO_DATA || {stack:[], devServers:[], projects:[], reports:[], roster:[], prds:[],
-  summary:{}, meta:{generatedAt:''}};
-const S = D.summary || {};
+   Safety + honesty layer (PR2):
+   - every value that comes from MAIO_DATA is coerced to its expected shape and
+     escaped for its context (text vs attribute vs URL) before it reaches the DOM;
+     URL fields are restricted to http/https/mailto/relative — never javascript:/data:
+   - a malformed record (missing field, wrong type, or not an object at all) is
+     skipped or degraded — it can never stop the shell loading or blank a window;
+     the same holds for a whole section that is missing or the wrong type
+   - if data.js fails to load (or MAIO_DATA is not an object) the page shows a plain,
+     obvious error state instead of a healthy-looking empty cockpit; the boot screen
+     also has a watchdog so it can never hang forever
+   - snapshot age (meta.generatedAt) is shown in whole days ("today", "1 day old",
+     "N days old"), warned about once it is more than a day old, and reported as
+     "unknown" when the date is missing or unparseable
+   - a service that is alive (ok:true) but answered non-2xx is amber, not green:
+     green = ok + 2xx, amber = ok + non-2xx, red = not ok. Counts use the same three
+     states and never rely on colour alone. */
+
+/* ---------- primitives: coercion + escaping ---------- */
 const $ = (s, r=document) => r.querySelector(s);
-const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+/* Type-checked reads. A record can hold anything — an object whose toString/valueOf
+   throws, a Symbol, a getter that throws, a number, null — so every coercion checks
+   typeof FIRST. We never call a possibly-hostile toString/valueOf, and we never wrap a
+   bare `+v`: reading a hostile value yields the field's "missing" value, not an exception. */
+function str(v){ if(typeof v==='string') return v; if(typeof v==='number' && isFinite(v)) return String(v);
+  if(typeof v==='boolean') return String(v); return ''; }                      // null/object/array/symbol → ''
+function num(v,d){                                                             // finite number, or plain numeric string
+  d=(d===undefined)?0:d;
+  if(typeof v==='number') return isFinite(v) ? v : d;
+  if(typeof v==='string'){
+    const s=v.trim();
+    if(!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(s)) return d;
+    const n=Number(s);
+    return isFinite(n) ? n : d;                    // a huge string overflows to Infinity → missing
+  }
+  return d; }
+function tidy(v){ return str(v).toLowerCase().replace(/[^a-z0-9_-]+/g,'-').replace(/^-+|-+$/g,'').slice(0,28); }
+/* date: ONLY a bare calendar date, and only if it is a real day.
+   Decision: date-time forms are rejected outright. Every date field in today's data.js
+   is a bare `YYYY-MM-DD` (checked: 0 of reports/projects/roster/prds/meta carry a time),
+   and the two values that do carry a time — devServersStaleSince, enriched.mergedAt — are
+   rendered as raw text, not parsed. Validating a full ISO date-time correctly (hour 00-23,
+   minute/second 00-59, fraction, Z or an in-range offset) buys nothing the data needs and
+   was where the last bypass lived, so the narrow form is the honest one.
+   "2026-02-30" and "2026-13-01" are impossible days — they normalize silently in Date —
+   so they are rejected too. Anything else (suffix garbage, a time, a number, null) → ''. */
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+function nDate(v){
+  if(typeof v!=='string') return '';
+  const m = DATE_RE.exec(v.trim()); if(!m) return '';
+  const y=+m[1], mo=+m[2], day=+m[3];
+  if(mo < 1 || mo > 12 || day < 1 || day > 31) return '';
+  const t = new Date(Date.UTC(y, mo-1, day));
+  if(t.getUTCFullYear()!==y || t.getUTCMonth()!==mo-1 || t.getUTCDate()!==day) return '';  // impossible date
+  return m[1]+'-'+m[2]+'-'+m[3]; }
+/* one record's normalisation must never take the shell down: a throw costs only that record */
+function one(fn, fallback){ try{ return fn(); }catch(_){ return fallback; } }
+/* HTML text + quoted-attribute escaping: & < > " '
+   Uses str(), never String(), so a hostile object/symbol can never be forced through
+   toString() on the way into markup. */
+const esc = v => str(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const escAttr = esc;
-const fmtDate = ds => { if(!ds) return '—'; const [y,m,d]=ds.split('-'); const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]; return `${mo} ${+d}`; };
-const agoDays = ds => { if(!ds) return 9999; const diff = Math.round((Date.now() - new Date(ds+'T12:00:00').getTime())/86400000); return diff; };
-const agoTxt = ds => { const n=agoDays(ds); if(n<=0) return 'today'; if(n===1) return 'yesterday'; if(n<30) return n+'d ago'; if(n<365) return Math.round(n/30)+'mo ago'; return Math.round(n/365)+'y ago'; };
+/* URL context: only http, https, mailto (and relative) survive; javascript:, data:,
+   vbscript:, file: and any other scheme collapse to '' (so no such href is ever made). */
+function safeUrl(v){
+  let s = str(v).trim().replace(/[\u0000-\u001f\u007f]/g,'');
+  if(!s) return '';
+  const low = s.toLowerCase().replace(/\s+/g,'');        // whitespace can be used to split a scheme
+  if(/^(javascript|data|vbscript|file|blob):/.test(low)) return '';
+  if(/^[a-z][a-z0-9+.-]*:/.test(low)) return /^(https?|mailto):/.test(low) ? s : '';
+  return s;                                              // scheme-less / relative / protocol-relative
+}
+/* a record that is not a plain object is skipped entirely */
+function objects(v){ return Array.isArray(v) ? v.filter(isObj) : []; }
+
+/* ---------- dates ---------- */
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(ds){ const d=nDate(ds); if(!d) return '—'; const mo=MONTHS[+d.slice(5,7)-1];
+  return mo ? mo+' '+(+d.slice(8,10)) : d; }
+/* Age is the difference in LOCAL CALENDAR DAYS between today's date and the snapshot
+   date — never elapsed time. That makes it independent of time of day, timezone offset
+   and DST changes, and it is exact before local noon (which a noon-anchored difference
+   is not). Both dates become integer day numbers in the proleptic Gregorian calendar. */
+const MONTH_LEN = [31,28,31,30,31,30,31,31,30,31,30,31];
+const isLeap = y => (y%4===0 && y%100!==0) || y%400===0;
+function epochDay(y, mo, day){                       // day number, valid for any year (incl. 1582 and earlier)
+  let d = day; for(let m=1; m<mo; m++) d += MONTH_LEN[m-1] + (m===2 && isLeap(y) ? 1 : 0);
+  const py = y - 1;
+  return py*365 + Math.floor(py/4) - Math.floor(py/100) + Math.floor(py/400) + d; }
+function dayDiff(ds){                                 // signed calendar days: + = past, 0 = today, - = future
+  const d = nDate(ds); if(!d) return null;
+  const now = new Date();
+  const snap  = epochDay(+d.slice(0,4), +d.slice(5,7), +d.slice(8,10));
+  const today = epochDay(now.getFullYear(), now.getMonth()+1, now.getDate());
+  return today - snap; }
+function agoTxt(ds){ const n=dayDiff(ds); if(n===null) return 'age unknown';
+  if(n<0) return 'in the future';
+  if(n===0) return 'today'; if(n===1) return 'yesterday'; if(n<30) return n+'d ago';
+  if(n<365) return Math.round(n/30)+'mo ago'; return Math.round(n/365)+'y ago'; }
+/* snapshot age: signed local calendar days, or null when the date is unusable */
+function ageDays(ds){ const n=dayDiff(ds); return n===null ? null : n; }
+function ageText(ds){ const n=ageDays(ds); if(n===null) return 'snapshot age unknown';
+  if(n<0) return 'snapshot dated in the future';
+  if(n===0) return 'today'; if(n===1) return '1 day old'; return n+' days old'; }
+
+/* ---------- data: read, validate, normalise ---------- */
+const RAW = (typeof window!=='undefined') ? window.MAIO_DATA : undefined;
+const DATA_OK = isObj(RAW);
+const D = DATA_OK ? RAW : {};
+/* each normaliser reads only via the type-checked helpers above, and returns null if a
+   hostile field (throwing getter etc.) still escapes them; the caller drops nulls. */
+function normStack(s){
+  return {name:str(s.name)||'unnamed service', port:str(s.port), url:str(s.url), note:str(s.note),
+          ok:s.ok===true, code:num(s.code,null), ms:num(s.ms,null)}; }
+function normDev(d){
+  return {name:str(d.name)||'unnamed host', url:str(d.url), ok:d.ok===true, code:num(d.code,null)}; }
+function normArtifact(a){ if(!isObj(a)) return null;
+  return {path:str(a.path), date:nDate(a.date), ext:str(a.ext), kb:num(a.kb,null)}; }
+function normPrdNewest(v){ if(isObj(v)) return {path:str(v.path), date:nDate(v.date)};
+  return typeof v==='string' ? {path:'', date:nDate(v)} : null; }
+function normProject(p){ return {name:str(p.name)||'untitled project', family:str(p.family),
+  famKey:tidy(p.family)||'project', root:str(p.root), what:str(p.what), lastTouched:nDate(p.lastTouched),
+  hasPRD:p.hasPRD===true, prdNewest:one(()=>normPrdNewest(p.prdNewest), null), artifact:one(()=>normArtifact(p.artifact), null),
+  priority:str(p.priority), status:str(p.status)}; }
+function normReport(r){ return {agent:str(r.agent)||'unknown', path:str(r.path), date:nDate(r.date),
+  ext:str(r.ext), kb:num(r.kb,null)}; }
+function normAgent(a){ const l = one(()=> isObj(a.latest) ? {path:str(a.latest.path), date:nDate(a.latest.date)} : null, null);
+  return {name:str(a.name)||'unnamed agent', role:str(a.role), latest:l}; }
+function normPRD(p){ return {title:str(p.title)||'(untitled)', project:str(p.project), path:str(p.path),
+  date:nDate(p.date), area:str(p.area)}; }
+/* any record whose normaliser throws is dropped; a throw costs only that record.
+   The section itself is read lazily and inside one(), so a throwing section getter
+   degrades to an empty list rather than taking the shell down. */
+const normAll = (getSection, fn) => one(()=> objects(getSection()).map(x => one(()=>fn(x), null)).filter(Boolean), []);
+
+const DATA = {
+  meta: one(()=> isObj(D.meta) ? D.meta : {}, {}),
+  stack: normAll(()=>D.stack, normStack),
+  devServers: normAll(()=>D.devServers, normDev),
+  projects: normAll(()=>D.projects, normProject),
+  reports: normAll(()=>D.reports, normReport),
+  roster: normAll(()=>D.roster, normAgent),
+  prds: normAll(()=>D.prds, normPRD),
+  summary: one(()=> isObj(D.summary) ? D.summary : {}, {}),
+  devServersStaleSince: one(()=>str(D.devServersStaleSince), ''),
+  enriched: one(()=> isObj(D.enriched) ? D.enriched : {}, {}),
+};
+const S = DATA.summary;
+/* summary counts are read defensively too: a summary with a throwing getter still yields a number */
+function snum(key, fallback){ return one(()=>num(S[key], fallback), fallback); }
+
+/* three-state service health: ok+2xx green, ok+non-2xx (or no code) amber, else red */
+function svcState(s){ if(s.ok!==true) return 'bad'; const c=s.code;
+  return (c!=null && c>=200 && c<300) ? 'ok' : 'warn'; }
+const STACK = (()=>{ let ok=0,warn=0,bad=0;
+  DATA.stack.forEach(s=>{ const st=svcState(s); if(st==='ok') ok++; else if(st==='warn') warn++; else bad++; });
+  return {ok, warn, bad, total:DATA.stack.length}; })();
+
+const SNAP_RAW = one(()=>str(DATA.meta.generatedAt), '');
+const SNAP_AGE = one(()=>ageDays(SNAP_RAW), null);
+const SNAP_STALE = SNAP_AGE!==null && SNAP_AGE>1;
+
+/* renderers are wrapped so one bad view degrades to a message instead of a blank window */
+function safeHtml(fn, fallback){
+  try{ const h=fn(); return (typeof h==='string') ? h : (fallback||''); }
+  catch(_){ return fallback || '<div class="empty">this view could not be rendered</div>'; }
+}
+
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 
 /* ---------- state ---------- */
 const OPEN = new Map();      // id -> {el, prev, mode, geo}
 let zIndex = 10; let focusedId = null;
 let RESTORING = false;       // true only while restoreLayout() is repopulating OPEN
+let DATA_READY = false;      // shell finished starting against a valid snapshot
 const MOBILE = matchMedia('(max-width:760px)').matches;
 /* layout restored on load: [{id,left,top,width,height,max}].
    Called from the bottom of the script — openWin touches the const WINS/_WINS state,
@@ -282,7 +522,7 @@ function restoreLayout(){
     saved.forEach(o=>{
       if(!o || typeof o.id!=='string') return;
       if(o.id==='detail'){
-        const p=(D.projects||[]).find(x=>x.name===o.project);
+        const p=DATA.projects.find(x=>x.name===o.project);
         if(p) openDetail(p, MOBILE ? null : o);        // project gone from data.js → skip silently
         return;
       }
@@ -294,44 +534,153 @@ function restoreLayout(){
 
 /* ---------- boot sequence ---------- */
 const bootEl = $('#boot'), bootLog = $('#bootlog');
-const stackOk = (D.stack||[]).filter(x=>x.ok).length, devOn = S.devOnline ?? 0;
-const bootLines = [
-  ['dim','maio.os 1.0 · orchestrator build'],
-  ['ok',`stack probe ......... ${stackOk}/${(D.stack||[]).length} services live`],
-  [devOn? 'ok':'bad',`dev servers ......... ${devOn}/${S.devTotal ?? 10} online`],
-  ['ok',`projects indexed .... ${S.projects ?? 0}`],
-  ['ok',`agent reports ....... ${S.reports ?? 0} · PRDs ${S.prds ?? 0}`],
-  ['dim',`scanned ${D.meta&&D.meta.generatedAt?D.meta.generatedAt:'recently'} · click / any key to enter`],
-];
-let bi = 0; const btimer = setInterval(()=>{
-  if(bi >= bootLines.length){ clearInterval(btimer); setTimeout(endBoot, 520); return; }
-  const [cls, txt] = bootLines[bi++]; const div = document.createElement('div');
-  div.className = cls; div.textContent = '▸ ' + txt; bootLog.appendChild(div);
-}, 240);
-function endBoot(){ clearInterval(btimer); bootEl.classList.add('gone'); setTimeout(()=>bootEl.remove(), 600); if(!OPEN.size && !MOBILE) openWin('desk'); }
-bootEl.addEventListener('click', endBoot);
-addEventListener('keydown', e => { if(!bootEl.isConnected) return; endBoot(); }, {once:false});
+let bootTimer = null, BOOT_WATCHDOG = null, bootStarted = false;
+function startBoot(){
+  bootStarted = true;
+  if(!bootLog) return;
+  const devOn = snum("devOnline",0), devTotal = snum("devTotal", DATA.devServers.length);
+  const lines = [
+    ['dim','maio.os 1.0 · orchestrator build'],
+    ['ok',`stack probe ......... ${STACK.ok}/${STACK.total} clean · ${STACK.warn} non-2xx · ${STACK.bad} down`],
+    [devOn? 'ok':'bad',`dev servers ......... ${devOn}/${devTotal} online`],
+    ['ok',`projects indexed .... ${snum("projects", DATA.projects.length)}`],
+    ['ok',`agent reports ....... ${snum("reports", DATA.reports.length)} · PRDs ${snum("prds", DATA.prds.length)}`],
+    [SNAP_STALE?'bad':'dim',`snapshot ${ageText(SNAP_RAW)} · click / any key to enter`],
+  ];
+  let i = 0;
+  bootTimer = setInterval(()=>{
+    if(i >= lines.length){ clearInterval(bootTimer); bootTimer=null; setTimeout(endBoot, 520); return; }
+    const [cls, txt] = lines[i++]; const div = document.createElement('div');
+    div.className = cls; div.textContent = '▸ ' + txt; bootLog.appendChild(div);
+  }, 240);
+}
+function endBoot(){
+  if(bootTimer){ clearInterval(bootTimer); bootTimer=null; }
+  if(BOOT_WATCHDOG){ clearTimeout(BOOT_WATCHDOG); BOOT_WATCHDOG=null; }
+  if(bootEl && bootEl.isConnected){ bootEl.classList.add('gone');
+    setTimeout(()=>{ if(bootEl && bootEl.isConnected) bootEl.remove(); }, 600); }
+}
+/* ---------- the single owner of the ready / failed transition ----------
+   Every route that decides whether this page is healthy or broken goes through here,
+   so no late timer can ever contradict a load that actually succeeded.
+
+   - 'ready'  : valid data and the shell is up. It is TERMINAL — once set, no timer may
+                declare a data failure, hide the cockpit, or flip DATA_READY back.
+   - 'failed' : genuinely no usable snapshot. Also terminal, so a recovered page is only
+                brought back by markReady() (late recovery), never silently.
+   - 'loading': nothing decided yet; a timer is allowed to fail into 'failed'. */
+let uiState = 'loading';
+function markReady(){
+  uiState = 'ready';
+  DATA_READY = true;
+  window.__maioState = 'ready';
+  /* If a pre-data.js guard already painted the failure state (a genuinely slow load),
+     undo it — remove the error node AND un-hide the cockpit it hid: the cockpit is the
+     truth now. This is the late-recovery path; a healthy load has nothing to undo. */
+  ensureCockpitVisible();
+}
+function markFailed(detail){
+  if(uiState === 'ready') return;    // a health-cocked page is never failed by a timer
+  uiState = 'failed';
+  showDataError(detail);
+}
+/* un-hide the cockpit after any failure paint — used on BFCache restore. Never creates
+   an error node and never changes the ready/failed decision. */
+function ensureCockpitVisible(){
+  ['desktop','dock','menunav'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && el.style.display === 'none') el.style.display = '';
+  });
+  if(window.__maioDataFail){
+    const e = document.getElementById('dataerr'); if(e) e.remove();
+    window.__maioDataFail = false;
+  }
+}
+/* plain-language failure state — never a healthy-looking empty cockpit */
+function showDataError(detail){
+  if(uiState === 'ready') return;
+  DATA_READY = false;
+  window.__maioDataFail = true;
+  window.__maioState = 'failed';
+  if(bootTimer){ clearInterval(bootTimer); bootTimer=null; }
+  if(BOOT_WATCHDOG){ clearTimeout(BOOT_WATCHDOG); BOOT_WATCHDOG=null; }
+  try{
+    const b=$('#boot'); if(b && b.isConnected) b.remove();   // no fade: the failure must read immediately
+    const hide = el => { if(el) el.style.display='none'; };
+    hide($('#desktop')); hide($('#dock')); hide($('#menunav')); hide($('#cmdbar-wrap'));
+    let e = $('#dataerr');
+    if(!e){ e=document.createElement('div'); e.id='dataerr'; e.setAttribute('role','alert'); document.body.appendChild(e); }
+    e.innerHTML =
+      '<div class="errbox">'+
+        '<div class="errlogo">maio<em>.</em>os</div>'+
+        '<h1>Data could not be loaded</h1>'+
+        '<p>This cockpit needs <b>maio-os/data.js</b> to show anything real. When the page loaded, that file was missing, unreadable, or did not contain a data object — so there is nothing to display.</p>'+
+        '<p>This is not an empty cockpit and the household has not disappeared — the snapshot simply did not arrive.</p>'+
+        '<p class="errdetail" id="dataerr-detail"></p>'+
+        '<p class="errhint">data.js is generated by a script that is not part of this repository. Regenerate it, then reload this page.</p>'+
+      '</div>';
+    const dd = $('#dataerr-detail'); if(dd) dd.textContent = str(detail);
+  }catch(_){ /* nothing left to fail into */ }
+}
+if(bootEl){
+  bootEl.addEventListener('click', endBoot);
+  addEventListener('keydown', () => { if(bootEl.isConnected) endBoot(); });
+}
+/* Boot protection, installed BEFORE the shell asks whether data arrived, so it covers a
+   data.js that never loads, that is slow, that is not an object, or that throws
+   mid-normalisation. The timeout decision is based on REAL state — is the shell ready,
+   did valid data arrive — never on whether the boot element is still on screen: a
+   finished (or merely unfinished) boot animation is not a failed load.
+
+   - ready, or data already here → the load is fine; END BOOT so the cockpit can never be
+     blocked by the screen, and never an error over a healthy page.
+   - otherwise → the data genuinely did not arrive: show the failure state. */
+BOOT_WATCHDOG = setTimeout(()=>{
+  if(uiState === 'ready' || DATA_OK){ endBoot(); return; }   // reveal the working cockpit
+  markFailed('Timed out waiting for maio-os/data.js.');
+}, 7000);
 
 /* ---------- desklets ---------- */
+function svcPill(s){ const st=svcState(s), ms=(s.ms!=null)? ' · '+s.ms+'ms' : '';
+  if(st==='ok')   return {cls:'ok',   txt:'✓ '+(s.code!=null? s.code : '200')+ms};
+  if(st==='warn') return {cls:'warn', txt:'△ '+(s.code!=null? s.code : 'no code')+ms};
+  return {cls:'bad', txt:'✕ '+(s.code!=null? 'down '+s.code : 'down')};
+}
 function renderDesklets(){
-  const area = $('#desklets-area'); if(!area || MOBILE) { if(area&&!MOBILE){} else if(area){ area.style.display='none'; } }
-  const rows = (D.stack||[]).slice(0,5).map(s =>
-    `<div class="vrow"><span class="nm">${esc(s.name)}</span><span class="vl pill ${s.ok?'ok':'bad'}">${s.ok? (s.code??'')+' · '+s.ms+'ms' : 'down'}</span></div>`).join('');
-  const dark = (D.devServers||[]).length - devOn;
+  const area = $('#desklets-area'); if(!area) return;
+  if(MOBILE){ area.style.display='none'; return; }
+  const rows = DATA.stack.slice(0,5).map(s => { const p=svcPill(s);
+    return `<div class="vrow"><span class="nm">${esc(s.name)}</span><span class="vl pill ${p.cls}">${esc(p.txt)}</span></div>`; }).join('');
+  const devOn = snum("devOnline",0), devTotal = snum("devTotal", DATA.devServers.length);
+  const dark = Math.max(0, DATA.devServers.length - devOn);
+  const snapColour = SNAP_STALE ? 'var(--warn)' : (SNAP_AGE===null ? 'var(--dim)' : 'var(--ok)');
   area.innerHTML = `
     <div class="desklet"><h4>System vitals</h4>
       <div class="bigstat">
-        <div class="bs"><b class="gold">${stackOk}/${(D.stack||[]).length}</b><span>stack live</span></div>
-        <div class="bs"><b class="${devOn? '' : 'bad'}">${devOn}<span style="font-size:.7rem">/${S.devTotal??10}</span></b><span>dev servers</span></div>
-      </div></div>
+        <div class="bs"><b class="ok">${STACK.ok}</b><span>✓ clean 2xx</span></div>
+        <div class="bs"><b class="warn">${STACK.warn}</b><span>△ alive · non-2xx</span></div>
+        <div class="bs"><b class="${STACK.bad?'bad':''}">${STACK.bad}</b><span>✕ down</span></div>
+      </div>
+      <div class="vrow" style="margin-top:8px"><span class="nm">dev servers</span><span class="vl">${devOn}/${devTotal}</span></div>
+      <div class="vrow"><span class="nm">snapshot</span><span class="vl" style="color:${snapColour}">${esc(ageText(SNAP_RAW))}</span></div>
+    </div>
     <div class="desklet"><h4>Services</h4>${rows || '<div class="empty">no probes</div>'}</div>
     <div class="desklet"><h4>Household</h4>
-      <div class="vrow"><span class="nm">Projects</span><span class="vl" style="color:var(--ink)">${S.projects??0}</span></div>
-      <div class="vrow"><span class="nm">Agent reports</span><span class="vl" style="color:var(--ink)">${S.reports??0}</span></div>
-      <div class="vrow"><span class="nm">PRDs</span><span class="vl" style="color:var(--ink)">${S.prds??0}</span></div>
-      <div class="vrow"><span class="nm">Agents on roster</span><span class="vl" style="color:var(--ink)">${S.roster??0}</span></div>
+      <div class="vrow"><span class="nm">Projects</span><span class="vl" style="color:var(--ink)">${snum("projects", DATA.projects.length)}</span></div>
+      <div class="vrow"><span class="nm">Agent reports</span><span class="vl" style="color:var(--ink)">${snum("reports", DATA.reports.length)}</span></div>
+      <div class="vrow"><span class="nm">PRDs</span><span class="vl" style="color:var(--ink)">${snum("prds", DATA.prds.length)}</span></div>
+      <div class="vrow"><span class="nm">Agents on roster</span><span class="vl" style="color:var(--ink)">${snum("roster", DATA.roster.length)}</span></div>
       <div class="vrow"><span class="nm">Legacy vhosts dark</span><span class="vl" style="color:${dark?'var(--bad)':'var(--ok)'}">${dark}</span></div>
     </div>`;
+}
+
+/* ---------- meta clock / snapshot age ---------- */
+function renderGen(){
+  const el = $('#genned'); if(!el) return;
+  el.textContent = 'snapshot: ' + ageText(SNAP_RAW) + (SNAP_STALE ? ' ⚠' : '');
+  el.title = 'meta.generatedAt: ' + (SNAP_RAW || '(missing)');
+  el.classList.remove('fresh','stale','unknown');
+  el.classList.add(SNAP_AGE===null ? 'unknown' : (SNAP_STALE ? 'stale' : 'fresh'));
 }
 
 /* starfield — deterministic */
@@ -343,10 +692,10 @@ function renderDesklets(){
 /* ---------- window manager ---------- */
 const WINS = {
   desk:{title:'The Desk', icon:'◆', sub:'what changed lately', render:renderDesk, w:640, h:420},
-  projects:{title:'Projects', icon:'▣', sub:`${S.projects??0} indexed`, render:renderProjects, w:820, h:520},
-  agents:{title:'Agents', icon:'✦', sub:`${S.roster??0} on roster`, render:renderAgents, w:760, h:480},
-  reports:{title:'Reports', icon:'▤', sub:`${S.reports??0} artifacts`, render:renderReports, w:820, h:520},
-  prds:{title:'PRDs', icon:'✎', sub:`${S.prds??0} found`, render:renderPRDs, w:700, h:440},
+  projects:{title:'Projects', icon:'▣', sub:`${snum("projects",DATA.projects.length)} indexed`, render:renderProjects, w:820, h:520},
+  agents:{title:'Agents', icon:'✦', sub:`${snum("roster",DATA.roster.length)} on roster`, render:renderAgents, w:760, h:480},
+  reports:{title:'Reports', icon:'▤', sub:`${snum("reports",DATA.reports.length)} artifacts`, render:renderReports, w:820, h:520},
+  prds:{title:'PRDs', icon:'✎', sub:`${snum("prds",DATA.prds.length)} found`, render:renderPRDs, w:700, h:440},
   stack:{title:'Stack', icon:'◉', sub:'live truth', render:renderStack, w:780, h:500},
   about:{title:'About / Roadmap', icon:'☆', sub:'what this is + where it goes', render:renderAbout, w:660, h:520},
 };
@@ -376,7 +725,7 @@ function openWin(id, restore=null){
         <button class="wl wmin" aria-label="Minimize"></button>
         <button class="wl wmax" aria-label="Maximize"></button>
       </div>
-      <span class="wtitle">${def.icon} ${esc(def.title)}</span>
+      <span class="wtitle">${esc(def.icon)} ${esc(def.title)}</span>
       <span class="wsub">${esc(def.sub)}</span>
     </div>
     <div class="winbody"></div>
@@ -384,10 +733,12 @@ function openWin(id, restore=null){
   $('#winlayer').appendChild(el);
   const inst = {el, mode:'normal', state:'normal', prev:null, geo:(restore && restore.max)?{left:restore.left, top:restore.top, width:restore.width, height:restore.height}:null};
   OPEN.set(id, inst);
-  /* per-instance renderer — never on the shared WINS[id], so two windows can't clobber each other */
+  /* per-instance renderer — never on the shared WINS[id], so two windows can't clobber each other.
+     Each render is wrapped: a throwing renderer degrades that one window, it does not blank the shell. */
   inst.rerender = (sync=false) => { const b = $('.winbody', el); if(!b) return;
-    if(sync){ b.innerHTML = def.render(id); return; }
-    b.innerHTML = '<div class="empty">loading…</div>'; setTimeout(()=>{ if(el.isConnected) b.innerHTML = def.render(id); }, 0); };
+    if(sync){ b.innerHTML = safeHtml(()=>def.render(id)); return; }
+    b.innerHTML = '<div class="empty">loading…</div>';
+    setTimeout(()=>{ if(el.isConnected) b.innerHTML = safeHtml(()=>def.render(id)); }, 0); };
   if(restore && restore.max){ inst.geo = inst.geo || {left:restore.left, top:restore.top, width:restore.width, height:restore.height}; }
   else if(restore){ applyGeo(el, inst, restore); }
   applyWinState(inst, {restore, mobile:MOBILE});
@@ -416,7 +767,7 @@ function rect(el){ const r=el.getBoundingClientRect(); const D=dRect();
 /* fit [x,y] so a w×h box stays inside the desktop, and the box itself to the desktop.
    Min sizes are relaxed when the desktop is smaller, so nothing is ever unreachable. */
 function fitRect(x, y, w, h){
-  const D=$('#desktop'); const vw=Math.max(1,D.clientWidth), vh=Math.max(1,D.clientHeight);
+  const Dd=$('#desktop'); const vw=Math.max(1,Dd.clientWidth), vh=Math.max(1,Dd.clientHeight);
   const W=Math.min(Math.max(w, Math.min(320, vw)), vw);
   const H=Math.min(Math.max(h, Math.min(220, vh)), vh);
   return {left:clamp(x!=null?x:6, 0, Math.max(0, vw-W)), top:clamp(y!=null?y:6, 0, Math.max(0, vh-H)), width:W, height:H};
@@ -486,6 +837,15 @@ function persist(){
            silently lose its maximised flag across a reload */
         max = (w.mode==='max') || (w.mode==='min' && w.state==='max');
       }
+      /* Second line of defence: never overwrite a saved entry with degenerate geometry.
+         If a window is measured before the desktop is laid out (0×0), keep whatever was
+         already saved for it instead of writing the collapsed rectangle back. */
+      if(degenerateGeo(g)){
+        const p = prev[id];
+        if(!p) continue;                       // nothing good to keep → leave it out entirely
+        g = {left:p.left, top:p.top, width:p.width, height:p.height};
+        if(p.max !== undefined) max = !!p.max;
+      }
       const e={id, left:g.left, top:g.top, width:g.width, height:g.height, max};
       if(id==='detail' && detailProject) e.project = detailProject.name;   // so the detail can be rebuilt
       out.push(e);
@@ -494,6 +854,12 @@ function persist(){
   }catch(_){}
 }
 function dockSync(){ document.querySelectorAll('.dockbtn').forEach(b=>{ const id=b.dataset.open; b.classList.toggle('open', OPEN.has(id)); b.classList.toggle('active', focusedId===id); }); }
+/* a geometry that is not a usable on-screen rectangle (0×0, negative, non-finite, missing) */
+function degenerateGeo(g){
+  if(!g) return true;
+  return !isFinite(g.width) || !isFinite(g.height) || g.width < 1 || g.height < 1
+      || (!MOBILE && (!isFinite(g.left) || !isFinite(g.top)));
+}
 
 /* drag + resize */
 /* drag/resize always operate on the NORMAL geometry. w.geo keeps it; w.prev is the
@@ -505,7 +871,7 @@ function startDrag(ev, el, id){ if(MOBILE) return; if(ev.target.closest('.wl')) 
   const sx=ev.clientX, sy=ev.clientY, ol=parseFloat(el.style.left)||0, ot=parseFloat(el.style.top)||0;
   el.setPointerCapture?.(ev.pointerId);
   const mv = e => {
-    const D=$('#desktop'); const vw=D.clientWidth, vh=D.clientHeight; const W=el.offsetWidth, H=el.offsetHeight;
+    const Dd=$('#desktop'); const vw=Dd.clientWidth, vh=Dd.clientHeight; const W=el.offsetWidth, H=el.offsetHeight;
     el.style.left = clamp(ol + e.clientX - sx, 0, Math.max(0, vw-W)) + 'px';
     el.style.top  = clamp(ot + e.clientY - sy, 0, Math.max(0, vh-H)) + 'px'; };
   const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
@@ -517,7 +883,7 @@ function startResize(ev, el, id){ const w=OPEN.get(id); if(!w || w.mode==='max')
   ev.preventDefault(); ev.stopPropagation();
   const sw=el.offsetWidth, sh=el.offsetHeight, sx=ev.clientX, sy=ev.clientY;
   const mv = e => {
-    const D=$('#desktop'); const vw=D.clientWidth, vh=D.clientHeight;
+    const Dd=$('#desktop'); const vw=Dd.clientWidth, vh=Dd.clientHeight;
     const left=parseFloat(el.style.left)||0, top=parseFloat(el.style.top)||0;
     el.style.width  = clamp(sw + e.clientX - sx, Math.min(320, vw), Math.max(0, vw-left)) + 'px';
     el.style.height = clamp(sh + e.clientY - sy, Math.min(220, vh), Math.max(0, vh-top)) + 'px'; };
@@ -529,38 +895,46 @@ function startResize(ev, el, id){ const w=OPEN.get(id); if(!w || w.mode==='max')
 
 /* ---------- renderers ---------- */
 function renderDesk(){
-  const reps = (D.reports||[]).slice(0,7);
-  const big = (D.projects||[]).filter(p=>p.lastTouched).sort((a,b)=>b.lastTouched.localeCompare(a.lastTouched)).slice(0,5);
+  const reps = DATA.reports.slice(0,7);
+  const big = DATA.projects.filter(p=>p.lastTouched).sort((a,b)=>b.lastTouched.localeCompare(a.lastTouched)).slice(0,5);
+  const snapLabel = nDate(SNAP_RAW) ? fmtDate(SNAP_RAW) : 'an unknown date';
+  const staleNote = SNAP_STALE
+    ? `<div class="notebox warnbox"><b>⚠ Stale snapshot</b> — this data is ${esc(ageText(SNAP_RAW))}. The stack and status readings below may be out of date.</div>`
+    : (SNAP_AGE===null
+        ? `<div class="notebox warnbox"><b>⚠ Snapshot age unknown</b> — data.js has no readable meta.generatedAt, so freshness cannot be checked.</div>`
+        : '');
   return `
-    <p class="aboutp">One window over the household, rebuilt <b>${esc(D.meta?.generatedAt||'today')}</b> from a live scan — no stale heartbeat.</p>
+    ${staleNote}
+    <p class="aboutp">One window over the household, rebuilt <b>${esc(snapLabel)}</b> (${esc(ageText(SNAP_RAW))}) from a live scan — no stale heartbeat.</p>
     <div class="sect">Latest agent output</div>
     <div class="rows">${reps.map(r=>`
       <div class="rrow"><span class="ra">${esc(r.agent)}</span><span class="rp">${esc(r.path)}</span>
-      <span class="rd">${fmtDate(r.date)} · ${agoTxt(r.date)}</span>
+      <span class="rd">${esc(fmtDate(r.date))} · ${esc(agoTxt(r.date))}</span>
       <button class="copy" data-report="${escAttr(r.path)}">path ⧉</button></div>`).join('') || '<div class="empty">nothing yet</div>'}</div>
     <div class="sect">Newest activity in projects</div>
     <div class="pgrid">${big.map(p=>`
       <div class="pcard" data-detail='${escAttr(JSON.stringify(p))}' role="button" tabindex="0">
-        <div class="pn">${esc(p.name)} <span class="fam ${p.family}">${p.family}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>
+        <div class="pn">${esc(p.name)} <span class="fam ${escAttr(p.famKey)}">${esc(p.family||'project')}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>
         <div class="pw">${esc(p.what)}</div>
-        <div class="pm"><span>${agoTxt(p.lastTouched)}</span>${p.artifact?`<span>· ${p.artifact.ext||'—'} ${p.artifact.kb}KB</span>`:''}</div>
+        <div class="pm"><span>${esc(agoTxt(p.lastTouched))}</span>${p.artifact?`<span>· ${esc(p.artifact.ext||'—')} ${esc(p.artifact.kb!=null?p.artifact.kb+'KB':'—')}</span>`:''}</div>
       </div>`).join('') || '<div class="empty">no projects</div>'}</div>`;
 }
 let projFilter = 'all';
 function renderProjects(){
-  const fams = ['all', ...new Set((D.projects||[]).map(p=>p.family))];
-  const list = (D.projects||[])
+  const fams = ['all', ...new Set(DATA.projects.map(p=>p.family).filter(Boolean))];
+  const q = str(__projq).toLowerCase();
+  const list = DATA.projects
     .filter(p=>projFilter==='all' || p.family===projFilter)
     .sort((a,b)=>(b.lastTouched||'').localeCompare(a.lastTouched||''));
   return `
-    <input class="searchbox" data-filter="projects" placeholder="Filter ${S.projects??0} projects…" autocomplete="off" spellcheck="false" value="${escAttr(__projq||'')}">
-    <div class="chiprow">${fams.map(f=>`<button class="chip ${projFilter===f?'on':''}" data-fam="${f}">${f}</button>`).join('')}</div>
-    <div class="pgrid">${list.filter(p=>{const q=(__projq||'').toLowerCase(); const hay=(p.name+' '+p.what+' '+p.family).toLowerCase(); return hay.includes(q);}).map(p=>`
+    <input class="searchbox" data-filter="projects" placeholder="Filter ${snum("projects",DATA.projects.length)} projects…" autocomplete="off" spellcheck="false" value="${escAttr(__projq||'')}">
+    <div class="chiprow">${fams.map(f=>`<button class="chip ${projFilter===f?'on':''}" data-fam="${escAttr(f)}">${esc(f)}</button>`).join('')}</div>
+    <div class="pgrid">${list.filter(p=>{ const hay=(p.name+' '+p.what+' '+p.family).toLowerCase(); return hay.includes(q); }).map(p=>`
       <div class="pcard" tabindex="0" role="button" data-detail='${escAttr(JSON.stringify(p))}'>
-        <div class="pn">${esc(p.name)} <span class="fam ${p.family}">${p.family}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>
+        <div class="pn">${esc(p.name)} <span class="fam ${escAttr(p.famKey)}">${esc(p.family||'project')}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>
         <div class="pw">${esc(p.what)}</div>
-        <div class="pm"><span>Last touch ${fmtDate(p.lastTouched)} · ${agoTxt(p.lastTouched)}</span>
-        ${p.family==='venture'&&p.priority?`<span>· ⭐ ${esc(p.priority)}</span>`:(p.artifact?`<span>· ${p.artifact.ext||'—'} ${p.artifact.kb}KB</span>`:'')}</div>
+        <div class="pm"><span>Last touch ${esc(fmtDate(p.lastTouched))} · ${esc(agoTxt(p.lastTouched))}</span>
+        ${p.family==='venture'&&p.priority?`<span>· ⭐ ${esc(p.priority)}</span>`:(p.artifact?`<span>· ${esc(p.artifact.ext||'—')} ${esc(p.artifact.kb!=null?p.artifact.kb+'KB':'—')}</span>`:'')}</div>
       </div>`).join('') || '<div class="empty">no matches</div>'}</div>`;
 }
 let detailProject = null;
@@ -568,16 +942,14 @@ function renderDetail(p){
   const a = p.artifact || {};
   const row = (k,v) => `<div class="drow"><span class="dk">${esc(k)}</span><span class="dv">${v}</span></div>`;
   const fam = p.family || 'project';
-  let h = `<div class="dhead"><span class="dname">${esc(p.name||'Untitled')}</span><span class="fam ${escAttr(fam)}">${esc(fam)}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>`;
+  let h = `<div class="dhead"><span class="dname">${esc(p.name||'Untitled')}</span><span class="fam ${escAttr(p.famKey||'project')}">${esc(fam)}</span>${p.hasPRD?'<span class="tagprd">PRD</span>':''}</div>`;
   h += `<div class="drows">`;
   h += row('Family', esc(fam));
   h += row('Last touch', `${esc(fmtDate(p.lastTouched))} <span style="color:var(--dim2)">· ${esc(agoTxt(p.lastTouched))}</span>`);
   if(p.status) h += row('Status', esc(p.status));
   if(p.priority) h += row('Priority', '⭐ ' + esc(p.priority));
-  const pn = p.prdNewest;                                   // {path,date} | date string | null
-  const pnDate = pn && typeof pn==='object' ? pn.date : (typeof pn==='string' ? pn : null);
-  const pnPath = pn && typeof pn==='object' ? pn.path : null;
-  h += row('PRD', p.hasPRD ? (pnDate ? esc(fmtDate(pnDate)) : 'yes')+(pnPath?` <code>${esc(pnPath)}</code>`:'') : 'none');
+  const pn = p.prdNewest;                                   // {path,date} | null
+  h += row('PRD', p.hasPRD ? (pn&&pn.date ? esc(fmtDate(pn.date)) : 'yes')+(pn&&pn.path?` <code>${esc(pn.path)}</code>`:'') : 'none');
   if(p.what) h += row('What', esc(p.what));
   if(p.root) h += row('Root', `<code>${esc(p.root)}</code>`);
   if(a.path) h += row('Artifact', `<code>${esc(a.path)}</code>${a.ext?` <span style="color:var(--dim2)">${esc(a.ext)}${a.kb!=null?' · '+esc(a.kb)+' KB':''}</span>`:''}`);
@@ -605,44 +977,47 @@ function openDetail(p, geo){
 }
 window.__detail = function(p){ openDetail(p); };
 function renderAgents(){
-  const rs = (D.roster||[]).slice().sort((a,b)=>(b.latest?.date||'').localeCompare(a.latest?.date||''));
+  const rs = DATA.roster.slice().sort((a,b)=>((b.latest&&b.latest.date)||'').localeCompare((a.latest&&a.latest.date)||''));
   return `<div class="sect">Roster · latest output</div>
   <div class="agentgrid">${rs.map(a=>`
     <div class="agc" data-openreport="${a.latest?escAttr(a.latest.path):''}">
       <div class="an">${esc(a.name)}</div>
       <div class="ar">${esc(a.role||'—')}</div>
-      <div class="al">${a.latest?`latest <b>${fmtDate(a.latest.date)}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}</div>
+      <div class="al">${a.latest&&a.latest.date?`latest <b>${esc(fmtDate(a.latest.date))}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}</div>
     </div>`).join('')}</div>`;
 }
 function renderReports(){
-  const reps=(D.reports||[]).slice();
+  const reps=DATA.reports.slice();
+  const q=str(__repq).toLowerCase();
   return `<input class="searchbox" data-filter="reports" placeholder="Filter reports by agent / path…" autocomplete="off" spellcheck="false" value="${escAttr(__repq||'')}">
-  <div class="rows">${reps.filter(r=>{const q=(__repq||'').toLowerCase(); return (r.agent+' '+r.path).toLowerCase().includes(q);}).map(r=>`
+  <div class="rows">${reps.filter(r=>(r.agent+' '+r.path).toLowerCase().includes(q)).map(r=>`
     <div class="rrow"><span class="ra">${esc(r.agent)}</span><span class="rp">${esc(r.path)}</span>
-    <span class="rd">${fmtDate(r.date)} · ${r.ext||'—'} ${r.kb}KB</span>
+    <span class="rd">${esc(fmtDate(r.date))} · ${esc(r.ext||'—')} ${esc(r.kb!=null?r.kb+'KB':'—')}</span>
     <button class="copy" data-report="${escAttr(r.path)}">⧉</button></div>`).join('') || '<div class="empty">no reports</div>'}</div>`;
 }
 function renderPRDs(){
-  const ps=(D.prds||[]).slice();
+  const ps=DATA.prds.slice();
   return `<div class="notebox"><b>${ps.length} PRD / product docs</b> — vault 3.PRD trees (Work + AI-Space) merged with disk scans. Newest first. Click copy to grab the path.</div>
   <div class="rows" style="margin-top:12px">${ps.map(p=>`
     <div class="rrow"><span class="ra" style="min-width:150px">${esc(p.title)}</span>
     <span class="rp">${esc(p.project||'')}${p.area?' <span class="fam" style="font-size:.6rem">'+esc(p.area)+'</span>':''}</span>
-    <span class="rd">${fmtDate(p.date)}</span><button class="copy" data-report="${escAttr(p.path)}">⧉</button></div>`).join('') || '<div class="empty">none found</div>'}</div>`;
+    <span class="rd">${esc(fmtDate(p.date))}</span><button class="copy" data-report="${escAttr(p.path)}">⧉</button></div>`).join('') || '<div class="empty">none found</div>'}</div>`;
 }
-const enriched = D.enriched || {};
-const ENRICH_PRDS = enriched.prds || [];
+const enriched = DATA.enriched;
+const ENRICH_PRDS = Array.isArray(enriched.prds) ? enriched.prds : [];
 function renderStack(){
-  const st=D.stack||[], dev=D.devServers||[];
+  const st=DATA.stack, dev=DATA.devServers;
   return `
     <div class="sect">Local stack · probed live at generation</div>
-    <div class="svcgrid">${st.map(s=>`
-      <div class="svc"><div class="sn"><b>${esc(s.name)}</b><span class="pill ${s.ok?'ok':'bad'}">${s.code!=null? s.code : 'down'}${s.ms? ' · '+s.ms+'ms':''}</span></div>
-      <div class="sp">${esc(s.port)}</div><div class="snote">${esc(s.note||'')}</div></div>`).join('')}</div>
-    <div class="sect">Legacy dev-host vhosts · status.json said "running" since ${esc(D.devServersStaleSince||'Oct 1')} — this is the live truth</div>
-    <div class="svcgrid">${dev.map(d=>`
-      <div class="svc"><div class="sn"><b>${esc(d.name)}</b><span class="pill ${d.ok?'ok':'bad'}">${d.ok? '200' : 'dark'}</span></div>
-      <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${esc(d.url.replace(/^https?:\/\//,''))}</div></div>`).join('')}</div>`;
+    <div class="svcgrid">${st.map(s=>{ const p=svcPill(s); return `
+      <div class="svc"><div class="sn"><b>${esc(s.name)}</b><span class="pill ${p.cls}">${esc(p.txt)}</span></div>
+      <div class="sp">${esc(s.port)}</div><div class="snote">${esc(s.note||'')}</div></div>`; }).join('')}</div>
+    <div class="sect">Legacy dev-host vhosts · status.json said "running" since ${esc(DATA.devServersStaleSince||'Oct 1')} — this is the live truth</div>
+    <div class="svcgrid">${dev.map(d=>{ const u=safeUrl(d.url); const label=str(d.url).replace(/^https?:\/\//i,'');
+      const shown = u ? `<a href="${escAttr(u)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>` : esc(label);
+      return `
+      <div class="svc"><div class="sn"><b>${esc(d.name)}</b><span class="pill ${d.ok?'ok':'bad'}">${d.ok? '✓ 200' : '✕ dark'}</span></div>
+      <div class="sp" style="word-break:break-all;max-width:100%;overflow:hidden;text-overflow:ellipsis">${shown}</div></div>`; }).join('')}</div>`;
 }
 function renderAbout(){
   return `
@@ -663,25 +1038,29 @@ function renderAbout(){
 function renderDock(){
   const items = ['desk','projects','agents','reports','prds','stack','about'].filter(id=>winDef(id));
   $('#dock').innerHTML = items.map(id=>`
-    <button class="dockbtn" data-open="${id}" aria-label="Open ${escAttr(WINS[id].title)}">
-      <span class="di">${WINS[id].icon}</span><span>${esc(WINS[id].title)}</span><span class="dot"></span></button>`).join('')
+    <button class="dockbtn" data-open="${escAttr(id)}" aria-label="Open ${escAttr(WINS[id].title)}">
+      <span class="di">${esc(WINS[id].icon)}</span><span>${esc(WINS[id].title)}</span><span class="dot"></span></button>`).join('')
     + `<span class="docksep"></span><button class="dockbtn" data-cmd="1" aria-label="Command bar"><span class="di">⌘</span><span>Search</span></button>`;
   $('#dock').onclick = e => { const b = e.target.closest('.dockbtn'); if(!b) return;
     if(b.dataset.cmd){ showCmd(); return; } const id=b.dataset.open;
     const w=OPEN.get(id); if(w && w.mode!=='min' && focusedId===id){ minWin(id); } else openWin(id); };
-  $('#menunav').innerHTML = items.map(id=>`<button class="menubtn" data-open="${id}">${esc(WINS[id].title)}</button>`).join('');
+  $('#menunav').innerHTML = items.map(id=>`<button class="menubtn" data-open="${escAttr(id)}">${esc(WINS[id].title)}</button>`).join('');
   $('#menunav').onclick = e => { const b=e.target.closest('.menubtn'); if(b) openWin(b.dataset.open); };
 }
+function dockClear(){ const d=$('#dock'); if(!d) return; const cs=getComputedStyle(d);
+  const clr = Math.round(parseFloat(cs.bottom||'0') + d.offsetHeight + (parseFloat(cs.marginBottom||'0')||0) + 10);
+  document.documentElement.style.setProperty('--dock-clear', Math.max(56, clr) + 'px'); }
 
 /* ---------- command palette ---------- */
 let cmdIdx = 0, cmdItems = [];
+function fileBase(p){ const s=str(p); const i=s.lastIndexOf('/'); return i>=0 ? s.slice(i+1) : s; }
 function buildIndex(){
   const ix = [];
   Object.entries(WINS).forEach(([id,w])=>{ if(w.hidden) return; ix.push({k:'open', t:'Open ' + w.title, d:'window', act:()=>openWin(id)}); });
-  (D.projects||[]).forEach(p=>ix.push({k:p.family, t:p.name, d:(p.lastTouched?agoTxt(p.lastTouched):''), act:()=>{ openWin('projects'); setTimeout(()=>window.__detail(p),30); }}));
-  (D.roster||[]).forEach(a=>ix.push({k:'agent', t:a.name, d:(a.latest?('→ '+fmtDate(a.latest.date)):''), act:()=>openWin('agents')}));
-  (D.prds||[]).forEach(p=>ix.push({k:'prd', t:p.title, d:p.project, act:()=>openWin('prds')}));
-  (D.reports||[]).forEach(r=>ix.push({k:'report', t:r.agent+' — '+r.path.split('/').pop(), d:fmtDate(r.date), act:()=>openWin('reports')}));
+  DATA.projects.forEach(p=>ix.push({k:p.family, t:p.name, d:(p.lastTouched?agoTxt(p.lastTouched):''), act:()=>{ openWin('projects'); setTimeout(()=>window.__detail(p),30); }}));
+  DATA.roster.forEach(a=>ix.push({k:'agent', t:a.name, d:(a.latest&&a.latest.date?('→ '+fmtDate(a.latest.date)):''), act:()=>openWin('agents')}));
+  DATA.prds.forEach(p=>ix.push({k:'prd', t:p.title, d:p.project, act:()=>openWin('prds')}));
+  DATA.reports.forEach(r=>ix.push({k:'report', t:r.agent+' — '+fileBase(r.path), d:fmtDate(r.date), act:()=>openWin('reports')}));
   ix.push({k:'action', t:'About the roadmap', d:'⌘K', act:()=>openWin('about')});
   return ix;
 }
@@ -689,7 +1068,7 @@ const INDEX = buildIndex();
 function showCmd(){ $('#cmdbar-wrap').classList.add('show'); const i=$('#cmdinput'); i.value=''; cmdUpdate(''); i.focus(); }
 function hideCmd(){ $('#cmdbar-wrap').classList.remove('show'); }
 function cmdUpdate(q){
-  const s=q.toLowerCase().trim();
+  const s=str(q).toLowerCase().trim();
   cmdItems = (s? INDEX.filter(it=>(it.t+' '+it.k+' '+it.d).toLowerCase().includes(s)) : INDEX.slice(0,9)).slice(0,12);
   cmdIdx = 0;
   $('#cmdlist').innerHTML = cmdItems.length? cmdItems.map((it,i)=>`
@@ -732,21 +1111,72 @@ document.addEventListener('input', e => {
   if(el2){ el2.value = val; el2.focus(); try{ el2.setSelectionRange(pos, pos); }catch(_){} }
 });
 
-/* ---------- clock + meta ---------- */
+/* ---------- clock ---------- */
 function tick(){ const el=$('#clock'); if(el){ const n=new Date(); el.textContent = n.toLocaleTimeString('en-ZA',{hour12:false}); } }
 tick(); setInterval(tick, 1000);
-$('#genned').textContent = 'data: ' + (D.meta?.generatedAt || '—');
-renderDesklets(); renderDock(); dockClear();
-restoreLayout();
-function dockClear(){ const d=$('#dock'); if(!d) return; const cs=getComputedStyle(d);
-  const clr = Math.round(parseFloat(cs.bottom||'0') + d.offsetHeight + (parseFloat(cs.marginBottom||'0')||0) + 10);
-  document.documentElement.style.setProperty('--dock-clear', Math.max(56, clr) + 'px'); }
-addEventListener('resize', dockClear);
 
-/* deep-link hash: #projects / #report:<agent> */
-(function(){ const h = decodeURIComponent(location.hash.replace('#',''));
+/* ---------- start ---------- */
+function deepLink(){
+  let h=''; try{ h = decodeURIComponent(location.hash.replace('#','')); }catch(_){ return; }
   if(!h) return; if(winDef(h)){ openWin(h); }
-  else if(h.startsWith('report:')){ openWin('reports'); setTimeout(()=>{ const q=document.querySelector('input[data-filter="reports"]'); if(q){ q.value=h.slice(7); q.dispatchEvent(new Event('input',{bubbles:true})); } }, 60); } })();
+  else if(h.startsWith('report:')){ openWin('reports'); setTimeout(()=>{ const q=document.querySelector('input[data-filter="reports"]'); if(q){ q.value=h.slice(7); q.dispatchEvent(new Event('input',{bubbles:true})); } }, 60); }
+}
+/* Whatever happened before the shell ran — a pre-data.js guard may have rendered the
+   failure state and hidden the cockpit — markReady() undoes it, so the desktop and dock
+   are visible and laid out before anything is measured or restored. Every path into the
+   shell goes through here (normal, late recovery, near-timeout), so a late-recovered
+   page is laid out exactly like a normally loaded one. */
+function initShell(){
+  /* A pre-data.js guard may have already painted the failure state and hidden the
+     cockpit (a genuinely slow load). Un-hide it FIRST, before ANY measurement, so a
+     late-recovered page measures the real desktop and restores exact geometry. This
+     never creates an error node — on a healthy load it is a no-op. */
+  ensureCockpitVisible();
+  startBoot();
+  renderDesklets(); renderDock(); renderGen();
+  dockClear();                       // desktop bottom now reflects the real dock height
+  addEventListener('resize', dockClear);
+  one(restoreLayout, null);          // windows restore against the real desktop size
+  one(deepLink, null);
+}
+function describeRaw(v){
+  if(v === undefined) return 'undefined — data.js did not load, or it failed to parse';
+  if(v === null)      return 'null';
+  if(Array.isArray(v)) return 'an array';
+  return 'a ' + typeof v;
+}
+/* Boot protection is installed HERE, before the shell asks whether data arrived, so it
+   covers a data.js that never loads, that is slow, that is not an object, or that throws
+   mid-normalisation. The shell is built around `DATA`, and only afterwards does it look
+   at MAIO_DATA at all — so building the shell can never be what takes the start down. */
+let SHELL_BUILT = false;
+try{ initShell(); SHELL_BUILT = true; }
+catch(err){
+  markFailed('The cockpit failed to start: ' + ((err && err.message) ? err.message : String(err)));
+}
+window.__maioShellDone = true;   // the shell ran to the end: the pre-guard's error net is no longer needed
+if(SHELL_BUILT){
+  if(DATA_OK){
+    markReady();                 // one owner sets READY — and disarms a prior failure
+    if(!OPEN.size && !MOBILE) openWin('desk');
+  } else {
+    /* no usable snapshot: one consistent outcome is the failure state, whichever
+       route got us here (404, syntax error, null/array/string, or a throw) */
+    markFailed('window.MAIO_DATA is ' + describeRaw(RAW) + '.');
+  }
+}
+/* BFCache / back-forward restore: a page restored from the cache never re-runs this
+   script, so a healthy cockpit must simply come back. If a stale timer from the original
+   load left the failure state behind, undo it and reveal the cockpit again. Nothing here
+   may fail a page that was already healthy. */
+addEventListener('pageshow', e => {
+  if(!e.persisted) return;
+  if(DATA_OK && SHELL_BUILT){
+    markReady(); endBoot(); ensureCockpitVisible();
+  } else if(uiState !== 'ready'){
+    markFailed('window.MAIO_DATA is ' + describeRaw(RAW) + '.');
+  }
+});
 </script>
 </body>
 </html>
