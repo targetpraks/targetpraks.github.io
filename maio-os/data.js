@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 9,
+   "ms": 8,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 7,
+   "ms": 10,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 419,
+   "ms": 545,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 2,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 46,
+   "ms": 43,
    "ok": true,
    "note": "local models"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 14,
+   "ms": 24,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 88,
+   "ms": 84,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 10,
+   "ms": 12,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 18,
+   "ms": 74,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 18,
+   "ms": 2,
    "ok": true,
    "note": "agent host"
   }
@@ -121,56 +121,56 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1144,
+   "ms": 1138,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 217,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 189,
    "ok": false
   },
   {
@@ -184,18 +184,46 @@ var MAIO_DATA = {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 186,
+   "ms": 189,
    "ok": false
   }
  ],
  "devServersStaleSince": "2026-10-01T10:49:45Z",
  "reports": [
   {
-   "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
    "date": "2026-10-09",
-   "ext": "",
+   "ext": "csv",
    "kb": 1
+  },
+  {
+   "agent": "dexter",
+   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
+   "date": "2026-10-09",
+   "ext": "csv",
+   "kb": 1
+  },
+  {
+   "agent": "courage",
+   "path": "AI-Drive/Agent-Output/courage/watchtower-2026-10-09.md",
+   "date": "2026-10-09",
+   "ext": "md",
+   "kb": 1
+  },
+  {
+   "agent": "beast",
+   "path": "AI-Drive/Agent-Output/beast/gates-pending-t_36f18af6.csv",
+   "date": "2026-10-09",
+   "ext": "csv",
+   "kb": 3
+  },
+  {
+   "agent": "batman",
+   "path": "AI-Drive/Agent-Output/batman/2026-10-09-role-blueprints-all-30-positions-clef-decisions.md",
+   "date": "2026-10-09",
+   "ext": "md",
+   "kb": 101
   },
   {
    "agent": "adrianna",
@@ -210,34 +238,6 @@ var MAIO_DATA = {
    "date": "2026-10-08",
    "ext": "csv",
    "kb": 1
-  },
-  {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-   "date": "2026-10-08",
-   "ext": "csv",
-   "kb": 1
-  },
-  {
-   "agent": "dexter",
-   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-   "date": "2026-10-08",
-   "ext": "csv",
-   "kb": 1
-  },
-  {
-   "agent": "beast",
-   "path": "AI-Drive/Agent-Output/beast/probe-write-t_a06880c2.txt",
-   "date": "2026-10-08",
-   "ext": "txt",
-   "kb": 1
-  },
-  {
-   "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/2026-10-08-cliq-sales-marketing-fill-form-order-v2.html",
-   "date": "2026-10-08",
-   "ext": "html",
-   "kb": 27
   },
   {
    "agent": "xavier",
@@ -534,7 +534,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "path": "DevMini/targetpraks.github.io/sales-brand-split-infx-whatif.html",
     "date": "2026-10-09",
     "ext": "html",
     "kb": 0
@@ -578,13 +578,13 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/constellation",
    "what": "\u2014",
-   "lastTouched": "2026-10-08",
+   "lastTouched": "2026-10-09",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/constellation/constellation/tsconfig.json",
-    "date": "2026-10-08",
-    "ext": "json",
+    "path": "DevMini/constellation/constellation/next-env.d.ts",
+    "date": "2026-10-09",
+    "ext": "ts",
     "kb": 1
    }
   },
@@ -1193,8 +1193,8 @@ var MAIO_DATA = {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/2026-10-08-cliq-sales-marketing-fill-form-order-v2.html",
-    "date": "2026-10-08"
+    "path": "AI-Drive/Agent-Output/batman/2026-10-09-role-blueprints-all-30-positions-clef-decisions.md",
+    "date": "2026-10-09"
    }
   },
   {
@@ -1209,8 +1209,8 @@ var MAIO_DATA = {
    "name": "beast",
    "role": "Vault steward \u2014 hygiene & lifecycle",
    "latest": {
-    "path": "AI-Drive/Agent-Output/beast/probe-write-t_a06880c2.txt",
-    "date": "2026-10-08"
+    "path": "AI-Drive/Agent-Output/beast/gates-pending-t_36f18af6.csv",
+    "date": "2026-10-09"
    }
   },
   {
@@ -1272,7 +1272,7 @@ var MAIO_DATA = {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+    "path": "AI-Drive/Agent-Output/courage/watchtower-2026-10-09.md",
     "date": "2026-10-09"
    }
   },
@@ -1296,7 +1296,7 @@ var MAIO_DATA = {
    "role": "Quantified researcher \u2014 metrics & telemetry",
    "latest": {
     "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-    "date": "2026-10-08"
+    "date": "2026-10-09"
    }
   },
   {
@@ -1359,7 +1359,7 @@ var MAIO_DATA = {
    "role": "Research arm",
    "latest": {
     "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-    "date": "2026-10-08"
+    "date": "2026-10-09"
    }
   },
   {
@@ -1479,7 +1479,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 96071,
+     "pid": 86011,
      "exit": 0
     },
     {
@@ -1603,6 +1603,11 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.claude-cred-sync",
+     "pid": null,
+     "exit": 0
+    },
+    {
      "label": "com.maio.krea-mcp",
      "pid": 999,
      "exit": 0
@@ -1610,7 +1615,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.watchtower",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "ai.omnigent.host",
@@ -1719,44 +1724,44 @@ var MAIO_DATA = {
     }
    ],
    "counts": {
-    "loaded": 58,
+    "loaded": 59,
     "running": 29
    }
   },
   "docker": [
    {
     "name": "litellm-litellm-1",
-    "status": "Up 15 hours (healthy)",
+    "status": "Up 21 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "hindsight",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 9 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 8 hours (healthy)",
+    "status": "Up 14 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 15 hours (healthy)",
+    "status": "Up 21 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 15 hours",
+    "status": "Up 21 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 15 hours (healthy)",
+    "status": "Up 21 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 15 hours",
+    "status": "Up 21 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1764,7 +1769,7 @@ var MAIO_DATA = {
    "routes": [
     {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:10000",
-     "target": "http://127.0.0.1:3220"
+     "target": "http://127.0.0.1:3214"
     },
     {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net",
@@ -1792,11 +1797,61 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 111,
-    "blocked": 3
+    "done": 117,
+    "running": 1,
+    "blocked": 3,
+    "todo": 1
    },
-   "total": 114,
+   "total": 122,
    "recent": [
+    {
+     "id": "t_93b5db5d",
+     "title": "File in vault: Role blueprints \u2014 all 30 positions (Clef decisions)",
+     "status": "todo",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_3d63ed09",
+     "title": "Vault: file 'T3 Code: settings set correctly + full-stack check (2026-10-09)' to AI-Space/1.Setup-Config/Systems/2026-10-09-t3-code-settings-set-correctly-full-",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_5b96e75d",
+     "title": "Fill ALL 30 role blueprints with Clef decisions \u2014 Constellation dev (mapped out + loaded)",
+     "status": "running",
+     "assignee": "batman"
+    },
+    {
+     "id": "t_36f18af6",
+     "title": "Vault: file 'Omnigent 'hermes did not accept the message' \u2014 root cause & fix' to AI-Space/2.Automations-Skills/Reports/2026-10-09-omnigent-hermes-did-not-accept",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_1142aced",
+     "title": "Vault: file 'Dia Sync Diagnosis \u2014 Pins & Tabs Not Reaching the MacBook Air' to AI-Space/2.Automations-Skills/Reports/2026-10-09-dia-sync-diagnosis-pins-tabs-not",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_81571899",
+     "title": "Vault: file 'Infinity Brands \u2014 Sales Team Optimisation: The Final Picture' to Work/2.Automations-Skills/Reports/2026-10-09-infinity-brands-sales-team-optimisati",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_20689ca7",
+     "title": "Vault: file 'Open-Model APIs \u2014 free & cheap lanes, the whole collection (external edition record)' to AI-Space/4.Research/2026-10-09-open-model-apis-free-cheap-",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_1ddd981d",
+     "title": "Vault: UPDATE Dahl brief in place \u2014 clickable supplier links + Clef verification section (8 edits, no new note)",
+     "status": "done",
+     "assignee": "beast"
+    },
     {
      "id": "t_327702df",
      "title": "Vault: file 'Stack health check \u2014 2026-10-09' to AI-Space/2.Automations-Skills/Reports/2026-10-09-stack-health-check-2026-10-09.md \u2014 rule-4 handoff from courage",
@@ -1818,54 +1873,6 @@ var MAIO_DATA = {
     {
      "id": "t_f9b740a8",
      "title": "Vault: file 'Gamma 5 \u2014 Fleet Integration & Connectors Report (2026-10-08)' to AI-Space/2.Automations-Skills/Reports/2026-10-08-gamma-5-fleet-integration-connect",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_a06880c2",
-     "title": "Vault fix: emoji-in-label link bug \u2014 correct 2 notes (Clickable-Vault-Links.md + Document-Publishing-Convention-2026-10-07.md) \u2014 rule-4 handoff from adrianna",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_72e9fab8",
-     "title": "Vault update: LLM Model Landscape Living Report \u2014 week 41 (2026-10-08) \u2014 rule-4 handoff from adrianna",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_89bfb6b1",
-     "title": "Vault update: LLM Model Landscape Living Report \u2014 week 41 (2026-10-08) \u2014 rule-4 handoff from adrianna",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_9fdc8008",
-     "title": "Vault: file 'Zoho Cliq \u2014 where Ricardo told Sales & Marketing to fill in the form (and that everything is to be filled out)' to Work/2.Automations-Skills/Report",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_70d65b82",
-     "title": "Vault: UPDATE Dahl Inference brief in place \u2014 add 'Alternatives' section to AI-Space/4.Research/2026-10-08-dahl-inference-inference-dahl-global-research-brief.m",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_06dd7af3",
-     "title": "Vault: append pending change-log entries to Vault-Lifecycle-Log (blocked on its OK CRDT conflict)",
-     "status": "blocked",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_7102467a",
-     "title": "Vault change-log: append the constellation merge-status entry to Vault-Lifecycle-Log.md (needs OK-app conflict resolution)",
-     "status": "blocked",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_df6f85cb",
-     "title": "Vault: file 'Orca vs Paseo \u2014 Review & Fleet Verdict' to AI-Space/4.Research/2026-10-08-orca-vs-paseo-review-fleet-verdict.md \u2014 rule-4 handoff from adrianna",
      "status": "done",
      "assignee": "beast"
     }
@@ -2795,7 +2802,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-09T04:45:05Z"
+  "mergedAt": "2026-10-09T10:45:05Z"
  },
  "summary": {
   "projects": 57,
@@ -2806,14 +2813,70 @@ var MAIO_DATA = {
   "devTotal": 10,
   "reports": 24,
   "roster": 34,
-  "launchdLoaded": 58,
+  "launchdLoaded": 59,
   "dockerUp": 7,
-  "libraryPublic": 17,
+  "libraryPublic": 25,
   "libraryInternal": 200,
   "docs": 137
  },
  "library": {
   "public": [
+   {
+    "title": "Moved \u2014 Open-Model APIs: The Collection",
+    "url": "dahl-inference-open-models-api.html",
+    "dir": "dahl-inference-open-models-api.html",
+    "date": "2026-10-09",
+    "kb": 1
+   },
+   {
+    "title": "Open-Model APIs \u2014 free and cheap, the whole collection \u00b7 Hermes wiring \u00b7 9 Oct 2026",
+    "url": "free-open-model-apis.html",
+    "dir": "free-open-model-apis.html",
+    "date": "2026-10-09",
+    "kb": 24
+   },
+   {
+    "title": "Infinity Brands \u2014 Sales Team Optimisation: The Final Picture",
+    "url": "sales-allocation-matrix.html",
+    "dir": "sales-allocation-matrix.html",
+    "date": "2026-10-09",
+    "kb": 54
+   },
+   {
+    "title": "Infinity Brands \u2014 Average Hours per Brand, and the INFX 400-Lead What-If",
+    "url": "sales-brand-split-infx-whatif.html",
+    "dir": "sales-brand-split-infx-whatif.html",
+    "date": "2026-10-09",
+    "kb": 20
+   },
+   {
+    "title": "Infinity Brands \u2014 Sales Team Optimisation: The Final Picture",
+    "url": "sales-charts.html",
+    "dir": "sales-charts.html",
+    "date": "2026-10-09",
+    "kb": 54
+   },
+   {
+    "title": "Sales Team \u2014 Workload per Brand &amp; per Person",
+    "url": "sales-team-load-model.html",
+    "dir": "sales-team-load-model.html",
+    "date": "2026-10-09",
+    "kb": 25
+   },
+   {
+    "title": "Infinity Brands \u2014 Sales Team Optimisation: The Final Picture",
+    "url": "sales-team-optimisation.html",
+    "dir": "sales-team-optimisation.html",
+    "date": "2026-10-09",
+    "kb": 54
+   },
+   {
+    "title": "Infinity Brands \u2014 Sales Team: Workload &amp; Balance",
+    "url": "sales-team-workload-balance.html",
+    "dir": "sales-team-workload-balance.html",
+    "date": "2026-10-09",
+    "kb": 28
+   },
    {
     "title": "Bank Funding Explained \u2014 the shapes of money, and what each one costs",
     "url": "bank-funding-explained.html",
@@ -2935,7 +2998,7 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 17,
+   "public": 25,
    "internal": 200,
    "docs": 137
   }
