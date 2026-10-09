@@ -456,6 +456,12 @@ button.vrow:hover .nm{color:var(--ink)}
 .vbadge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.64rem;
         padding:2px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--dim2)}
 .vbadge.ro{color:var(--cyber-cyan-ink);border-color:rgba(15,181,201,.4);background:var(--cyber-cyan-soft)}
+/* v4 — the File window (read-only document reader) + the new window feel */
+.win{animation:winIn .16s ease-out}
+@keyframes winIn{from{opacity:.001;transform:scale(.985) translateY(4px)}to{opacity:1;transform:none}}
+.fileframe{width:100%;height:min(60vh,540px);border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff}
+.fileimg{display:flex;justify-content:center}
+.fileimg img{max-width:100%;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff}
 </style>
 </head>
 <body>
@@ -574,7 +580,7 @@ button.vrow:hover .nm{color:var(--ink)}
   if(boot) boot.addEventListener('click', function(){ if(boot.isConnected) boot.classList.add('gone'); });
 })();
 </script>
-<script src="data.js?v=daylight2"></script>
+<script src="data.js?v=v4"></script>
 <script>
 'use strict';
 /* The shell now owns boot protection: stop the pre-data.js guard's timer. */
@@ -799,6 +805,17 @@ function restoreLayout(){
         if(p) openDetail(p, MOBILE ? null : o);        // project gone from data.js → skip silently
         return;
       }
+      if(o.id==='file'){
+        /* the File window reopens with the document it showed; the saved rel passes the
+           same validation as a #file: link — a bad saved value opens nothing. */
+        if(typeof o.file==='string'){
+          const rel = o.file, segs = rel.split('/');
+          const ext = (rel.match(/\.[a-z0-9]+$/i) || [''])[0].toLowerCase();
+          if(rel && rel.length <= 300 && rel.charAt(0) !== '/' && !segs.some(s => !s || s.charAt(0) === '.') && FILE_EXTS.has(ext))
+            openFile({rel});
+        }
+        return;
+      }
       const d=winDef(o.id);                            // own property + a render function, or nothing
       if(d && !d.hidden) openWin(o.id, MOBILE ? null : o);
     });
@@ -813,7 +830,7 @@ function startBoot(){
   if(!bootLog) return;
   const devOn = DEV_ON, devTotal = DEV_TOTAL;
   const lines = [
-    ['dim','maio.os 2.2 · daylight build'],
+    ['dim','maio.os v4 · the roll-up build'],
     ['ok',`stack probe ......... ${STACK.ok}/${STACK.total} clean · ${STACK.warn} non-2xx · ${STACK.bad} down`],
     [devOn? 'ok':'bad',`dev servers ......... ${devOn}/${devTotal} online`],
     ['ok',`projects indexed .... ${snum("projects", DATA.projects.length)}`],
@@ -1413,6 +1430,7 @@ const WINS = {
   vault:{title:'Vault', icon:'📖', sub:'read-only · search + read', render:renderVault, w:920, h:600},
   prds:{title:'PRDs', icon:'✎', sub:`${snum("prds",DATA.prds.length)} found`, render:renderPRDs, w:700, h:440},
   stack:{title:'Stack', icon:'◉', sub:'live truth', render:renderStack, w:780, h:500},
+  file:{title:'File', icon:'◫', sub:'', hidden:true, w:960, h:660, render:renderFileBody},
   about:{title:'About / Roadmap', icon:'☆', sub:'what this is + where it goes', render:renderAbout, w:660, h:520},
 };
 /* only real window definitions: an OWN property that carries a render function.
@@ -1423,6 +1441,57 @@ function winDef(id){
   const d=WINS[id];
   return (d && typeof d.render==='function') ? d : null;
 }
+/* ---------- v4 windows: remembered homes + the free-spot scan ----------
+   Two changes to how a window arrives, both aimed at the same complaint — windows piling
+   up on top of each other in the centre:
+
+   1. HOME — a window you have dragged or resized reopens where you left it. The home is
+      recorded only from real user geometry (drag/resize), never from an automatic
+      placement, so a window you never touched always follows the room on the desk.
+   2. SMART SPOT — a window opening for the first time lands on the position that covers
+      the least of what is already there (measured in px²), instead of a fixed centre
+      cascade. When the desk truly is full it still opens fully inside it, covering the
+      least content; the desklets count at half weight (furniture may be sat on, only
+      reluctantly). */
+const WINHOMES = (()=>{ try{ const h = JSON.parse(localStorage.getItem('maioos.winhome')||'{}');
+  return isObj(h) ? h : {}; }catch(_){ return {}; } })();
+function saveWinHome(id){
+  if(MOBILE) return;
+  const w = OPEN.get(id); if(!w) return;
+  const g = w.geo || (w.mode!=='min' ? rect(w.el) : null);
+  if(!g || degenerateGeo(g)) return;
+  WINHOMES[id] = {left:g.left, top:g.top, width:g.width, height:g.height};
+  try{ localStorage.setItem('maioos.winhome', JSON.stringify(WINHOMES)); }catch(_){}
+}
+function overlapArea(a, b){
+  const x = Math.min(a.left+a.width, b.left+b.width) - Math.max(a.left, b.left);
+  const y = Math.min(a.top+a.height, b.top+b.height) - Math.max(a.top, b.top);
+  return (x > 0 && y > 0) ? x*y : 0;
+}
+function smartSpot(w, h){
+  const Dd = $('#desktop'); const vw = Dd.clientWidth, vh = Dd.clientHeight;
+  const occ = [];
+  for(const [, inst] of OPEN){ if(inst.mode==='min') continue;
+    try{ occ.push(rect(inst.el)); }catch(_){} }
+  const deskArea = (()=>{ const a = $('#desklets-area');
+    if(!a || getComputedStyle(a).display === 'none') return null;
+    try{ const r = rect(a); return (r.width > 40 && r.height > 40) ? r : null; }catch(_){ return null; } })();
+  const margin = 6, step = 16;
+  const maxX = Math.max(margin, vw - w - margin), maxY = Math.max(margin, vh - h - margin);
+  const cx = (vw - w)/2, cy = Math.max(margin, (vh - h)/2 - 20);
+  let best = {left: Math.round(clamp(cx, margin, maxX)), top: Math.round(clamp(cy, margin, maxY))};
+  let bestCost = Infinity;
+  for(let y = margin; y <= maxY; y += step){
+    for(let x = margin; x <= maxX; x += step){
+      const r = {left:x, top:y, width:w, height:h};
+      let cost = 0.05*Math.abs(x-cx) + 0.05*Math.abs(y-cy);   // a gentle pull toward the centre
+      for(const o of occ) cost += overlapArea(r, o);
+      if(deskArea) cost += 0.5*overlapArea(r, deskArea);
+      if(cost < bestCost){ bestCost = cost; best = {left:x, top:y}; }
+    }
+  }
+  return fitRect(best.left, best.top, w, h);
+}
 function openWin(id, restore=null){
   const def = winDef(id); if(!def) return;
   if(OPEN.has(id)){ focusWin(id); return; }
@@ -1430,10 +1499,9 @@ function openWin(id, restore=null){
   el.className = 'win focused'; el.dataset.win = id; el.style.zIndex = ++zIndex;
   const vw = $('#desktop').clientWidth, vh = $('#desktop').clientHeight;
   const w = Math.min(def.w, vw - 24), h = Math.min(def.h, vh - 30);
-  const off = (OPEN.size % 6) * 26;
   el.style.width = w+'px'; el.style.height = h+'px';
-  el.style.left = clamp(vw/2 - w/2 + off, 6, Math.max(6, vw - w - 6)) + 'px';
-  el.style.top = clamp((vh - h)/2 - 20 + off, 6, Math.max(6, vh - h - 6)) + 'px';
+  el.style.left = clamp(vw/2 - w/2, 6, Math.max(6, vw - w - 6)) + 'px';
+  el.style.top = clamp((vh - h)/2 - 20, 6, Math.max(6, vh - h - 6)) + 'px';
   el.innerHTML = `
     <div class="winbar">
       <div class="wlights">
@@ -1447,6 +1515,12 @@ function openWin(id, restore=null){
     <div class="winbody"></div>
     <div class="winresize" aria-hidden="true"></div>`;
   $('#winlayer').appendChild(el);
+  /* v4 placement — where this window opens: an explicit restore/home wins; otherwise the
+     free-spot scan runs NOW, while OPEN still holds only the other windows, so the new
+     window can never count itself as an obstacle. It is applied once the instance exists. */
+  const home = (!restore && !MOBILE) ? one(()=>WINHOMES[id], null) : null;
+  const useHome = !!(home && !degenerateGeo(home));
+  const seeded = (!restore && !MOBILE && !useHome) ? smartSpot(w, h) : null;
   const inst = {el, mode:'normal', state:'normal', prev:null, geo:(restore && restore.max)?{left:restore.left, top:restore.top, width:restore.width, height:restore.height}:null};
   OPEN.set(id, inst);
   /* per-instance renderer — never on the shared WINS[id], so two windows can't clobber each other.
@@ -1457,6 +1531,8 @@ function openWin(id, restore=null){
     setTimeout(()=>{ if(el.isConnected) b.innerHTML = safeHtml(()=>def.render(id)); }, 0); };
   if(restore && restore.max){ inst.geo = inst.geo || {left:restore.left, top:restore.top, width:restore.width, height:restore.height}; }
   else if(restore){ applyGeo(el, inst, restore); }
+  else if(useHome){ applyGeo(el, inst, home); }     // this window's remembered spot
+  else if(seeded){ applyGeo(el, inst, seeded); }    // the best free spot on the desk
   applyWinState(inst, {restore, mobile:MOBILE});
   inst.rerender();
   focusWin(id);
@@ -1464,6 +1540,8 @@ function openWin(id, restore=null){
   $('.wl.wmin', el).onclick = () => minWin(id);
   $('.wl.wmax', el).onclick = () => maxWin(id);
   $('.winbar', el).addEventListener('pointerdown', ev => startDrag(ev, el, id));
+  if(!MOBILE) $('.winbar', el).addEventListener('dblclick', ev => {   // double-click the bar = maximize / restore
+    if(ev.target.closest('.wl')) return; maxWin(id); });
   $('.winresize', el).addEventListener('pointerdown', ev => startResize(ev, el, id));
   el.addEventListener('pointerdown', () => focusWin(id), true);   // focus only — focusWin never persists
   persist(); dockSync();
@@ -1570,6 +1648,7 @@ function hashFor(){
     if(detailAgent)  return '#agent:'  + encodeURIComponent(str(detailAgent.name));
     if(detailProject) return '#project:' + projectHashRef(detailProject);
   }
+  if(focusedId === 'file') return fileRef ? ('#file:' + encodeURIComponent(fileRef.rel)) : '';
   if(focusedId && winDef(focusedId)) return '#' + focusedId;
   return '';
 }
@@ -1584,7 +1663,7 @@ function syncHash(){
        caller's link, and a hand-typed fragment we never understood stays untouched. */
     if(!DATA_OK) return;
     let p = null; try{ p = parseHash(cur); }catch(_){}
-    if(!p || (p.kind !== 'win' && p.kind !== 'project' && p.kind !== 'agent')) return;
+    if(!p || (p.kind !== 'win' && p.kind !== 'project' && p.kind !== 'agent' && p.kind !== 'file')) return;
   }
   try{
     /* '' means "no focused view": drop the fragment but keep the path and query, so the
@@ -1631,6 +1710,7 @@ function persist(){
         if(detailAgent) e.agent = detailAgent.name;
         else if(detailProject) e.project = detailProject.name;
       }
+      if(id==='file' && fileRef) e.file = fileRef.rel;
       out.push(e);
     }
     localStorage.setItem('maioos.layout', JSON.stringify(out));
@@ -1660,6 +1740,7 @@ function startDrag(ev, el, id){ if(MOBILE) return; if(ev.target.closest('.wl')) 
   const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
     if(w.mode!=='max'){ w.geo={left:parseFloat(el.style.left)||0, top:parseFloat(el.style.top)||0,
                                width:el.offsetWidth, height:el.offsetHeight}; w.prev={l:el.style.left, t:el.style.top}; }
+    saveWinHome(id);                                  // the window now remembers where you put it
     persist(); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up); }
 function startResize(ev, el, id){ const w=OPEN.get(id); if(!w || w.mode==='max') return;   // maximised: not resizable
@@ -1673,6 +1754,7 @@ function startResize(ev, el, id){ const w=OPEN.get(id); if(!w || w.mode==='max')
   const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
     if(w.mode!=='max'){ w.geo={left:parseFloat(el.style.left)||0, top:parseFloat(el.style.top)||0,
                                width:el.offsetWidth, height:el.offsetHeight}; }
+    saveWinHome(id);                                  // the window now remembers its size too
     persist(); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up); }
 
@@ -1880,7 +1962,7 @@ function renderLibrary(){
         i.title,
         `<span class="lbadge">${esc(i.where==='report'?'agent report':'project work')}</span><span>${esc(i.agent||'')}</span><span>${esc(fmtDate(i.date))}</span><span>${esc(i.kb+'KB')}</span>`,
         i.path,
-        `<a class="btn sm" href="${escAttr(fileHref(i.rel))}" target="_blank" rel="noopener noreferrer">Open ↗</a><button class="copy" data-report="${escAttr(i.path)}">path ⧉</button>`
+        `<button class="btn sm" data-file="${escAttr(i.rel)}" data-ftitle="${escAttr(i.title)}">Read</button><button class="copy" data-report="${escAttr(i.path)}">path ⧉</button>`
       )).join('') || '<div class="empty">nothing matches</div>'}</div>`;
     }
   } else if(libShelf==='public'){
@@ -1916,7 +1998,7 @@ function renderLibrary(){
         d.path,
         d.vault
           ? `<a class="btn sm" href="${escAttr(d.jump||'')}" target="_blank" rel="noopener noreferrer">Open in Obsidian ↗</a><button class="copy" data-report="${escAttr(d.path)}">path ⧉</button>`
-          : `<a class="btn sm" href="${escAttr(fileHref((d.path||'').replace(/^AI-Drive\//,'')))}" target="_blank" rel="noopener noreferrer">Open ↗</a><button class="copy" data-report="${escAttr(d.path)}">path ⧉</button>`
+          : `<button class="btn sm" data-file="${escAttr((d.path||'').replace(/^AI-Drive\//,''))}" data-ftitle="${escAttr(d.title||'')}">Read</button><button class="copy" data-report="${escAttr(d.path)}">path ⧉</button>`
       )).join('') || `<div class="empty">${lib?'nothing matches':'no vault PRDs indexed'}</div>`}</div>`;
   }
   const stamp = lib ? `local data · ${esc(agoTxt2(lib.generatedAt))}` : 'snapshot build';
@@ -2004,7 +2086,7 @@ function renderStack(){
       <div class="svc"><div class="sn"><b>${esc(s.name)}</b><span class="pill ${p.cls}">${esc(p.txt)}</span></div>
       <div class="sp">${urlLink(s.url, str(s.url) || str(s.port))}</div>
       <div class="snote">${esc(s.note||'')}</div></div>`; }).join('')}</div>
-    <div class="sect">Legacy dev-host vhosts · status.json said "running" since ${esc(DATA.devServersStaleSince||'Oct 1')} — this is the live truth</div>
+    <div class="sect">Legacy dev-host vhosts · the retired dashboard's fleet, checked live — this is the truth</div>
     <div class="svcgrid">${dev.map(d=>{ const u=safeUrl(d.url); const label=str(d.url).replace(/^https?:\/\//i,'');
       return `
       <div class="svc"><div class="sn"><b>${esc(d.name)}</b><span class="pill ${d.ok?'ok':'bad'}">${d.ok? '✓ 200' : '✕ dark'}</span></div>
@@ -2140,6 +2222,93 @@ function renderVault(){
     <div class="mnote" style="margin-top:10px">Searches the Maio Hub vault through OpenKnowledge (ranked, with snippets). Notes open read-only; “Open in Obsidian” jumps to the real app. Writes always route through Beast.</div>`;
 }
 function fmtBytes(n){ const x=num(n,null); if(x==null) return '—'; if(x<1024) return x+' B'; if(x<1048576) return (x/1024).toFixed(1)+' KB'; return (x/1048576).toFixed(1)+' MB'; }
+/* ---------- v4: the File window — read a machine-only document inside the cockpit ----------
+   The Read-Room's job, folded in: the same read-only /files route the Report cards used to
+   open in a tab now renders here instead. HTML/PDF/SVG run in a frame (the server already
+   sets the sandbox CSP on them); images render inline; text-ish files (md/txt/csv/json) are
+   fetched and shown as plain text — nothing from a file is ever treated as markup by this
+   shell. On the public build there is no local server, so the window degrades to an honest
+   note. One window, reused: opening another file retargets it, like the detail window. */
+const FILE_EXTS = new Set(['.html','.htm','.md','.pdf','.png','.jpg','.jpeg','.webp','.svg','.txt','.csv','.json']);
+const FILE_FRAME = new Set(['.html','.htm','.pdf','.svg']);
+const FILE_IMG = new Set(['.png','.jpg','.jpeg','.webp']);
+let fileRef = null;        // {rel, title, ext} — the document the File window shows
+let fileState = null;      // {loading|err|text|html|img, size, truncated}
+let fileSeq = 0;           // stale-response guard when the target is switched quickly
+function fileSeg(rel){ return String(rel).split('/').map(encodeURIComponent).join('/'); }
+function fileBaseName(rel){ const s = str(rel); const i = s.lastIndexOf('/'); return i >= 0 ? s.slice(i+1) : s; }
+function fileHrefOf(rel){ return LOCAL_BASE + '/files/' + fileSeg(rel); }
+function fileSetTitle(){
+  const w = OPEN.get('file'); if(!w) return;
+  const t = $('.wtitle', w.el), s = $('.wsub', w.el);
+  if(t) t.textContent = '◫ ' + (fileRef ? (fileRef.title || fileBaseName(fileRef.rel)) : 'File');
+  if(s) s.textContent = fileRef ? fileRef.rel : '';
+}
+function fileRepaint(){ const w = OPEN.get('file'); if(w && w.rerender) w.rerender(true); }
+function openFile(f, geo){
+  if(!f || typeof f.rel !== 'string' || !f.rel) return;
+  const rel = str(f.rel);
+  const segs = rel.split('/');
+  const ext = (rel.match(/\.[a-z0-9]+$/i) || [''])[0].toLowerCase();
+  if(!rel || rel.length > 300 || rel.charAt(0) === '/' || rel.indexOf('\0') >= 0
+     || segs.some(s => !s || s.charAt(0) === '.') || !FILE_EXTS.has(ext)) return;
+  fileRef = {rel, title: str(f.title) || '', ext};
+  fileState = null;
+  const w = OPEN.get('file');
+  if(w){
+    fileSetTitle();
+    if(geo && w.mode === 'normal') applyGeo(w.el, w, geo);
+    w.rerender(true); focusWin('file'); persist();
+  } else {
+    openWin('file', geo || null);
+    fileSetTitle();
+  }
+  if(LOCAL_BASE === '') fileLoad();
+}
+async function fileLoad(){
+  if(!fileRef) return;
+  const my = ++fileSeq;
+  const href = fileHrefOf(fileRef.rel);
+  fileState = {loading:true}; fileRepaint();
+  try{
+    const r = await fetch(href, { method:'HEAD' });
+    if(my !== fileSeq) return;
+    if(!r.ok){ fileState = {err:'the file is not there (' + r.status + ') — it may have been moved or renamed'}; fileRepaint(); return; }
+    const size = num(r.headers.get('content-length'), null);
+    const ext = fileRef.ext;
+    if(FILE_FRAME.has(ext)){ fileState = {html:true, size}; fileRepaint(); return; }
+    if(FILE_IMG.has(ext)){ fileState = {img:true, size}; fileRepaint(); return; }
+    const g = await fetch(href);
+    if(my !== fileSeq) return;
+    const t = await g.text();
+    const cap = 524288;
+    fileState = {text: t.slice(0, cap), truncated: t.length > cap, size};
+  }catch(e){ if(my !== fileSeq) return; fileState = {err:'could not reach the local server'}; }
+  if(my !== fileSeq) return;
+  fileRepaint();
+}
+function renderFileBody(){
+  if(!fileRef) return '<div class="empty">no file picked — open one from Reports ▸ Machine (Read), or follow a #file: link</div>';
+  const name = fileRef.title || fileBaseName(fileRef.rel);
+  const href = fileHrefOf(fileRef.rel);
+  const up = (LOCAL_BASE === '');
+  const st = fileState || {};
+  let h = `<div class="vinfo">
+      <span class="vt" style="font-family:var(--grot);font-weight:600;font-size:.84rem;color:var(--ink)">${esc(name)}</span>
+      <span class="vbadge">${esc(fileRef.rel)}</span>
+      ${st.size != null ? `<span class="vbadge">${esc(fmtBytes(st.size))}</span>` : ''}
+      ${up ? `<a class="btn sm" href="${escAttr(href)}" target="_blank" rel="noopener noreferrer">Open in a tab ↗</a>` : ''}
+      <button class="copy" data-report="${escAttr('AI-Drive/' + fileRef.rel)}">path ⧉</button>
+    </div>`;
+  if(!up) return h + `<div class="notebox" style="margin-top:10px"><b>Machine-only file</b> — this document lives on the Mac and is served by the local companion. Open the cockpit from the local build (<span style="font-family:var(--mono)">http://127.0.0.1:9111</span> or the tailnet) to read it here.</div>`;
+  if(st.err) return h + `<div class="notebox" style="border-color:var(--bad-line)"><b style="color:var(--warn)">✗ ${esc(st.err)}</b></div>`;
+  if(st.loading) return h + '<div class="mnote">loading…</div>';
+  if(st.text != null) return h + `<div class="vnotetext">${esc(st.text)}${st.truncated ? '\n\n… truncated at 512 KB — open in a tab for the rest.' : ''}</div>`;
+  if(st.img) return h + `<div class="fileimg"><img src="${escAttr(href)}" alt="${escAttr(name)}"></div>`;
+  if(st.html) return h + `<iframe class="fileframe" src="${escAttr(href)}" title="${escAttr(name)}" loading="lazy"></iframe>
+    <div class="mnote">served read-only from this Mac — if the frame stays empty the file may be gone; <a href="${escAttr(href)}" target="_blank" rel="noopener noreferrer">open it in a tab</a>.</div>`;
+  return h;
+}
 function renderAbout(){
   return `
     <p class="aboutp"><b>Maio OS</b> is the cockpit for the household: every project, every agent's latest output, every PRD, and the honest state of the stack — one window, refreshed by a generator instead of a stale heartbeat.</p>
@@ -2149,13 +2318,14 @@ function renderAbout(){
       <div class="phase"><span class="pn2">P1</span><div><div class="pt">Live data, shipped ✅</div><div class="pd">Generator + OS shell + vault PRD index + roster + ventures + ⌘K over everything — this build. Deployed to GitHub Pages, verified in-browser with zero console errors.</div></div></div>
       <div class="phase"><span class="pn2">P2</span><div><div class="pt">Auto-fresh + PRD reader ✅</div><div class="pd">launchd regenerates data.js several times a day; the vault PRD index and scout-merge insights feed the PRDs view.</div></div></div>
       <div class="phase"><span class="pn2">P2.5</span><div><div class="pt">Daylight + live local layer ✅ (v2)</div><div class="pd">Light theme, the new maio.os mark, and two new windows: Kanban (the live fleet board) and Machine (RAM gauge, top processes, local models, sessions &amp; spend). On this Mac a local companion (127.0.0.1:9111, tailnet :9443) streams the live numbers and carries the first two-way actions — ⚡ Trim RAM unloads Ollama models to free memory, and the Local models card now gives every model its own Unload / Warm up button (decision models route via the System One endpoint; v2.1, 2026-10-07).</div></div></div>
-      <div class="phase"><span class="pn2">P3</span><div><div class="pt">Two-way, one more step ✅ (v3)</div><div class="pd">The Stack window now restarts allowlisted services (Gate MCP, OK vault, Hermes dashboard, Read room, Ollama console, Snappier, Browser-Use MCP) and pulls a fresh data.js — each behind the two-click confirm, a per-action cool-down and the same origin-gated fix lane as Trim RAM. Every action lands in the Machine window's Recent actions list. Deliberately excluded: anything money/legal-adjacent, and the cockpit never restarts itself.</div></div></div>
+      <div class="phase"><span class="pn2">P3</span><div><div class="pt">Two-way, one more step ✅ (v3)</div><div class="pd">The Stack window now restarts allowlisted services (Gate MCP, OK vault, Hermes dashboard, Snappier, Browser-Use MCP) and pulls a fresh data.js — each behind the two-click confirm, a per-action cool-down and the same origin-gated fix lane as Trim RAM. Every action lands in the Machine window's Recent actions list. Deliberately excluded: anything money/legal-adjacent, and the cockpit never restarts itself.</div></div></div>
       <div class="phase"><span class="pn2">P4</span><div><div class="pt">Vault view ✅ (v3)</div><div class="pd">Read-only vault browser over OpenKnowledge search: ranked results with snippets, note reading with an "Open in Obsidian" jump, and an explicit read-only badge — Beast stays the only writer, and writes stay a request-to-Beast flow.</div></div></div>
-      <div class="phase"><span class="pn2">Next</span><div><div class="pt">Feature-complete — additions only when asked</div><div class="pd">The cockpit is now feature-complete per the original brainstorm: live data, auto-fresh, daylight theme, local layer, two-way actions, vault view. What stays open by design: the public Pages build is read-only (no spend/sessions/actions), and anything that writes — vault, money, legal — stays outside the cockpit.</div></div></div>
+      <div class="phase"><span class="pn2">P5</span><div><div class="pt">The roll-up — one cockpit, no side pages ✅ (v4)</div><div class="pd">The Read-Room shelf, the standalone Ollama console and the old projects dashboard are folded in: reports and docs open in the in-cockpit <b>File</b> window (read-only, served by the local companion), the Machine window owns the models, and targetpraks.github.io now points here. Windows got the rethink: a window reopens where you left it, a new one opens in the best free spot instead of piling on the last, and a double-click on a title bar maximizes.</div></div></div>
+      <div class="phase"><span class="pn2">Next</span><div><div class="pt">One surface — additions only when asked</div><div class="pd">The cockpit is the household's single surface: live data, auto-fresh, daylight theme, local layer, two-way actions, vault view, the report shelf with the in-cockpit reader. What stays open by design: the public Pages build is read-only (no spend/sessions/actions), and anything that writes — vault, money, legal — stays outside the cockpit.</div></div></div>
     </div>
     <div class="sect">Keyboard &amp; links</div>
-    <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> closes the palette, then blurs a focused filter box — it never closes a window. The browser <b>Back</b> button closes the window you are in, one press per window, so you can leave the cockpit with a normal Back only once the desk is clear. Windows: drag the bar, resize from bottom-right corner, lights close/min/max.</p>
-    <p class="aboutp">Every window, project and agent has a link you can share or bookmark: <span style="font-family:var(--mono)">#projects</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta@2</span> for the second record of a duplicated name, <span style="font-family:var(--mono)">#agent:beast</span>. Opening a window by hand keeps the address bar in step.</p>`;
+    <p class="aboutp"><kbd>⌘K</kbd> palette · <kbd>esc</kbd> closes the palette, then blurs a focused filter box — it never closes a window. The browser <b>Back</b> button closes the window you are in, one press per window, so you can leave the cockpit with a normal Back only once the desk is clear. Windows: drag the bar, resize from bottom-right corner, lights close/min/max, double-click the bar to maximize. A window reopens where you last left it; a new one opens in the best free spot rather than stacking on the last.</p>
+    <p class="aboutp">Every window, project and agent has a link you can share or bookmark: <span style="font-family:var(--mono)">#projects</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta</span>, <span style="font-family:var(--mono)">#project:Papa%20Pasta@2</span> for the second record of a duplicated name, <span style="font-family:var(--mono)">#agent:beast</span>. Opening a window by hand keeps the address bar in step. Machine-only documents open in the File window: <span style="font-family:var(--mono)">#file:Agent-Output%2Fadrianna%2Freport.html</span> — the path is relative to AI-Drive, and the same link works from the tailnet.</p>`;
 }
 
 /* ---------- dock / menu ----------
@@ -2301,6 +2471,7 @@ function openTarget(el){
   openWin(id);
 }
 document.addEventListener('click', e => {
+  const df = e.target.closest('[data-file]'); if(df){ openFile({rel: df.getAttribute('data-file'), title: df.getAttribute('data-ftitle') || ''}); return; }
   const cp = e.target.closest('[data-report]'); if(cp){ navigator.clipboard?.writeText(cp.dataset.report).catch(()=>{}); const t=cp.textContent; cp.textContent='copied ✓'; setTimeout(()=>cp.textContent=t, 900); return; }
   const cd = e.target.closest('.pcard[data-detail]'); if(cd){ try{ window.__detail(JSON.parse(cd.dataset.detail)); }catch(_){ } return; }
   const cg = e.target.closest('.agc[data-agent]'); if(cg){ const a=DATA.roster.find(x=>x.name===cg.dataset.agent); if(a) openAgent(a); return; }
@@ -2395,10 +2566,10 @@ function parseHash(hash){
   let h; try{ h = decodeURIComponent(raw); }catch(_){ return {kind:'invalid'}; }  // bad %-encoding
   if(!h) return null;
   /* window ids are matched as own properties of WINS only (never 'toString'/'__proto__').
-     'detail' is excluded on purpose: it IS a real window, but only as the shell's own
-     single reused detail view — a subjectless #detail would open an empty one, so it is a
-     no-op like any other unknown fragment. */
-  if(h.indexOf(':') < 0) return (h !== 'detail' && winDef(h)) ? {kind:'win', id:h} : {kind:'invalid'};
+     'detail' and 'file' are excluded on purpose: they ARE real windows, but only as the
+     shell's own single reused views — a subjectless #detail or #file would open an empty
+     one, so both are a no-op like any other unknown fragment. */
+  if(h.indexOf(':') < 0) return (h !== 'detail' && h !== 'file' && winDef(h)) ? {kind:'win', id:h} : {kind:'invalid'};
   const c = h.indexOf(':'), head = h.slice(0, c), rest = h.slice(c + 1);
   if(head === 'project'){
     if(!rest) return {kind:'invalid'};
@@ -2410,6 +2581,17 @@ function parseHash(hash){
   if(head === 'agent'){
     if(!rest) return {kind:'invalid'};
     return DATA.roster.some(a => a.name === rest) ? {kind:'agent', name:rest} : {kind:'agentMiss', name:rest};
+  }
+  if(head === 'file'){
+    /* #file:<path under AI-Drive> — the deep link publish-document hands out for machine-only
+       documents. Validated like the server's /files route: relative only, no dot-segments, a
+       displayable extension. Anything else is a quiet no-op. */
+    const rel = str(rest);
+    if(!rel || rel.length > 300 || rel.charAt(0) === '/' || rel.indexOf('\0') >= 0) return {kind:'invalid'};
+    const segs = rel.split('/');
+    if(segs.some(s => !s || s.charAt(0) === '.')) return {kind:'invalid'};
+    const ext = (rel.match(/\.[a-z0-9]+$/i) || [''])[0].toLowerCase();
+    return FILE_EXTS.has(ext) ? {kind:'file', rel} : {kind:'invalid'};
   }
   if(head === 'report') return rest ? {kind:'report', q:rest} : {kind:'invalid'};
   return {kind:'invalid'};                       // #detail too: a subjectless detail is a no-op
@@ -2432,6 +2614,7 @@ function applyLink(p){
   if(p.kind === 'win'){ openWin(p.id); return; }
   if(p.kind === 'project'){ openProjectByName(p.name, p.n); return; }
   if(p.kind === 'agent'){ openAgentByName(p.name); return; }
+  if(p.kind === 'file'){ openFile({rel:p.rel}); return; }
   if(p.kind === 'report'){
     openWin('reports');
     setTimeout(()=>{
