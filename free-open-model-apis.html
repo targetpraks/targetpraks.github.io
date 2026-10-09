@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open-Model APIs — free and cheap, the whole collection · Hermes wiring · 9 Oct 2026</title>
+<style>
+  :root{
+    --paper:#F7F4EE; --card:#FFFDF9; --band:#EFE9DC; --line:#DCD4C3;
+    --ink:#191715; --soft:#514C46; --muted:#8B8377;
+    --rust:#9C3D18; --deep:#6E2A10; --pos:#2F5D3A; --neg:#8E2A1E;
+    --serif:"Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+    --sans:"Avenir Next", "Segoe UI", -apple-system, Helvetica, sans-serif;
+    --mono:"SF Mono", Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:16px; line-height:1.55;
+    font-feature-settings:"kern" 1;
+  }
+  .wrap{max-width:940px; margin:0 auto; padding:56px 28px 90px}
+  header.mast{border-bottom:2px solid var(--ink); padding-bottom:22px; margin-bottom:34px}
+  .kicker{font-family:var(--mono); font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--rust); margin-bottom:14px}
+  h1{font-family:var(--serif); font-weight:600; font-size:42px; line-height:1.08; margin:0 0 10px; letter-spacing:-.01em}
+  h1 .tick{display:block; font-size:18px; color:var(--muted); font-weight:400; font-family:var(--mono); letter-spacing:.05em; margin-top:12px}
+  .sub{font-size:15px; color:var(--soft); max-width:78ch}
+  .meta{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:18px; letter-spacing:.03em}
+
+  .band{display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:34px 0 46px}
+  .band div{background:var(--card); padding:15px 14px}
+  .band .lbl{font-family:var(--mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:7px}
+  .band .val{font-family:var(--mono); font-size:19px; color:var(--ink); font-weight:500}
+  .band .val .u{font-size:11.5px; color:var(--muted); margin-left:3px}
+  .band .sm{font-family:var(--mono); font-size:10.5px; color:var(--soft); margin-top:5px; display:block}
+
+  h2{font-family:var(--serif); font-weight:600; font-size:26px; line-height:1.2; margin:52px 0 4px; display:flex; align-items:baseline; gap:14px}
+  h2 .sec{font-family:var(--mono); font-size:12.5px; color:var(--rust); letter-spacing:.04em; font-weight:400}
+  h3{font-family:var(--sans); font-weight:600; font-size:14.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--deep); margin:30px 0 10px}
+  p{margin:12px 0; color:var(--soft); max-width:84ch}
+  p strong{color:var(--ink); font-weight:600}
+  a{color:var(--rust); text-decoration:none; border-bottom:1px solid rgba(156,61,24,.3)}
+  ul{margin:12px 0; padding-left:20px; color:var(--soft)}
+  li{margin:7px 0; max-width:80ch}
+  li strong{color:var(--ink)}
+
+  .verdict{border-left:3px solid var(--rust); background:var(--card); padding:22px 26px; margin:30px 0 8px}
+  .verdict h3{margin-top:0}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0 8px; font-family:var(--mono); font-size:12.5px; background:var(--card)}
+  caption{text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); padding-bottom:9px}
+  th,td{padding:9px 10px; text-align:left; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; vertical-align:top}
+  thead th{border-bottom:1.5px solid var(--ink); color:var(--muted); font-weight:500; font-size:10.5px; letter-spacing:.07em; text-transform:uppercase}
+  tbody tr:last-child td{border-bottom:none}
+  tr.tot td{border-top:1.5px solid var(--ink); font-weight:600; color:var(--ink)}
+  .pos{color:var(--pos)} .neg{color:var(--neg)}
+  .note{font-family:var(--mono); font-size:10.5px; color:var(--muted); line-height:1.6; margin:8px 0 0; max-width:84ch}
+  td .m{font-family:var(--sans); font-size:12.5px; color:var(--soft)}
+
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-top:10px}
+  .panel{background:var(--card); border:1px solid var(--line); padding:20px 22px}
+  .panel h4{font-family:var(--mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--rust); margin:0 0 12px}
+  .panel ul{padding-left:17px; margin:0}
+  .panel li{font-size:14px}
+
+  pre{background:#141210; color:#EDE9E0; border-radius:6px; padding:16px 18px; overflow-x:auto;
+      font-family:var(--mono); font-size:12.5px; line-height:1.6; margin:14px 0}
+  pre .c{color:#9a9184}
+  code{font-family:var(--mono); font-size:.92em; background:#EFE9DC; border-radius:3px; padding:1px 5px; color:var(--ink)}
+
+  .risk{border-top:1px solid var(--line); padding:15px 0 3px}
+  .risk b{display:block; color:var(--ink); font-size:14.5px; margin-bottom:3px}
+  .risk span{color:var(--soft); font-size:14px}
+
+  .lg{font-family:var(--mono); font-size:11.5px; color:var(--soft); line-height:1.75}
+  .lg b{color:var(--ink); font-weight:500}
+  footer{margin-top:64px; padding-top:22px; border-top:2px solid var(--ink); font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.7}
+  @media (max-width:760px){
+    .wrap{padding:34px 18px 60px}
+    h1{font-size:30px}
+    .band{grid-template-columns:repeat(2,1fr)}
+    .cols{grid-template-columns:1fr}
+    h2{font-size:21px}
+    table{font-size:11.5px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">Open-model API collection · free-token sites · external edition</div>
+  <h1>Open-Model APIs — The Collection
+    <span class="tick">every free-token site and cheap lane · all OpenAI-compatible · verified live 9 Oct 2026</span>
+  </h1>
+  <p class="sub">Every practical way to run open-weight models — <strong>MiniMax, DeepSeek, GLM, Kimi, Qwen</strong>
+  class — for free or near-free: the decentralised-GPU brokers and the big-lab free tiers, side by side and
+  compared. No single brand on purpose — the lanes compete, and the smart play is to <strong>stack them</strong>.
+  <strong>§4 wires all of them into one Hermes Agent config</strong>, validated against a stock install.</p>
+  <div class="meta">Prepared 9 October 2026 · live probes 8–9 October 2026 · free tiers move monthly — re-check before spending</div>
+</header>
+
+<div class="band">
+  <div><span class="lbl">Free lanes</span><div class="val">9 live</div><span class="sm">+1 retired (a lesson)</span></div>
+  <div><span class="lbl">Sustained free</span><div class="val">3.9M<span class="u">tok/wk</span></div><span class="sm">Mingles · renews weekly</span></div>
+  <div><span class="lbl">Biggest grant</span><div class="val">100M<span class="u">tok</span></div><span class="sm">Dahl · one-off, no card</span></div>
+  <div><span class="lbl">Cheapest paid</span><div class="val">$0.000245<span class="u">/1M</span></div><span class="sm">GonkaGate · all-in</span></div>
+  <div><span class="lbl">Compatibility</span><div class="val">OpenAI /v1</div><span class="sm">one config wires all</span></div>
+</div>
+
+<div class="verdict">
+  <h3>Bottom line</h3>
+  <p><strong>Three kinds of lane.</strong> (1) <strong>Brokers on the Gonka network</strong> — a decentralised GPU
+  network whose chain keeps proof-of-compute records; brokers resell the same capacity at different mark-ups
+  (Dahl, GonkaGate, JoinGonka, Mingles, Chutes, and a directory of about ten more). (2) <strong>Big-lab free
+  tiers and free pools</strong> — Groq, the Google Gemini API, NVIDIA NIM, Cloudflare Workers AI, and
+  OpenRouter's free-model pool. (3) <strong>Card-required trials</strong> — Cerebras ($5, 30 days).</p>
+  <p><strong>How they differ.</strong> Weekly-renewing free (Mingles) beats one-off grants
+  (Dahl 100M, JoinGonka 3M) for <em>sustained</em> use; rate-capped free models (Groq, OpenRouter, Gemini)
+  are ideal for overflow; daily allocations (Cloudflare) never expire but run out each day. Paid starts at
+  <strong>$0.000245/1M</strong> (GonkaGate) and tops out around <strong>$0.44 in / $1.32 out</strong>
+  (Chutes, where confidential TEE compute is the point).</p>
+  <p><strong>The play:</strong> stack, don't choose. Wire them all into one agent; use free lanes first and
+  let the fallback chain catch every rate cap. <strong>The catches:</strong> free lanes rotate and die
+  (GitHub Models retired July 2026); Dahl's account is save-once fingerprint with no recovery; top-ups on
+  the Gonka side are crypto-only; and there is no zero-retention promise — keep sensitive data out.</p>
+</div>
+
+<h2><span class="sec">§1</span> The map — every lane, one table</h2>
+<table>
+  <caption>All links checked live 9 Oct 2026 · prices as published that day · "card" = payment card required to start</caption>
+  <thead><tr><th>Lane</th><th class="m">Family</th><th>Free</th><th>Paid /1M</th><th class="m">Card</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://inference.dahl.global">Dahl</a></td><td class="m">Gonka broker</td><td class="pos">100M one-off</td><td>~$0.03</td><td class="m">no — crypto top-up</td></tr>
+    <tr><td><a href="https://gonkagate.com">GonkaGate</a></td><td class="m">Gonka broker</td><td class="m">none listed</td><td class="pos">$0.000245 all-in</td><td class="m">no — USD prepaid</td></tr>
+    <tr><td><a href="https://gate.joingonka.ai">JoinGonka</a></td><td class="m">Gonka broker</td><td class="pos">3M one-off</td><td>$0.00835 in · $0.02505 out</td><td class="m">email signup</td></tr>
+    <tr><td><a href="https://router.mingles.ai">Mingles</a></td><td class="m">Gonka broker</td><td class="pos">3.9M / week</td><td>$0.084 / $0.168</td><td class="m">card or stablecoin</td></tr>
+    <tr><td><a href="https://chutes.ai">Chutes</a></td><td class="m">Bittensor (TEE)</td><td class="m">none</td><td>$0.44 / $1.32</td><td class="m">card</td></tr>
+    <tr><td><a href="https://console.groq.com">Groq</a></td><td class="m">big-lab cloud</td><td class="pos">free plan, rate-limited</td><td class="m">—</td><td class="m">no</td></tr>
+    <tr><td><a href="https://ai.google.dev/gemini-api/docs/rate-limits">Google Gemini API</a></td><td class="m">big-lab</td><td class="pos">free tier, rate-limited</td><td class="m">—</td><td class="m">no</td></tr>
+    <tr><td><a href="https://build.nvidia.com">NVIDIA NIM</a></td><td class="m">big-lab</td><td class="pos">free inference endpoints</td><td class="m">—</td><td class="m">account</td></tr>
+    <tr><td><a href="https://developers.cloudflare.com/workers-ai/">Cloudflare Workers AI</a></td><td class="m">big-lab edge</td><td class="pos">10K neurons / day</td><td>$0.011 / 1K neurons</td><td class="m">no</td></tr>
+    <tr><td><a href="https://openrouter.ai">OpenRouter</a></td><td class="m">aggregator</td><td class="pos">19 free models</td><td class="m">varies</td><td class="m">no</td></tr>
+    <tr><td><a href="https://cloud.cerebras.ai">Cerebras</a></td><td class="m">big-lab</td><td class="m">$5 trial · 30 days</td><td class="m">—</td><td class="neg m">card required</td></tr>
+    <tr><td><a href="https://docs.github.com/en/github-models">GitHub Models</a></td><td class="m">retired</td><td class="neg">✝ retired Jul 2026</td><td class="m">—</td><td class="m">—</td></tr>
+  </tbody>
+</table>
+<p class="note">The <a href="https://gonka.pro/brokers">broker directory at gonka.pro/brokers</a> lists ~10 more Gonka
+resellers (gonka24, proxy.gonka.gg, router.gonkascan.com, gonka-api.org, gonkabroker.com, console.hyperfusion.io,
+openbroker.gonka.gg, …) — same network, different mark-ups. Compare before trusting any brand. Chutes is not a
+Gonka reseller — it is confidential TEE compute on Bittensor, included because it is the privacy pick.</p>
+
+<h2><span class="sec">§2</span> The Gonka family — decentralised brokers</h2>
+<p>A broker is an independent operator who runs a <a href="https://gonka.ai/docs/">Gonka</a> gateway and resells
+inference. From your app's side it is an ordinary OpenAI-compatible endpoint: a base URL, a bearer key, and
+<code>/v1/chat/completions</code>. Brokers exist because opening a devshard on the chain is permissioned
+(governance-gated); the broker absorbs the escrow lifecycle and hands you a key.</p>
+<ul>
+  <li><strong>Free lanes:</strong> <a href="https://inference.dahl.global">Dahl</a> — 100M one-off, no card,
+      fingerprint-only account (save it); <a href="https://gate.joingonka.ai">JoinGonka</a> — 3M one-off,
+      email signup; <a href="https://router.mingles.ai">Mingles</a> — <strong>3.9M every week, renewing</strong>,
+      no card, 10 requests/min — the sustained-free champion of the whole set.</li>
+  <li><strong>Paid floors:</strong> <a href="https://gonkagate.com">GonkaGate</a> is the cheapest lane seen
+      ($0.000245/1M all-in, USD prepaid, no wallets); Dahl sits at ~$0.03/1M with crypto-only top-ups;
+      Mingles prices per-token below OpenRouter.</li>
+  <li><strong>Uptime is real but uneven:</strong> a public broker status page showed 92–100 % per model across
+      day-to-day checks, with occasional 503 "no available backend" spikes. Fine for evaluation; keep a
+      fallback for hard-availability work.</li>
+  <li><strong>Model IDs rotate</strong> as models are added or retired (Kimi K2.6 has already been rotated out
+      of some catalogs). Always resolve IDs from <code>GET /v1/models</code> at runtime.</li>
+</ul>
+
+<h2><span class="sec">§3</span> The big-lab free tiers and free pools</h2>
+<ul>
+  <li><a href="https://console.groq.com">Groq</a> — very fast inference on open models; a <strong>free plan with
+      per-model rate limits</strong> (RPM/RPD/TPM tables in their docs), no card. Great for overflow and
+      latency-sensitive calls.</li>
+  <li><a href="https://ai.google.dev/gemini-api/docs/rate-limits">Google Gemini API</a> — a documented
+      <strong>free tier</strong> with per-minute rate limits; an OpenAI-compatible endpoint is available, and
+      Hermes ships a built-in <code>gemini</code> provider for it.</li>
+  <li><a href="https://build.nvidia.com">NVIDIA NIM</a> — "free inference with leading models": hundreds of open
+      models behind an OpenAI-compatible endpoint (<code>integrate.api.nvidia.com/v1</code>) for account
+      holders; a built-in <code>nvidia</code> provider exists in Hermes.</li>
+  <li><a href="https://developers.cloudflare.com/workers-ai/">Cloudflare Workers AI</a> — <strong>10,000 neurons
+      per day free</strong> (about a fixed daily token allocation), then $0.011/1K neurons on the paid plan;
+      edge-hosted models, no card for the free allocation.</li>
+  <li><a href="https://openrouter.ai">OpenRouter free pool</a> — <strong>19 models priced at $0</strong>
+      (counted live from their models API); free usage is rate-capped (≈20 req/min, 50/day) and requires a
+      non-negative account balance. Built into Hermes — just add the key.</li>
+  <li><a href="https://cloud.cerebras.ai">Cerebras</a> — <strong>$5 in free credits</strong> for new accounts,
+      expiring after 30 days; a <em>verified payment method is required</em>, so this is a trial, not a free lane.</li>
+  <li><a href="https://docs.github.com/en/github-models">GitHub Models</a> — <strong>retired 30 July 2026.</strong>
+      Kept here on purpose: it is the object lesson that free lanes die. Re-check every link before relying on it.</li>
+</ul>
+
+<h2><span class="sec">§4</span> Wire them all into Hermes Agent</h2>
+<p>Hermes holds <strong>every account side by side</strong> — each one a named custom provider — so you route
+per task and keep a fallback chain for when one throttles. Six custom entries cover the Gonka family plus
+Groq; Gemini, NVIDIA and OpenRouter are already <strong>built-in providers</strong> in the picker (no custom
+entry needed, just add their keys). Same OpenAI pattern throughout.</p>
+
+<h3>Step 1 — base URLs and key names</h3>
+<table>
+  <caption>Every base URL answered live as an OpenAI-compatible endpoint, 9 Oct 2026</caption>
+  <thead><tr><th>Account</th><th>Base URL</th><th>Env var</th><th class="m">Key from</th></tr></thead>
+  <tbody>
+    <tr><td>Mingles</td><td><code>https://router.mingles.ai/v1</code></td><td><code>MINGLES_API_KEY</code></td><td class="m"><a href="https://router.mingles.ai">router.mingles.ai</a> · weekly free lane</td></tr>
+    <tr><td>Dahl</td><td><code>https://inference.dahl.global/v1</code></td><td><code>DAHL_API_KEY</code></td><td class="m"><a href="https://inference.dahl.global">account page</a> · key starts <code>dahl_…</code> · allocate tokens first</td></tr>
+    <tr><td>GonkaGate</td><td><code>https://api.gonkagate.com/v1</code></td><td><code>GONKAGATE_API_KEY</code></td><td class="m"><a href="https://gonkagate.com">gonkagate.com</a> · key starts <code>gp-…</code></td></tr>
+    <tr><td>JoinGonka</td><td><code>https://gate.joingonka.ai/v1</code></td><td><code>JOINGONKA_API_KEY</code></td><td class="m"><a href="https://gate.joingonka.ai">gate.joingonka.ai</a> · also an Anthropic-shaped endpoint</td></tr>
+    <tr><td>Chutes</td><td><code>https://llm.chutes.ai/v1</code></td><td><code>CHUTES_API_KEY</code></td><td class="m"><a href="https://chutes.ai">chutes.ai</a> · TEE privacy lane</td></tr>
+    <tr><td>Groq</td><td><code>https://api.groq.com/openai/v1</code></td><td><code>GROQ_API_KEY</code></td><td class="m"><a href="https://console.groq.com">console.groq.com</a> · free plan</td></tr>
+  </tbody>
+</table>
+
+<h3>Step 2 — keys in one file, never in the config</h3>
+<pre><span class="c"># ~/.hermes/.env — one secret per account, referenced by name from config.yaml</span>
+MINGLES_API_KEY=…
+DAHL_API_KEY=dahl_…
+GONKAGATE_API_KEY=gp-…
+JOINGONKA_API_KEY=…
+CHUTES_API_KEY=…
+GROQ_API_KEY=gsk_…
+<span class="c"># built-in providers — just their keys, no custom entry needed:</span>
+OPENROUTER_API_KEY=…
+GEMINI_API_KEY=…          <span class="c"># or GOOGLE_API_KEY</span>
+NVIDIA_API_KEY=…</pre>
+
+<h3>Step 3 — paste the provider set into config.yaml</h3>
+<pre><span class="c"># ~/.hermes/config.yaml</span>
+model:
+  default: "MiniMaxAI/MiniMax-M2.7"
+  provider: custom
+  base_url: "https://router.mingles.ai/v1"   <span class="c"># weekly-free lane first</span>
+  key_env: MINGLES_API_KEY
+
+<span class="c"># Every custom account, side by side. key_env keeps secrets in .env only.</span>
+custom_providers:
+  - name: mingles
+    base_url: https://router.mingles.ai/v1
+    key_env: MINGLES_API_KEY
+  - name: dahl
+    base_url: https://inference.dahl.global/v1
+    key_env: DAHL_API_KEY
+  - name: gonkagate
+    base_url: https://api.gonkagate.com/v1
+    key_env: GONKAGATE_API_KEY
+  - name: joingonka
+    base_url: https://gate.joingonka.ai/v1
+    key_env: JOINGONKA_API_KEY
+  - name: chutes
+    base_url: https://llm.chutes.ai/v1
+    key_env: CHUTES_API_KEY
+  - name: groq
+    base_url: https://api.groq.com/openai/v1
+    key_env: GROQ_API_KEY
+
+<span class="c"># Short names for /model — route by role, not by brand</span>
+model_aliases:
+  weekly:
+    model: "MiniMaxAI/MiniMax-M2.7"
+    provider: custom
+    base_url: "https://router.mingles.ai/v1"
+    key_env: MINGLES_API_KEY
+  grant:
+    model: "MiniMaxAI/MiniMax-M2.7"
+    provider: custom
+    base_url: "https://inference.dahl.global/v1"
+    key_env: DAHL_API_KEY
+  cheap:
+    model: "MiniMaxAI/MiniMax-M2.7"
+    provider: custom
+    base_url: "https://api.gonkagate.com/v1"
+    key_env: GONKAGATE_API_KEY
+  private:
+    model: "deepseek-ai/DeepSeek-V4-Flash-0731-TEE"
+    provider: custom
+    base_url: "https://llm.chutes.ai/v1"
+    key_env: CHUTES_API_KEY
+
+<span class="c"># When the primary is rate-limited or down, roll to the next entry — in order</span>
+fallback_providers:
+  - provider: custom
+    model: "MiniMaxAI/MiniMax-M2.7"
+    base_url: "https://router.mingles.ai/v1"
+    key_env: MINGLES_API_KEY
+  - provider: custom
+    model: "MiniMaxAI/MiniMax-M2.7"
+    base_url: "https://inference.dahl.global/v1"
+    key_env: DAHL_API_KEY
+  - provider: custom
+    model: "MiniMaxAI/MiniMax-M2.7"
+    base_url: "https://api.gonkagate.com/v1"
+    key_env: GONKAGATE_API_KEY</pre>
+<p class="note">This block was loaded into a scratch Hermes install (nothing touched a live setup): the six
+providers, the aliases and the three-deep fallback chain all parse and list cleanly; <code>hermes config check</code>
+passes. Model IDs rotate — resolve them from <code>GET /v1/models</code> per lane (Mingles' weekly-free lane
+currently names DeepSeek-V4-Flash). Prefer clicking? <code>hermes model</code> → "Custom endpoint" walks the
+same four fields per provider.</p>
+
+<h3>Step 4 — switch by role; verify in two commands</h3>
+<pre><span class="c"># in session — by alias, or by named provider (triple syntax)</span>
+/model weekly                                   <span class="c"># alias → Mingles (weekly free)</span>
+/model grant                                    <span class="c"># alias → Dahl (100M buffer)</span>
+/model private                                  <span class="c"># alias → Chutes (TEE)</span>
+/model custom:groq:MiniMaxAI/MiniMax-M2.7       <span class="c"># named-provider form</span></pre>
+<pre>$ hermes config check      <span class="c"># parses config.yaml and flags anything wrong</span>
+$ hermes fallback list     <span class="c"># prints the chain in fallback order</span></pre>
+
+<h3>Smoke-test any lane</h3>
+<pre>$ BASE=https://router.mingles.ai/v1 KEY=$MINGLES_API_KEY   <span class="c"># swap in any row</span>
+$ curl -s $BASE/chat/completions \
+    -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+    -d '{"model":"MiniMaxAI/MiniMax-M2.7","messages":[{"role":"user","content":"Hello!"}]}'
+<span class="c"># 200 = key works · 401 = bad key · 402 = no tokens allocated on the key</span></pre>
+
+<h3>How it behaves once wired</h3>
+<ul>
+  <li><strong>Stack the free lanes first.</strong> Dahl 100M one-off + JoinGonka 3M + Mingles 3.9M/week
+      + OpenRouter's 19 free models + Groq's free plan — an evaluation budget at $0 before any top-up.</li>
+  <li><strong>One primary, an ordered chain behind it.</strong> Fallbacks fire on rate-limit, 5xx and
+      connection errors; a 429 naming its reset time benches that provider until exactly then.</li>
+  <li><strong>Switching persists.</strong> A mid-session <code>/model</code> switch survives a restart;
+      stepping back to a built-in provider clears the custom base URL automatically.</li>
+  <li><strong>Keys stay scoped.</strong> Each named provider resolves its credential from its own
+      <code>key_env</code> — never from the account that happened to be active before.</li>
+</ul>
+
+<h2><span class="sec">§5</span> How the picks were checked</h2>
+<ul>
+  <li><strong>Live probes, not press releases:</strong> every lane's model catalog was fetched (or its auth
+      wall confirmed with a clean 401/403), free-tier pages were read that day, the OpenRouter free count
+      (19) was counted from its live models API, and the GitHub Models retirement notice was read from
+      its own docs — all on 8–9 Oct 2026.</li>
+  <li><strong>Picks scored through a local decision lane</strong> (a small on-machine scoring model, no
+      cloud): under "maximize sustained free usage, no payment card", the weekly lane beat the one-off
+      grant in mirrored checks (<strong>3.9M/week vs 100M one-off: 0.83 vs 0.30</strong>), and
+      <strong>stacking several free lanes beat betting on any single one (0.79)</strong>. The field-level
+      "best single lane" pick was weak (all top lanes within noise) — which is itself the finding:
+      these lanes are complements, not competitors.</li>
+</ul>
+
+<h2><span class="sec">§6</span> Watch-outs</h2>
+<div class="risk"><b>Free lanes rotate and die</b><span>GitHub Models was retired outright in July 2026. Treat every free tier here as dated: re-check the link before building on it.</span></div>
+<div class="risk"><b>Account quirks on the Gonka side</b><span>Dahl's account is a save-once 32-character fingerprint — there is no email recovery by design; store it in a password manager at signup. Top-ups on that side are crypto-only (effectively no chargebacks).</span></div>
+<div class="risk"><b>No zero-retention promise</b><span>The Gonka-side operator's own policy declines to guarantee zero retention or anonymity. Do not route sensitive data through those lanes; Chutes' TEE lane exists for when privacy is the point.</span></div>
+<div class="risk"><b>Rate caps everywhere</b><span>Free tiers carry low caps (requests/day and tokens/day). Stack lanes so a 429 simply falls through to the next provider instead of failing your task.</span></div>
+<div class="risk"><b>Mark-ups differ on the same capacity</b><span>Five brokers resell the very same Gonka network at very different prices — the ranking matters more than the brand. Compare before committing to spend.</span></div>
+
+<footer>
+  <div class="lg">
+    <b>Sources (all public):</b> gonka.pro/brokers (broker directory) · inference.dahl.global ·
+    gonkagate.com · gate.joingonka.ai · router.mingles.ai · chutes.ai · console.groq.com ·
+    ai.google.dev (Gemini rate limits) · build.nvidia.com · developers.cloudflare.com/workers-ai ·
+    openrouter.ai · cloud.cerebras.ai · docs.github.com (GitHub Models) ·
+    hermes-agent.nousresearch.com/docs (providers, fallback chain, custom endpoints).
+  </div>
+  <div style="margin-top:12px">Open-model API collection — external edition · prepared 9 October 2026 · quotes actual probe output; numbers date-stamped</div>
+</footer>
+
+</div>
+</body>
+</html>
