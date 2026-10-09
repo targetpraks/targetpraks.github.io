@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 16,
+   "ms": 18,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 15,
+   "ms": 9,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 9,
+   "ms": 5,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 423,
+   "ms": 237,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 26,
+   "ms": 3,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 86,
+   "ms": 12,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 8,
+   "ms": 6,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 14,
+   "ms": 6,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 140,
+   "ms": 107,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 33,
+   "ms": 10,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 244,
+   "ms": 95,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 97,
+   "ms": 58,
    "ok": true,
    "note": "agent host"
   }
@@ -121,70 +121,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1137,
+   "ms": 837,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 186,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 186,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 186,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 185,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 187,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 187,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 189,
    "ok": false
   }
  ],
@@ -226,6 +226,13 @@ var MAIO_DATA = {
    "kb": 1
   },
   {
+   "agent": "coo",
+   "path": "AI-Drive/Agent-Output/coo/published.csv",
+   "date": "2026-10-09",
+   "ext": "csv",
+   "kb": 1
+  },
+  {
    "agent": "cfo",
    "path": "AI-Drive/Agent-Output/cfo/2026-10-09-legal-tax-corporate-filing-records-maio-business-portfolio.md",
    "date": "2026-10-09",
@@ -241,31 +248,31 @@ var MAIO_DATA = {
   },
   {
    "agent": "beast",
-   "path": "AI-Drive/Agent-Output/beast/kids-space-information-architecture-2026-10-09.md",
+   "path": "AI-Drive/Agent-Output/beast/gates-append-2026-10-09-t_cd702416.csv",
    "date": "2026-10-09",
-   "ext": "md",
-   "kb": 35
+   "ext": "csv",
+   "kb": 1
   },
   {
    "agent": "baymax",
-   "path": "AI-Drive/Agent-Output/baymax/kids-superdocument-inventory-2026-10-09.md",
+   "path": "AI-Drive/Agent-Output/baymax/2026-10-09-life-planner-memory-schema.md",
    "date": "2026-10-09",
    "ext": "md",
-   "kb": 42
+   "kb": 36
   },
   {
    "agent": "batman",
    "path": "AI-Drive/Agent-Output/batman/published.csv",
    "date": "2026-10-09",
    "ext": "csv",
-   "kb": 11
+   "kb": 14
   },
   {
    "agent": "adrianna",
-   "path": "AI-Drive/Agent-Output/adrianna/retired-stack-2026-10-09/RETIRED.md",
+   "path": "AI-Drive/Agent-Output/adrianna/maio-os-v4-2026-10-09/windows-after.png",
    "date": "2026-10-09",
-   "ext": "md",
-   "kb": 1
+   "ext": "png",
+   "kb": 419
   },
   {
    "agent": "xavier",
@@ -541,7 +548,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/index.html",
+    "path": "DevMini/targetpraks.github.io/ntombifuthi-nkambule-weekly-report-2026-10-09-v2.html",
     "date": "2026-10-09",
     "ext": "html",
     "kb": 0
@@ -1192,7 +1199,7 @@ var MAIO_DATA = {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
-    "path": "AI-Drive/Agent-Output/adrianna/retired-stack-2026-10-09/RETIRED.md",
+    "path": "AI-Drive/Agent-Output/adrianna/maio-os-v4-2026-10-09/windows-after.png",
     "date": "2026-10-09"
    }
   },
@@ -1208,7 +1215,7 @@ var MAIO_DATA = {
    "name": "baymax",
    "role": "Fitness & wellness \u00b7 weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/baymax/kids-superdocument-inventory-2026-10-09.md",
+    "path": "AI-Drive/Agent-Output/baymax/2026-10-09-life-planner-memory-schema.md",
     "date": "2026-10-09"
    }
   },
@@ -1216,7 +1223,7 @@ var MAIO_DATA = {
    "name": "beast",
    "role": "Vault steward \u2014 hygiene & lifecycle",
    "latest": {
-    "path": "AI-Drive/Agent-Output/beast/kids-space-information-architecture-2026-10-09.md",
+    "path": "AI-Drive/Agent-Output/beast/gates-append-2026-10-09-t_cd702416.csv",
     "date": "2026-10-09"
    }
   },
@@ -1273,7 +1280,10 @@ var MAIO_DATA = {
   {
    "name": "coo",
    "role": "C-suite \u00b7 operations",
-   "latest": null
+   "latest": {
+    "path": "AI-Drive/Agent-Output/coo/published.csv",
+    "date": "2026-10-09"
+   }
   },
   {
    "name": "courage",
@@ -1469,7 +1479,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-local",
-     "pid": 26140,
+     "pid": 13428,
      "exit": 0
     },
     {
@@ -1528,11 +1538,6 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.ollama-console",
-     "pid": 986,
-     "exit": 0
-    },
-    {
      "label": "com.maio.mount-nas",
      "pid": null,
      "exit": 0
@@ -1560,11 +1565,6 @@ var MAIO_DATA = {
     {
      "label": "com.maio.docs-mcp",
      "pid": 956,
-     "exit": 0
-    },
-    {
-     "label": "com.maio.read-room",
-     "pid": 959,
      "exit": 0
     },
     {
@@ -1734,19 +1734,19 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.status-agent",
-     "pid": 25181,
+     "pid": 13515,
      "exit": -15
     }
    ],
    "counts": {
-    "loaded": 59,
-    "running": 28
+    "loaded": 57,
+    "running": 26
    }
   },
   "docker": [
    {
     "name": "litellm-litellm-1",
-    "status": "Up About an hour (healthy)",
+    "status": "Up 2 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
@@ -1756,27 +1756,27 @@ var MAIO_DATA = {
    },
    {
     "name": "metamcp",
-    "status": "Up 18 hours (healthy)",
+    "status": "Up 19 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 25 hours (healthy)",
+    "status": "Up 26 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 25 hours",
+    "status": "Up 26 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 25 hours (healthy)",
+    "status": "Up 26 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 25 hours",
+    "status": "Up 26 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1799,14 +1799,6 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:9110"
     },
     {
-     "url": "https://ricardos-mac-mini.taile9f837.ts.net:8787",
-     "target": "http://127.0.0.1:8787"
-    },
-    {
-     "url": "https://ricardos-mac-mini.taile9f837.ts.net:8788",
-     "target": "http://127.0.0.1:8788"
-    },
-    {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:9443",
      "target": "http://127.0.0.1:9111"
     },
@@ -1815,19 +1807,49 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:9999"
     }
    ],
-   "count": 8
+   "count": 6
   },
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 139,
+    "done": 143,
+    "ready": 12,
     "blocked": 4,
-    "todo": 13,
-    "running": 3,
-    "ready": 6
+    "todo": 9,
+    "running": 2
    },
-   "total": 165,
+   "total": 170,
    "recent": [
+    {
+     "id": "t_66aac22d",
+     "title": "Vault: file 'Franchise & franchisor financials \u2014 hunt, de-duplicate, consolidate' to Work/2.Automations-Skills/Reports/2026-10-09-franchise-franchisor-financial",
+     "status": "ready",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_53b770ca",
+     "title": "Vault: file 'Staff Weekly Work Assessment \u2014 Template v1 (worked on Ntombifuthi Nkambule, 05\u201309 Oct 2026)' to Work/2.Automations-Skills/Reports/2026-10-09-staff-",
+     "status": "ready",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_80852709",
+     "title": "Vault handoff: file 2026-10-09-life-planner-memory-schema.md to Personal/2.Automations-Skills/Reports/",
+     "status": "ready",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_7baf4bf0",
+     "title": "File into vault: Brand Identity &amp; Operational Content \u2014 Maio Business Portfolio",
+     "status": "ready",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_f78a9fe1",
+     "title": "Vault: file 'Additional hours worked \u2014 August to 9 October 2026' to Work/2.Automations-Skills/Reports/2026-10-09-additional-hours-worked-august-to-9-october-202",
+     "status": "ready",
+     "assignee": "beast"
+    },
     {
      "id": "t_050c674c",
      "title": "Vault: file 'Additional hours worked \u2014 August to 9 October 2026' to Work/2.Automations-Skills/Reports/2026-10-09-additional-hours-worked-august-to-9-october-202",
@@ -1869,36 +1891,6 @@ var MAIO_DATA = {
      "title": "Compile legal, tax, and corporate filing records",
      "status": "done",
      "assignee": "cfo"
-    },
-    {
-     "id": "t_15539369",
-     "title": "Compile brand identity and operational content",
-     "status": "running",
-     "assignee": "coo"
-    },
-    {
-     "id": "t_b0122d8a",
-     "title": "Assemble the master repository document",
-     "status": "todo",
-     "assignee": "coo"
-    },
-    {
-     "id": "t_f0ad70cd",
-     "title": "Define access, sharing, and maintenance plan",
-     "status": "todo",
-     "assignee": "cfo"
-    },
-    {
-     "id": "t_bfddba30",
-     "title": "https://docs.superhuman.com/d/Maio-Business-Portfolio_d8KsWanxiON/INFX-Solutions_suKU2WnF#_luDfwEbD\n\nThe idea with this document is that this is a repository fo",
-     "status": "todo",
-     "assignee": "default"
-    },
-    {
-     "id": "t_d2efc022",
-     "title": "Fetch and parse the Superhuman Life Planner doc",
-     "status": "done",
-     "assignee": "researcher"
     }
    ]
   },
@@ -2835,11 +2827,11 @@ var MAIO_DATA = {
   "stackTotal": 12,
   "devOnline": 0,
   "devTotal": 10,
-  "reports": 25,
+  "reports": 26,
   "roster": 35,
-  "launchdLoaded": 59,
+  "launchdLoaded": 57,
   "dockerUp": 7,
-  "libraryPublic": 29,
+  "libraryPublic": 30,
   "libraryInternal": 200,
   "docs": 137
  },
@@ -2865,6 +2857,13 @@ var MAIO_DATA = {
     "dir": "index.html",
     "date": "2026-10-09",
     "kb": 1
+   },
+   {
+    "title": "Ntombifuthi Nkambule &mdash; Weekly Work Assessment Mon 05",
+    "url": "ntombifuthi-nkambule-weekly-report-2026-10-09-v2.html",
+    "dir": "ntombifuthi-nkambule-weekly-report-2026-10-09-v2.html",
+    "date": "2026-10-09",
+    "kb": 53
    },
    {
     "title": "Ntombifuthi Nkambule &mdash; Weekly Work Report, 05&ndash;09 Oct 2026",
@@ -3050,7 +3049,7 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 29,
+   "public": 30,
    "internal": 200,
    "docs": 137
   }
