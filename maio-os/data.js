@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 16,
+   "ms": 14,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 13,
+   "ms": 8,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 13,
+   "ms": 5,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 416,
+   "ms": 88,
    "ok": true,
    "note": "memory ui"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 49,
+   "ms": 24,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 2,
+   "ms": 0,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 24,
+   "ms": 9,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 96,
+   "ms": 27,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 23,
+   "ms": 10,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 241,
+   "ms": 13,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 62,
+   "ms": 30,
    "ok": true,
    "note": "agent host"
   }
@@ -121,49 +121,49 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1144,
+   "ms": 929,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 187,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 186,
    "ok": false
   },
   {
@@ -177,14 +177,14 @@ var MAIO_DATA = {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 190,
    "ok": false
   }
  ],
@@ -192,9 +192,16 @@ var MAIO_DATA = {
  "reports": [
   {
    "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/release-notes/2026-10-11.md",
+   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
    "date": "2026-10-11",
-   "ext": "md",
+   "ext": "csv",
+   "kb": 2
+  },
+  {
+   "agent": "dexter",
+   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
+   "date": "2026-10-11",
+   "ext": "csv",
    "kb": 1
   },
   {
@@ -224,13 +231,6 @@ var MAIO_DATA = {
    "date": "2026-10-10",
    "ext": "md",
    "kb": 10
-  },
-  {
-   "agent": "dexter",
-   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-   "date": "2026-10-10",
-   "ext": "csv",
-   "kb": 1
   },
   {
    "agent": "splinter",
@@ -1313,7 +1313,7 @@ var MAIO_DATA = {
    "role": "Quantified researcher \u2014 metrics & telemetry",
    "latest": {
     "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-    "date": "2026-10-10"
+    "date": "2026-10-11"
    }
   },
   {
@@ -1375,7 +1375,7 @@ var MAIO_DATA = {
    "name": "research",
    "role": "Research arm",
    "latest": {
-    "path": "AI-Drive/Agent-Output/research/release-notes/2026-10-11.md",
+    "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
     "date": "2026-10-11"
    }
   },
@@ -1504,7 +1504,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 55436,
+     "pid": 5693,
      "exit": 0
     },
     {
@@ -1756,12 +1756,12 @@ var MAIO_DATA = {
   "docker": [
    {
     "name": "litellm-litellm-1",
-    "status": "Up 7 hours (healthy)",
+    "status": "Up 13 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "hindsight",
-    "status": "Up 27 hours (healthy)",
+    "status": "Up 33 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
@@ -1826,13 +1826,19 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 208,
+    "done": 209,
     "review": 1,
     "blocked": 6,
     "todo": 1
    },
-   "total": 216,
+   "total": 217,
    "recent": [
+    {
+     "id": "t_f5d89ba0",
+     "title": "Vault: file 'Decision 3.0 vs our current state \u2014 evaluation (2026-10-11)' to AI-Space/2.Automations-Skills/Reports/2026-10-11-decision-3-0-vs-our-current-state-",
+     "status": "done",
+     "assignee": "beast"
+    },
     {
      "id": "t_a535dc3a",
      "title": "Vault: file 'LLM Fleet \u2014 Free-Credit-First Allocation (LIVE 2026-10-11)' to AI-Space/2.Automations-Skills/Reports/2026-10-11-llm-fleet-free-credit-first-allocat",
@@ -1898,12 +1904,6 @@ var MAIO_DATA = {
      "title": "Vault: file 'Decision: independent fallback lane for the fleet (Ollama weekly 429)' to AI-Space/2.Automations-Skills/Reports/2026-10-10-decision-independent-fal",
      "status": "done",
      "assignee": "beast"
-    },
-    {
-     "id": "t_8543cab9",
-     "title": "Fix litellm-alias-probe.sh 'default' key source: false RED (HTTP 401) on 4-5 aliases every night",
-     "status": "blocked",
-     "assignee": "courage"
     }
    ]
   },
@@ -2852,7 +2852,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-11T04:45:05Z"
+  "mergedAt": "2026-10-11T10:45:05Z"
  },
  "summary": {
   "projects": 57,
