@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 14,
+   "ms": 17,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 8,
+   "ms": 19,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 5,
+   "ms": 4,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 88,
+   "ms": 23,
    "ok": true,
    "note": "memory ui"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 24,
+   "ms": 40,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 3,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 9,
+   "ms": 1,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 27,
+   "ms": 20,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 10,
+   "ms": 7,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 13,
+   "ms": 11,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 30,
+   "ms": 7,
    "ok": true,
    "note": "agent host"
   }
@@ -121,7 +121,7 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 929,
+   "ms": 919,
    "ok": false
   },
   {
@@ -149,7 +149,7 @@ var MAIO_DATA = {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 191,
    "ok": false
   },
   {
@@ -163,39 +163,53 @@ var MAIO_DATA = {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 186,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 192,
    "ok": false
   }
  ],
  "devServersStaleSince": "",
  "reports": [
   {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
+   "agent": "scrooge",
+   "path": "AI-Drive/Agent-Output/scrooge/2026-10-11-scrooge-wheel-of-life.md",
    "date": "2026-10-11",
-   "ext": "csv",
-   "kb": 2
+   "ext": "md",
+   "kb": 1
+  },
+  {
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/crypto-agents-2026-10-11.md",
+   "date": "2026-10-11",
+   "ext": "md",
+   "kb": 29
+  },
+  {
+   "agent": "poppins",
+   "path": "AI-Drive/Agent-Output/poppins/2026-10-11-weekly-score.md",
+   "date": "2026-10-11",
+   "ext": "md",
+   "kb": 3
   },
   {
    "agent": "dexter",
@@ -212,6 +226,13 @@ var MAIO_DATA = {
    "kb": 1
   },
   {
+   "agent": "baymax",
+   "path": "AI-Drive/Agent-Output/baymax/2026-10-11-weekly-score.md",
+   "date": "2026-10-11",
+   "ext": "md",
+   "kb": 11
+  },
+  {
    "agent": "adrianna",
    "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
    "date": "2026-10-11",
@@ -224,13 +245,6 @@ var MAIO_DATA = {
    "date": "2026-10-10",
    "ext": "csv",
    "kb": 3
-  },
-  {
-   "agent": "poppins",
-   "path": "AI-Drive/Agent-Output/poppins/ai-hub-repository-2026-10-10/CHANGELOG.md",
-   "date": "2026-10-10",
-   "ext": "md",
-   "kb": 10
   },
   {
    "agent": "splinter",
@@ -275,13 +289,6 @@ var MAIO_DATA = {
    "kb": 1
   },
   {
-   "agent": "baymax",
-   "path": "AI-Drive/Agent-Output/baymax/2026-10-09-life-planner-memory-schema.md",
-   "date": "2026-10-09",
-   "ext": "md",
-   "kb": 36
-  },
-  {
    "agent": "batman",
    "path": "AI-Drive/Agent-Output/batman/wd-financials-2026-10-09/latest_pack.json",
    "date": "2026-10-09",
@@ -308,13 +315,6 @@ var MAIO_DATA = {
    "date": "2026-10-07",
    "ext": "md",
    "kb": 10
-  },
-  {
-   "agent": "scrooge",
-   "path": "AI-Drive/Agent-Output/scrooge/weekly-score-2026-10-07.md",
-   "date": "2026-10-07",
-   "ext": "md",
-   "kb": 15
   },
   {
    "agent": "johnny",
@@ -1215,8 +1215,8 @@ var MAIO_DATA = {
    "name": "baymax",
    "role": "Fitness & wellness \u00b7 weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/baymax/2026-10-09-life-planner-memory-schema.md",
-    "date": "2026-10-09"
+    "path": "AI-Drive/Agent-Output/baymax/2026-10-11-weekly-score.md",
+    "date": "2026-10-11"
    }
   },
   {
@@ -1367,15 +1367,15 @@ var MAIO_DATA = {
    "name": "poppins",
    "role": "Family & personal CRM \u00b7 weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/poppins/ai-hub-repository-2026-10-10/CHANGELOG.md",
-    "date": "2026-10-10"
+    "path": "AI-Drive/Agent-Output/poppins/2026-10-11-weekly-score.md",
+    "date": "2026-10-11"
    }
   },
   {
    "name": "research",
    "role": "Research arm",
    "latest": {
-    "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
+    "path": "AI-Drive/Agent-Output/research/crypto-agents-2026-10-11.md",
     "date": "2026-10-11"
    }
   },
@@ -1399,8 +1399,8 @@ var MAIO_DATA = {
    "name": "scrooge",
    "role": "Personal finance & investments",
    "latest": {
-    "path": "AI-Drive/Agent-Output/scrooge/weekly-score-2026-10-07.md",
-    "date": "2026-10-07"
+    "path": "AI-Drive/Agent-Output/scrooge/2026-10-11-scrooge-wheel-of-life.md",
+    "date": "2026-10-11"
    }
   },
   {
@@ -1494,7 +1494,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.wheel-xavier",
-     "pid": null,
+     "pid": 54171,
      "exit": 0
     },
     {
@@ -1504,7 +1504,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 5693,
+     "pid": 54170,
      "exit": 0
     },
     {
@@ -1724,8 +1724,8 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.qmd-mcp",
-     "pid": 64414,
-     "exit": 0
+     "pid": 35075,
+     "exit": -11
     },
     {
      "label": "com.maio.backup",
@@ -1750,18 +1750,18 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 59,
-    "running": 28
+    "running": 29
    }
   },
   "docker": [
    {
     "name": "litellm-litellm-1",
-    "status": "Up 13 hours (healthy)",
+    "status": "Up 19 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "hindsight",
-    "status": "Up 33 hours (healthy)",
+    "status": "Up 39 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
@@ -1771,22 +1771,22 @@ var MAIO_DATA = {
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 2 days (healthy)",
+    "status": "Up 3 days (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 2 days",
+    "status": "Up 3 days",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 2 days (healthy)",
+    "status": "Up 3 days (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 2 days",
+    "status": "Up 3 days",
     "ports": "5432/tcp"
    }
   ],
@@ -2852,7 +2852,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-11T10:45:05Z"
+  "mergedAt": "2026-10-11T16:45:05Z"
  },
  "summary": {
   "projects": 57,
