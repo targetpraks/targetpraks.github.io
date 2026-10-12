@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 15,
+   "ms": 18,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 8,
+   "ms": 13,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 6,
+   "ms": 13,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 353,
+   "ms": 386,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 5,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 1,
+   "ms": 4,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 5,
+   "ms": 18,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 62,
+   "ms": 56,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 7,
+   "ms": 11,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 167,
+   "ms": 45,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 76,
+   "ms": 40,
    "ok": true,
    "note": "agent host"
   }
@@ -121,21 +121,21 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 922,
+   "ms": 1146,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 230,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 189,
    "ok": false
   },
   {
@@ -149,42 +149,42 @@ var MAIO_DATA = {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 190,
    "ok": false
   }
  ],
@@ -195,6 +195,20 @@ var MAIO_DATA = {
    "path": "AI-Drive/Agent-Output/splinter/wheel-2026-10-12.md",
    "date": "2026-10-12",
    "ext": "md",
+   "kb": 4
+  },
+  {
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/frontier-alerts/2026-10-12-1430.md",
+   "date": "2026-10-12",
+   "ext": "md",
+   "kb": 1
+  },
+  {
+   "agent": "dexter",
+   "path": "AI-Drive/Agent-Output/dexter/metrics/model-prices-history.csv",
+   "date": "2026-10-12",
+   "ext": "csv",
    "kb": 4
   },
   {
@@ -240,13 +254,6 @@ var MAIO_DATA = {
    "kb": 9
   },
   {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/crypto-agents-2026-10-11.md",
-   "date": "2026-10-11",
-   "ext": "md",
-   "kb": 29
-  },
-  {
    "agent": "poppins",
    "path": "AI-Drive/Agent-Output/poppins/2026-10-11-weekly-score.md",
    "date": "2026-10-11",
@@ -266,13 +273,6 @@ var MAIO_DATA = {
    "date": "2026-10-11",
    "ext": "md",
    "kb": 8
-  },
-  {
-   "agent": "dexter",
-   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-   "date": "2026-10-11",
-   "ext": "csv",
-   "kb": 1
   },
   {
    "agent": "baymax",
@@ -1312,8 +1312,8 @@ var MAIO_DATA = {
    "name": "dexter",
    "role": "Quantified researcher \u2014 metrics & telemetry",
    "latest": {
-    "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-    "date": "2026-10-11"
+    "path": "AI-Drive/Agent-Output/dexter/metrics/model-prices-history.csv",
+    "date": "2026-10-12"
    }
   },
   {
@@ -1375,8 +1375,8 @@ var MAIO_DATA = {
    "name": "research",
    "role": "Research arm",
    "latest": {
-    "path": "AI-Drive/Agent-Output/research/crypto-agents-2026-10-11.md",
-    "date": "2026-10-11"
+    "path": "AI-Drive/Agent-Output/research/frontier-alerts/2026-10-12-1430.md",
+    "date": "2026-10-12"
    }
   },
   {
@@ -1504,7 +1504,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 11030,
+     "pid": 75135,
      "exit": 0
     },
     {
@@ -1515,7 +1515,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.brief-fallback",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.gamma-mcp",
@@ -1535,12 +1535,12 @@ var MAIO_DATA = {
     {
      "label": "com.maio.paperclip-briefing-collector",
      "pid": null,
-     "exit": 0
+     "exit": 78
     },
     {
      "label": "ai.hermes.gateway",
-     "pid": 71418,
-     "exit": 0
+     "pid": 28057,
+     "exit": 1
     },
     {
      "label": "com.maio.mount-nas",
@@ -1756,12 +1756,12 @@ var MAIO_DATA = {
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 2 hours (healthy)",
+    "status": "Up 8 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 2 hours (healthy)",
+    "status": "Up 8 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
@@ -1826,43 +1826,41 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 219,
+    "done": 223,
     "review": 1,
-    "blocked": 6,
-    "todo": 1,
-    "running": 1,
-    "ready": 4
+    "blocked": 7,
+    "todo": 1
    },
    "total": 232,
    "recent": [
     {
      "id": "t_67e76757",
      "title": "Vault: file 'Maio LLM Fleet \u2014 Master Benchmark Matrix (LIVE)' to AI-Space/2.Automations-Skills/Reports/2026-10-12-maio-llm-fleet-master-benchmark-matrix-live-2.",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_d2f775df",
      "title": "Vault: file 'Vault note formatting \u2014 audit and repair plan (2026-10-12)' to AI-Space/2.Automations-Skills/2026-10-12-vault-note-formatting-audit-and-repair-plan",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_091deb8b",
      "title": "Vault: file 'MoA Lineup Re-verification \u2014 2026-10-12' to AI-Space/2.Automations-Skills/Reports/2026-10-12-moa-lineup-re-verification-2026-10-12.md \u2014 rule-4 hand",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_e0d94c9d",
      "title": "Vault: repair 69 broken markdown tables in 12 notes (last-14-day set) \u2014 exact edits + verifier, from adrianna",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_32112367",
      "title": "Vault update: LLM Model Landscape Living Report \u2014 week 42 (2026-10-12) \u2014 rule-4 handoff from adrianna",
-     "status": "running",
+     "status": "blocked",
      "assignee": "beast"
     },
     {
@@ -1915,6 +1913,13 @@ var MAIO_DATA = {
   }
  },
  "prds": [
+  {
+   "title": "PRD-Agent-Fleet-Cron-Automation-2026-08-29",
+   "project": "Archived",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/PRD-Agent-Fleet-Cron-Automation-2026-08-29.md",
+   "date": "2026-10-12",
+   "area": "AI-Space"
+  },
   {
    "title": "2026-10-09-access-sharing-maintenance-plan",
    "project": "Active",
@@ -2026,13 +2031,6 @@ var MAIO_DATA = {
    "path": "Vault/Maio Hub/Work/3.PRD/Archived/Papa-Pasta-Store1-MasterSetup/PRD_v1_2026-09-08.md",
    "date": "2026-10-07",
    "area": "Work"
-  },
-  {
-   "title": "PRD-Agent-Fleet-Cron-Automation-2026-08-29",
-   "project": "Archived",
-   "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/PRD-Agent-Fleet-Cron-Automation-2026-08-29.md",
-   "date": "2026-10-07",
-   "area": "AI-Space"
   },
   {
    "title": "Code-Graph-Vault-Schema",
@@ -2339,6 +2337,13 @@ var MAIO_DATA = {
  "enriched": {
   "vaultPrds": [
    {
+    "title": "PRD-Agent-Fleet-Cron-Automation-2026-08-29",
+    "project": "Archived",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/PRD-Agent-Fleet-Cron-Automation-2026-08-29.md",
+    "date": "2026-10-12"
+   },
+   {
     "title": "2026-10-09-access-sharing-maintenance-plan",
     "project": "Active",
     "area": "Work",
@@ -2448,13 +2453,6 @@ var MAIO_DATA = {
     "project": "Papa-Pasta-Store1-MasterSetup",
     "area": "Work",
     "path": "Vault/Maio Hub/Work/3.PRD/Archived/Papa-Pasta-Store1-MasterSetup/PRD_v1_2026-09-08.md",
-    "date": "2026-10-07"
-   },
-   {
-    "title": "PRD-Agent-Fleet-Cron-Automation-2026-08-29",
-    "project": "Archived",
-    "area": "AI-Space",
-    "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/PRD-Agent-Fleet-Cron-Automation-2026-08-29.md",
     "date": "2026-10-07"
    },
    {
@@ -2854,7 +2852,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-12T04:45:02Z"
+  "mergedAt": "2026-10-12T10:45:05Z"
  },
  "summary": {
   "projects": 57,
