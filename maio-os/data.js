@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 13,
+   "ms": 16,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 8,
+   "ms": 11,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 6,
+   "ms": 7,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 41,
+   "ms": 367,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 2,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 44,
+   "ms": 52,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 1,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 12,
+   "ms": 21,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 40,
+   "ms": 125,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 35,
+   "ms": 3,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 4,
+   "ms": 219,
    "ok": true,
    "note": "IPTV server"
   },
@@ -111,7 +111,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:6767",
    "url": "http://127.0.0.1:6767/",
    "code": 200,
-   "ms": 21,
+   "ms": 59,
    "ok": true,
    "note": "agent host"
   }
@@ -121,70 +121,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1040,
+   "ms": 1140,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 187,
    "ok": false
   }
  ],
@@ -544,12 +544,12 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/targetpraks.github.io",
    "what": "GitHub Pages \u2014 Maio OS, charts, reports live here",
-   "lastTouched": "2026-10-12",
+   "lastTouched": "2026-10-13",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
     "path": "DevMini/targetpraks.github.io/maio-os/data.js",
-    "date": "2026-10-12",
+    "date": "2026-10-13",
     "ext": "html",
     "kb": 0
    }
@@ -1504,7 +1504,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 71397,
+     "pid": 32821,
      "exit": 0
     },
     {
@@ -1756,12 +1756,12 @@ var MAIO_DATA = {
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 20 hours (healthy)",
+    "status": "Up 26 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 2 hours (healthy)",
+    "status": "Up 8 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
@@ -1829,10 +1829,17 @@ var MAIO_DATA = {
     "done": 224,
     "review": 1,
     "blocked": 7,
-    "todo": 1
+    "todo": 1,
+    "running": 1
    },
-   "total": 233,
+   "total": 234,
    "recent": [
+    {
+     "id": "t_f50a6934",
+     "title": "Vault: file 'Stack Health Check \u2014 2026-10-13' to AI-Space/2.Automations-Skills/Reports/2026-10-13-stack-health-check-2026-10-13.md \u2014 rule-4 handoff from courage",
+     "status": "running",
+     "assignee": "beast"
+    },
     {
      "id": "t_e424f44a",
      "title": "Vault: file 'Maio LLM Fleet \u2014 Master Benchmark Matrix (LIVE)' to AI-Space/2.Automations-Skills/2026-10-12-maio-llm-fleet-master-benchmark-matrix-live.md \u2014 rule-",
@@ -1896,12 +1903,6 @@ var MAIO_DATA = {
     {
      "id": "t_796307b1",
      "title": "Vault: REWRITE Master Benchmark Matrix via byte-exact ASSET write \u2014 pass path, not content (no new note)",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_4104c451",
-     "title": "Vault: UPDATE Master Benchmark Matrix body in place \u2014 deeper note, correct tables (no new note)",
      "status": "done",
      "assignee": "beast"
     }
@@ -2852,7 +2853,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-12T22:45:05Z"
+  "mergedAt": "2026-10-13T04:45:05Z"
  },
  "summary": {
   "projects": 57,
