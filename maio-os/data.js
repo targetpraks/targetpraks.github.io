@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 18,
+   "ms": 12,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 31,
+   "ms": 6,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 8,
+   "ms": 6,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 43,
+   "ms": 110,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 2,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 49,
+   "ms": 54,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 9,
+   "ms": 3,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 4,
+   "ms": 14,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 23,
+   "ms": 58,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 5,
+   "ms": 3,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 47,
+   "ms": 4,
    "ok": true,
    "note": "IPTV server"
   }
@@ -112,49 +112,49 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 4,
+   "ms": 1159,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 3,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 303,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 3,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 190,
    "ok": false
   },
   {
@@ -168,14 +168,14 @@ var MAIO_DATA = {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 190,
    "ok": false
   }
  ],
@@ -183,10 +183,10 @@ var MAIO_DATA = {
  "reports": [
   {
    "agent": "scribe",
-   "path": "AI-Drive/Agent-Output/scribe/published.csv",
+   "path": "AI-Drive/Agent-Output/scribe/2026-10-14-hindsight-postgres-crash-after-the-unplanned-reboot.html",
    "date": "2026-10-14",
-   "ext": "csv",
-   "kb": 6
+   "ext": "html",
+   "kb": 24
   },
   {
    "agent": "research",
@@ -208,6 +208,20 @@ var MAIO_DATA = {
    "date": "2026-10-14",
    "ext": "",
    "kb": 1
+  },
+  {
+   "agent": "builder",
+   "path": "AI-Drive/Agent-Output/builder/incidents/2026-10-14-hindsight-pg-recovery.md",
+   "date": "2026-10-14",
+   "ext": "md",
+   "kb": 5
+  },
+  {
+   "agent": "beast",
+   "path": "AI-Drive/Agent-Output/beast/gates-pending-t_0709c96f.csv",
+   "date": "2026-10-14",
+   "ext": "csv",
+   "kb": 5
   },
   {
    "agent": "batman",
@@ -247,13 +261,6 @@ var MAIO_DATA = {
   {
    "agent": "cfo",
    "path": "AI-Drive/Agent-Output/cfo/published.csv",
-   "date": "2026-10-13",
-   "ext": "csv",
-   "kb": 2
-  },
-  {
-   "agent": "beast",
-   "path": "AI-Drive/Agent-Output/beast/gates-pending-t_781057d9.csv",
    "date": "2026-10-13",
    "ext": "csv",
    "kb": 2
@@ -334,13 +341,6 @@ var MAIO_DATA = {
    "date": "2026-10-09",
    "ext": "csv",
    "kb": 2
-  },
-  {
-   "agent": "builder",
-   "path": "AI-Drive/Agent-Output/builder/2026-10-09-publish-worker-card-lane-proof.md",
-   "date": "2026-10-09",
-   "ext": "md",
-   "kb": 8
   },
   {
    "agent": "targetpraks",
@@ -781,24 +781,29 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/ACDC Express",
    "what": "\u2014",
-   "lastTouched": null,
+   "lastTouched": "2026-10-14",
    "hasPRD": false,
    "prdNewest": null,
-   "artifact": null
+   "artifact": {
+    "path": "AI-Drive/Work/ACDC Express/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
+   }
   },
   {
    "name": "Divorced Dads",
    "family": "work",
    "root": "AI-Drive/Work/Divorced Dads",
    "what": "\u2014",
-   "lastTouched": "2026-09-16",
+   "lastTouched": "2026-10-14",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "AI-Drive/Work/Divorced Dads/divorced-dads-playlists/Divorced-Dads-Playlists.md",
-    "date": "2026-09-16",
-    "ext": "md",
-    "kb": 9
+    "path": "AI-Drive/Work/Divorced Dads/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
    }
   },
   {
@@ -806,10 +811,15 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/FluxFlow",
    "what": "\u2014",
-   "lastTouched": null,
+   "lastTouched": "2026-10-14",
    "hasPRD": false,
    "prdNewest": null,
-   "artifact": null
+   "artifact": {
+    "path": "AI-Drive/Work/FluxFlow/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
+   }
   },
   {
    "name": "HR",
@@ -831,24 +841,44 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/INFX Solutions",
    "what": "\u2014",
-   "lastTouched": null,
+   "lastTouched": "2026-10-14",
    "hasPRD": false,
    "prdNewest": null,
-   "artifact": null
+   "artifact": {
+    "path": "AI-Drive/Work/INFX Solutions/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
+   }
   },
   {
    "name": "Infinity Brands",
    "family": "work",
    "root": "AI-Drive/Work/Infinity Brands",
    "what": "\u2014",
-   "lastTouched": "2026-09-01",
+   "lastTouched": "2026-10-14",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "AI-Drive/Work/Infinity Brands/Sales-Funnel-Tracker/INF_Sales_Marketing_Funnel_Tracker.xlsx",
-    "date": "2026-09-01",
-    "ext": "xlsx",
-    "kb": 86
+    "path": "AI-Drive/Work/Infinity Brands/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
+   }
+  },
+  {
+   "name": "Magnific",
+   "family": "work",
+   "root": "AI-Drive/Work/Magnific",
+   "what": "\u2014",
+   "lastTouched": "2026-10-14",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "AI-Drive/Work/Magnific/FluxFlow/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
    }
   },
   {
@@ -856,17 +886,14 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/Papa Pasta",
    "what": "\u2014",
-   "lastTouched": "2026-09-11",
-   "hasPRD": true,
-   "prdNewest": {
-    "path": "AI-Drive/Work/Papa Pasta/Store Design/PRD/PRD-SECTION-DESIGN.md",
-    "date": "2026-09-01"
-   },
+   "lastTouched": "2026-10-14",
+   "hasPRD": false,
+   "prdNewest": null,
    "artifact": {
-    "path": "AI-Drive/Work/Papa Pasta/Papa Pasta.pdf",
-    "date": "2026-09-11",
-    "ext": "pdf",
-    "kb": 1863
+    "path": "AI-Drive/Work/Papa Pasta/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
    }
   },
   {
@@ -904,14 +931,14 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/SunScout",
    "what": "\u2014",
-   "lastTouched": "2026-09-01",
+   "lastTouched": "2026-10-14",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "AI-Drive/Work/SunScout/screenshots/05-trips.png",
-    "date": "2026-09-01",
-    "ext": "png",
-    "kb": 75
+    "path": "AI-Drive/Work/SunScout/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
    }
   },
   {
@@ -919,14 +946,14 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/The Local Farmer",
    "what": "\u2014",
-   "lastTouched": "2026-09-12",
+   "lastTouched": "2026-10-14",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "AI-Drive/Work/The Local Farmer/Pricing/TLF Grow Room Franchisee 5-Year Model \u2014 v27 FINAL.xlsx",
-    "date": "2026-09-12",
-    "ext": "xlsx",
-    "kb": 224
+    "path": "AI-Drive/Work/The Local Farmer/Icon\r",
+    "date": "2026-10-14",
+    "ext": "",
+    "kb": 1
    }
   },
   {
@@ -1175,8 +1202,8 @@ var MAIO_DATA = {
    "name": "beast",
    "role": "Vault steward \u2014 hygiene & lifecycle",
    "latest": {
-    "path": "AI-Drive/Agent-Output/beast/gates-pending-t_781057d9.csv",
-    "date": "2026-10-13"
+    "path": "AI-Drive/Agent-Output/beast/gates-pending-t_0709c96f.csv",
+    "date": "2026-10-14"
    }
   },
   {
@@ -1191,8 +1218,8 @@ var MAIO_DATA = {
    "name": "builder",
    "role": "Builds feature work & PRs",
    "latest": {
-    "path": "AI-Drive/Agent-Output/builder/2026-10-09-publish-worker-card-lane-proof.md",
-    "date": "2026-10-09"
+    "path": "AI-Drive/Agent-Output/builder/incidents/2026-10-14-hindsight-pg-recovery.md",
+    "date": "2026-10-14"
    }
   },
   {
@@ -1357,7 +1384,7 @@ var MAIO_DATA = {
    "name": "scribe",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/scribe/published.csv",
+    "path": "AI-Drive/Agent-Output/scribe/2026-10-14-hindsight-postgres-crash-after-the-unplanned-reboot.html",
     "date": "2026-10-14"
    }
   },
@@ -1420,7 +1447,7 @@ var MAIO_DATA = {
    "jobs": [
     {
      "label": "com.maio.snappier-playlists",
-     "pid": 97356,
+     "pid": 908,
      "exit": 0
     },
     {
@@ -1429,12 +1456,12 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.omlx-watchdog",
+     "label": "com.maio.keep-awake-guard",
      "pid": null,
      "exit": 0
     },
     {
-     "label": "com.maio.keep-awake-guard",
+     "label": "com.maio.omlx-watchdog",
      "pid": null,
      "exit": 0
     },
@@ -1445,7 +1472,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-local",
-     "pid": 96681,
+     "pid": 912,
      "exit": 0
     },
     {
@@ -1455,7 +1482,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.copilot-mcp",
-     "pid": 95817,
+     "pid": 935,
      "exit": 0
     },
     {
@@ -1470,7 +1497,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": null,
+     "pid": 47770,
      "exit": 0
     },
     {
@@ -1485,7 +1512,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.gamma-mcp",
-     "pid": 96352,
+     "pid": 930,
      "exit": 0
     },
     {
@@ -1509,19 +1536,19 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.hermes-dashboard",
-     "pid": 96462,
+     "label": "ai.hermes.gateway",
+     "pid": 952,
      "exit": 0
     },
     {
-     "label": "ai.hermes.gateway",
-     "pid": 65902,
+     "label": "com.maio.hermes-dashboard",
+     "pid": 953,
      "exit": 0
     },
     {
      "label": "com.maio.constellation-dev",
-     "pid": 95712,
-     "exit": 0
+     "pid": 1915,
+     "exit": -15
     },
     {
      "label": "com.maio.wheel-johnny",
@@ -1530,7 +1557,7 @@ var MAIO_DATA = {
     },
     {
      "label": "ing.paperclip.paperclipai",
-     "pid": 84987,
+     "pid": 909,
      "exit": 0
     },
     {
@@ -1540,22 +1567,22 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.docs-mcp",
-     "pid": 96307,
+     "pid": 916,
      "exit": 0
     },
     {
      "label": "com.maio.ok-vault-server",
-     "pid": 96983,
-     "exit": 0
+     "pid": 2621,
+     "exit": -15
     },
     {
      "label": "com.maio.constellation-manco-docs",
-     "pid": 95770,
+     "pid": 940,
      "exit": 0
     },
     {
      "label": "com.maio.composio-mcp",
-     "pid": 95616,
+     "pid": 941,
      "exit": 0
     },
     {
@@ -1580,12 +1607,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.cloudflare-mcp",
-     "pid": 95325,
+     "pid": 919,
      "exit": 0
     },
     {
      "label": "com.maio.vault-agent",
-     "pid": 97608,
+     "pid": 923,
      "exit": 0
     },
     {
@@ -1600,7 +1627,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.krea-mcp",
-     "pid": 96550,
+     "pid": 957,
      "exit": 0
     },
     {
@@ -1619,18 +1646,18 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.wheel-jean",
-     "pid": null,
-     "exit": 0
-    },
-    {
      "label": "com.maio.todoist-mcp",
-     "pid": 97580,
+     "pid": 927,
      "exit": 0
     },
     {
      "label": "com.maio.pipedream-mcp",
-     "pid": 97215,
+     "pid": 929,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.wheel-jean",
+     "pid": null,
      "exit": 0
     },
     {
@@ -1640,12 +1667,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.browseruse-mcp",
-     "pid": 95250,
+     "pid": 942,
      "exit": 0
     },
     {
      "label": "com.maio.superhuman-mcp",
-     "pid": 97551,
+     "pid": 954,
      "exit": 0
     },
     {
@@ -1655,7 +1682,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.snappier-server",
-     "pid": 97395,
+     "pid": 965,
      "exit": 0
     },
     {
@@ -1665,17 +1692,17 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.agent-desktop-guard",
-     "pid": 95194,
+     "pid": 901,
      "exit": 0
     },
     {
      "label": "com.maio.magnific-mcp",
-     "pid": 96649,
+     "pid": 921,
      "exit": 0
     },
     {
      "label": "com.maio.gate-mcp",
-     "pid": 96378,
+     "pid": 937,
      "exit": 0
     },
     {
@@ -1690,12 +1717,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.qmd-mcp",
-     "pid": 97270,
-     "exit": 0
-    },
-    {
-     "label": "com.maio.omlx-d3-watch",
-     "pid": null,
+     "pid": 948,
      "exit": 0
     },
     {
@@ -1704,13 +1726,8 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "application.com.nousresearch.hermes.18403171.18404930",
-     "pid": 56563,
-     "exit": 0
-    },
-    {
-     "label": "com.maio.d3-gate",
-     "pid": 96137,
+     "label": "com.maio.omlx-d3-watch",
+     "pid": null,
      "exit": 0
     },
     {
@@ -1719,55 +1736,60 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.d3-gate",
+     "pid": 960,
+     "exit": 0
+    },
+    {
      "label": "com.maio.keep-awake",
-     "pid": 96531,
+     "pid": 964,
      "exit": 0
     },
     {
      "label": "com.maio.status-agent",
-     "pid": 97524,
+     "pid": 967,
      "exit": 0
     }
    ],
    "counts": {
-    "loaded": 62,
+    "loaded": 61,
     "running": 28
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 9 hours (healthy)",
+    "status": "Up 5 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 14 hours (healthy)",
+    "status": "Up 5 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 30 minutes (healthy)",
+    "status": "Up 5 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 17 hours (healthy)",
+    "status": "Up 5 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 17 hours",
+    "status": "Up 5 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 17 hours (healthy)",
+    "status": "Up 5 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 17 hours",
+    "status": "Up 5 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1811,84 +1833,82 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "running": 1,
-    "done": 261,
-    "ready": 1,
-    "review": 1,
-    "blocked": 7,
-    "todo": 1
+    "done": 284,
+    "ready": 2,
+    "todo": 1,
+    "blocked": 1
    },
-   "total": 272,
+   "total": 288,
    "recent": [
     {
-     "id": "t_238290ee",
-     "title": "Vault: file 'freebuff + OpenCode v2 \u2014 setup on both Macs, 2026-10-14' to AI-Space/1.Setup-Config/Systems \u2014 rule-4 handoff from scribe",
+     "id": "t_5f09ef63",
+     "title": "Fix inherited dead link in the 2026-10-14 hindsight PG-crash report pair (md + html href, ../ \u2192 ../../)",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_649e2d76",
-     "title": "Vault: file 'MacBook Air \u00d7 Hermes Desktop \u2014 country-proofing & Tailscale permanence (2026-10-14)' to AI-Space/2.Automations-Skills/Reports/2026-10-14-macbook-ai",
+     "id": "t_9ec3d292",
+     "title": "File hindsight PG crash incident to vault (AI-Space/2.Automations-Skills/Reports) \u2014 rule-4 handoff from scribe",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_513683d8",
-     "title": "Draft + publish to vault: MetaMCP fleet audit 2026-10-14 (findings ready)",
-     "status": "running",
-     "assignee": "scribe"
-    },
-    {
-     "id": "t_adb32fa8",
-     "title": "Draft + publish setup report: freebuff + OpenCode v2 across mini & Air (2026-10-14)",
+     "id": "t_bb878fe0",
+     "title": "Publish vault note: Hindsight PG recovery incident 2026-10-14",
      "status": "done",
      "assignee": "scribe"
     },
     {
-     "id": "t_084ece20",
-     "title": "Vault: file 'Omnigent removed from the Mac mini' pair to AI-Space/2.Automations-Skills/Reports \u2014 rule-4 handoff from scribe",
+     "id": "t_06d54bad",
+     "title": "Vault: file 'Fleet fallback lanes \u2014 close-out & 200k agent-context cap applied (t_8f182156)' to AI-Space/2.Automations-Skills/Reports/2026-10-14-fleet-fallback-",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_ff932b1c",
-     "title": "Vault record: Omnigent removed from the Mac mini \u2014 draft + publish (2026-10-14 cleanup)",
-     "status": "done",
-     "assignee": "scribe"
-    },
-    {
-     "id": "t_66b11e8c",
-     "title": "File CleanMyMac fleet-wipe incident + hermes doctor sweep to vault (AI-Space/2.Automations-Skills/Reports) \u2014 rule-4 handoff from scribe",
+     "id": "t_e303951e",
+     "title": "Vault: file \"Life Planner \u2014 Live\" (md + styled html pair) \u2014 rule-4 handoff from scribe",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_7067ccba",
-     "title": "Draft + publish report: CleanMyMac fleet-wipe incident + hermes doctor sweep (2026-10-14)",
+     "id": "t_dd258c1b",
+     "title": "Draft + publish to vault: \"Life Planner \u2014 Live\" for Ricardo (findings ready, root t_270d0629)",
      "status": "done",
      "assignee": "scribe"
     },
     {
-     "id": "t_76b4e06d",
-     "title": "Restore remaining CM-wiped launchd jobs + verify d3-gate re-pull (2026-10-14 leftovers)",
+     "id": "t_e1083826",
+     "title": "Vault: Life Planner corrections \u2014 \"46 distinct\" not 48 (\u00d73), rolling \"Needs a check\" filter (\u00d73), Owner line in index \u2014 rule-4 handoff from Adrianna",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_5bac30d6",
+     "title": "Hindsight down: crash-loop after today's Mac reboot \u2014 embedded PostgreSQL 18.1 segfaults in WAL crash recovery",
      "status": "done",
      "assignee": "builder"
     },
     {
-     "id": "t_974e6cc4",
-     "title": "Vault: file 'Papa Pasta \u2014 papapasta.co.za hosting diagnosis and decision-ready repair path (PAP-8)' to Work/2.Automations-Skills/Reports/2026-10-13-papa-pasta-p",
+     "id": "t_f8d1fabe",
+     "title": "Vault: archive the 5 LLM-Model-Landscape-Living-Report-N.md debris variants (2026-10-12 crash residue)",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_6b51245f",
-     "title": "Vault: file 'Papa Pasta - Funding Application Matrix Numbers (PAP-5)' to Work/4.Research/2026-10-13-papa-pasta-funding-application-matrix-numbers-pap-5.md \u2014 rul",
+     "id": "t_9fed8176",
+     "title": "Vault: file 'phone-harness \u2014 setup + fixes (Mac mini)' to AI-Space/1.Setup-Config/Systems/2026-10-14-phone-harness-setup-fixes-mac-mini.md \u2014 rule-4 handoff from",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_0d3f8da2",
-     "title": "Vault: file 'Papa Pasta - Funding Application Matrix (PAP-5)' to Work/4.Research/2026-10-13-papa-pasta-funding-application-matrix-pap-5.md \u2014 rule-4 handoff from",
+     "id": "t_7a196eac",
+     "title": "Vault: file 'phone-harness \u2014 setup + fixes (Mac mini)' to AI-Space/1.Setup-Config/Systems/2026-10-14-phone-harness-setup-fixes-mac-mini.md \u2014 rule-4 handoff from",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_bb1d1bb6",
+     "title": "Vault change-log backlog: append the remaining staged Vault-Lifecycle-Log.md sections (conflict now cleared)",
      "status": "done",
      "assignee": "beast"
     }
@@ -1900,6 +1920,13 @@ var MAIO_DATA = {
   }
  },
  "prds": [
+  {
+   "title": "2026-10-09-access-sharing-maintenance-plan",
+   "project": "Active",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/2026-10-09-access-sharing-maintenance-plan.md",
+   "date": "2026-10-14",
+   "area": "Work"
+  },
   {
    "title": "2026-10-13-litellm-role-expansion-2026-10-13",
    "project": "Active",
@@ -1920,13 +1947,6 @@ var MAIO_DATA = {
    "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/PRD-Agent-Fleet-Cron-Automation-2026-08-29.md",
    "date": "2026-10-12",
    "area": "AI-Space"
-  },
-  {
-   "title": "2026-10-09-access-sharing-maintenance-plan",
-   "project": "Active",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/2026-10-09-access-sharing-maintenance-plan.md",
-   "date": "2026-10-10",
-   "area": "Work"
   },
   {
    "title": "2026-10-09-business-portfolio-repository-architecture",
@@ -2307,13 +2327,6 @@ var MAIO_DATA = {
    "area": "Work"
   },
   {
-   "title": "PRD-SECTION-DESIGN.md",
-   "project": "Papa Pasta",
-   "path": "AI-Drive/Work/Papa Pasta/Store Design/PRD/PRD-SECTION-DESIGN.md",
-   "date": "2026-09-01",
-   "area": "disk scan"
-  },
-  {
    "title": "PRD_FEATURE.md",
    "project": "esoteric-command",
    "path": "DevMini/esoteric-command/PRD_FEATURE.md",
@@ -2338,6 +2351,13 @@ var MAIO_DATA = {
  "enriched": {
   "vaultPrds": [
    {
+    "title": "2026-10-09-access-sharing-maintenance-plan",
+    "project": "Active",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/2026-10-09-access-sharing-maintenance-plan.md",
+    "date": "2026-10-14"
+   },
+   {
     "title": "2026-10-13-litellm-role-expansion-2026-10-13",
     "project": "Active",
     "area": "AI-Space",
@@ -2357,13 +2377,6 @@ var MAIO_DATA = {
     "area": "AI-Space",
     "path": "Vault/Maio Hub/AI-Space/3.PRD/Archived/PRD-Agent-Fleet-Cron-Automation-2026-08-29.md",
     "date": "2026-10-12"
-   },
-   {
-    "title": "2026-10-09-access-sharing-maintenance-plan",
-    "project": "Active",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/2026-10-09-access-sharing-maintenance-plan.md",
-    "date": "2026-10-10"
    },
    {
     "title": "2026-10-09-business-portfolio-repository-architecture",
@@ -2853,22 +2866,22 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-14T10:48:54Z"
+  "mergedAt": "2026-10-14T16:45:05Z"
  },
  "summary": {
-  "projects": 53,
-  "prds": 62,
+  "projects": 54,
+  "prds": 61,
   "stackLive": 11,
   "stackTotal": 11,
   "devOnline": 0,
   "devTotal": 10,
   "reports": 29,
   "roster": 36,
-  "launchdLoaded": 62,
+  "launchdLoaded": 61,
   "dockerUp": 7,
   "libraryPublic": 31,
   "libraryInternal": 200,
-  "docs": 142
+  "docs": 141
  },
  "library": {
   "public": [
@@ -3093,7 +3106,7 @@ var MAIO_DATA = {
   "counts": {
    "public": 31,
    "internal": 200,
-   "docs": 142
+   "docs": 141
   }
  }
 };
