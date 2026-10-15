@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 4,
+   "ms": 3,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 4,
+   "ms": 10,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 163,
+   "ms": 30,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 4,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 87,
+   "ms": 43,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 2,
+   "ms": 0,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 28,
+   "ms": 2,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 65,
+   "ms": 7,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 9,
+   "ms": 5,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 113,
+   "ms": 14,
    "ok": true,
    "note": "IPTV server"
   }
@@ -112,87 +112,101 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1142,
+   "ms": 1143,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 203,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 196,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 193,
    "ok": false
   }
  ],
  "devServersStaleSince": "",
  "reports": [
   {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/paper-notes/2026-10-15.md",
+   "agent": "splinter",
+   "path": "AI-Drive/Agent-Output/splinter/property-plans-2026-10-15/gmail/inventory_seen.txt",
    "date": "2026-10-15",
-   "ext": "md",
-   "kb": 2
+   "ext": "txt",
+   "kb": 1
+  },
+  {
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
+   "date": "2026-10-15",
+   "ext": "csv",
+   "kb": 4
+  },
+  {
+   "agent": "dexter",
+   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
+   "date": "2026-10-15",
+   "ext": "csv",
+   "kb": 1
   },
   {
    "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+   "path": "AI-Drive/Agent-Output/courage/watchtower-2026-10-15.md",
    "date": "2026-10-15",
-   "ext": "",
+   "ext": "md",
    "kb": 1
   },
   {
@@ -208,13 +222,6 @@ var MAIO_DATA = {
    "date": "2026-10-14",
    "ext": "csv",
    "kb": 9
-  },
-  {
-   "agent": "dexter",
-   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-   "date": "2026-10-14",
-   "ext": "csv",
-   "kb": 1
   },
   {
    "agent": "builder",
@@ -264,13 +271,6 @@ var MAIO_DATA = {
    "date": "2026-10-13",
    "ext": "csv",
    "kb": 2
-  },
-  {
-   "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/wheel-2026-10-12.md",
-   "date": "2026-10-12",
-   "ext": "md",
-   "kb": 4
   },
   {
    "agent": "xavier",
@@ -1268,7 +1268,7 @@ var MAIO_DATA = {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+    "path": "AI-Drive/Agent-Output/courage/watchtower-2026-10-15.md",
     "date": "2026-10-15"
    }
   },
@@ -1295,7 +1295,7 @@ var MAIO_DATA = {
    "role": "Quantified researcher \u2014 metrics & telemetry",
    "latest": {
     "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
-    "date": "2026-10-14"
+    "date": "2026-10-15"
    }
   },
   {
@@ -1360,7 +1360,7 @@ var MAIO_DATA = {
    "name": "research",
    "role": "Research arm",
    "latest": {
-    "path": "AI-Drive/Agent-Output/research/paper-notes/2026-10-15.md",
+    "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
     "date": "2026-10-15"
    }
   },
@@ -1405,8 +1405,8 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/wheel-2026-10-12.md",
-    "date": "2026-10-12"
+    "path": "AI-Drive/Agent-Output/splinter/property-plans-2026-10-15/gmail/inventory_seen.txt",
+    "date": "2026-10-15"
    }
   },
   {
@@ -1497,7 +1497,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 2047,
+     "pid": 79924,
      "exit": 0
     },
     {
@@ -1638,7 +1638,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.watchtower",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.omlx-app",
@@ -1764,37 +1764,37 @@ var MAIO_DATA = {
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 9 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 17 hours (healthy)",
+    "status": "Up 23 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 17 hours (healthy)",
+    "status": "Up 23 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 17 hours (healthy)",
+    "status": "Up 23 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 17 hours",
+    "status": "Up 23 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 17 hours (healthy)",
+    "status": "Up 23 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 17 hours",
+    "status": "Up 23 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1838,14 +1838,68 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 298,
+    "done": 306,
     "ready": 1,
     "todo": 4,
-    "blocked": 1,
+    "blocked": 2,
     "scheduled": 1
    },
-   "total": 305,
+   "total": 314,
    "recent": [
+    {
+     "id": "t_e240ff7f",
+     "title": "Vault: file 'Property Plans Hunt \u2014 Samuel \u00b7 Wild Amandel \u00b7 Frances' to Personal/4.Research/2026-10-15-property-plans-hunt-samuel-wild-amandel-frances.md \u2014 rule-",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_1485cf9e",
+     "title": "Vault: file 'Adrianna's decision model \u2014 explained' to AI-Space/1.Setup-Config/Systems/2026-10-15-adrianna-s-decision-model-explained.html \u2014 rule-4 handoff from",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_c5b185ed",
+     "title": "Vault: UPDATE incident note (credential paste 2026-10-15) in place \u2014 append no-rotation disposition",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_544e0dc4",
+     "title": "Vault: file 'Zoho Cliq Bot \u2014 Build & Handover' to AI-Space/1.Setup-Config/Systems/2026-10-15-zoho-cliq-bot-build-handover.html \u2014 rule-4 handoff from adrianna",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_629c8259",
+     "title": "Remove 2 Apple Calendar calendars permanently \u2014 'Polar training targets' + 'Polar training results' (Ricardo via Discord)",
+     "status": "done",
+     "assignee": "splinter"
+    },
+    {
+     "id": "t_d9afa078",
+     "title": "Vault: file 'Incident: TinyFish key pasted in Discord \u2014 wired, verified, cleared; rotation recommended' to AI-Space/2.Automations-Skills/Reports/2026-10-15-inci",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_d2d0587d",
+     "title": "Vault: file 'Dia sync across your Macs \u2014 status and blocker' to Personal/2.Automations-Skills/Reports/2026-10-15-dia-sync-across-your-macs-status-and-blocker.md",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_41681b14",
+     "title": "Vault: file 'Incident: Fish Audio key pasted in Discord \u2014 handled, rotation recommended' to AI-Space/2.Automations-Skills/Reports/2026-10-15-incident-fish-audio",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_daa996bf",
+     "title": "Sync Dia browser bookmarks and pinned tabs across laptop, Mac Mini, and MacBook",
+     "status": "blocked",
+     "assignee": "splinter"
+    },
     {
      "id": "t_b7cf5939",
      "title": "Vault: file 'Incident \u2014 credential paste in kanban cards, redacted 2026-10-15 + public-snapshot guard' to AI-Space/2.Automations-Skills/Reports/2026-10-15-incid",
@@ -1861,60 +1915,6 @@ var MAIO_DATA = {
     {
      "id": "t_50d625b2",
      "title": "Remove 4 empty rogue dirs (vault Maio Hub/ tree) \u2014 Ricardo approved",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_2351e078",
-     "title": "File LiteLLM removal \u2014 Stage 0 gate report to vault (AI-Space/2.Automations-Skills/Reports) \u2014 rule-4 handoff from adrianna",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_f458da1a",
-     "title": "LiteLLM removal \u2014 Stage 1 checkpoint: >=7-day ledger parity gate (reconciliation)",
-     "status": "scheduled",
-     "assignee": "default"
-    },
-    {
-     "id": "t_54594ecf",
-     "title": "LiteLLM removal \u2014 Stage 2: off-critical consumers (Hindsight, Maio OS spend tile, Air-side tools)",
-     "status": "done",
-     "assignee": "default"
-    },
-    {
-     "id": "t_cf5b0e85",
-     "title": "LiteLLM removal \u2014 Stage 3: main-model lanes \u2014 canary, then waves (30 homes)",
-     "status": "todo",
-     "assignee": "default"
-    },
-    {
-     "id": "t_3e76f596",
-     "title": "LiteLLM removal \u2014 Stage 4: vision last (32 homes, batches of 3-5)",
-     "status": "todo",
-     "assignee": "default"
-    },
-    {
-     "id": "t_b5254991",
-     "title": "LiteLLM removal \u2014 Stage 5: soak & retire",
-     "status": "todo",
-     "assignee": "default"
-    },
-    {
-     "id": "t_f28beefd",
-     "title": "LiteLLM removal \u2014 Stage 1: agent-side usage ledger + >=7-day parallel run",
-     "status": "done",
-     "assignee": "default"
-    },
-    {
-     "id": "t_ec61acf2",
-     "title": "Execute vault triage dispositions (Ricardo 2026-10-14): strays archive; benchmark extras archive/refile; 27 .md.bak archive to 4.Archive/backups",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_7f6f244f",
-     "title": "Vault: file 'gr8r Studio teardown \u2014 is it hard to build something like this?' to Work/2.Automations-Skills/Reports/2026-10-14-gr8r-studio-teardown-is-it-hard-to",
      "status": "done",
      "assignee": "beast"
     }
@@ -2879,7 +2879,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-15T04:45:05Z"
+  "mergedAt": "2026-10-15T10:45:05Z"
  },
  "summary": {
   "projects": 54,
