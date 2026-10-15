@@ -248,14 +248,27 @@ button.vrow:hover .nm{color:var(--ink)}
    Cards are block-level in a grid, so a taller card pushes the row down instead of
    overlapping its neighbour (the same rule PR3 used for .pcard/.rrow). */
 .agc{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
-     cursor:pointer;transition:border-color .15s,transform .15s;text-align:left}
+     cursor:pointer;transition:border-color .15s,transform .15s;text-align:left;
+     display:flex;gap:10px;align-items:flex-start}
 .agc:hover{border-color:var(--gold-dim);transform:translateY(-1px)}
 .agc:hover .an{color:var(--gold)}
+.agc .body{min-width:0;flex:1}
+/* the illustrated cast (maio-cast): one face per agent next to the name. A missing
+   face falls back to a monogram in the same circle, so the grid never breaks. */
+.agc .ava{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:0 0 auto;
+     background:var(--panel);border:2px solid var(--line);display:block}
+img.agc-face{border-color:var(--ink);box-shadow:3px 3px 0 rgba(226,164,69,.35)}
+.agc .mono{font-family:var(--mono);font-size:.68rem;color:var(--dim2);
+     display:flex;align-items:center;justify-content:center;letter-spacing:.06em}
+.agc .sheet{font-family:var(--mono);font-size:.6rem;color:var(--gold);margin-top:5px;
+     display:inline-block;border-bottom:1px solid rgba(226,164,69,.4)}
 .agc .an{font-family:var(--grot);font-weight:500;color:var(--ink);font-size:.85rem}
 .agc .ar{font-size:.7rem;color:var(--dim);margin-top:3px;min-height:2.1em}
 .agc .al{font-family:var(--mono);font-size:.64rem;color:var(--dim2);margin-top:6px}
 .agc .al b{color:var(--gold);font-weight:500}
 .adev{display:flex;gap:12px;align-items:flex-start}
+img.castface{display:block;width:96px;height:96px;border-radius:50%;object-fit:cover;
+     border:2px solid var(--ink);box-shadow:4px 4px 0 rgba(226,164,69,.35);margin:0 0 12px}
 .aglyph{font-size:1.15rem;flex:none;line-height:1.2}
 .empty{color:var(--dim2);font-size:.8rem;padding:22px;text-align:center}
 /* PR4 item 5 — a stack URL is a real link under PR2's allow-list, so the ones that are
@@ -580,7 +593,7 @@ button.vrow:hover .nm{color:var(--ink)}
   if(boot) boot.addEventListener('click', function(){ if(boot.isConnected) boot.classList.add('gone'); });
 })();
 </script>
-<script src="data.js?v=v4"></script>
+<script src="data.js?v=v5"></script>
 <script>
 'use strict';
 /* The shell now owns boot protection: stop the pre-data.js guard's timer. */
@@ -717,7 +730,13 @@ function normProject(p){ return {name:str(p.name)||'untitled project', family:st
 function normReport(r){ return {agent:str(r.agent)||'unknown', path:str(r.path), date:nDate(r.date),
   ext:str(r.ext), kb:num(r.kb,null)}; }
 function normAgent(a){ const l = one(()=> isObj(a.latest) ? {path:str(a.latest.path), date:nDate(a.latest.date)} : null, null);
-  return {name:str(a.name)||'unnamed agent', role:str(a.role), latest:l}; }
+  /* the illustrated cast (maio-cast): a face from the repo's own cast folder and an
+     https sheet link, nothing else — same posture as every other field, so a hostile
+     data.js can never point the card at an arbitrary URL. */
+  const p = str(a.portrait), sh = str(a.sheet);
+  return {name:str(a.name)||'unnamed agent', role:str(a.role), latest:l,
+          portrait: /^assets\/cast\/[A-Za-z0-9._-]+\.(jpe?g|png|webp)$/i.test(p) ? p : '',
+          sheet: /^https:\/\//i.test(sh) ? sh : ''}; }
 function normPRD(p){ return {title:str(p.title)||'(untitled)', project:str(p.project), path:str(p.path),
   date:nDate(p.date), area:str(p.area)}; }
 /* any record whose normaliser throws is dropped; a throw costs only that record.
@@ -1834,12 +1853,16 @@ function renderProjectBody(p){
 }
 function renderAgentBody(a){
   const l = a.latest;                                       // {path,date} | null
-  let h = `<div class="dhead"><span class="aglyph" aria-hidden="true">✦</span><span class="dname">${esc(a.name||'unnamed agent')}</span><span class="fam">agent</span></div>`;
+  let h = '';
+  /* the illustrated cast: the same 512² face the agent uses in Bot Mode */
+  if(a.portrait) h += `<img class="castface" src="${escAttr(a.portrait)}" alt="${escAttr((a.name||'agent') + ' — illustrated portrait')}">`;
+  h += `<div class="dhead"><span class="aglyph" aria-hidden="true">✦</span><span class="dname">${esc(a.name||'unnamed agent')}</span><span class="fam">agent</span></div>`;
   h += `<div class="drows">`;
   h += drow('Role', a.role ? esc(a.role) : '—');
   h += drow('Reports', String(num(a._count, 0)));           // counted from the same reports list
   h += drow('Latest output', l && l.date ? `${esc(fmtDate(l.date))} <span style="color:var(--dim2)">· ${esc(agoTxt(l.date))}</span>` : '—');
   h += drow('Path', l && l.path ? `<code>${esc(l.path)}</code>` : '—');
+  if(a.sheet) h += drow('Character sheet', `<a href="${escAttr(a.sheet)}" target="_blank" rel="noopener">open ↗</a>`);
   h += `</div>`;
   if(l && l.path) h += `<div class="dfoot"><button class="copy" data-report="${escAttr(l.path)}">copy latest path ⧉</button></div>`;
   return h;
@@ -1901,10 +1924,20 @@ function renderAgents(){
   return `${note}<div class="sect">Roster · latest output</div>
   <div class="agentgrid">${rs.map(a=>{
     const n = agentReports(a).length;
+    /* one illustrated face per agent (data.js `portrait`, filled by the maio-cast
+       pipeline); a monogram stands in when the face has not been rendered yet, so
+       the grid reads the same today as it will with the full cast. */
+    const letters = String(a.name||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase() || '?';
+    const face = a.portrait
+      ? `<img class="ava agc-face" src="${escAttr(a.portrait)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ava mono',textContent:${JSON.stringify(letters)}}))">`
+      : `<span class="ava mono" aria-hidden="true">${esc(letters)}</span>`;
     return `<button class="agc" data-agent="${escAttr(a.name)}" aria-label="${escAttr('Agent ' + a.name + (a.role ? ' — ' + a.role : '') + ' — open detail')}">
-      <div class="an">${esc(a.name)}</div>
-      <div class="ar">${esc(a.role||'—')}</div>
-      <div class="al">${a.latest&&a.latest.date?`latest <b>${esc(fmtDate(a.latest.date))}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}${n?` <b>· ${n} report${n===1?'':'s'}</b>`:''}</div>
+      ${face}
+      <span class="body">
+        <div class="an">${esc(a.name)}</div>
+        <div class="ar">${esc(a.role||'—')}</div>
+        <div class="al">${a.latest&&a.latest.date?`latest <b>${esc(fmtDate(a.latest.date))}</b>`:'<span style="color:var(--dim2)">no output logged</span>'}${n?` <b>· ${n} report${n===1?'':'s'}</b>`:''}${a.sheet?' <b>· ✦ sheet</b>':''}</div>
+      </span>
     </button>`; }).join('')}</div>`;
 }
 /* ---------- Reports → the Library ----------
