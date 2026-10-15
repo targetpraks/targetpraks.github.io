@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 15,
+   "ms": 16,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 10,
+   "ms": 39,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 5,
+   "ms": 332,
    "ok": true,
    "note": "memory"
   },
@@ -38,9 +38,9 @@ var MAIO_DATA = {
    "name": "Hindsight web UI",
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
-   "code": 200,
-   "ms": 90,
-   "ok": true,
+   "code": null,
+   "ms": 2501,
+   "ok": false,
    "note": "memory ui"
   },
   {
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 3,
+   "ms": 24,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 63,
+   "ms": 534,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 1,
+   "ms": 154,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 3,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 6,
+   "ms": 213,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 7,
+   "ms": 52,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 77,
+   "ms": 1908,
    "ok": true,
    "note": "IPTV server"
   }
@@ -112,49 +112,49 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1157,
+   "ms": 1148,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 198,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 196,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 191,
    "ok": false
   },
   {
@@ -175,7 +175,7 @@ var MAIO_DATA = {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 195,
+   "ms": 191,
    "ok": false
   }
  ],
@@ -204,10 +204,10 @@ var MAIO_DATA = {
   },
   {
    "agent": "reviewer",
-   "path": "AI-Drive/Agent-Output/reviewer/2026-10-15-kids-calendar-verification-report-pass-as-fixed.md",
+   "path": "AI-Drive/Agent-Output/reviewer/2026-10-15-bruce-wayne-agent-independent-e2e-verification-spec-v1-0-2.md",
    "date": "2026-10-15",
    "ext": "md",
-   "kb": 9
+   "kb": 12
   },
   {
    "agent": "research",
@@ -246,17 +246,17 @@ var MAIO_DATA = {
   },
   {
    "agent": "bruce-wayne",
-   "path": "AI-Drive/Agent-Output/bruce-wayne/registry.db-shm",
+   "path": "AI-Drive/Agent-Output/bruce-wayne/roster.json",
    "date": "2026-10-15",
-   "ext": "db-shm",
-   "kb": 32
+   "ext": "json",
+   "kb": 10
   },
   {
    "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/published.csv",
+   "path": "AI-Drive/Agent-Output/batman/2026-10-15-gm-brand-knowledge-sweep-program.md",
    "date": "2026-10-15",
-   "ext": "csv",
-   "kb": 23
+   "ext": "md",
+   "kb": 20
   },
   {
    "agent": "adrianna",
@@ -264,6 +264,13 @@ var MAIO_DATA = {
    "date": "2026-10-15",
    "ext": "json",
    "kb": 16
+  },
+  {
+   "agent": "_cast",
+   "path": "AI-Drive/Agent-Output/_cast/beast/avatar-web.jpg",
+   "date": "2026-10-15",
+   "ext": "jpg",
+   "kb": 63
   },
   {
    "agent": "builder",
@@ -567,7 +574,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/vengeance-champion.gif",
+    "path": "DevMini/targetpraks.github.io/maio-os/index.html",
     "date": "2026-10-15",
     "ext": "html",
     "kb": 0
@@ -604,18 +611,33 @@ var MAIO_DATA = {
    }
   },
   {
-   "name": "bruce-wayne",
+   "name": "brand-knowledge-sweep",
    "family": "dev",
-   "root": "DevMini/bruce-wayne",
-   "what": "Bruce Wayne \u2014 review loop",
+   "root": "DevMini/brand-knowledge-sweep",
+   "what": "\u2014",
    "lastTouched": "2026-10-15",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/bruce-wayne/README.md",
+    "path": "DevMini/brand-knowledge-sweep/bksweep_api.py",
     "date": "2026-10-15",
-    "ext": "md",
-    "kb": 6
+    "ext": "py",
+    "kb": 9
+   }
+  },
+  {
+   "name": "bruce-wayne",
+   "family": "dev",
+   "root": "DevMini/bruce-wayne",
+   "what": "Bruce Wayne \u2014 review loop + apply engine",
+   "lastTouched": "2026-10-15",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/bruce-wayne/tests/bruce_wayne_apply_tests.py",
+    "date": "2026-10-15",
+    "ext": "py",
+    "kb": 74
    }
   },
   {
@@ -645,10 +667,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/constellation/constellation/tsconfig.tsbuildinfo",
+    "path": "DevMini/constellation/constellation/tests/health-api.test.ts",
     "date": "2026-10-15",
-    "ext": "tsbuildinfo",
-    "kb": 362
+    "ext": "ts",
+    "kb": 2
    }
   },
   {
@@ -700,6 +722,21 @@ var MAIO_DATA = {
     "date": "2026-10-01",
     "ext": "json",
     "kb": 11
+   }
+  },
+  {
+   "name": "maio-cast",
+   "family": "dev",
+   "root": "DevMini/maio-cast",
+   "what": "Maio Cast",
+   "lastTouched": "2026-10-15",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/maio-cast/render_cast.py",
+    "date": "2026-10-15",
+    "ext": "py",
+    "kb": 9
    }
   },
   {
@@ -1212,20 +1249,34 @@ var MAIO_DATA = {
  ],
  "roster": [
   {
+   "name": "_cast",
+   "role": "\u2014",
+   "latest": {
+    "path": "AI-Drive/Agent-Output/_cast/beast/avatar-web.jpg",
+    "date": "2026-10-15"
+   },
+   "portrait": null,
+   "sheet": null
+  },
+  {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
     "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/published.csv",
+    "path": "AI-Drive/Agent-Output/batman/2026-10-15-gm-brand-knowledge-sweep-program.md",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": "assets/cast/batman.jpg",
+   "sheet": "https://targetpraks.github.io/bruce-wayne-character-sheet.html"
   },
   {
    "name": "baymax",
@@ -1233,7 +1284,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/baymax/2026-10-11-weekly-score.md",
     "date": "2026-10-11"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "beast",
@@ -1241,15 +1294,19 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/beast/gates-pending-t_0709c96f.csv",
     "date": "2026-10-14"
-   }
+   },
+   "portrait": "assets/cast/beast.jpg",
+   "sheet": null
   },
   {
    "name": "bruce-wayne",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/bruce-wayne/registry.db-shm",
+    "path": "AI-Drive/Agent-Output/bruce-wayne/roster.json",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": "assets/cast/batman.jpg",
+   "sheet": null
   },
   {
    "name": "builder",
@@ -1257,12 +1314,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/builder/incidents/2026-10-14-hindsight-pg-recovery.md",
     "date": "2026-10-14"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "cao",
    "role": "C-suite \u00b7 analytics",
-   "latest": null
+   "latest": null,
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "cfo",
@@ -1270,12 +1331,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/cfo/published.csv",
     "date": "2026-10-13"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "cho",
    "role": "C-suite \u00b7 \u2026",
-   "latest": null
+   "latest": null,
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "claude",
@@ -1283,7 +1348,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/claude/Vault-Audit-2026-10-03.md",
     "date": "2026-10-03"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "cmo",
@@ -1291,7 +1358,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/cmo/crypto-market-snapshot-2026-10-11.md",
     "date": "2026-10-05"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "coo",
@@ -1299,7 +1368,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/coo/published.csv",
     "date": "2026-10-09"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "courage",
@@ -1307,12 +1378,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "cro",
    "role": "Chief Risk Officer \u2014 risk & compliance",
-   "latest": null
+   "latest": null,
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "cto",
@@ -1320,12 +1395,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/cto/published.csv",
     "date": "2026-10-13"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "daniel",
    "role": "Divorced Dads GM (Paperclip)",
-   "latest": null
+   "latest": null,
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "default",
@@ -1333,7 +1412,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/default/2026-10-15-kids-write-lane-prep/findings.md",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "dexter",
@@ -1341,7 +1422,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "infinity",
@@ -1349,7 +1432,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/infinity/published.csv",
     "date": "2026-10-13"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "inspector",
@@ -1357,7 +1442,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/inspector/hindsight-dashboard-recon-2026-10-07.md",
     "date": "2026-10-07"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "jean",
@@ -1365,12 +1452,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/jean/2026-10-18-weekly-score.md",
     "date": "2026-10-11"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "joe",
    "role": "Joe the Farmer \u2014 TLF brand GM",
-   "latest": null
+   "latest": null,
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "johnny",
@@ -1378,12 +1469,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/johnny/2026-10-11-weekly-score.md",
     "date": "2026-10-11"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "lois",
    "role": "Ticker",
-   "latest": null
+   "latest": null,
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "papa",
@@ -1391,7 +1486,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/papa/published.csv",
     "date": "2026-10-13"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "poppins",
@@ -1399,7 +1496,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/poppins/kids-calendar/2026-10-15.md",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "research",
@@ -1407,7 +1506,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "researcher",
@@ -1415,15 +1516,19 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/researcher/2026-10-09-maio-life-planner-full-structural-inventory-2.md",
     "date": "2026-10-09"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "reviewer",
    "role": "Code review",
    "latest": {
-    "path": "AI-Drive/Agent-Output/reviewer/2026-10-15-kids-calendar-verification-report-pass-as-fixed.md",
+    "path": "AI-Drive/Agent-Output/reviewer/2026-10-15-bruce-wayne-agent-independent-e2e-verification-spec-v1-0-2.md",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "scribe",
@@ -1431,7 +1536,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/scribe/published.csv",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "scrooge",
@@ -1439,12 +1546,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/scrooge/weekly-score-2026-10-11.md",
     "date": "2026-10-11"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "shadow",
    "role": "Restricted ops \u2014 OSINT & dark-web (local model)",
-   "latest": null
+   "latest": null,
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "splinter",
@@ -1452,7 +1563,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/splinter/published.csv",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "stack-setup",
@@ -1460,7 +1573,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/stack-setup/skills-ledger.md",
     "date": "2026-10-06"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "storm",
@@ -1468,7 +1583,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/storm/score.md",
     "date": "2026-10-11"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "targetpraks",
@@ -1476,7 +1593,9 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/targetpraks/github-public-audit/visibility-change-send.txt",
     "date": "2026-10-07"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   },
   {
    "name": "xavier",
@@ -1484,9 +1603,16 @@ var MAIO_DATA = {
    "latest": {
     "path": "AI-Drive/Agent-Output/xavier/2026-10-15-kids-calendar-install-and-run.md",
     "date": "2026-10-15"
-   }
+   },
+   "portrait": null,
+   "sheet": null
   }
  ],
+ "cast": {
+  "faces": "2",
+  "sheets": "1",
+  "dir": "assets/cast"
+ },
  "system": {
   "launchd": {
    "jobs": [
@@ -1542,7 +1668,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 26392,
+     "pid": null,
      "exit": 0
     },
     {
@@ -1587,7 +1713,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.hermes-dashboard",
-     "pid": 89603,
+     "pid": 31421,
      "exit": -15
     },
     {
@@ -1742,8 +1868,8 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.snappier-server",
-     "pid": 54829,
-     "exit": 0
+     "pid": 82935,
+     "exit": 1
     },
     {
      "label": "com.maio.ok-vault-server-watchdog",
@@ -1813,43 +1939,43 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 64,
-    "running": 28
+    "running": 27
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 15 hours (healthy)",
+    "status": "Up 18 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 29 hours (healthy)",
+    "status": "Up 32 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 29 hours (healthy)",
+    "status": "Up 32 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 29 hours (healthy)",
+    "status": "Up 32 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 29 hours",
+    "status": "Up 32 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 29 hours (healthy)",
+    "status": "Up 32 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 29 hours",
+    "status": "Up 32 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1893,86 +2019,86 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 338,
-    "running": 3,
-    "todo": 7,
-    "ready": 7,
-    "blocked": 4,
+    "done": 359,
+    "ready": 2,
+    "running": 2,
+    "todo": 8,
+    "blocked": 5,
     "scheduled": 1
    },
-   "total": 360,
+   "total": 377,
    "recent": [
     {
-     "id": "t_90c3982c",
-     "title": "Vault: file 'REA plugin implemented & verified on the Mac mini' to AI-Space/2.Automations-Skills/Reports/2026-10-15-rea-plugin-implemented-verified-mac-mini.md ",
+     "id": "t_38754588",
+     "title": "Vault: file 'GM Brand Knowledge \u2014 WorkDrive Sweep & Enrichment Program' to Work/3.PRD/Active/2026-10-15-gm-brand-knowledge-workdrive-sweep-enrichment-program.md",
      "status": "running",
      "assignee": "beast"
     },
     {
-     "id": "t_39e04b6d",
-     "title": "Kids-calendar write lane: prepare the term-sweep + activities proposal, await Ricardo's go, then execute",
+     "id": "t_7c466c29",
+     "title": "The Maio Cast \u2014 card + illustrated avatar + published sheet for every agent (own it: author the fleet's characters)",
+     "status": "ready",
+     "assignee": "adrianna"
+    },
+    {
+     "id": "t_757fad59",
+     "title": "Vault: file 'The Maio Cast \u2014 one illustrated character sheet per agent' to AI-Space/2.Automations-Skills/Reports/2026-10-15-the-maio-cast-one-illustrated-charac",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_e63e7b66",
+     "title": "Vault: file 'The Maio Cast \u2014 one illustrated character sheet per agent' to AI-Space/2.Automations-Skills/Reports/2026-10-15-the-maio-cast-one-illustrated-charac",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_1d86794e",
+     "title": "Bruce Wayne D7 \u2014 apply lane-facts fixes: full-timestamp dates, parental_info hierarchy key in both executors, operative staged flat fallback",
+     "status": "done",
+     "assignee": "builder"
+    },
+    {
+     "id": "t_90695419",
+     "title": "Vault: archive superseded 2026-10-15-bruce-wayne-character-sheet-v1.md to 5.PARA/4.Archive (after both ## Related tails land)",
      "status": "todo",
-     "assignee": "splinter"
-    },
-    {
-     "id": "t_915562fd",
-     "title": "Vault file: kids-calendar verification report (2026-10-15, reviewer)",
-     "status": "ready",
      "assignee": "beast"
     },
     {
-     "id": "t_1a5e06c1",
-     "title": "Draft + publish to vault: REA plugin implemented & verified on the Mac mini \u2014 report (findings ready)",
+     "id": "t_6e744c1f",
+     "title": "Vault: append the missing ## Related tail to 2026-10-15-bruce-wayne-character-sheet-v2-illustrated.md (prepared payload; OK body-mutation 500s on the 1.3 MB doc",
+     "status": "todo",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_dd4daa64",
+     "title": "Vault: file 'Bruce Wayne \u2014 Character Sheet v2 (illustrated)' to AI-Space/2.Automations-Skills/Reports/2026-10-15-bruce-wayne-character-sheet-v2-illustrated.md \u2014",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_942d9c41",
+     "title": "Re-verify Bruce Wayne after the fix round \u2014 verdict for the first staged approve (D1\u2013D6)",
+     "status": "todo",
+     "assignee": "reviewer"
+    },
+    {
+     "id": "t_d902ac4d",
+     "title": "Bruce Wayne D6 \u2014 schedule the apply/judgement stage (\u00a73.2 seat prompt) + supervised first apply of the queued instruction",
      "status": "running",
-     "assignee": "scribe"
+     "assignee": "builder"
     },
     {
-     "id": "t_ff1b51fe",
-     "title": "Vault: file 'Kids / RM calendar monitor \u2014 build handoff, install recipe and acceptance runbook' to AI-Space/2.Automations-Skills/Reports \u2014 rule-4 handoff from x",
-     "status": "ready",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_f807f470",
-     "title": "Backfill 2026-10-15 t_c1d083d1 gate rows to beast gates.csv (shell append; EOF anchor unreadable in beast profile)",
+     "id": "t_befd7bd5",
+     "title": "Fix Bruce Wayne defects D1\u2013D4 \u2014 reminder ladder + kanban epoch + money carve-out + routing precedence",
      "status": "done",
-     "assignee": "splinter"
+     "assignee": "builder"
     },
     {
-     "id": "t_88f62ee7",
-     "title": "Vault: file 'Spec \u2014 Kids / RM calendar monitor (BusyCal and Apple Calendar)' to Personal/2.Automations-Skills/Reports/2026-10-15-spec-kids-rm-calendar-monitor-b",
+     "id": "t_b568d102",
+     "title": "Bruce Wayne D5 \u2014 run the \u00a78.3/\u00a78.6 lane probes and record docs/zoho-lane-facts.md",
      "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_94d82801",
-     "title": "Vault: file 'Kid-caretaker agent verified \u2014 Mary Poppins (profile poppins)' to Personal/2.Automations-Skills/Reports/2026-10-15-kid-caretaker-agent-verification",
-     "status": "ready",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_c573f706",
-     "title": "Vault: file 'Constellation \u2014 the 30 role blueprints re-decided by Decision 3.0' to AI-Space/2.Automations-Skills/Reports/2026-10-15-constellation-the-30-role-bl",
-     "status": "ready",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_82b68f75",
-     "title": "Vault: file 'Zoho Mail triage rules for Bateman (v1.0)' to AI-Space/3.PRD/Active/2026-10-15-zoho-mail-triage-rules-bateman-v1.md \u2014 rule-4 handoff from default",
-     "status": "ready",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_633339cd",
-     "title": "Verify the kid-caretaker agent profile (Mary Poppins?)",
-     "status": "done",
-     "assignee": "default"
-    },
-    {
-     "id": "t_68c01ca7",
-     "title": "Spec the BusyCal calendar-monitoring automation",
-     "status": "done",
-     "assignee": "splinter"
+     "assignee": "builder"
     }
    ]
   },
@@ -2945,22 +3071,29 @@ var MAIO_DATA = {
   "mergedAt": "2026-10-15T16:45:05Z"
  },
  "summary": {
-  "projects": 56,
+  "projects": 58,
   "prds": 63,
-  "stackLive": 11,
+  "stackLive": 10,
   "stackTotal": 11,
   "devOnline": 0,
   "devTotal": 10,
-  "reports": 30,
-  "roster": 37,
+  "reports": 31,
+  "roster": 38,
   "launchdLoaded": 64,
   "dockerUp": 7,
-  "libraryPublic": 32,
+  "libraryPublic": 33,
   "libraryInternal": 200,
   "docs": 143
  },
  "library": {
   "public": [
+   {
+    "title": "Bruce Wayne \u2014 Character Sheet v2 (illustrated)",
+    "url": "bruce-wayne-character-sheet.html",
+    "dir": "bruce-wayne-character-sheet.html",
+    "date": "2026-10-15",
+    "kb": 1272
+   },
    {
     "title": "Is it hard to build something like this? \u2014 gr8r Studio teardown",
     "url": "gr8r-studio-teardown-2026-10-14.html",
@@ -3187,7 +3320,7 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 32,
+   "public": 33,
    "internal": 200,
    "docs": 143
   }
