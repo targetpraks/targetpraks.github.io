@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 5,
+   "ms": 4,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 7,
+   "ms": 4,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 46,
+   "ms": 163,
    "ok": true,
    "note": "memory ui"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 52,
+   "ms": 87,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 2,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 28,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 18,
+   "ms": 65,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 5,
+   "ms": 9,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 4,
+   "ms": 113,
    "ok": true,
    "note": "IPTV server"
   }
@@ -112,75 +112,82 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1029,
+   "ms": 1142,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 202,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 196,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 190,
    "ok": false
   }
  ],
  "devServersStaleSince": "",
  "reports": [
+  {
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/paper-notes/2026-10-15.md",
+   "date": "2026-10-15",
+   "ext": "md",
+   "kb": 2
+  },
   {
    "agent": "courage",
    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
@@ -201,13 +208,6 @@ var MAIO_DATA = {
    "date": "2026-10-14",
    "ext": "csv",
    "kb": 9
-  },
-  {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-   "date": "2026-10-14",
-   "ext": "csv",
-   "kb": 4
   },
   {
    "agent": "dexter",
@@ -556,12 +556,12 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/targetpraks.github.io",
    "what": "GitHub Pages \u2014 Maio OS, charts, reports live here",
-   "lastTouched": "2026-10-14",
+   "lastTouched": "2026-10-15",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/gr8r-studio-teardown-2026-10-14.html",
-    "date": "2026-10-14",
+    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "date": "2026-10-15",
     "ext": "html",
     "kb": 0
    }
@@ -796,12 +796,12 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/Divorced Dads",
    "what": "\u2014",
-   "lastTouched": "2026-10-14",
+   "lastTouched": "2026-10-15",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
     "path": "AI-Drive/Work/Divorced Dads/Icon\r",
-    "date": "2026-10-14",
+    "date": "2026-10-15",
     "ext": "",
     "kb": 1
    }
@@ -886,12 +886,12 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/Papa Pasta",
    "what": "\u2014",
-   "lastTouched": "2026-10-14",
+   "lastTouched": "2026-10-15",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
     "path": "AI-Drive/Work/Papa Pasta/Icon\r",
-    "date": "2026-10-14",
+    "date": "2026-10-15",
     "ext": "",
     "kb": 1
    }
@@ -946,12 +946,12 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/The Local Farmer",
    "what": "\u2014",
-   "lastTouched": "2026-10-14",
+   "lastTouched": "2026-10-15",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
     "path": "AI-Drive/Work/The Local Farmer/Icon\r",
-    "date": "2026-10-14",
+    "date": "2026-10-15",
     "ext": "",
     "kb": 1
    }
@@ -1360,8 +1360,8 @@ var MAIO_DATA = {
    "name": "research",
    "role": "Research arm",
    "latest": {
-    "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-    "date": "2026-10-14"
+    "path": "AI-Drive/Agent-Output/research/paper-notes/2026-10-15.md",
+    "date": "2026-10-15"
    }
   },
   {
@@ -1497,7 +1497,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 44889,
+     "pid": 2047,
      "exit": 0
     },
     {
@@ -1764,37 +1764,37 @@ var MAIO_DATA = {
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 3 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 11 hours",
+    "status": "Up 17 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 11 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 11 hours",
+    "status": "Up 17 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -1838,25 +1838,31 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 295,
+    "done": 298,
     "ready": 1,
-    "todo": 5,
+    "todo": 4,
     "blocked": 1,
-    "scheduled": 2
+    "scheduled": 1
    },
-   "total": 304,
+   "total": 305,
    "recent": [
+    {
+     "id": "t_b7cf5939",
+     "title": "Vault: file 'Incident \u2014 credential paste in kanban cards, redacted 2026-10-15 + public-snapshot guard' to AI-Space/2.Automations-Skills/Reports/2026-10-15-incid",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_3948662f",
+     "title": "Apply PRD v1.1 amendment to the vault PRD copy (LiteLLM-removal)",
+     "status": "done",
+     "assignee": "beast"
+    },
     {
      "id": "t_50d625b2",
      "title": "Remove 4 empty rogue dirs (vault Maio Hub/ tree) \u2014 Ricardo approved",
      "status": "done",
      "assignee": "beast"
-    },
-    {
-     "id": "t_f119a0bf",
-     "title": "TEST2 \u2014 wake wiring spawn-park phase (throwaway)",
-     "status": "scheduled",
-     "assignee": "default"
     },
     {
      "id": "t_2351e078",
@@ -1873,7 +1879,7 @@ var MAIO_DATA = {
     {
      "id": "t_54594ecf",
      "title": "LiteLLM removal \u2014 Stage 2: off-critical consumers (Hindsight, Maio OS spend tile, Air-side tools)",
-     "status": "todo",
+     "status": "done",
      "assignee": "default"
     },
     {
@@ -1911,12 +1917,6 @@ var MAIO_DATA = {
      "title": "Vault: file 'gr8r Studio teardown \u2014 is it hard to build something like this?' to Work/2.Automations-Skills/Reports/2026-10-14-gr8r-studio-teardown-is-it-hard-to",
      "status": "done",
      "assignee": "beast"
-    },
-    {
-     "id": "t_a163fdf4",
-     "title": "Goal: implement the LiteLLM-removal PRD \u2014 execute Stage 0, stand up the stage chain",
-     "status": "done",
-     "assignee": "default"
     }
    ]
   },
@@ -1927,16 +1927,16 @@ var MAIO_DATA = {
  },
  "prds": [
   {
-   "title": "2026-10-13-litellm-role-expansion-2026-10-13",
-   "project": "Active",
-   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/2026-10-13-litellm-role-expansion-2026-10-13.md",
-   "date": "2026-10-14",
-   "area": "AI-Space"
-  },
-  {
    "title": "2026-10-14-prd-remove-litellm-from-the-hermes-critical-path-staged",
    "project": "Active",
    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/2026-10-14-prd-remove-litellm-from-the-hermes-critical-path-staged.md",
+   "date": "2026-10-15",
+   "area": "AI-Space"
+  },
+  {
+   "title": "2026-10-13-litellm-role-expansion-2026-10-13",
+   "project": "Active",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/2026-10-13-litellm-role-expansion-2026-10-13.md",
    "date": "2026-10-14",
    "area": "AI-Space"
   },
@@ -2364,17 +2364,17 @@ var MAIO_DATA = {
  "enriched": {
   "vaultPrds": [
    {
-    "title": "2026-10-13-litellm-role-expansion-2026-10-13",
-    "project": "Active",
-    "area": "AI-Space",
-    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/2026-10-13-litellm-role-expansion-2026-10-13.md",
-    "date": "2026-10-14"
-   },
-   {
     "title": "2026-10-14-prd-remove-litellm-from-the-hermes-critical-path-staged",
     "project": "Active",
     "area": "AI-Space",
     "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/2026-10-14-prd-remove-litellm-from-the-hermes-critical-path-staged.md",
+    "date": "2026-10-15"
+   },
+   {
+    "title": "2026-10-13-litellm-role-expansion-2026-10-13",
+    "project": "Active",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/2026-10-13-litellm-role-expansion-2026-10-13.md",
     "date": "2026-10-14"
    },
    {
@@ -2879,7 +2879,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-14T22:45:04Z"
+  "mergedAt": "2026-10-15T04:45:05Z"
  },
  "summary": {
   "projects": 54,
