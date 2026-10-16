@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 16,
+   "ms": 34,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 15,
+   "ms": 37,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 6,
+   "ms": 54,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 109,
+   "ms": 1459,
    "ok": true,
    "note": "memory ui"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 92,
+   "ms": 94,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 1,
+   "ms": 21,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 1,
+   "ms": 13,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 95,
+   "ms": 1268,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 10,
+   "ms": 222,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 47,
+   "ms": 1150,
    "ok": true,
    "note": "IPTV server"
   }
@@ -112,70 +112,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 318,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 339,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 345,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 275,
+   "ms": 197,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 198,
+   "ms": 261,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 199,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 195,
+   "ms": 190,
    "ok": false
   }
  ],
@@ -183,10 +183,10 @@ var MAIO_DATA = {
  "reports": [
   {
    "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/week-closeout-2026-10-16.md",
+   "path": "AI-Drive/Agent-Output/splinter/kids-audit-2026-10-16/raw/fix_apply.scpt",
    "date": "2026-10-16",
-   "ext": "md",
-   "kb": 4
+   "ext": "scpt",
+   "kb": 6
   },
   {
    "agent": "shadow",
@@ -197,10 +197,10 @@ var MAIO_DATA = {
   },
   {
    "agent": "scribe",
-   "path": "AI-Drive/Agent-Output/scribe/2026-10-16-maio-fleet-model-strength-availability-ranking-2026-10-16.md",
+   "path": "AI-Drive/Agent-Output/scribe/2026-10-16-top-8-maio-prd-the-fleet-run-living-top-8-magazine.md",
    "date": "2026-10-16",
    "ext": "md",
-   "kb": 12
+   "kb": 27
   },
   {
    "agent": "research",
@@ -245,18 +245,32 @@ var MAIO_DATA = {
    "kb": 1
   },
   {
-   "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/published.csv",
+   "agent": "beast",
+   "path": "AI-Drive/Agent-Output/beast/gates-append-2026-10-16-t_f34fc0bd.csv",
    "date": "2026-10-16",
    "ext": "csv",
-   "kb": 44
+   "kb": 2
+  },
+  {
+   "agent": "batman",
+   "path": "AI-Drive/Agent-Output/batman/brand-knowledge/EXP/raw/2a5aa5e257670bff.txt",
+   "date": "2026-10-16",
+   "ext": "txt",
+   "kb": 1
   },
   {
    "agent": "adrianna",
-   "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
+   "path": "AI-Drive/Agent-Output/adrianna/omnigent-removal-20261014/home/omnigent/codex-native/fb7f867f5c8a77692cffc90034bbb83d/codex-home/tmp/arg0/codex-arg0SpBl2E/applypatch",
    "date": "2026-10-16",
-   "ext": "json",
-   "kb": 16
+   "ext": "",
+   "kb": 244094
+  },
+  {
+   "agent": "_cast",
+   "path": "AI-Drive/Agent-Output/_cast/beast/sheet.html",
+   "date": "2026-10-16",
+   "ext": "html",
+   "kb": 817
   },
   {
    "agent": "xavier",
@@ -280,24 +294,10 @@ var MAIO_DATA = {
    "kb": 4
   },
   {
-   "agent": "_cast",
-   "path": "AI-Drive/Agent-Output/_cast/ledger.json",
-   "date": "2026-10-15",
-   "ext": "json",
-   "kb": 1
-  },
-  {
    "agent": "builder",
    "path": "AI-Drive/Agent-Output/builder/incidents/2026-10-14-hindsight-pg-recovery.md",
    "date": "2026-10-14",
    "ext": "md",
-   "kb": 5
-  },
-  {
-   "agent": "beast",
-   "path": "AI-Drive/Agent-Output/beast/gates-pending-t_0709c96f.csv",
-   "date": "2026-10-14",
-   "ext": "csv",
    "kb": 5
   },
   {
@@ -596,10 +596,25 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/admin-ops-watchtower-2026-10-16.html",
+    "path": "DevMini/targetpraks.github.io/beast-character-sheet.html",
     "date": "2026-10-16",
     "ext": "html",
     "kb": 0
+   }
+  },
+  {
+   "name": "Top 8 Maio",
+   "family": "dev",
+   "root": "DevMini/Top 8 Maio",
+   "what": "top8-maio",
+   "lastTouched": "2026-10-16",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/Top 8 Maio/src/lib/publish.ts",
+    "date": "2026-10-16",
+    "ext": "ts",
+    "kb": 18
    }
   },
   {
@@ -641,10 +656,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/brand-knowledge-sweep/bksweep_api.py",
+    "path": "DevMini/brand-knowledge-sweep/bksweep_family_audit.py",
     "date": "2026-10-16",
     "ext": "py",
-    "kb": 16
+    "kb": 2
    }
   },
   {
@@ -689,10 +704,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/constellation/constellation/scripts/blueprint-decide-v2.ts",
+    "path": "DevMini/constellation/wt-stage1-cn01/next-env.d.ts",
     "date": "2026-10-16",
     "ext": "ts",
-    "kb": 31
+    "kb": 1
    }
   },
   {
@@ -755,10 +770,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/maio-cast/cards/xavier.json",
+    "path": "DevMini/maio-cast/cast_ledger.py",
     "date": "2026-10-16",
-    "ext": "json",
-    "kb": 6
+    "ext": "py",
+    "kb": 5
    }
   },
   {
@@ -766,12 +781,12 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/maio-tools",
    "what": "maio-tools",
-   "lastTouched": "2026-10-15",
+   "lastTouched": "2026-10-16",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/maio-tools/tools/propagate_skill_fleet.py",
-    "date": "2026-10-15",
+    "path": "DevMini/maio-tools/tools/propagate_english_only.py",
+    "date": "2026-10-16",
     "ext": "py",
     "kb": 3
    }
@@ -1274,8 +1289,8 @@ var MAIO_DATA = {
    "name": "_cast",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/_cast/ledger.json",
-    "date": "2026-10-15"
+    "path": "AI-Drive/Agent-Output/_cast/beast/sheet.html",
+    "date": "2026-10-16"
    },
    "portrait": null,
    "sheet": null
@@ -1284,7 +1299,7 @@ var MAIO_DATA = {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
-    "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
+    "path": "AI-Drive/Agent-Output/adrianna/omnigent-removal-20261014/home/omnigent/codex-native/fb7f867f5c8a77692cffc90034bbb83d/codex-home/tmp/arg0/codex-arg0SpBl2E/applypatch",
     "date": "2026-10-16"
    },
    "portrait": null,
@@ -1294,7 +1309,7 @@ var MAIO_DATA = {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/published.csv",
+    "path": "AI-Drive/Agent-Output/batman/brand-knowledge/EXP/raw/2a5aa5e257670bff.txt",
     "date": "2026-10-16"
    },
    "portrait": "assets/cast/batman.jpg",
@@ -1314,8 +1329,8 @@ var MAIO_DATA = {
    "name": "beast",
    "role": "Vault steward \u2014 hygiene & lifecycle",
    "latest": {
-    "path": "AI-Drive/Agent-Output/beast/gates-pending-t_0709c96f.csv",
-    "date": "2026-10-14"
+    "path": "AI-Drive/Agent-Output/beast/gates-append-2026-10-16-t_f34fc0bd.csv",
+    "date": "2026-10-16"
    },
    "portrait": "assets/cast/beast.jpg",
    "sheet": "https://targetpraks.github.io/beast-character-sheet.html"
@@ -1556,7 +1571,7 @@ var MAIO_DATA = {
    "name": "scribe",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/scribe/2026-10-16-maio-fleet-model-strength-availability-ranking-2026-10-16.md",
+    "path": "AI-Drive/Agent-Output/scribe/2026-10-16-top-8-maio-prd-the-fleet-run-living-top-8-magazine.md",
     "date": "2026-10-16"
    },
    "portrait": null,
@@ -1586,7 +1601,7 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/week-closeout-2026-10-16.md",
+    "path": "AI-Drive/Agent-Output/splinter/kids-audit-2026-10-16/raw/fix_apply.scpt",
     "date": "2026-10-16"
    },
    "portrait": null,
@@ -1643,7 +1658,7 @@ var MAIO_DATA = {
    "jobs": [
     {
      "label": "com.maio.snappier-playlists",
-     "pid": 54245,
+     "pid": 3645,
      "exit": 0
     },
     {
@@ -1668,7 +1683,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-local",
-     "pid": 54249,
+     "pid": 3649,
      "exit": 0
     },
     {
@@ -1678,7 +1693,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.copilot-mcp",
-     "pid": 54273,
+     "pid": 3683,
      "exit": 0
     },
     {
@@ -1693,7 +1708,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 24027,
+     "pid": null,
      "exit": 0
     },
     {
@@ -1713,7 +1728,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.gamma-mcp",
-     "pid": 54267,
+     "pid": 3678,
      "exit": 0
     },
     {
@@ -1732,6 +1747,11 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.cast-grind",
+     "pid": null,
+     "exit": 126
+    },
+    {
      "label": "com.maio.paperclip-briefing-collector",
      "pid": null,
      "exit": 0
@@ -1743,12 +1763,12 @@ var MAIO_DATA = {
     },
     {
      "label": "ai.hermes.gateway",
-     "pid": 54293,
+     "pid": 3701,
      "exit": 0
     },
     {
      "label": "com.maio.hermes-dashboard",
-     "pid": 54294,
+     "pid": 3702,
      "exit": 0
     },
     {
@@ -1763,7 +1783,7 @@ var MAIO_DATA = {
     },
     {
      "label": "ing.paperclip.paperclipai",
-     "pid": 54246,
+     "pid": 3646,
      "exit": 0
     },
     {
@@ -1773,22 +1793,22 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.docs-mcp",
-     "pid": 54253,
+     "pid": 3664,
      "exit": 0
     },
     {
      "label": "com.maio.ok-vault-server",
-     "pid": 57002,
+     "pid": 18761,
      "exit": -15
     },
     {
      "label": "com.maio.constellation-manco-docs",
-     "pid": 54280,
+     "pid": 3688,
      "exit": 0
     },
     {
      "label": "com.maio.composio-mcp",
-     "pid": 54281,
+     "pid": 3689,
      "exit": 0
     },
     {
@@ -1813,12 +1833,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.cloudflare-mcp",
-     "pid": 54256,
+     "pid": 3667,
      "exit": 0
     },
     {
      "label": "com.maio.vault-agent",
-     "pid": 54260,
+     "pid": 3671,
      "exit": 0
     },
     {
@@ -1838,7 +1858,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.krea-mcp",
-     "pid": 54299,
+     "pid": 3707,
      "exit": 0
     },
     {
@@ -1858,12 +1878,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.todoist-mcp",
-     "pid": 54264,
+     "pid": 3675,
      "exit": 0
     },
     {
      "label": "com.maio.pipedream-mcp",
-     "pid": 54266,
+     "pid": 3677,
      "exit": 0
     },
     {
@@ -1878,7 +1898,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.browseruse-mcp",
-     "pid": 54282,
+     "pid": 3690,
      "exit": 0
     },
     {
@@ -1888,7 +1908,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.superhuman-mcp",
-     "pid": 54295,
+     "pid": 3703,
      "exit": 0
     },
     {
@@ -1898,7 +1918,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.snappier-server",
-     "pid": 54306,
+     "pid": 3713,
      "exit": 0
     },
     {
@@ -1908,28 +1928,23 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.agent-desktop-guard",
-     "pid": 54240,
+     "pid": 3639,
      "exit": 0
     },
     {
      "label": "com.maio.magnific-mcp",
-     "pid": 54258,
-     "exit": 0
-    },
-    {
-     "label": "application.com.nousresearch.hermes.19764935.19766679",
-     "pid": 66871,
+     "pid": 3669,
      "exit": 0
     },
     {
      "label": "com.maio.gate-mcp",
-     "pid": 54277,
+     "pid": 3685,
      "exit": 0
     },
     {
      "label": "com.maio.litellm-watchdog",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.stack-up",
@@ -1938,8 +1953,8 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.qmd-mcp",
-     "pid": 57007,
-     "exit": -15
+     "pid": 3697,
+     "exit": 0
     },
     {
      "label": "com.maio.backup",
@@ -1958,59 +1973,59 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.d3-gate",
-     "pid": 54301,
+     "pid": 3709,
      "exit": 0
     },
     {
      "label": "com.maio.keep-awake",
-     "pid": 54305,
+     "pid": 3712,
      "exit": 0
     },
     {
      "label": "com.maio.status-agent",
-     "pid": 54308,
+     "pid": 3715,
      "exit": 0
     }
    ],
    "counts": {
     "loaded": 66,
-    "running": 28
+    "running": 26
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 15 hours (healthy)",
+    "status": "Up 14 minutes (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 30 minutes (healthy)",
+    "status": "Up 14 minutes (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 2 days (healthy)",
+    "status": "Up 14 minutes (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 2 days (healthy)",
+    "status": "Up 14 minutes (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 2 days",
+    "status": "Up 14 minutes",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 2 days (healthy)",
+    "status": "Up 14 minutes (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 2 days",
+    "status": "Up 14 minutes",
     "ports": "5432/tcp"
    }
   ],
@@ -2054,83 +2069,84 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 420,
-    "ready": 3,
-    "todo": 8,
+    "done": 433,
+    "running": 3,
+    "todo": 11,
+    "ready": 1,
     "blocked": 7,
     "scheduled": 1
    },
-   "total": 439,
+   "total": 456,
    "recent": [
     {
-     "id": "t_5e802004",
-     "title": "File \"Maio Fleet \u2014 Model Strength & Availability Ranking (2026-10-16)\" to vault (AI-Space/2.Automations-Skills/Reports) \u2014 rule-4 handoff from scribe",
+     "id": "t_7c77ae50",
+     "title": "Maio Cast \u2014 independent audit: coverage, live links, cockpit, ledger, exactly-one Beast card per sheet",
+     "status": "todo",
+     "assignee": "reviewer"
+    },
+    {
+     "id": "t_4dbe924e",
+     "title": "Maio OS cast \u2014 roster fixes (gen ROLES, _cast leak, sheet aliases, cast-assets commit) + icon surfaces + skill fold-in",
+     "status": "todo",
+     "assignee": "batman"
+    },
+    {
+     "id": "t_28f1be50",
+     "title": "Maio Cast \u2014 finish pass: publish every sheet (web + ledger + md) with exactly one Beast card each",
+     "status": "todo",
+     "assignee": "scribe"
+    },
+    {
+     "id": "t_750c6ae3",
+     "title": "Role blueprints are NOT lazy: adjudicate the 14 peer-review defects and return the correct solution",
+     "status": "running",
+     "assignee": "bigbrains"
+    },
+    {
+     "id": "t_57e1d4da",
+     "title": "Maio Cast \u2014 watch the grind to completion (0 missing), keep the driver alive, then hand off",
+     "status": "todo",
+     "assignee": "courage"
+    },
+    {
+     "id": "t_41428103",
+     "title": "Hindsight: retains failing + recall traceback post-reboot (service up, degraded) \u2014 investigate & repair",
+     "status": "running",
+     "assignee": "builder"
+    },
+    {
+     "id": "t_f34fc0bd",
+     "title": "File UPDATE: Top 8 Maio PRD rev-2 to vault in place (AI-Space/3.PRD/Active) \u2014 rule-4 handoff from scribe",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_5a3f603d",
-     "title": "Draft + publish to vault: Maio Fleet \u2014 Model Strength & Availability Ranking (2026-10-16) (findings ready)",
+     "id": "t_ee508231",
+     "title": "Draft + publish to vault: Top 8 Maio \u2014 PRD rev-2 (Ricardo review: supplier links + actual pricing)",
      "status": "done",
      "assignee": "scribe"
     },
     {
-     "id": "t_3637abcf",
-     "title": "Vault: file 'Peer Review \u2014 Full-Coverage Role Blueprints (verdict: not fit to load as-is)' to AI-Space/2.Automations-Skills/Reports/2026-10-16-peer-review-full-",
+     "id": "t_347f90d2",
+     "title": "File PRD-Top-8-Maio to vault (AI-Space/3.PRD/Active) \u2014 rule-4 handoff from scribe",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_6c6d9eeb",
-     "title": "Vault: file 'Role Blueprints \u2014 Full Coverage (29 roles, 27 traits each)' to AI-Space/2.Automations-Skills/Reports/2026-10-16-role-blueprints-full-coverage-29-ro",
+     "id": "t_de8335bc",
+     "title": "Draft + publish to vault: Top 8 Maio \u2014 PRD (findings ready)",
+     "status": "done",
+     "assignee": "scribe"
+    },
+    {
+     "id": "t_ad97d7f7",
+     "title": "Vault: file 'Orca (Stably ADE) \u2014 Full Setup, Mac mini (2026-10-16)' to AI-Space/1.Setup-Config/Systems/2026-10-16-orca-stably-ade-full-setup-mac-mini-2026-10-16",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_167f54cb",
-     "title": "Machine ops: restart the OK/Hocuspocus (openknowledge) + qmd services \u2014 vault write lane down since ~13:0x SAST 2026-10-16",
-     "status": "ready",
-     "assignee": "keeper"
-    },
-    {
-     "id": "t_48e7147b",
-     "title": "Vault: file 'Admin Ops Watchtower 2026-10-16 \u2014 Filestage live: dates, overdue, revision ownership' to Work/2.Automations-Skills/Reports/2026-10-16-admin-ops-wat",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_a9219166",
-     "title": "Vault: file 'Incident \u2014 Zoho client secret pasted into Discord chat (2026-10-16)' to AI-Space/2.Automations-Skills/Reports/2026-10-16-incident-zoho-client-secre",
-     "status": "todo",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_422352d9",
-     "title": "Vault: file 'Constellation \u2014 Change Brief: 12 items, 2 owner decisions' to Work/2.Automations-Skills/Reports/2026-10-16-constellation-change-brief-12-items-2-ow",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_2b44b470",
-     "title": "Vault: file 'Constellation \u2014 Change Brief: 12 items, 2 owner decisions' to Work/2.Automations-Skills/Reports/2026-10-16-constellation-change-brief-12-items-2-ow",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_d1fbbafd",
-     "title": "Vault: file 'Kids calendars \u2014 rest-of-year audit (16 Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-16-kids-calendars-rest-of-year-audit-16-oct-202",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_b7482d99",
-     "title": "Vault: file 'Kids calendars \u2014 rest-of-year audit (16 Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-16-kids-calendars-rest-of-year-audit-16-oct-202",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_d629224c",
-     "title": "Vault: file 'Kids calendars \u2014 rest-of-year audit (16 Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-16-kids-calendars-rest-of-year-audit-16-oct-202",
+     "id": "t_ec176377",
+     "title": "Vault: file 'Orca (Stably ADE) \u2014 Full Setup, Mac mini' (.md) to AI-Space/1.Setup-Config/Systems \u2014 rule-4 handoff from scribe",
      "status": "done",
      "assignee": "beast"
     }
@@ -3091,7 +3107,7 @@ var MAIO_DATA = {
   "mergedAt": "2026-10-16T16:45:04Z"
  },
  "summary": {
-  "projects": 59,
+  "projects": 60,
   "prds": 61,
   "stackLive": 11,
   "stackTotal": 11,
