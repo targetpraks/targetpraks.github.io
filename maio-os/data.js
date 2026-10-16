@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 14,
+   "ms": 12,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 7,
+   "ms": 6,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 4,
+   "ms": 3,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 28,
+   "ms": 27,
    "ok": true,
    "note": "memory ui"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 35,
+   "ms": 37,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 6,
    "ok": true,
    "note": "vault search"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 5,
+   "ms": 7,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 5,
+   "ms": 4,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 8,
+   "ms": 4,
    "ok": true,
    "note": "IPTV server"
   }
@@ -112,63 +112,63 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1149,
+   "ms": 950,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 198,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 187,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 187,
    "ok": false
   },
   {
@@ -555,14 +555,14 @@ var MAIO_DATA = {
    "family": "pages",
    "root": "DevMini/targetpraks.github.io/the-standard",
    "what": "Live page on targetpraks.github.io",
-   "lastTouched": "2026-10-15",
+   "lastTouched": "2026-10-16",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/the-standard/cards/wk-10.jpg",
-    "date": "2026-10-15",
-    "ext": "jpg",
-    "kb": 273
+    "path": "DevMini/targetpraks.github.io/the-standard/voice/wk-06.mp3",
+    "date": "2026-10-16",
+    "ext": "mp3",
+    "kb": 189
    }
   },
   {
@@ -585,12 +585,12 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/targetpraks.github.io",
    "what": "GitHub Pages \u2014 Maio OS, charts, reports live here",
-   "lastTouched": "2026-10-15",
+   "lastTouched": "2026-10-16",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/the-standard-culture-campaign.html",
-    "date": "2026-10-15",
+    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "date": "2026-10-16",
     "ext": "html",
     "kb": 0
    }
@@ -1683,7 +1683,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 47978,
+     "pid": null,
      "exit": 0
     },
     {
@@ -1959,43 +1959,43 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 65,
-    "running": 28
+    "running": 27
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 21 hours (healthy)",
+    "status": "Up 22 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 35 hours (healthy)",
+    "status": "Up 36 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 35 hours (healthy)",
+    "status": "Up 36 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 35 hours (healthy)",
+    "status": "Up 36 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 35 hours",
+    "status": "Up 36 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 35 hours (healthy)",
+    "status": "Up 36 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 35 hours",
+    "status": "Up 36 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -3103,15 +3103,29 @@ var MAIO_DATA = {
     "title": "Admin Ops Watchtower \u2014 Infinity Brands, 2026-10-15",
     "url": "admin-ops-watchtower-2026-10-15.html",
     "dir": "admin-ops-watchtower-2026-10-15.html",
-    "date": "2026-10-15",
+    "date": "2026-10-16",
     "kb": 38
    },
    {
     "title": "Beast \u2014 Character Sheet",
     "url": "beast-character-sheet.html",
     "dir": "beast-character-sheet.html",
-    "date": "2026-10-15",
+    "date": "2026-10-16",
     "kb": 817
+   },
+   {
+    "title": "THE STANDARD \u2014 Infinity Brands culture campaign, 19 Oct to 28 Dec 2026",
+    "url": "the-standard/",
+    "dir": "the-standard",
+    "date": "2026-10-16",
+    "kb": 158
+   },
+   {
+    "title": "THE STANDARD \u2014 Infinity Brands culture campaign, 19 Oct to 28 Dec 2026",
+    "url": "the-standard-culture-campaign.html",
+    "dir": "the-standard-culture-campaign.html",
+    "date": "2026-10-16",
+    "kb": 158
    },
    {
     "title": "Bruce Wayne \u2014 Character Sheet v2 (illustrated)",
@@ -3119,20 +3133,6 @@ var MAIO_DATA = {
     "dir": "bruce-wayne-character-sheet.html",
     "date": "2026-10-15",
     "kb": 1272
-   },
-   {
-    "title": "THE STANDARD \u2014 Infinity Brands culture campaign, 19 Oct to 28 Dec 2026",
-    "url": "the-standard/",
-    "dir": "the-standard",
-    "date": "2026-10-15",
-    "kb": 158
-   },
-   {
-    "title": "THE STANDARD \u2014 Infinity Brands culture campaign, 19 Oct to 28 Dec 2026",
-    "url": "the-standard-culture-campaign.html",
-    "dir": "the-standard-culture-campaign.html",
-    "date": "2026-10-15",
-    "kb": 158
    },
    {
     "title": "Is it hard to build something like this? \u2014 gr8r Studio teardown",
