@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 12,
+   "ms": 17,
    "ok": true,
    "note": "router"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 3,
+   "ms": 5,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 27,
+   "ms": 222,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8000",
    "url": "http://127.0.0.1:8000/v1/models",
    "code": 401,
-   "ms": 1,
+   "ms": 5,
    "ok": true,
    "note": "401 = auth guard, alive"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 37,
+   "ms": 50,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 6,
+   "ms": 1,
    "ok": true,
    "note": "vault search"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 1,
    "ok": true,
    "note": "decision gates"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 7,
+   "ms": 8,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 4,
+   "ms": 9,
    "ok": true,
    "note": "company control plane"
   },
@@ -102,7 +102,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 4,
+   "ms": 59,
    "ok": true,
    "note": "IPTV server"
   }
@@ -112,81 +112,116 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 950,
+   "ms": 294,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 283,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 316,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 264,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 187,
+   "ms": 196,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 191,
    "ok": false
   }
  ],
  "devServersStaleSince": "",
  "reports": [
   {
-   "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+   "agent": "splinter",
+   "path": "AI-Drive/Agent-Output/splinter/briefs/oyster-pricing-brief-2026-10-16.md",
    "date": "2026-10-16",
-   "ext": "",
+   "ext": "md",
+   "kb": 6
+  },
+  {
+   "agent": "shadow",
+   "path": "AI-Drive/Agent-Output/shadow/the-standard/v12/voice-final.json",
+   "date": "2026-10-16",
+   "ext": "json",
+   "kb": 7
+  },
+  {
+   "agent": "poppins",
+   "path": "AI-Drive/Agent-Output/poppins/kids-calendar/2026-10-16.md",
+   "date": "2026-10-16",
+   "ext": "md",
    "kb": 1
+  },
+  {
+   "agent": "johnny",
+   "path": "AI-Drive/Agent-Output/johnny/2026-10-16-oyster-pricing-near-welgemoed-best-value-2.md",
+   "date": "2026-10-16",
+   "ext": "md",
+   "kb": 28
+  },
+  {
+   "agent": "courage",
+   "path": "AI-Drive/Agent-Output/courage/2026-10-16-daily-stack-health.md",
+   "date": "2026-10-16",
+   "ext": "md",
+   "kb": 4
+  },
+  {
+   "agent": "batman",
+   "path": "AI-Drive/Agent-Output/batman/campaign-the-standard/site/voice/wk-02.mp3",
+   "date": "2026-10-16",
+   "ext": "mp3",
+   "kb": 494
   },
   {
    "agent": "adrianna",
@@ -201,13 +236,6 @@ var MAIO_DATA = {
    "date": "2026-10-15",
    "ext": "md",
    "kb": 14
-  },
-  {
-   "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/published.csv",
-   "date": "2026-10-15",
-   "ext": "csv",
-   "kb": 5
   },
   {
    "agent": "scribe",
@@ -231,13 +259,6 @@ var MAIO_DATA = {
    "kb": 4
   },
   {
-   "agent": "poppins",
-   "path": "AI-Drive/Agent-Output/poppins/kids-calendar/2026-10-15.md",
-   "date": "2026-10-15",
-   "ext": "md",
-   "kb": 1
-  },
-  {
    "agent": "dexter",
    "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
    "date": "2026-10-15",
@@ -257,13 +278,6 @@ var MAIO_DATA = {
    "date": "2026-10-15",
    "ext": "db-shm",
    "kb": 32
-  },
-  {
-   "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/published.csv",
-   "date": "2026-10-15",
-   "ext": "csv",
-   "kb": 31
   },
   {
    "agent": "_cast",
@@ -327,13 +341,6 @@ var MAIO_DATA = {
    "date": "2026-10-11",
    "ext": "md",
    "kb": 9
-  },
-  {
-   "agent": "johnny",
-   "path": "AI-Drive/Agent-Output/johnny/2026-10-11-weekly-score.md",
-   "date": "2026-10-11",
-   "ext": "md",
-   "kb": 6
   },
   {
    "agent": "jean",
@@ -559,10 +566,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/the-standard/voice/wk-06.mp3",
+    "path": "DevMini/targetpraks.github.io/the-standard/index.html",
     "date": "2026-10-16",
-    "ext": "mp3",
-    "kb": 189
+    "ext": "html",
+    "kb": 157
    }
   },
   {
@@ -589,7 +596,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "path": "DevMini/targetpraks.github.io/the-standard/index.html",
     "date": "2026-10-16",
     "ext": "html",
     "kb": 0
@@ -630,14 +637,14 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/brand-knowledge-sweep",
    "what": "\u2014",
-   "lastTouched": "2026-10-15",
+   "lastTouched": "2026-10-16",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/brand-knowledge-sweep/bksweep_fold.py",
-    "date": "2026-10-15",
+    "path": "DevMini/brand-knowledge-sweep/bksweep_ledger.py",
+    "date": "2026-10-16",
     "ext": "py",
-    "kb": 5
+    "kb": 7
    }
   },
   {
@@ -1287,8 +1294,8 @@ var MAIO_DATA = {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/published.csv",
-    "date": "2026-10-15"
+    "path": "AI-Drive/Agent-Output/batman/campaign-the-standard/site/voice/wk-02.mp3",
+    "date": "2026-10-16"
    },
    "portrait": "assets/cast/batman.jpg",
    "sheet": "https://targetpraks.github.io/bruce-wayne-character-sheet.html"
@@ -1391,7 +1398,7 @@ var MAIO_DATA = {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+    "path": "AI-Drive/Agent-Output/courage/2026-10-16-daily-stack-health.md",
     "date": "2026-10-16"
    },
    "portrait": null,
@@ -1482,8 +1489,8 @@ var MAIO_DATA = {
    "name": "johnny",
    "role": "Weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/johnny/2026-10-11-weekly-score.md",
-    "date": "2026-10-11"
+    "path": "AI-Drive/Agent-Output/johnny/2026-10-16-oyster-pricing-near-welgemoed-best-value-2.md",
+    "date": "2026-10-16"
    },
    "portrait": null,
    "sheet": null
@@ -1509,8 +1516,8 @@ var MAIO_DATA = {
    "name": "poppins",
    "role": "Family & personal CRM \u00b7 weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/poppins/kids-calendar/2026-10-15.md",
-    "date": "2026-10-15"
+    "path": "AI-Drive/Agent-Output/poppins/kids-calendar/2026-10-16.md",
+    "date": "2026-10-16"
    },
    "portrait": null,
    "sheet": null
@@ -1568,7 +1575,10 @@ var MAIO_DATA = {
   {
    "name": "shadow",
    "role": "Restricted ops \u2014 OSINT & dark-web (local model)",
-   "latest": null,
+   "latest": {
+    "path": "AI-Drive/Agent-Output/shadow/the-standard/v12/voice-final.json",
+    "date": "2026-10-16"
+   },
    "portrait": null,
    "sheet": null
   },
@@ -1576,8 +1586,8 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/published.csv",
-    "date": "2026-10-15"
+    "path": "AI-Drive/Agent-Output/splinter/briefs/oyster-pricing-brief-2026-10-16.md",
+    "date": "2026-10-16"
    },
    "portrait": null,
    "sheet": null
@@ -1683,7 +1693,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": null,
+     "pid": 52643,
      "exit": 0
     },
     {
@@ -1938,13 +1948,13 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.d3-gate",
-     "pid": 53799,
-     "exit": 0
+     "pid": 39011,
+     "exit": -9
     },
     {
      "label": "com.maio.courage-nightcheck",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.keep-awake",
@@ -1959,43 +1969,43 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 65,
-    "running": 27
+    "running": 28
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 22 hours (healthy)",
+    "status": "Up 3 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 36 hours (healthy)",
+    "status": "Up 2 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 36 hours (healthy)",
+    "status": "Up 41 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 36 hours (healthy)",
+    "status": "Up 41 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 36 hours",
+    "status": "Up 41 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 36 hours (healthy)",
+    "status": "Up 41 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 36 hours",
+    "status": "Up 41 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -2039,83 +2049,83 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 376,
+    "done": 408,
     "ready": 2,
     "todo": 7,
-    "blocked": 6,
+    "blocked": 7,
     "scheduled": 1
    },
-   "total": 392,
+   "total": 425,
    "recent": [
     {
-     "id": "t_2afa2927",
-     "title": "Vault: file 'The Local Farmer \u2014 What the Record Actually Says' to Work/2.Automations-Skills/Reports/2026-10-15-the-local-farmer-what-the-record-actually-says.md",
+     "id": "t_b0b3278e",
+     "title": "Vault: file 'The Local Farmer \u2014 contradictions and what is open' to Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-contradictions-and-open.md \u2014 rule-4 handof",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_14263ecc",
-     "title": "Vault: file 'THE STANDARD \u2014 Infinity Brands weekly culture campaign (11 weeks, staged in Zoho Connect)' to AI-Space/2.Automations-Skills/Reports/2026-10-15-the-",
+     "id": "t_8e88d6af",
+     "title": "Vault: file 'The Local Farmer \u2014 the answer book' to Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-answer-book-2.md \u2014 rule-4 handoff from batman",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_9acd38fe",
-     "title": "File vault report: Bruce Wayne \u2014 re-verification verdict (post fix cards)",
+     "id": "t_9219bc1c",
+     "title": "Vault: file 'Divorced Dads \u2014 contradictions and what is open' to Work/3.PRD/Active/Divorced-Dads/2026-10-16-divorced-dads-contradictions-and-open.md \u2014 rule-4 ha",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_2e72de36",
-     "title": "Fix Bruce Wayne assignee resolution \u2014 the portal-user lookup omits the lane's mandatory query_params, so every human assignee would land unassigned in Zoho",
-     "status": "done",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_e4fdf358",
-     "title": "Vault: file 'Vengeance Problem Watch \u2014 build & calibration' to AI-Space/2.Automations-Skills/Reports/2026-10-15-vengeance-problem-watch-build-calibration.md \u2014 r",
+     "id": "t_0cc39e9f",
+     "title": "Vault: file 'Divorced Dads \u2014 the answer book' to Work/3.PRD/Active/Divorced-Dads/2026-10-16-divorced-dads-the-answer-book.md \u2014 rule-4 handoff from batman",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_6ce1506f",
-     "title": "Fix picklists.refresh_from_lane: lane call missing required portal id \u2192 refresh returns empty",
-     "status": "done",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_4b2f49ea",
-     "title": "Hunt the roster.json fixture-polluter (19:19 2026-10-15 live-roster overwrite)",
-     "status": "done",
-     "assignee": "builder"
-    },
-    {
-     "id": "t_99f2dae0",
-     "title": "Vault: correct the worst-wait day count in the Admin Ops Watchtower note (13 to 14 days)",
+     "id": "t_0b97a290",
+     "title": "Vault: file 'INFX Labs \u2014 contradictions and what is open' to Work/3.PRD/Active/INFX-Labs/2026-10-16-infx-labs-contradictions-and-open.md \u2014 rule-4 handoff from b",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_a0054b57",
-     "title": "ADM Deliver the two Bili Bi orders not delivered to the client (client stopped buying from us)",
-     "status": "blocked",
-     "assignee": "batman"
-    },
-    {
-     "id": "t_c682efa9",
-     "title": "Vault: file 'Constellation audit \u2014 the live application, what people hit, and where the time goes' to AI-Space/2.Automations-Skills/Reports/2026-10-15-constella",
+     "id": "t_2b0da62a",
+     "title": "Vault: file 'INFX Labs \u2014 the answer book' to Work/3.PRD/Active/INFX-Labs/2026-10-16-infx-labs-the-answer-book.md \u2014 rule-4 handoff from batman",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_649a82d5",
-     "title": "Vault: file 'Admin Ops Watchtower \u2014 Zoho Projects audit, 15 October 2026' to Work/2.Automations-Skills/Reports/2026-10-15-admin-ops-watchtower-zoho-projects-aud",
+     "id": "t_9105299a",
+     "title": "Vault: file 'INFX Solutions \u2014 contradictions and what is open' to Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-contradictions-and-open.md \u2014 rule-4",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_79c77b74",
-     "title": "Vault: file 'Infinity Brands weekly culture campaign \u2014 decision memo (Oct\u2013Dec 2026)' to Work/2.Automations-Skills/Reports/2026-10-15-infinity-brands-weekly-cult",
+     "id": "t_7ab88f1e",
+     "title": "Vault: file 'INFX Solutions \u2014 the answer book' to Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-the-answer-book-2.md \u2014 rule-4 handoff from batman",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_6e2f1044",
+     "title": "Vault: file 'INFX Solutions \u2014 what is open' to Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-what-is-open-2.md \u2014 rule-4 handoff from batman",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_dcbb6b96",
+     "title": "Vault: file 'INFX Solutions \u2014 contradictions in the record' to Work/3.PRD/Active/INFX-Solutions/2026-10-16-12-conflicts-fxs.md \u2014 rule-4 handoff from batman",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_17e22667",
+     "title": "Vault: file 'INFX Solutions \u2014 the answer book' to Work/3.PRD/Active/INFX-Solutions/2026-10-16-01-answer-book-fxs.md \u2014 rule-4 handoff from batman",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_b650b6a0",
+     "title": "File pass-2 companions (.md + .pdf) for 'Oyster pricing near Welgemoed \u2014 best value' at canonical vault paths (archive pass-1 first)",
      "status": "done",
      "assignee": "beast"
     }
@@ -2131,7 +2141,105 @@ var MAIO_DATA = {
    "title": "log",
    "project": "Active",
    "path": "Vault/Maio Hub/Work/3.PRD/Active/log.md",
-   "date": "2026-10-15",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-tlf-contradictions-and-open",
+   "project": "The-Local-Farmer",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-contradictions-and-open.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-tlf-answer-book-2",
+   "project": "The-Local-Farmer",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-answer-book-2.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-divorced-dads-contradictions-and-open",
+   "project": "Divorced-Dads",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/2026-10-16-divorced-dads-contradictions-and-open.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-divorced-dads-the-answer-book",
+   "project": "Divorced-Dads",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/2026-10-16-divorced-dads-the-answer-book.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-infx-labs-contradictions-and-open",
+   "project": "INFX-Labs",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/2026-10-16-infx-labs-contradictions-and-open.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-infx-labs-the-answer-book",
+   "project": "INFX-Labs",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/2026-10-16-infx-labs-the-answer-book.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-infx-solutions-contradictions-and-open",
+   "project": "INFX-Solutions",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-contradictions-and-open.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-infx-solutions-the-answer-book-2",
+   "project": "INFX-Solutions",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-the-answer-book-2.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-infx-solutions-what-is-open-2",
+   "project": "INFX-Solutions",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-what-is-open-2.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-12-conflicts-fxs",
+   "project": "INFX-Solutions",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-12-conflicts-fxs.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-01-answer-book-fxs",
+   "project": "INFX-Solutions",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-01-answer-book-fxs.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-the-standard-rules-v2",
+   "project": "3.PRD",
+   "path": "Vault/Maio Hub/AI-Space/3.PRD/2026-10-16-the-standard-rules-v2.md",
+   "date": "2026-10-16",
+   "area": "AI-Space"
+  },
+  {
+   "title": "2026-10-16-tlf-conflicts",
+   "project": "The-Local-Farmer",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-conflicts.md",
+   "date": "2026-10-16",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-16-tlf-answer-book",
+   "project": "The-Local-Farmer",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-answer-book.md",
+   "date": "2026-10-16",
    "area": "Work"
   },
   {
@@ -2436,111 +2544,6 @@ var MAIO_DATA = {
    "area": "Work"
   },
   {
-   "title": "Divorced-Dads-Playlists",
-   "project": "Divorced-Dads",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/Divorced-Dads-Playlists.md",
-   "date": "2026-09-16",
-   "area": "Work"
-  },
-  {
-   "title": "SunScout-Web-App-System-PRD-2026-09-15",
-   "project": "SunScout",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/SunScout/SunScout-Web-App-System-PRD-2026-09-15.md",
-   "date": "2026-09-16",
-   "area": "Work"
-  },
-  {
-   "title": "PRD-v2.8-UI-Design-System",
-   "project": "Quote-Program",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/Quote-Program/PRD-v2.8-UI-Design-System.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "FluxFlow-Public-Data-Connectors",
-   "project": "FluxFlow",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/FluxFlow/FluxFlow-Public-Data-Connectors.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "INF-MKT-Template-One-Master-Explained",
-   "project": "Active",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/INF-MKT-Template-One-Master-Explained.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13",
-   "project": "Active",
-   "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13.md",
-   "date": "2026-09-15",
-   "area": "AI-Space"
-  },
-  {
-   "title": "TLF-App-INFX-Feedback-Report",
-   "project": "Active",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/TLF-App-INFX-Feedback-Report.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "CHANGE-LOG-v23",
-   "project": "TLF-Franchisee-Model-Audit",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGE-LOG-v23.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "CHANGELOG-v26",
-   "project": "TLF-Franchisee-Model-Audit",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v26.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "CHANGELOG-v25",
-   "project": "TLF-Franchisee-Model-Audit",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v25.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "CHANGELOG-v24",
-   "project": "TLF-Franchisee-Model-Audit",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v24.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "audit_A_formula_consistency",
-   "project": "TLF-Franchisee-Model-Audit",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/audit_A_formula_consistency.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "_folder",
-   "project": "TLF-Franchisee-Model-Audit",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/_folder.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "INF-KPI-Compliance-Enforcement-Sep-2026",
-   "project": "Infinity-Brands-GM",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/Infinity-Brands-GM/INF-KPI-Compliance-Enforcement-Sep-2026.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
-   "title": "TLF-Joe-Farmer-Agent-PRD",
-   "project": "The-Local-Farmer",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Joe-Farmer-Agent-PRD.md",
-   "date": "2026-09-15",
-   "area": "Work"
-  },
-  {
    "title": "PRD_FEATURE.md",
    "project": "esoteric-command",
    "path": "DevMini/esoteric-command/PRD_FEATURE.md",
@@ -2569,7 +2572,112 @@ var MAIO_DATA = {
     "project": "Active",
     "area": "Work",
     "path": "Vault/Maio Hub/Work/3.PRD/Active/log.md",
-    "date": "2026-10-15"
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-tlf-contradictions-and-open",
+    "project": "The-Local-Farmer",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-contradictions-and-open.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-tlf-answer-book-2",
+    "project": "The-Local-Farmer",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-answer-book-2.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-divorced-dads-contradictions-and-open",
+    "project": "Divorced-Dads",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/2026-10-16-divorced-dads-contradictions-and-open.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-divorced-dads-the-answer-book",
+    "project": "Divorced-Dads",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/2026-10-16-divorced-dads-the-answer-book.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-infx-labs-contradictions-and-open",
+    "project": "INFX-Labs",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/2026-10-16-infx-labs-contradictions-and-open.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-infx-labs-the-answer-book",
+    "project": "INFX-Labs",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Labs/2026-10-16-infx-labs-the-answer-book.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-infx-solutions-contradictions-and-open",
+    "project": "INFX-Solutions",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-contradictions-and-open.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-infx-solutions-the-answer-book-2",
+    "project": "INFX-Solutions",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-the-answer-book-2.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-infx-solutions-what-is-open-2",
+    "project": "INFX-Solutions",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-infx-solutions-what-is-open-2.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-12-conflicts-fxs",
+    "project": "INFX-Solutions",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-12-conflicts-fxs.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-01-answer-book-fxs",
+    "project": "INFX-Solutions",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/INFX-Solutions/2026-10-16-01-answer-book-fxs.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "log",
+    "project": "3.PRD",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/log.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-the-standard-rules-v2",
+    "project": "3.PRD",
+    "area": "AI-Space",
+    "path": "Vault/Maio Hub/AI-Space/3.PRD/2026-10-16-the-standard-rules-v2.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-tlf-conflicts",
+    "project": "The-Local-Farmer",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-conflicts.md",
+    "date": "2026-10-16"
+   },
+   {
+    "title": "2026-10-16-tlf-answer-book",
+    "project": "The-Local-Farmer",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/2026-10-16-tlf-answer-book.md",
+    "date": "2026-10-16"
    },
    {
     "title": "2026-10-15-gm-brand-knowledge-workdrive-sweep-enrichment-program-2",
@@ -2878,111 +2986,6 @@ var MAIO_DATA = {
     "area": "Work",
     "path": "Vault/Maio Hub/Work/3.PRD/Active/SunScout/SunScout-Website-PRD-2026-09-15.md",
     "date": "2026-09-16"
-   },
-   {
-    "title": "Divorced-Dads-Playlists",
-    "project": "Divorced-Dads",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/Divorced-Dads/Divorced-Dads-Playlists.md",
-    "date": "2026-09-16"
-   },
-   {
-    "title": "SunScout-Web-App-System-PRD-2026-09-15",
-    "project": "SunScout",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/SunScout/SunScout-Web-App-System-PRD-2026-09-15.md",
-    "date": "2026-09-16"
-   },
-   {
-    "title": "PRD-v2.8-UI-Design-System",
-    "project": "Quote-Program",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/Quote-Program/PRD-v2.8-UI-Design-System.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "FluxFlow-Public-Data-Connectors",
-    "project": "FluxFlow",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/FluxFlow/FluxFlow-Public-Data-Connectors.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "INF-MKT-Template-One-Master-Explained",
-    "project": "Active",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/INF-MKT-Template-One-Master-Explained.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13",
-    "project": "Active",
-    "area": "AI-Space",
-    "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/PRD-Outside-In-Brand-Surface-Watchdog-2026-09-13.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "TLF-App-INFX-Feedback-Report",
-    "project": "Active",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/TLF-App-INFX-Feedback-Report.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "CHANGE-LOG-v23",
-    "project": "TLF-Franchisee-Model-Audit",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGE-LOG-v23.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "CHANGELOG-v26",
-    "project": "TLF-Franchisee-Model-Audit",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v26.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "CHANGELOG-v25",
-    "project": "TLF-Franchisee-Model-Audit",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v25.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "CHANGELOG-v24",
-    "project": "TLF-Franchisee-Model-Audit",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/CHANGELOG-v24.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "audit_A_formula_consistency",
-    "project": "TLF-Franchisee-Model-Audit",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/audit_A_formula_consistency.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "_folder",
-    "project": "TLF-Franchisee-Model-Audit",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Franchisee-Model-Audit/_folder.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "INF-KPI-Compliance-Enforcement-Sep-2026",
-    "project": "Infinity-Brands-GM",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/Infinity-Brands-GM/INF-KPI-Compliance-Enforcement-Sep-2026.md",
-    "date": "2026-09-15"
-   },
-   {
-    "title": "TLF-Joe-Farmer-Agent-PRD",
-    "project": "The-Local-Farmer",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Local-Farmer/TLF-Joe-Farmer-Agent-PRD.md",
-    "date": "2026-09-15"
    }
   ],
   "roles": {
@@ -3080,22 +3083,22 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-15T22:45:05Z"
+  "mergedAt": "2026-10-16T04:45:03Z"
  },
  "summary": {
   "projects": 59,
-  "prds": 62,
+  "prds": 61,
   "stackLive": 11,
   "stackTotal": 11,
   "devOnline": 0,
   "devTotal": 10,
-  "reports": 31,
+  "reports": 32,
   "roster": 38,
   "launchdLoaded": 65,
   "dockerUp": 7,
   "libraryPublic": 37,
   "libraryInternal": 200,
-  "docs": 142
+  "docs": 141
  },
  "library": {
   "public": [
@@ -3118,7 +3121,7 @@ var MAIO_DATA = {
     "url": "the-standard/",
     "dir": "the-standard",
     "date": "2026-10-16",
-    "kb": 158
+    "kb": 157
    },
    {
     "title": "THE STANDARD \u2014 Infinity Brands culture campaign, 19 Oct to 28 Dec 2026",
@@ -3362,7 +3365,7 @@ var MAIO_DATA = {
   "counts": {
    "public": 37,
    "internal": 200,
-   "docs": 142
+   "docs": 141
   }
  }
 };
