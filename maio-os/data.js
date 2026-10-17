@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 17,
+   "ms": 13,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 9,
+   "ms": 3,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 5,
+   "ms": 2,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 62,
+   "ms": 36,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 38,
+   "ms": 36,
    "ok": true,
    "note": "local models"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 2,
+   "ms": 0,
    "ok": true,
    "note": "decision gates"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 109,
+   "ms": 116,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 17,
+   "ms": 18,
    "ok": true,
    "note": "company control plane"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 21,
+   "ms": 7,
    "ok": true,
    "note": "IPTV server"
   }
@@ -103,70 +103,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 7857,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 3290,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 291,
+   "ms": 205,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 289,
+   "ms": 292,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 286,
+   "ms": 271,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 286,
+   "ms": 196,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 292,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 286,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 286,
+   "ms": 197,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 289,
+   "ms": 192,
    "ok": false
   }
  ],
@@ -174,17 +174,17 @@ var MAIO_DATA = {
  "reports": [
   {
    "agent": "storm",
-   "path": "AI-Drive/Agent-Output/storm/balcony-engineer-rfq-2026-10-17/engineer-rfq-51-trichardt.pdf",
+   "path": "AI-Drive/Agent-Output/storm/pantry-organisers-2026-10-17/pantry-organisers-2026-10-17.md",
    "date": "2026-10-17",
-   "ext": "pdf",
-   "kb": 241
+   "ext": "md",
+   "kb": 1
   },
   {
    "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/published.csv",
+   "path": "AI-Drive/Agent-Output/splinter/kids-audit-2026-10-16/fix-spec.txt",
    "date": "2026-10-17",
-   "ext": "csv",
-   "kb": 7
+   "ext": "txt",
+   "kb": 2
   },
   {
    "agent": "scribe",
@@ -208,6 +208,13 @@ var MAIO_DATA = {
    "kb": 1
   },
   {
+   "agent": "health-h1",
+   "path": "AI-Drive/Agent-Output/health-h1/report.py",
+   "date": "2026-10-17",
+   "ext": "py",
+   "kb": 11
+  },
+  {
    "agent": "dexter",
    "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
    "date": "2026-10-17",
@@ -216,9 +223,9 @@ var MAIO_DATA = {
   },
   {
    "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+   "path": "AI-Drive/Agent-Output/courage/watchtower-2026-10-17.md",
    "date": "2026-10-17",
-   "ext": "",
+   "ext": "md",
    "kb": 1
   },
   {
@@ -230,24 +237,24 @@ var MAIO_DATA = {
   },
   {
    "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/2026-10-15-gm-brand-knowledge-sweep-program.md",
+   "path": "AI-Drive/Agent-Output/batman/top8-bakeoff/hidden/results-codex.json",
    "date": "2026-10-17",
-   "ext": "md",
-   "kb": 26
+   "ext": "json",
+   "kb": 3
   },
   {
    "agent": "adrianna",
-   "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
+   "path": "AI-Drive/Agent-Output/adrianna/top8-lanes-20261017/launch7.sh",
    "date": "2026-10-17",
-   "ext": "json",
-   "kb": 16
+   "ext": "sh",
+   "kb": 2
   },
   {
    "agent": "_cast",
-   "path": "AI-Drive/Agent-Output/_cast/xavier/sheet.html",
+   "path": "AI-Drive/Agent-Output/_cast/ledger.json",
    "date": "2026-10-17",
-   "ext": "html",
-   "kb": 741
+   "ext": "json",
+   "kb": 10
   },
   {
    "agent": "shadow",
@@ -564,10 +571,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/the-standard/index.html",
+    "path": "DevMini/targetpraks.github.io/the-standard/voice/wk-11.mp3",
     "date": "2026-10-16",
-    "ext": "html",
-    "kb": 157
+    "ext": "mp3",
+    "kb": 407
    }
   },
   {
@@ -609,10 +616,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/Top 8 Maio/test/engine.test.mjs",
+    "path": "DevMini/Top 8 Maio/tools/verify_tech_computed.py",
     "date": "2026-10-17",
-    "ext": "mjs",
-    "kb": 10
+    "ext": "py",
+    "kb": 3
    }
   },
   {
@@ -624,10 +631,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/Top 8 Maio-runs/design-cyberpunk/reports/design-cyberpunk-REPORT.md",
+    "path": "DevMini/Top 8 Maio-runs/lists-sport/REPORT.md",
     "date": "2026-10-17",
     "ext": "md",
-    "kb": 9
+    "kb": 10
    }
   },
   {
@@ -1302,7 +1309,7 @@ var MAIO_DATA = {
    "name": "_cast",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/_cast/xavier/sheet.html",
+    "path": "AI-Drive/Agent-Output/_cast/ledger.json",
     "date": "2026-10-17"
    },
    "portrait": null,
@@ -1312,17 +1319,17 @@ var MAIO_DATA = {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
-    "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
+    "path": "AI-Drive/Agent-Output/adrianna/top8-lanes-20261017/launch7.sh",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/adrianna.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/adrianna-character-sheet.html"
   },
   {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/2026-10-15-gm-brand-knowledge-sweep-program.md",
+    "path": "AI-Drive/Agent-Output/batman/top8-bakeoff/hidden/results-codex.json",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/batman.jpg",
@@ -1336,7 +1343,7 @@ var MAIO_DATA = {
     "date": "2026-10-11"
    },
    "portrait": "assets/cast/baymax.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/baymax-character-sheet.html"
   },
   {
    "name": "beast",
@@ -1356,7 +1363,7 @@ var MAIO_DATA = {
     "date": "2026-10-16"
    },
    "portrait": "assets/cast/bigbrains.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/bigbrains-character-sheet.html"
   },
   {
    "name": "bruce-wayne",
@@ -1376,14 +1383,14 @@ var MAIO_DATA = {
     "date": "2026-10-14"
    },
    "portrait": "assets/cast/builder.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/builder-character-sheet.html"
   },
   {
    "name": "cao",
    "role": "C-suite \u00b7 analytics",
    "latest": null,
    "portrait": "assets/cast/cao.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/cao-character-sheet.html"
   },
   {
    "name": "cfo",
@@ -1393,14 +1400,14 @@ var MAIO_DATA = {
     "date": "2026-10-13"
    },
    "portrait": "assets/cast/cfo.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/cfo-character-sheet.html"
   },
   {
    "name": "cho",
    "role": "C-suite \u00b7 \u2026",
    "latest": null,
    "portrait": "assets/cast/cho.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/cho-character-sheet.html"
   },
   {
    "name": "claude",
@@ -1410,7 +1417,7 @@ var MAIO_DATA = {
     "date": "2026-10-03"
    },
    "portrait": "assets/cast/claude.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/claude-character-sheet.html"
   },
   {
    "name": "cmo",
@@ -1420,7 +1427,7 @@ var MAIO_DATA = {
     "date": "2026-10-05"
    },
    "portrait": "assets/cast/cmo.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/cmo-character-sheet.html"
   },
   {
    "name": "coo",
@@ -1430,24 +1437,24 @@ var MAIO_DATA = {
     "date": "2026-10-09"
    },
    "portrait": "assets/cast/coo.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/coo-character-sheet.html"
   },
   {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+    "path": "AI-Drive/Agent-Output/courage/watchtower-2026-10-17.md",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/courage.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/courage-character-sheet.html"
   },
   {
    "name": "cro",
    "role": "Chief Risk Officer \u2014 risk & compliance",
    "latest": null,
    "portrait": "assets/cast/cro.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/cro-character-sheet.html"
   },
   {
    "name": "cto",
@@ -1457,14 +1464,14 @@ var MAIO_DATA = {
     "date": "2026-10-13"
    },
    "portrait": "assets/cast/cto.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/cto-character-sheet.html"
   },
   {
    "name": "daniel",
    "role": "Divorced Dads GM (Paperclip)",
    "latest": null,
    "portrait": "assets/cast/daniel.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/daniel-character-sheet.html"
   },
   {
    "name": "default",
@@ -1484,6 +1491,16 @@ var MAIO_DATA = {
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/dexter.jpg",
+   "sheet": "https://targetpraks.github.io/dexter-character-sheet.html"
+  },
+  {
+   "name": "health-h1",
+   "role": "\u2014",
+   "latest": {
+    "path": "AI-Drive/Agent-Output/health-h1/report.py",
+    "date": "2026-10-17"
+   },
+   "portrait": null,
    "sheet": null
   },
   {
@@ -1494,7 +1511,7 @@ var MAIO_DATA = {
     "date": "2026-10-13"
    },
    "portrait": "assets/cast/infinity.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/infinity-character-sheet.html"
   },
   {
    "name": "inspector",
@@ -1504,7 +1521,7 @@ var MAIO_DATA = {
     "date": "2026-10-07"
    },
    "portrait": "assets/cast/inspector.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/inspector-character-sheet.html"
   },
   {
    "name": "jean",
@@ -1514,14 +1531,14 @@ var MAIO_DATA = {
     "date": "2026-10-11"
    },
    "portrait": "assets/cast/jean.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/jean-character-sheet.html"
   },
   {
    "name": "joe",
    "role": "Joe the Farmer \u2014 TLF brand GM",
    "latest": null,
    "portrait": "assets/cast/joe.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/joe-character-sheet.html"
   },
   {
    "name": "johnny",
@@ -1531,14 +1548,14 @@ var MAIO_DATA = {
     "date": "2026-10-16"
    },
    "portrait": "assets/cast/johnny.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/johnny-character-sheet.html"
   },
   {
    "name": "lois",
    "role": "Ticker",
    "latest": null,
    "portrait": "assets/cast/lois.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/lois-character-sheet.html"
   },
   {
    "name": "papa",
@@ -1548,7 +1565,7 @@ var MAIO_DATA = {
     "date": "2026-10-13"
    },
    "portrait": "assets/cast/papa.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/papa-character-sheet.html"
   },
   {
    "name": "poppins",
@@ -1558,7 +1575,7 @@ var MAIO_DATA = {
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/poppins.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/poppins-character-sheet.html"
   },
   {
    "name": "research",
@@ -1578,7 +1595,7 @@ var MAIO_DATA = {
     "date": "2026-10-09"
    },
    "portrait": "assets/cast/researcher.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/researcher-character-sheet.html"
   },
   {
    "name": "reviewer",
@@ -1588,7 +1605,7 @@ var MAIO_DATA = {
     "date": "2026-10-15"
    },
    "portrait": "assets/cast/reviewer.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/reviewer-character-sheet.html"
   },
   {
    "name": "scribe",
@@ -1598,7 +1615,7 @@ var MAIO_DATA = {
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/scribe.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/scribe-character-sheet.html"
   },
   {
    "name": "scrooge",
@@ -1608,7 +1625,7 @@ var MAIO_DATA = {
     "date": "2026-10-11"
    },
    "portrait": "assets/cast/scrooge.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/scrooge-character-sheet.html"
   },
   {
    "name": "shadow",
@@ -1618,17 +1635,17 @@ var MAIO_DATA = {
     "date": "2026-10-16"
    },
    "portrait": "assets/cast/shadow.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/shadow-character-sheet.html"
   },
   {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/published.csv",
+    "path": "AI-Drive/Agent-Output/splinter/kids-audit-2026-10-16/fix-spec.txt",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/splinter.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/splinter-character-sheet.html"
   },
   {
    "name": "stack-setup",
@@ -1638,17 +1655,17 @@ var MAIO_DATA = {
     "date": "2026-10-06"
    },
    "portrait": "assets/cast/stack-setup.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/stack-setup-character-sheet.html"
   },
   {
    "name": "storm",
    "role": "Home & environment \u00b7 weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/storm/balcony-engineer-rfq-2026-10-17/engineer-rfq-51-trichardt.pdf",
+    "path": "AI-Drive/Agent-Output/storm/pantry-organisers-2026-10-17/pantry-organisers-2026-10-17.md",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/storm.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/storm-character-sheet.html"
   },
   {
    "name": "targetpraks",
@@ -1658,7 +1675,7 @@ var MAIO_DATA = {
     "date": "2026-10-07"
    },
    "portrait": "assets/cast/targetpraks.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/targetpraks-character-sheet.html"
   },
   {
    "name": "xavier",
@@ -1668,12 +1685,12 @@ var MAIO_DATA = {
     "date": "2026-10-15"
    },
    "portrait": "assets/cast/xavier.jpg",
-   "sheet": null
+   "sheet": "https://targetpraks.github.io/xavier-character-sheet.html"
   }
  ],
  "cast": {
   "faces": "35",
-  "sheets": "2",
+  "sheets": "35",
   "dir": "assets/cast"
  },
  "system": {
@@ -1726,7 +1743,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 67488,
+     "pid": null,
      "exit": 0
     },
     {
@@ -1882,7 +1899,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.watchtower",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.courage-health",
@@ -1997,43 +2014,43 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 63,
-    "running": 27
+    "running": 26
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 9 hours (healthy)",
+    "status": "Up 13 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 7 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 14 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 14 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 14 hours",
+    "status": "Up 17 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 14 hours (healthy)",
+    "status": "Up 17 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 14 hours",
+    "status": "Up 17 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -2077,19 +2094,37 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 461,
+    "done": 466,
     "todo": 11,
-    "ready": 4,
+    "ready": 2,
     "blocked": 8,
     "scheduled": 1,
     "running": 1
    },
-   "total": 486,
+   "total": 489,
    "recent": [
+    {
+     "id": "t_5ee3080b",
+     "title": "Vault: file 'Role Blueprints \u2014 Big Brains Verdict: what is lazy, and the correct solution' to AI-Space/2.Automations-Skills/Reports/2026-10-17-role-blueprints-b",
+     "status": "ready",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_d412d1d3",
+     "title": "Vault: file 'Constellation \u2014 Change Brief: 12 items, 2 owner decisions' to Work/2.Automations-Skills/Reports/2026-10-17-constellation-change-brief-12-items-2-ow",
+     "status": "running",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_1789eec5",
+     "title": "Vault: file 'Clear-plastic pantry organisers \u2014 what to buy and where (Cape Town, 2026-10-17)' to Personal/4.Research/2026-10-17-clear-plastic-pantry-organisers-",
+     "status": "done",
+     "assignee": "beast"
+    },
     {
      "id": "t_7c7b0821",
      "title": "Vault: file 'Constellation Stage-1 wave \u2014 verification results & fix log (17 Oct 2026)' to Work/3.PRD/Active/Constellation/2026-10-17-constellation-stage1-verif",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
@@ -2101,19 +2136,19 @@ var MAIO_DATA = {
     {
      "id": "t_d274a15f",
      "title": "Vault: file 'Pap\u00e0 Pasta \u2014 the answer book' to Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md \u2014 rule-4 handoff from batman",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_209a8a65",
      "title": "Vault: file 'Pap\u00e0 Pasta \u2014 the answer book' to Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md \u2014 rule-4 handoff from batman",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_08e83ae7",
      "title": "Vault: file 'Pap\u00e0 Pasta \u2014 contradictions and open' to Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-contradictions-and-open.md \u2014 rule-4 handoff fr",
-     "status": "running",
+     "status": "done",
      "assignee": "beast"
     },
     {
@@ -2137,24 +2172,6 @@ var MAIO_DATA = {
     {
      "id": "t_f8c4d3e9",
      "title": "Verify lane cn0506 \u2014 CN-05/06 + G-01 (codex, stage1/cn05-06-questionnaires)",
-     "status": "done",
-     "assignee": "reviewer"
-    },
-    {
-     "id": "t_49310287",
-     "title": "Verify lane cn10 \u2014 CN-10 cross-referencing (omp, stage1/cn10-crossref)",
-     "status": "done",
-     "assignee": "reviewer"
-    },
-    {
-     "id": "t_2a9f2297",
-     "title": "Verify lane cn0709 \u2014 CN-07/08/09 individual-report expansion (claude, stage1/cn07-09-individual-report)",
-     "status": "done",
-     "assignee": "reviewer"
-    },
-    {
-     "id": "t_70d9ca43",
-     "title": "Verify lane g04 \u2014 G-04 exports scope+consent & A1 stale-tab guard (opencode2, stage1/g04-exports-stale-tab)",
      "status": "done",
      "assignee": "reviewer"
     }
@@ -3114,16 +3131,247 @@ var MAIO_DATA = {
   "stackTotal": 10,
   "devOnline": 0,
   "devTotal": 10,
-  "reports": 33,
-  "roster": 39,
+  "reports": 34,
+  "roster": 40,
   "launchdLoaded": 63,
   "dockerUp": 7,
-  "libraryPublic": 38,
+  "libraryPublic": 71,
   "libraryInternal": 200,
   "docs": 140
  },
  "library": {
   "public": [
+   {
+    "title": "Adrianna A \u2014 Character Sheet",
+    "url": "adrianna-character-sheet.html",
+    "dir": "adrianna-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 646
+   },
+   {
+    "title": "Baymax \u2014 Character Sheet",
+    "url": "baymax-character-sheet.html",
+    "dir": "baymax-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 749
+   },
+   {
+    "title": "Big Brains \u2014 Character Sheet",
+    "url": "bigbrains-character-sheet.html",
+    "dir": "bigbrains-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 697
+   },
+   {
+    "title": "Builder \u2014 Character Sheet",
+    "url": "builder-character-sheet.html",
+    "dir": "builder-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 742
+   },
+   {
+    "title": "Alfred Pennyworth \u2014 Character Sheet",
+    "url": "cao-character-sheet.html",
+    "dir": "cao-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 591
+   },
+   {
+    "title": "Lucius Fox \u2014 Character Sheet",
+    "url": "cfo-character-sheet.html",
+    "dir": "cfo-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 631
+   },
+   {
+    "title": "Barbara Gordon \u2014 Character Sheet",
+    "url": "cho-character-sheet.html",
+    "dir": "cho-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 629
+   },
+   {
+    "title": "Claude \u2014 Character Sheet",
+    "url": "claude-character-sheet.html",
+    "dir": "claude-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 245
+   },
+   {
+    "title": "Vicki Vale \u2014 Character Sheet",
+    "url": "cmo-character-sheet.html",
+    "dir": "cmo-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 770
+   },
+   {
+    "title": "Jim Gordon \u2014 Character Sheet",
+    "url": "coo-character-sheet.html",
+    "dir": "coo-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 790
+   },
+   {
+    "title": "Courage \u2014 Character Sheet",
+    "url": "courage-character-sheet.html",
+    "dir": "courage-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 778
+   },
+   {
+    "title": "Silver St. Cloud \u2014 Character Sheet",
+    "url": "cro-character-sheet.html",
+    "dir": "cro-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 686
+   },
+   {
+    "title": "Forge \u2014 Character Sheet",
+    "url": "cto-character-sheet.html",
+    "dir": "cto-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 589
+   },
+   {
+    "title": "Daniel DD \u2014 Character Sheet",
+    "url": "daniel-character-sheet.html",
+    "dir": "daniel-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 876
+   },
+   {
+    "title": "Dexter \u2014 Character Sheet",
+    "url": "dexter-character-sheet.html",
+    "dir": "dexter-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 828
+   },
+   {
+    "title": "Mr. Infinity \u2014 Character Sheet",
+    "url": "infinity-character-sheet.html",
+    "dir": "infinity-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 736
+   },
+   {
+    "title": "Inspector INFX \u2014 Character Sheet",
+    "url": "inspector-character-sheet.html",
+    "dir": "inspector-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 840
+   },
+   {
+    "title": "Jean Grey \u2014 Character Sheet",
+    "url": "jean-character-sheet.html",
+    "dir": "jean-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 610
+   },
+   {
+    "title": "Joe the Farmer \u2014 Character Sheet",
+    "url": "joe-character-sheet.html",
+    "dir": "joe-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 826
+   },
+   {
+    "title": "Johnny Bravo \u2014 Character Sheet",
+    "url": "johnny-character-sheet.html",
+    "dir": "johnny-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 889
+   },
+   {
+    "title": "Lois Lane \u2014 Character Sheet",
+    "url": "lois-character-sheet.html",
+    "dir": "lois-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 779
+   },
+   {
+    "title": "Papa Prime \u2014 Character Sheet",
+    "url": "papa-character-sheet.html",
+    "dir": "papa-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 824
+   },
+   {
+    "title": "Mary Poppins \u2014 Character Sheet",
+    "url": "poppins-character-sheet.html",
+    "dir": "poppins-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 630
+   },
+   {
+    "title": "Researcher \u2014 Character Sheet",
+    "url": "researcher-character-sheet.html",
+    "dir": "researcher-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 848
+   },
+   {
+    "title": "Reviewer \u2014 Character Sheet",
+    "url": "reviewer-character-sheet.html",
+    "dir": "reviewer-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 745
+   },
+   {
+    "title": "Scribe \u2014 Character Sheet",
+    "url": "scribe-character-sheet.html",
+    "dir": "scribe-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 658
+   },
+   {
+    "title": "Scrooge McDuck \u2014 Character Sheet",
+    "url": "scrooge-character-sheet.html",
+    "dir": "scrooge-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 806
+   },
+   {
+    "title": "Shadow \u2014 Character Sheet",
+    "url": "shadow-character-sheet.html",
+    "dir": "shadow-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 731
+   },
+   {
+    "title": "Splinter \u2014 Character Sheet",
+    "url": "splinter-character-sheet.html",
+    "dir": "splinter-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 763
+   },
+   {
+    "title": "Stack Setup \u2014 Character Sheet",
+    "url": "stack-setup-character-sheet.html",
+    "dir": "stack-setup-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 657
+   },
+   {
+    "title": "Storm \u2014 Character Sheet",
+    "url": "storm-character-sheet.html",
+    "dir": "storm-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 648
+   },
+   {
+    "title": "Targetpraks \u2014 Character Sheet",
+    "url": "targetpraks-character-sheet.html",
+    "dir": "targetpraks-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 286
+   },
+   {
+    "title": "Professor X \u2014 Character Sheet",
+    "url": "xavier-character-sheet.html",
+    "dir": "xavier-character-sheet.html",
+    "date": "2026-10-17",
+    "kb": 741
+   },
    {
     "title": "Admin Ops Watchtower \u2014 Infinity Brands, 2026-10-15",
     "url": "admin-ops-watchtower-2026-10-15.html",
@@ -3160,11 +3408,11 @@ var MAIO_DATA = {
     "kb": 158
    },
    {
-    "title": "Bruce Wayne \u2014 Character Sheet v2 (illustrated)",
+    "title": "Bruce Wayne \u2014 Character Sheet",
     "url": "bruce-wayne-character-sheet.html",
     "dir": "bruce-wayne-character-sheet.html",
     "date": "2026-10-15",
-    "kb": 1272
+    "kb": 929
    },
    {
     "title": "Is it hard to build something like this? \u2014 gr8r Studio teardown",
@@ -3392,7 +3640,7 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 38,
+   "public": 71,
    "internal": 200,
    "docs": 140
   }
