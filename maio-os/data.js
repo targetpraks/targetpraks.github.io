@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:4000",
    "url": "http://127.0.0.1:4000/health/liveliness",
    "code": 200,
-   "ms": 10,
+   "ms": 23,
    "ok": true,
    "note": "router"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 6,
+   "ms": 499,
    "ok": true,
    "note": "tool hub"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 13,
+   "ms": 255,
    "ok": true,
    "note": "memory"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 28,
+   "ms": 3195,
    "ok": true,
    "note": "memory ui"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 43,
+   "ms": 322,
    "ok": true,
    "note": "local models"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 106,
    "ok": true,
    "note": "vault search"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 5,
    "ok": true,
    "note": "decision gates"
   },
@@ -74,9 +74,9 @@ var MAIO_DATA = {
    "name": "Hermes dashboard",
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
-   "code": 200,
-   "ms": 27,
-   "ok": true,
+   "code": null,
+   "ms": 4259,
+   "ok": false,
    "note": "kanban + sessions UI"
   },
   {
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 14,
+   "ms": 800,
    "ok": true,
    "note": "company control plane"
   },
@@ -93,7 +93,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 8,
+   "ms": 396,
    "ok": true,
    "note": "IPTV server"
   }
@@ -103,70 +103,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 4,
+   "ms": 501,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2,
+   "ms": 339,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2,
+   "ms": 468,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2,
+   "ms": 199,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 200,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 193,
    "ok": false
   }
  ],
@@ -181,9 +181,16 @@ var MAIO_DATA = {
   },
   {
    "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/kids-audit-2026-10-16/dump.spec",
+   "path": "AI-Drive/Agent-Output/splinter/published.csv",
    "date": "2026-10-17",
-   "ext": "spec",
+   "ext": "csv",
+   "kb": 8
+  },
+  {
+   "agent": "shadow",
+   "path": "AI-Drive/Agent-Output/shadow/the-standard/v13/voice-w08.txt",
+   "date": "2026-10-17",
+   "ext": "txt",
    "kb": 1
   },
   {
@@ -230,31 +237,24 @@ var MAIO_DATA = {
   },
   {
    "agent": "bruce-wayne",
-   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-17T09:03:40+02:00/apply.jsonl",
+   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-17T17:04:57+02:00/report.md",
    "date": "2026-10-17",
-   "ext": "jsonl",
-   "kb": 1
-  },
-  {
-   "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/2026-10-17-maio-os-cast-complete.png",
-   "date": "2026-10-17",
-   "ext": "png",
-   "kb": 190
-  },
-  {
-   "agent": "adrianna",
-   "path": "AI-Drive/Agent-Output/adrianna/top8-lanes-20261017/launch7.sh",
-   "date": "2026-10-17",
-   "ext": "sh",
+   "ext": "md",
    "kb": 2
   },
   {
-   "agent": "shadow",
-   "path": "AI-Drive/Agent-Output/shadow/the-standard/v12/voice-final.json",
-   "date": "2026-10-16",
+   "agent": "batman",
+   "path": "AI-Drive/Agent-Output/batman/brand-knowledge/EXP/reading/batch-12plus/facts/25321d4d-2.jsonl",
+   "date": "2026-10-17",
+   "ext": "jsonl",
+   "kb": 18
+  },
+  {
+   "agent": "adrianna",
+   "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
+   "date": "2026-10-17",
    "ext": "json",
-   "kb": 7
+   "kb": 16
   },
   {
    "agent": "johnny",
@@ -624,10 +624,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/Top 8 Maio-runs/lists-sport/REPORT.md",
+    "path": "DevMini/Top 8 Maio-runs/p4/REPORT.md",
     "date": "2026-10-17",
     "ext": "md",
-    "kb": 10
+    "kb": 46
    }
   },
   {
@@ -669,10 +669,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/brand-knowledge-sweep/bksweep_packets.py",
+    "path": "DevMini/brand-knowledge-sweep/bksweep_api.py",
     "date": "2026-10-17",
     "ext": "py",
-    "kb": 16
+    "kb": 17
    }
   },
   {
@@ -779,14 +779,14 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/maio-cast",
    "what": "Maio Cast",
-   "lastTouched": "2026-10-16",
+   "lastTouched": "2026-10-17",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/maio-cast/render_cast.py",
-    "date": "2026-10-16",
-    "ext": "py",
-    "kb": 10
+    "path": "DevMini/maio-cast/reshoot_thin.sh",
+    "date": "2026-10-17",
+    "ext": "sh",
+    "kb": 1
    }
   },
   {
@@ -1302,7 +1302,7 @@ var MAIO_DATA = {
    "name": "adrianna",
    "role": "AI-stack chief \u00b7 routes the fleet",
    "latest": {
-    "path": "AI-Drive/Agent-Output/adrianna/top8-lanes-20261017/launch7.sh",
+    "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/adrianna.jpg",
@@ -1312,7 +1312,7 @@ var MAIO_DATA = {
    "name": "batman",
    "role": "Work family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/batman/2026-10-17-maio-os-cast-complete.png",
+    "path": "AI-Drive/Agent-Output/batman/brand-knowledge/EXP/reading/batch-12plus/facts/25321d4d-2.jsonl",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/batman.jpg",
@@ -1352,7 +1352,7 @@ var MAIO_DATA = {
    "name": "bruce-wayne",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-17T09:03:40+02:00/apply.jsonl",
+    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-17T17:04:57+02:00/report.md",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/batman.jpg",
@@ -1614,8 +1614,8 @@ var MAIO_DATA = {
    "name": "shadow",
    "role": "Restricted ops \u2014 OSINT & dark-web (local model)",
    "latest": {
-    "path": "AI-Drive/Agent-Output/shadow/the-standard/v12/voice-final.json",
-    "date": "2026-10-16"
+    "path": "AI-Drive/Agent-Output/shadow/the-standard/v13/voice-w08.txt",
+    "date": "2026-10-17"
    },
    "portrait": "assets/cast/shadow.jpg",
    "sheet": "https://targetpraks.github.io/shadow-character-sheet.html"
@@ -1624,7 +1624,7 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/kids-audit-2026-10-16/dump.spec",
+    "path": "AI-Drive/Agent-Output/splinter/published.csv",
     "date": "2026-10-17"
    },
    "portrait": "assets/cast/splinter.jpg",
@@ -1726,7 +1726,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": null,
+     "pid": 42425,
      "exit": 0
     },
     {
@@ -1791,7 +1791,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.constellation-dev",
-     "pid": null,
+     "pid": 42710,
      "exit": 1
     },
     {
@@ -1931,8 +1931,8 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.snappier-server",
-     "pid": 3713,
-     "exit": 0
+     "pid": 4617,
+     "exit": 1
     },
     {
      "label": "com.maio.ok-vault-server-watchdog",
@@ -1957,7 +1957,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.litellm-watchdog",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.stack-up",
@@ -1997,43 +1997,43 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 63,
-    "running": 26
+    "running": 28
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 13 hours (healthy)",
+    "status": "Up 15 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "litellm-litellm-1",
-    "status": "Up 7 hours (healthy)",
+    "status": "Up 9 hours (healthy)",
     "ports": "127.0.0.1:4000->4000/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 18 hours (healthy)",
+    "status": "Up 20 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "litellm-litellm-redis-1",
-    "status": "Up 18 hours (healthy)",
+    "status": "Up 20 hours (healthy)",
     "ports": "6379/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 18 hours",
+    "status": "Up 20 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 18 hours (healthy)",
+    "status": "Up 20 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    },
    {
     "name": "litellm-litellm-db-1",
-    "status": "Up 18 hours",
+    "status": "Up 20 hours",
     "ports": "5432/tcp"
    }
   ],
@@ -2077,25 +2077,54 @@ var MAIO_DATA = {
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 466,
+    "done": 472,
     "todo": 11,
-    "ready": 2,
-    "blocked": 8,
-    "scheduled": 1,
+    "ready": 1,
+    "blocked": 9,
     "running": 1
    },
-   "total": 489,
+   "total": 494,
    "recent": [
+    {
+     "id": "t_373dbf93",
+     "title": "Vault: file 'Admin Ops Watchtower \u2014 send record, 17 Oct 2026' to Work/2.Automations-Skills/Reports/2026-10-17-admin-ops-watchtower-send-record-17-oct-2026.md \u2014 ",
+     "status": "blocked",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_d41917bf",
+     "title": "Vault: UPDATE \"Maio Fleet \u2014 Model Strength & Availability Ranking (2026-10-16)\" in place \u2014 gate naming fix (clef \u2192 d3) (no new note)",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_50185c1c",
+     "title": "Vault: file 'Top 8 Maio \u2014 Four-Agent Engine Bake-Off' to AI-Space/2.Automations-Skills/Reports/2026-10-17-top-8-maio-four-agent-engine-bake-off.html \u2014 rule-4 ha",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_8052e455",
+     "title": "Vault: file 'Top 8 Maio \u2014 Four-Agent Engine Bake-Off' to AI-Space/2.Automations-Skills/Reports/2026-10-17-top-8-maio-four-agent-engine-bake-off.html \u2014 rule-4 ha",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_b193feaf",
+     "title": "Vault: file 'Kids calendars \u2014 fixes applied (17 Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-17-2026-10-17-kids-calendars-fixes-applied.html \u2014 ru",
+     "status": "done",
+     "assignee": "beast"
+    },
     {
      "id": "t_5ee3080b",
      "title": "Vault: file 'Role Blueprints \u2014 Big Brains Verdict: what is lazy, and the correct solution' to AI-Space/2.Automations-Skills/Reports/2026-10-17-role-blueprints-b",
-     "status": "ready",
+     "status": "done",
      "assignee": "beast"
     },
     {
      "id": "t_d412d1d3",
      "title": "Vault: file 'Constellation \u2014 Change Brief: 12 items, 2 owner decisions' to Work/2.Automations-Skills/Reports/2026-10-17-constellation-change-brief-12-items-2-ow",
-     "status": "running",
+     "status": "done",
      "assignee": "beast"
     },
     {
@@ -2127,36 +2156,6 @@ var MAIO_DATA = {
      "title": "Vault: file 'Pap\u00e0 Pasta \u2014 the answer book' to Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md \u2014 rule-4 handoff from batman",
      "status": "done",
      "assignee": "beast"
-    },
-    {
-     "id": "t_08e83ae7",
-     "title": "Vault: file 'Pap\u00e0 Pasta \u2014 contradictions and open' to Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-contradictions-and-open.md \u2014 rule-4 handoff fr",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_ef14ef56",
-     "title": "Vault: file 'Pap\u00e0 Pasta \u2014 the answer book' to Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md \u2014 rule-4 handoff from batman",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_f23850e5",
-     "title": "Vault: file 'Constellation HR \u2014 full audit & Stage-1 dispatch (17 Oct 2026)' to Work/3.PRD/Active/Constellation/2026-10-17-constellation-hr-full-audit-stage-1-d",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_ad00a34c",
-     "title": "GOAL \u2014 Constellation Stage-1+ (2026-10-17): all six coding agents building the change brief + blueprint v3; Wave-1 live acceptance; verify each lane",
-     "status": "done",
-     "assignee": "courage"
-    },
-    {
-     "id": "t_f8c4d3e9",
-     "title": "Verify lane cn0506 \u2014 CN-05/06 + G-01 (codex, stage1/cn05-06-questionnaires)",
-     "status": "done",
-     "assignee": "reviewer"
     }
    ]
   },
@@ -2167,9 +2166,9 @@ var MAIO_DATA = {
  },
  "prds": [
   {
-   "title": "2026-10-17-papa-pasta-the-answer-book",
-   "project": "Papa-Pasta-Brand-GM",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md",
+   "title": "2026-10-17-constellation-stage1-verification-results",
+   "project": "Constellation",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/2026-10-17-constellation-stage1-verification-results.md",
    "date": "2026-10-17",
    "area": "Work"
   },
@@ -2177,6 +2176,20 @@ var MAIO_DATA = {
    "title": "log",
    "project": "3.PRD",
    "path": "Vault/Maio Hub/Work/3.PRD/log.md",
+   "date": "2026-10-17",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-17-papa-pasta-the-answer-book",
+   "project": "Papa-Pasta-Brand-GM",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md",
+   "date": "2026-10-17",
+   "area": "Work"
+  },
+  {
+   "title": "2026-10-17-papa-pasta-contradictions-and-open",
+   "project": "Papa-Pasta-Brand-GM",
+   "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-contradictions-and-open.md",
    "date": "2026-10-17",
    "area": "Work"
   },
@@ -2552,20 +2565,6 @@ var MAIO_DATA = {
    "area": "Work"
   },
   {
-   "title": "The-Good-Stuff-Personal-Top-10",
-   "project": "Active",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Good-Stuff-Personal-Top-10.md",
-   "date": "2026-09-23",
-   "area": "Work"
-  },
-  {
-   "title": "Constellation-Instrument-Research-2026-09-17",
-   "project": "Constellation",
-   "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Instrument-Research-2026-09-17.md",
-   "date": "2026-09-21",
-   "area": "Work"
-  },
-  {
    "title": "PRD_FEATURE.md",
    "project": "esoteric-command",
    "path": "DevMini/esoteric-command/PRD_FEATURE.md",
@@ -2590,10 +2589,10 @@ var MAIO_DATA = {
  "enriched": {
   "vaultPrds": [
    {
-    "title": "2026-10-17-papa-pasta-the-answer-book",
-    "project": "Papa-Pasta-Brand-GM",
+    "title": "2026-10-17-constellation-stage1-verification-results",
+    "project": "Constellation",
     "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/2026-10-17-constellation-stage1-verification-results.md",
     "date": "2026-10-17"
    },
    {
@@ -2601,6 +2600,27 @@ var MAIO_DATA = {
     "project": "3.PRD",
     "area": "Work",
     "path": "Vault/Maio Hub/Work/3.PRD/log.md",
+    "date": "2026-10-17"
+   },
+   {
+    "title": "log",
+    "project": "Active",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/log.md",
+    "date": "2026-10-17"
+   },
+   {
+    "title": "2026-10-17-papa-pasta-the-answer-book",
+    "project": "Papa-Pasta-Brand-GM",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md",
+    "date": "2026-10-17"
+   },
+   {
+    "title": "2026-10-17-papa-pasta-contradictions-and-open",
+    "project": "Papa-Pasta-Brand-GM",
+    "area": "Work",
+    "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-contradictions-and-open.md",
     "date": "2026-10-17"
    },
    {
@@ -2622,13 +2642,6 @@ var MAIO_DATA = {
     "project": "Active",
     "area": "AI-Space",
     "path": "Vault/Maio Hub/AI-Space/3.PRD/Active/2026-10-16-top-8-maio-prd-the-fleet-run-living-top-8-magazine.md",
-    "date": "2026-10-16"
-   },
-   {
-    "title": "log",
-    "project": "Active",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/log.md",
     "date": "2026-10-16"
    },
    {
@@ -2994,20 +3007,6 @@ var MAIO_DATA = {
     "area": "Work",
     "path": "Vault/Maio Hub/Work/3.PRD/Active/Papa-Pasta-Kitchen-Equipment-Sourcing/PRD.md",
     "date": "2026-09-24"
-   },
-   {
-    "title": "The-Good-Stuff-Personal-Top-10",
-    "project": "Active",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/The-Good-Stuff-Personal-Top-10.md",
-    "date": "2026-09-23"
-   },
-   {
-    "title": "Constellation-Instrument-Research-2026-09-17",
-    "project": "Constellation",
-    "area": "Work",
-    "path": "Vault/Maio Hub/Work/3.PRD/Active/Constellation/Constellation-Instrument-Research-2026-09-17.md",
-    "date": "2026-09-21"
    }
   ],
   "roles": {
@@ -3105,12 +3104,12 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-17T10:45:05Z"
+  "mergedAt": "2026-10-17T16:45:05Z"
  },
  "summary": {
   "projects": 61,
   "prds": 60,
-  "stackLive": 10,
+  "stackLive": 9,
   "stackTotal": 10,
   "devOnline": 0,
   "devTotal": 10,
