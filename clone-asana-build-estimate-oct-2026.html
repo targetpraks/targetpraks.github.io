@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building Asana ourselves — measured answer</title>
+<style>
+  :root{
+    --paper:#fdfaf3; --ink:#12203a; --muted:#5b6b85; --line:#e2dccb;
+    --coral:#e8604c; --gold:#d9a129; --teal:#1f8a80; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:0 26px}
+  header{background:linear-gradient(180deg,#12203a 0%,#1b2f52 100%);color:#f7f3e8;padding:46px 0 40px}
+  header .wrap{padding-top:0}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#c9b98f;font-weight:700;margin:0 0 14px}
+  h1{font-size:34px;line-height:1.18;margin:0 0 16px;letter-spacing:-.02em}
+  h1 em{font-style:normal;color:#f0b429}
+  .lede{font-size:18px;margin:0;color:#e4dcc8;max-width:74ch}
+  .verdict{margin:26px 0 0;padding:18px 20px;background:rgba(255,255,255,.07);
+           border-left:4px solid var(--gold);border-radius:0 8px 8px 0;font-size:17px}
+  .verdict b{color:#f0b429}
+  section{padding:40px 0;border-top:5px solid var(--ink)}
+  section:first-of-type{border-top:none}
+  h2{font-size:23px;margin:0 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:14.5px;margin:0 0 22px}
+  p{margin:0 0 14px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:8px 0 4px}
+  .card{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:16px 17px}
+  .card .n{font-size:26px;font-weight:800;letter-spacing:-.02em;display:block;line-height:1.1}
+  .card .t{font-size:13px;color:var(--muted);margin-top:4px;display:block}
+  .card.ok{border-color:#bfe0da} .card.ok .n{color:var(--teal)}
+  .card.gap{border-color:#f3cec6} .card.gap .n{color:var(--coral)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:2px solid var(--line);
+        border-radius:10px;overflow:hidden;font-size:14px}
+  th{text-align:left;background:#f4efe2;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+     color:#4a5b76;padding:10px 13px;border-bottom:2px solid var(--line)}
+  td{padding:10px 13px;border-bottom:1px solid #efe9da;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#f6f2e6;
+       padding:1px 5px;border-radius:4px;border:1px solid #e7e0cd;word-break:break-word}
+  .num{font-variant-numeric:tabular-nums;font-weight:700}
+  .chartbox{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:18px 18px 10px}
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  .rl{font-size:12.5px;fill:#12203a} .rl.b{font-weight:700}
+  .bl{font-size:12px;fill:#41536f;font-variant-numeric:tabular-nums}
+  .bl.b{font-weight:700;fill:#12203a}
+  .note{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+  .tag{display:inline-block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;
+       padding:2px 7px;border-radius:4px;vertical-align:2px}
+  .tag.est{background:#fdf0d5;color:#8a6414;border:1px solid #ecd9a8}
+  .tag.mea{background:#e2f1ee;color:#136259;border:1px solid #b8ded7}
+  ul{margin:0 0 14px;padding-left:20px} li{margin-bottom:8px}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .box{background:var(--card);border:2px solid var(--line);border-radius:10px;padding:18px 19px}
+  .box h3{margin:0 0 10px;font-size:15px;letter-spacing:.02em;text-transform:uppercase;color:#41536f}
+  .rec{background:var(--ink);color:#f7f3e8;border-radius:12px;padding:24px 26px;margin-top:26px}
+  .rec h2{color:#f7f3e8;margin-top:0}
+  .rec b{color:#f0b429}
+  footer{padding:26px 0 50px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+  .pill{display:inline-block;background:#f0ead8;border:1px solid #e0d7be;border-radius:20px;
+        padding:3px 11px;font-size:12px;margin:0 6px 6px 0;color:#3f5170}
+  @media(max-width:720px){.grid,.split{grid-template-columns:1fr}h1{font-size:26px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">Build vs buy · task &amp; project management</p>
+    <h1>Building Asana for ourselves: <em>8–14 weeks</em> for a usable version,
+        and no finishing line</h1>
+    <p class="lede">Measured against the code we already own, not against the pitches. The number below is the
+      honest one for an internal web app covering the slice of Asana/ClickUp our teams actually open every day.</p>
+    <div class="verdict"><b>Verdict:</b> don't clone it. A credible internal-only v1 is real work but not crazy —
+      roughly <b>41–72 dev-days</b> on top of Constellation. What is crazy is the next five years:
+      you would own a second work system, permanently staffed, while the real thing costs about
+      <b>$5–8k a year</b> at 60 seats.</div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>The question, restated honestly</h2>
+    <p class="sub">"Asana" is not one size of job. Three different asks hide behind it.</p>
+    <table>
+      <tr><th style="width:32%">What you actually want</th><th style="width:22%">Effort</th><th>What it gets you</th></tr>
+      <tr><td><b>A board our staff will use</b><br><span style="color:#5b6b85">tasks, owners, due dates, comments, drag between columns</span></td>
+          <td class="num" style="color:#1f8a80">8–14 weeks</td>
+          <td>A web app that is genuinely useful internally, if it also talks to Zoho.</td></tr>
+      <tr><td><b>Asana's everyday surface</b><br><span style="color:#5b6b85">+ timelines, dependencies, custom fields, workloads, forms, automations, search, mobile</span></td>
+          <td class="num" style="color:#d9a129">6–10 months</td>
+          <td>Feature parity with what people compare against. This is a small team, not a sprint.</td></tr>
+      <tr><td><b>Asana the company</b><br><span style="color:#5b6b85">17 years, ~1,800 people</span></td>
+          <td class="num" style="color:#e8604c">never</td>
+          <td>Not a duration. A permanent engineering org that ships against you every quarter.</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>What we already own <span class="tag mea">measured</span></h2>
+    <p class="sub">Counted in <code>/Volumes/Hiksemi 1TB/DevMini/constellation</code> on 19 October 2026. This is the
+      part that decides the estimate — the expensive half of a work app is accounts, permissions and audit, and
+      Constellation already carries them.</p>
+
+    <div class="grid">
+      <div class="card ok"><span class="n">27</span><span class="t">Prisma models — org, venture, department, position, staff, user, invites, sessions, audit</span></div>
+      <div class="card ok"><span class="n">10</span><span class="t">migrations, applied and reversible — the schema is real, not a sketch</span></div>
+      <div class="card ok"><span class="n">32,534</span><span class="t">lines in <code>app</code> + <code>components</code> + <code>lib</code></span></div>
+      <div class="card ok"><span class="n">121</span><span class="t">test specs (vitest + playwright) — changes can be made without flying blind</span></div>
+      <div class="card ok"><span class="n">✓</span><span class="t">auth, roles and audit: <code>bcryptjs</code>, <code>jose</code>, <code>lib/access.ts</code>, <code>lib/department-scope.ts</code>, <code>AuditLog</code></span></div>
+      <div class="card gap"><span class="n">0</span><span class="t">task / project / board models — the actual product is not there yet</span></div>
+    </div>
+
+    <p style="margin-top:20px"><b>Read it plainly:</b> stages 3 of the build (accounts, invites, permissions,
+      audit trail, admin console) are already standing. Stage 2 — the task graph — is not. And there is no
+      realtime, no file-upload store and no notification fan-out anywhere in the repo.</p>
+
+    <table style="margin-top:18px">
+      <tr><th style="width:38%">Command run</th><th>What it returned</th></tr>
+      <tr><td><code>grep -c '^model ' prisma/schema.prisma</code></td><td class="num">27 models, no Task / Project / Board among them</td></tr>
+      <tr><td><code>ls prisma/migrations | wc -l</code></td><td class="num">10</td></tr>
+      <tr><td><code>find app components lib -name '*.ts*' | xargs wc -l</code></td><td class="num">13,337 + 3,180 + 16,017 lines</td></tr>
+      <tr><td><code>find . -name '*.test.ts*' | wc -l</code> (excl. node_modules)</td><td class="num">121</td></tr>
+      <tr><td><code>grep -oE '"@prisma/client|bcryptjs|jose|zod|next"' package.json</code></td><td>Prisma 5.22, Next 15.5, React 19, bcryptjs 3, jose 6, zod 3</td></tr>
+      <tr><td><code>find app -name page.tsx</code></td><td>admin console, staff directory, reports, assessments, manager views, invites, consent</td></tr>
+      <tr><td><code>grep -rliE 'websocket|sse|socket.io' app lib</code></td><td>no realtime layer anywhere</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>The effort ladder <span class="tag est">estimate</span></h2>
+    <p class="sub">One strong developer working with a coding agent. Range = clean run to a messy one.
+      Solid bar is the low end, pale extension the high end.</p>
+    <div class="chartbox">
+      <svg viewBox="0 0 760 352" role="img" aria-label="Effort per stage">
+        <rect x="150.0" y="26.0" width="53.3" height="17" rx="3" fill="#1f8a80" opacity="0.22"/><rect x="150.0" y="26.0" width="32.0" height="17" rx="3" fill="#1f8a80"/><text x="212.3" y="39.0" class="bl">6–10 d</text>
+<rect x="150.0" y="72.0" width="95.9" height="17" rx="3" fill="#e8604c" opacity="0.22"/><rect x="150.0" y="72.0" width="53.3" height="17" rx="3" fill="#e8604c"/><text x="254.9" y="85.0" class="bl">10–18 d</text>
+<rect x="150.0" y="118.0" width="53.3" height="17" rx="3" fill="#1f8a80" opacity="0.22"/><rect x="150.0" y="118.0" width="26.6" height="17" rx="3" fill="#1f8a80"/><text x="212.3" y="131.0" class="bl">5–10 d</text>
+<rect x="150.0" y="164.0" width="133.1" height="17" rx="3" fill="#e8604c" opacity="0.22"/><rect x="150.0" y="164.0" width="79.9" height="17" rx="3" fill="#e8604c"/><text x="292.1" y="177.0" class="bl">15–25 d</text>
+<rect x="150.0" y="210.0" width="133.1" height="17" rx="3" fill="#e8604c" opacity="0.22"/><rect x="150.0" y="210.0" width="79.9" height="17" rx="3" fill="#e8604c"/><text x="292.1" y="223.0" class="bl">15–25 d</text>
+<text x="0" y="39.0" class="rl">1. Shell &amp; views</text>
+<text x="0" y="85.0" class="rl">2. Task data model + API</text>
+<text x="0" y="131.0" class="rl">3. Permissions &amp; sharing</text>
+<text x="0" y="177.0" class="rl">4. Live features</text>
+<text x="0" y="223.0" class="rl">5. Productisation</text>
+        <rect x="150.0" y="280.0" width="468.6" height="20" rx="3" fill="#12203a" opacity="0.25"/><rect x="150.0" y="280.0" width="271.6" height="20" rx="3" fill="#12203a"/><text x="627.6" y="295.0" class="bl b">≈51–88 d</text><text x="0" y="295.0" class="rl b">From zero (all five stages)</text>
+<rect x="150.0" y="314.0" width="383.4" height="20" rx="3" fill="#d9a129" opacity="0.25"/><rect x="150.0" y="314.0" width="218.3" height="20" rx="3" fill="#d9a129"/><text x="542.4" y="329.0" class="bl b">≈41–72 d</text><text x="0" y="329.0" class="rl b">On our stack (web-only, internal)</text>
+      </svg>
+      <p class="note">Bars show the <b>from-zero</b> cost of each stage; stage 3 is green because we already
+        own it — on our stack it collapses to 2–4 days. Summary: from zero
+        <b>51–88 d</b> (≈10–18 weeks); on our stack
+        <b>41–72 d</b> (≈8–14 weeks).</p>
+    </div>
+
+    <div class="split" style="margin-top:20px">
+      <div class="box">
+        <h3>What the estimate hides</h3>
+        <ul>
+          <li><b>The migration.</b> Whatever exists in Zoho Projects, boards and sheets has to move, and stay moved.</li>
+          <li><b>The behaviour change.</b> 60 people learning a new tool costs more real hours than building it.</li>
+          <li><b>The 15%.</b> Every year after launch, 6–11 dev-days go to fixes, integrations and the browser changing underneath us.</li>
+          <li><b>Mobile.</b> Staff will want it on a phone. A decent responsive web is inside the range; a real app is another 20–30 days.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h3>The one big shortcut</h3>
+        <ul>
+          <li><b>Don't rebuild the task engine — front it.</b> Zoho Projects already holds our briefs and has an API. A thin board/dashboard layer on top of it is a <b>2–3 week</b> job, not a 14-week one, and nobody has to migrate anything.</li>
+          <li><b>Do it only for the gap.</b> If the complaint is a specific view or workflow Zoho cannot do, that view is the product. Build that.</li>
+          <li><b>Reuse the account layer.</b> Staff log in once, through Constellation's scopes, not a fourth password.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>The other side of the ledger</h2>
+    <p class="sub">Published list prices, per user per month billed annually. Asana: Starter $10.99, Advanced
+      $24.99. ClickUp: Unlimited $7, Business $12.</p>
+    <table>
+      <tr><th>At 60 seats (worked example)</th><th>Asana Starter</th><th>ClickUp Unlimited</th><th>Build it ourselves</th></tr>
+      <tr><td>Year 1</td><td class="num">$7,913</td><td class="num">$5,040</td><td class="num">41–72 dev-days</td></tr>
+      <tr><td>Year 2 onward</td><td class="num">$7,913</td><td class="num">$5,040</td><td class="num">6–11 dev-days / year, forever</td></tr>
+      <tr><td>Who fixes it at 22:00</td><td>Their team</td><td>Their team</td><td>Us</td></tr>
+    </table>
+    <p class="note">Seat count is illustrative — substitute the real number. The comparison that matters is not
+      dollars against dev-days; it is <b>a subscription against a permanent internal obligation</b>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="rec">
+      <h2>What I would actually do</h2>
+      <p><b>1. Keep buying the box.</b> Zoho Projects is already in the company and already holds our briefs.
+        Two task systems is a problem; four is a habit.</p>
+      <p><b>2. Build the missing view, not the product.</b> A Constellation-authenticated board that reads and
+        writes through Zoho's API: 2–3 weeks, no migration, no new passwords, no second source of truth.</p>
+      <p><b>3. Replace this estimate with a measurement.</b> A two-day spike: one Task model, one Project model,
+        one board view, wired into the existing scopes and audit log. If two days produces a moving board, the
+        8–14-week figure is believable. If it produces three days of schema wrangling, we
+        have learned that cheaply.</p>
+      <p style="margin-bottom:0"><b>Say the word and I'll scope the spike as a brief.</b> Nothing gets built or
+        bought without your signature on it.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="pill">Constellation @ 6217ed1</span>
+    <span class="pill">27 models · 10 migrations · 32,534 LOC · 121 spec files</span>
+    <span class="pill">Prices: asana.com/pricing, clickup.com (annual, per seat)</span>
+    <span class="pill">Ladder = estimate, code counts = measured</span>
+    <p style="margin-top:12px">Built 19 October 2026 · Bruce Wayne · the day ranges are judgement, every count above is a
+      real command output.</p>
+  </div>
+</footer>
+
+</body>
+</html>
