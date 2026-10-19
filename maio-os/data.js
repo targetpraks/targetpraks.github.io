@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 12,
+   "ms": 28,
    "ok": true,
    "note": "tool hub"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 1,
+   "ms": 6,
    "ok": true,
    "note": "memory"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 17,
+   "ms": 287,
    "ok": true,
    "note": "memory ui"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 43,
+   "ms": 91,
    "ok": true,
    "note": "local models"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 2,
    "ok": true,
    "note": "vault search"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 7,
    "ok": true,
    "note": "decision gates"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 10,
+   "ms": 92,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 6,
+   "ms": 20,
    "ok": true,
    "note": "company control plane"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 4,
+   "ms": 7,
    "ok": true,
    "note": "IPTV server"
   }
@@ -94,70 +94,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 3,
+   "ms": 3158,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 2190,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 4,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 191,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 1,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 0,
+   "ms": 194,
    "ok": false
   }
  ],
@@ -165,10 +165,17 @@ var MAIO_DATA = {
  "reports": [
   {
    "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/2026-10-19-slip-and-slide-what-to-buy-oct-2026-2.md",
+   "path": "AI-Drive/Agent-Output/splinter/published.csv",
    "date": "2026-10-19",
-   "ext": "md",
-   "kb": 15
+   "ext": "csv",
+   "kb": 13
+  },
+  {
+   "agent": "scribe",
+   "path": "AI-Drive/Agent-Output/scribe/published.csv",
+   "date": "2026-10-19",
+   "ext": "csv",
+   "kb": 19
   },
   {
    "agent": "research",
@@ -199,8 +206,15 @@ var MAIO_DATA = {
    "kb": 1
   },
   {
+   "agent": "bruce-wayne",
+   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-19T17:05:58+02:00/report.md",
+   "date": "2026-10-19",
+   "ext": "md",
+   "kb": 2
+  },
+  {
    "agent": "beast",
-   "path": "AI-Drive/Agent-Output/beast/gates-pending/2026-10-19-t_d761cbde-gates.csv",
+   "path": "AI-Drive/Agent-Output/beast/gates-t_ab64f560-2026-10-19.csv",
    "date": "2026-10-19",
    "ext": "csv",
    "kb": 2
@@ -210,7 +224,7 @@ var MAIO_DATA = {
    "path": "AI-Drive/Agent-Output/batman/published.csv",
    "date": "2026-10-19",
    "ext": "csv",
-   "kb": 57
+   "kb": 61
   },
   {
    "agent": "adrianna",
@@ -255,13 +269,6 @@ var MAIO_DATA = {
    "kb": 3
   },
   {
-   "agent": "bruce-wayne",
-   "path": "AI-Drive/Agent-Output/bruce-wayne/registry.db-shm",
-   "date": "2026-10-18",
-   "ext": "db-shm",
-   "kb": 32
-  },
-  {
    "agent": "baymax",
    "path": "AI-Drive/Agent-Output/baymax/2026-10-18-weekly-score.md",
    "date": "2026-10-18",
@@ -274,13 +281,6 @@ var MAIO_DATA = {
    "date": "2026-10-17",
    "ext": "txt",
    "kb": 1
-  },
-  {
-   "agent": "scribe",
-   "path": "AI-Drive/Agent-Output/scribe/top8-enhancement-round-20261017/2026-10-17-top-8-maio-enhancement-round-council-plan-e0-e10-executed.html",
-   "date": "2026-10-17",
-   "ext": "html",
-   "kb": 19
   },
   {
    "agent": "health-h1",
@@ -585,7 +585,7 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "path": "DevMini/targetpraks.github.io/fork-or-fresh-task-app-oct-2026.html",
     "date": "2026-10-19",
     "ext": "html",
     "kb": 0
@@ -708,10 +708,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/constellation/constellation/next-env.d.ts",
+    "path": "DevMini/constellation/constellation/HERMES-BUILD.md",
     "date": "2026-10-19",
-    "ext": "ts",
-    "kb": 1
+    "ext": "md",
+    "kb": 6
    }
   },
   {
@@ -1323,7 +1323,7 @@ var MAIO_DATA = {
    "name": "beast",
    "role": "Vault steward \u2014 hygiene & lifecycle",
    "latest": {
-    "path": "AI-Drive/Agent-Output/beast/gates-pending/2026-10-19-t_d761cbde-gates.csv",
+    "path": "AI-Drive/Agent-Output/beast/gates-t_ab64f560-2026-10-19.csv",
     "date": "2026-10-19"
    },
    "portrait": "assets/cast/beast.jpg",
@@ -1343,8 +1343,8 @@ var MAIO_DATA = {
    "name": "bruce-wayne",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/bruce-wayne/registry.db-shm",
-    "date": "2026-10-18"
+    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-19T17:05:58+02:00/report.md",
+    "date": "2026-10-19"
    },
    "portrait": "assets/cast/batman.jpg",
    "sheet": null
@@ -1585,8 +1585,8 @@ var MAIO_DATA = {
    "name": "scribe",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/scribe/top8-enhancement-round-20261017/2026-10-17-top-8-maio-enhancement-round-council-plan-e0-e10-executed.html",
-    "date": "2026-10-17"
+    "path": "AI-Drive/Agent-Output/scribe/published.csv",
+    "date": "2026-10-19"
    },
    "portrait": "assets/cast/scribe.jpg",
    "sheet": "https://targetpraks.github.io/scribe-character-sheet.html"
@@ -1615,7 +1615,7 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/2026-10-19-slip-and-slide-what-to-buy-oct-2026-2.md",
+    "path": "AI-Drive/Agent-Output/splinter/published.csv",
     "date": "2026-10-19"
    },
    "portrait": "assets/cast/splinter.jpg",
@@ -1672,13 +1672,13 @@ var MAIO_DATA = {
    "jobs": [
     {
      "label": "com.maio.snappier-playlists",
-     "pid": 843,
+     "pid": 34948,
      "exit": 0
     },
     {
      "label": "com.maio.hiksemi-recover",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.keep-awake-guard",
@@ -1692,7 +1692,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-local",
-     "pid": 847,
+     "pid": 34497,
      "exit": 0
     },
     {
@@ -1702,7 +1702,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.copilot-mcp",
-     "pid": 868,
+     "pid": 33660,
      "exit": 0
     },
     {
@@ -1717,7 +1717,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": null,
+     "pid": 16068,
      "exit": 0
     },
     {
@@ -1737,7 +1737,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.gamma-mcp",
-     "pid": 863,
+     "pid": 34218,
      "exit": 0
     },
     {
@@ -1756,12 +1756,12 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.filestage.checker",
+     "label": "com.maio.paperclip-briefing-collector",
      "pid": null,
      "exit": 0
     },
     {
-     "label": "com.maio.paperclip-briefing-collector",
+     "label": "com.maio.filestage.checker",
      "pid": null,
      "exit": 0
     },
@@ -1771,19 +1771,19 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.hermes-dashboard",
+     "pid": 34290,
+     "exit": 0
+    },
+    {
      "label": "ai.hermes.gateway",
      "pid": 887,
      "exit": 0
     },
     {
-     "label": "com.maio.hermes-dashboard",
-     "pid": 888,
-     "exit": 0
-    },
-    {
      "label": "com.maio.constellation-dev",
-     "pid": 15269,
-     "exit": -15
+     "pid": null,
+     "exit": 1
     },
     {
      "label": "com.maio.wheel-johnny",
@@ -1802,22 +1802,22 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.docs-mcp",
-     "pid": 850,
+     "pid": 34195,
      "exit": 0
     },
     {
      "label": "com.maio.ok-vault-server",
-     "pid": 16700,
-     "exit": -15
+     "pid": 34688,
+     "exit": 0
     },
     {
      "label": "com.maio.constellation-manco-docs",
-     "pid": 873,
+     "pid": 33636,
      "exit": 0
     },
     {
      "label": "com.maio.composio-mcp",
-     "pid": 874,
+     "pid": 33520,
      "exit": 0
     },
     {
@@ -1842,12 +1842,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.cloudflare-mcp",
-     "pid": 853,
+     "pid": 33037,
      "exit": 0
     },
     {
      "label": "com.maio.vault-agent",
-     "pid": 857,
+     "pid": 35245,
      "exit": 0
     },
     {
@@ -1861,13 +1861,13 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.agent-usage-ledger",
-     "pid": null,
+     "label": "com.maio.krea-mcp",
+     "pid": 34398,
      "exit": 0
     },
     {
-     "label": "com.maio.krea-mcp",
-     "pid": 893,
+     "label": "com.maio.agent-usage-ledger",
+     "pid": null,
      "exit": 0
     },
     {
@@ -1881,18 +1881,18 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.wheel-jean",
+     "pid": null,
+     "exit": 0
+    },
+    {
      "label": "com.maio.todoist-mcp",
-     "pid": 861,
+     "pid": 35196,
      "exit": 0
     },
     {
      "label": "com.maio.pipedream-mcp",
-     "pid": 862,
-     "exit": 0
-    },
-    {
-     "label": "com.maio.wheel-jean",
-     "pid": null,
+     "pid": 34828,
      "exit": 0
     },
     {
@@ -1902,7 +1902,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.browseruse-mcp",
-     "pid": 875,
+     "pid": 32785,
      "exit": 0
     },
     {
@@ -1912,7 +1912,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.superhuman-mcp",
-     "pid": 889,
+     "pid": 35165,
      "exit": 0
     },
     {
@@ -1922,7 +1922,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.snappier-server",
-     "pid": 900,
+     "pid": 34977,
      "exit": 0
     },
     {
@@ -1932,18 +1932,23 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.agent-desktop-guard",
-     "pid": 837,
+     "pid": 32673,
      "exit": 0
     },
     {
      "label": "com.maio.magnific-mcp",
-     "pid": 855,
+     "pid": 34465,
      "exit": 0
     },
     {
      "label": "com.maio.gate-mcp",
-     "pid": 870,
+     "pid": 34246,
      "exit": 0
+    },
+    {
+     "label": "com.maio.litellm-watchdog",
+     "pid": null,
+     "exit": 78
     },
     {
      "label": "com.maio.stack-up",
@@ -1952,7 +1957,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.qmd-mcp",
-     "pid": 883,
+     "pid": 34882,
      "exit": 0
     },
     {
@@ -1961,50 +1966,50 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.d3-gate",
+     "pid": 34071,
+     "exit": 0
+    },
+    {
      "label": "com.maio.courage-nightcheck",
      "pid": null,
      "exit": 0
     },
     {
-     "label": "com.maio.d3-gate",
-     "pid": 895,
-     "exit": 0
-    },
-    {
      "label": "com.maio.keep-awake",
-     "pid": 899,
+     "pid": 34381,
      "exit": 0
     },
     {
      "label": "com.maio.status-agent",
-     "pid": 902,
+     "pid": 35135,
      "exit": 0
     }
    ],
    "counts": {
-    "loaded": 62,
+    "loaded": 63,
     "running": 27
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 6 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 6 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 3 hours",
+    "status": "Up 6 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 3 hours (healthy)",
+    "status": "Up 6 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    }
   ],
@@ -2027,6 +2032,10 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:3100"
     },
     {
+     "url": "https://ricardos-mac-mini.taile9f837.ts.net:3773",
+     "target": "http://127.0.0.1:3773"
+    },
+    {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:8443",
      "target": "http://127.0.0.1:9110"
     },
@@ -2039,89 +2048,88 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:9999"
     }
    ],
-   "count": 6
+   "count": 7
   },
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 530,
+    "done": 551,
     "scheduled": 2,
     "ready": 3,
     "todo": 18,
-    "blocked": 6,
-    "running": 1
+    "blocked": 6
    },
-   "total": 560,
+   "total": 580,
    "recent": [
     {
-     "id": "t_a942b3d3",
-     "title": "Vault: file 'Constellation \u2014 access restored, GitHub in sync' to Work/2.Automations-Skills/Reports/2026-10-19-constellation-access-restored-github-in-sync.md \u2014 ",
-     "status": "ready",
+     "id": "t_b963ed0e",
+     "title": "Vault: file 'The evidence behind the deck \u2014 Hive vs ClickUp, six features at 40 seats' to AI-Space/2.Automations-Skills/Reports/2026-10-19-the-evidence-behind-t",
+     "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_ab64f560",
+     "id": "t_6a6a3b25",
+     "title": "Vault: UPDATE in place \u2014 Nimrod gap scorecard (T3 server side completed 18:22)",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_a181e221",
      "title": "Vault: file 'Slip and slide \u2014 what to buy (Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-19-slip-and-slide-what-to-buy-oct-2026-2.md \u2014 rule-4 hand",
-     "status": "running",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_6a92aa80",
-     "title": "Vault: file 'Mixed seats, iPhone apps and the inbox \u2014 checked tool by tool' to AI-Space/2.Automations-Skills/Reports/2026-10-19-mixed-seats-iphone-apps-and-the-",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_22a50e9e",
-     "title": "Vault: file 'Filestage work held by people who have left' to AI-Space/2.Automations-Skills/2026-10-19-filestage-work-held-by-people-who-have-left.html \u2014 rule-4 ",
+     "id": "t_456cef99",
+     "title": "Vault: file 'Nimrod's 100-project AI stack \u2014 gap scorecard (19 Oct 2026)' to AI-Space/2.Automations-Skills/Reports/2026-10-19-2026-10-19-nimrod-s-100-project-ai",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_20ce0b84",
-     "title": "Fix the list-repr defect in the slip-and-slide report: shortlist table tbody emits a Python list, not rows",
+     "id": "t_4ac6d270",
+     "title": "Vault: file 'Nimrod's 100-project AI stack \u2014 gap scorecard (19 Oct 2026)' to AI-Space/2.Automations-Skills/Reports/2026-10-19-nimrod-s-100-project-ai-stack-gap-",
      "status": "done",
-     "assignee": "splinter"
+     "assignee": "beast"
     },
     {
-     "id": "t_37ea9782",
+     "id": "t_d3940a95",
+     "title": "Vault: file 'Fork a repo or start fresh \u2014 the fork tax, measured' to AI-Space/2.Automations-Skills/Reports/2026-10-19-fork-a-repo-or-start-fresh-the-fork-tax-me",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_21d33d22",
+     "title": "Vault: file 'Building Asana ourselves \u2014 what it actually costs' to AI-Space/2.Automations-Skills/Reports/2026-10-19-building-asana-ourselves-what-it-actually-co",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_5b978fe9",
+     "title": "Vault: file 'Infinity Brands \u2014 project platform decision (replace Zoho Projects + Filestage)' to Work/2.Automations-Skills/Reports/2026-10-19-infinity-brands-pr",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_e8bcce4b",
+     "title": "Vault: file 'Infinity Brands \u2014 project platform decision (replace Zoho Projects + Filestage)' to Work/2.Automations-Skills/Reports/2026-10-19-infinity-brands-pr",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_98a38bd7",
      "title": "Vault: file 'Slip and slide \u2014 what to buy (Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-19-slip-and-slide-what-to-buy-oct-2026.md \u2014 rule-4 handof",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_7a3ffe89",
-     "title": "Vault: file 'Open source, honestly \u2014 what replaces Zoho Projects and what can't replace Filestage' to AI-Space/2.Automations-Skills/Reports/2026-10-19-open-sour",
+     "id": "t_0c065558",
+     "title": "Vault: file 'Nimrod's 100-project AI stack \u2014 gap scorecard (19 Oct 2026)' to AI-Space/2.Automations-Skills/Reports/2026-10-19-nimrod-s-100-project-ai-stack-gap-",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_aa9ec24c",
-     "title": "Vault: file 'Filestage checker \u2014 activated, first live run' to AI-Space/2.Automations-Skills/2026-10-19-filestage-checker-activated-first-live-run.md \u2014 rule-4 h",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_ce53d006",
-     "title": "Vault: file 'Nineteen tools at 50 seats \u2014 the revised field and the new number one' to AI-Space/2.Automations-Skills/Reports/2026-10-19-nineteen-tools-at-50-sea",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_d4acecce",
-     "title": "Vault: file 'Constellation \u2014 why the staff link stopped answering' to Work/2.Automations-Skills/Reports/2026-10-19-constellation-why-the-staff-link-stopped-answ",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_e86ea029",
-     "title": "Vault: file 'Nineteen tools at 50 seats \u2014 the revised field and the new number one' to AI-Space/2.Automations-Skills/Reports/2026-10-19-nineteen-tools-at-50-sea",
-     "status": "blocked",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_50e5c456",
-     "title": "Vault: file 'Top 3 project platforms \u2014 delivery, work review and staff context' to AI-Space/2.Automations-Skills/Reports/2026-10-19-top-3-project-platforms-deli",
+     "id": "t_c387a935",
+     "title": "Vault: file 'Slip and slide \u2014 what to buy (Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-19-2026-10-19-slip-and-slide-what-to-buy-oct-2026.md \u2014 ru",
      "status": "done",
      "assignee": "beast"
     }
@@ -3072,7 +3080,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-19T14:22:22Z"
+  "mergedAt": "2026-10-19T16:45:05Z"
  },
  "summary": {
   "projects": 61,
@@ -3083,14 +3091,91 @@ var MAIO_DATA = {
   "devTotal": 10,
   "reports": 33,
   "roster": 39,
-  "launchdLoaded": 62,
+  "launchdLoaded": 63,
   "dockerUp": 4,
-  "libraryPublic": 71,
+  "libraryPublic": 82,
   "libraryInternal": 200,
   "docs": 140
  },
  "library": {
   "public": [
+   {
+    "title": "Building Asana ourselves \u2014 measured answer",
+    "url": "clone-asana-build-estimate-oct-2026.html",
+    "dir": "clone-asana-build-estimate-oct-2026.html",
+    "date": "2026-10-19",
+    "kb": 15
+   },
+   {
+    "title": "Documents, client folders, and the API behind them",
+    "url": "documents-client-folders-api-mcp-2026-10.html",
+    "dir": "documents-client-folders-api-mcp-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 15
+   },
+   {
+    "title": "Fork a repo or start fresh \u2014 measured",
+    "url": "fork-or-fresh-task-app-oct-2026.html",
+    "dir": "fork-or-fresh-task-app-oct-2026.html",
+    "date": "2026-10-19",
+    "kb": 14
+   },
+   {
+    "title": "Hive and Airtable, evaluated \u2014 and what replaces Superhuman Docs",
+    "url": "hive-airtable-evaluation-2026-10.html",
+    "dir": "hive-airtable-evaluation-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 18
+   },
+   {
+    "title": "Mixed seats, iPhone apps and the inbox \u2014 checked tool by tool",
+    "url": "mixed-seats-iphone-inbox-2026-10.html",
+    "dir": "mixed-seats-iphone-inbox-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 19
+   },
+   {
+    "title": "Open source, honestly \u2014 what replaces Zoho Projects and what can't replace Filestage",
+    "url": "open-source-pm-and-proofing-2026-10.html",
+    "dir": "open-source-pm-and-proofing-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 13
+   },
+   {
+    "title": "The field, corrected \u2014 19 tools at 50 seats (Oct 2026)",
+    "url": "project-management-19-tools-revised-field-2026-10.html",
+    "dir": "project-management-19-tools-revised-field-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 18
+   },
+   {
+    "title": "Project management for 50 staff \u2014 the full field, the accurate cost, the pick",
+    "url": "project-management-50-staff-full-field-2026-10.html",
+    "dir": "project-management-50-staff-full-field-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 29
+   },
+   {
+    "title": "Project management after Zoho Projects \u2014 the honest costing",
+    "url": "project-management-alternatives-costing-2026-10.html",
+    "dir": "project-management-alternatives-costing-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 21
+   },
+   {
+    "title": "Top 3 \u2014 delivery, work review and staff context (Oct 2026)",
+    "url": "project-management-top3-delivery-review-context-2026-10.html",
+    "dir": "project-management-top3-delivery-review-context-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 18
+   },
+   {
+    "title": "The project platform review \u2014 every report in one place",
+    "url": "project-platform-review-index-2026-10.html",
+    "dir": "project-platform-review-index-2026-10.html",
+    "date": "2026-10-19",
+    "kb": 8
+   },
    {
     "title": "Adrianna A \u2014 Character Sheet",
     "url": "adrianna-character-sheet.html",
@@ -3590,7 +3675,7 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 71,
+   "public": 82,
    "internal": 200,
    "docs": 140
   }
