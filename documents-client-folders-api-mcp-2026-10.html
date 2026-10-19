@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents, client folders, and the API behind them</title>
+<style>
+  :root{--ink:#12151b;--ink2:#3d4450;--ink3:#6b7280;--line:#dfe2e7;--line2:#eceef2;
+    --gold:#8a6b1f;--goldbg:#fbf6e7;--red:#8d2f2f;--redbg:#fbf0ef;--green:#1f6b45;--greenbg:#f0f7f3;--panel:#f7f8fa}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#e9ebef;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .page{width:210mm;min-height:297mm;padding:14mm 15mm 12mm;background:#fff;margin:8mm auto;
+    box-shadow:0 2px 18px rgba(0,0,0,.10);position:relative;page-break-after:always}
+  .page:last-of-type{page-break-after:auto}
+  .pnum{position:absolute;bottom:7mm;right:15mm;font:600 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink3);letter-spacing:.08em}
+  .runhead{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);
+    padding-bottom:2.5mm;margin-bottom:5mm;font:600 9.5px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink3);letter-spacing:.10em;text-transform:uppercase}
+  h1{font-size:27px;line-height:1.14;margin:0 0 3mm;letter-spacing:-.02em;font-weight:800}
+  h2{font-size:17px;line-height:1.2;margin:4mm 0 2mm;letter-spacing:-.01em;font-weight:750}
+  h2:first-of-type{margin-top:0}
+  h3{font-size:11px;margin:0 0 1.5mm;letter-spacing:.06em;text-transform:uppercase;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink2);font-weight:700}
+  p{font-size:11px;line-height:1.55;color:var(--ink2);margin:0 0 2.6mm}
+  .lede{font-size:12.4px;line-height:1.5;color:var(--ink)}
+  strong{color:var(--ink);font-weight:700}
+  .kicker{font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:2.5mm}
+  table{width:100%;border-collapse:collapse;margin:0 0 3.2mm;font-size:9.7px}
+  th{text-align:left;font:700 8.2px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--ink3);border-bottom:1.5px solid var(--ink);padding:0 1.7mm 1.7mm 0;vertical-align:bottom}
+  td{padding:1.25mm 1.7mm 1.25mm 0;border-bottom:1px solid var(--line2);vertical-align:top;line-height:1.38;color:var(--ink2)}
+  td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+  .num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:nowrap}
+  .yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}.part{color:var(--gold);font-weight:700}
+  .box{border:1px solid var(--line);border-radius:3px;padding:3.2mm;margin:0 0 3.2mm;background:var(--panel)}
+  .box.gold{background:var(--goldbg);border-color:#e6d8ae}
+  .box.red{background:var(--redbg);border-color:#eccfcc}
+  .box.green{background:var(--greenbg);border-color:#cfe3d9}
+  .box h3{margin-bottom:2mm}
+  .box p:last-child{margin-bottom:0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:3.5mm}
+  .stat{border-top:2px solid var(--ink);padding-top:2.2mm}
+  .stat .n{font:800 16.5px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);letter-spacing:-.02em}
+  .stat .l{font-size:9.1px;color:var(--ink3);margin-top:1.2mm;line-height:1.4}
+  ul{margin:0 0 2.6mm;padding-left:4.2mm}
+  li{font-size:10.4px;line-height:1.5;color:var(--ink2);margin-bottom:1.1mm}
+  .foot{font-size:9px;color:var(--ink3);line-height:1.45;border-top:1px solid var(--line);padding-top:2.5mm;margin-top:4mm}
+  .tiny{font-size:8.8px;color:var(--ink3);line-height:1.4}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.4px;background:#f1f2f5;padding:.4mm 1mm;border-radius:2px}
+  @media print{html,body{background:#fff}.page{margin:0;box-shadow:none;width:auto;min-height:auto;padding:12mm}}
+</style>
+</head>
+<body>
+
+<!-- ===== PAGE 1 ===== -->
+<section class="page">
+  <div class="runhead"><span>Bruce Wayne · Chief of Staff</span><span>19 October 2026 · Confidential</span></div>
+  <div class="kicker">Documents, client folders, and what sits underneath</div>
+  <h1>None of them replaces a document system. One of them gets close enough to be a client's front door.</h1>
+  <p class="lede">Staff loading documents and a client seeing only their own folder are two different requirements: the first is storage, the second is permission scoping. Every tool on the list does the first badly or adequately; only a handful do the second properly, and which one matters depends on whether the client folder must hold files or just work.</p>
+
+  <h2>Can it stand in for the document store?</h2>
+  <table>
+    <thead><tr><th>Tool</th><th>Document library</th><th>Storage</th><th>Honest verdict</th></tr></thead>
+    <tbody>
+      <tr><td>ClickUp</td><td>Docs (nested), plus Files on tasks, lists and folders</td><td class="part">Unlimited on paid plans</td><td class="yes">Closest to a real library — permissions can be set per Folder, Subfolder, List and even per Doc</td></tr>
+      <tr><td>Nifty</td><td>Docs and Files inside projects</td><td class="yes">Unlimited on the Unlimited plan</td><td class="part">Good project library, no cross-project archive</td></tr>
+      <tr><td>Asana</td><td>Files on tasks and projects; no doc library</td><td class="part">Files count against plan limits</td><td class="no">Attachment store, not a document system</td></tr>
+      <tr><td>monday.com</td><td>Files column, Workdocs on higher tiers</td><td class="part">Plan-capped</td><td class="no">Files live on items; nothing document-shaped</td></tr>
+      <tr><td>Teamwork</td><td>Files and Notebooks per project</td><td class="part">Plan-capped</td><td class="part">Decent project files, no client-facing archive</td></tr>
+      <tr><td>ProofHub</td><td>Files with folders</td><td class="no">15 GB Essential / 100 GB Ultimate</td><td class="no">Tight storage, no versions worth the name</td></tr>
+      <tr><td>OpenProject</td><td>Documents module, attachments, wiki</td><td class="yes">Your own disk, no cap</td><td class="part">Solid for project papers, not for client libraries</td></tr>
+      <tr><td>Plane</td><td>Attachments and wiki pages</td><td class="yes">Your own disk</td><td class="no">Attachments only</td></tr>
+      <tr><td>Basecamp</td><td>Files per project, folders inside</td><td class="part">Plan-capped</td><td class="part">Clean, simple, no versioning</td></tr>
+      <tr><td>Zoho WorkDrive <span class="tiny">(what you already own)</span></td><td>A real document management system: team folders, external client folders, versioning, roles</td><td class="part">Included in Zoho One</td><td class="yes">This <em>is</em> the document system — nothing above beats it</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box gold">
+    <h3>The money point nobody says out loud</h3>
+    <p>Leaving Zoho Projects does not remove WorkDrive. It is part of the Zoho One invoice you already pay, and that invoice does not shrink when Projects goes quiet. <strong>So you are not buying a document system — you already have one.</strong> The question is only which project tool can reach into it, and every tool on this list integrates with Google Drive, Dropbox or OneDrive, so WorkDrive can stay the archive while the project tool holds the working file.</p>
+  </div>
+
+  <div class="pnum">01 / 03</div>
+</section>
+
+<!-- ===== PAGE 2 ===== -->
+<section class="page">
+  <div class="runhead"><span>Client folders</span><span>Can a client see only their own space?</span></div>
+  <h2>Yes — and three of them do it at the level you described.</h2>
+  <p>What you asked for has a name in each product: a scoped external seat. The client is invited to one container and cannot see the rest of the workspace, its other clients or its portfolio. Here is exactly what each does, from their own documentation.</p>
+  <table>
+    <thead><tr><th>Tool</th><th>Scoping unit</th><th>What the client sees</th><th>Documents inside?</th></tr></thead>
+    <tbody>
+      <tr><td>ClickUp</td><td class="yes">Folder / Subfolder / List</td><td>Only the folder shared with them, with permissions set per level; guests never see the workspace tree</td><td class="yes">Yes — files and Docs live in that folder</td></tr>
+      <tr><td>Asana</td><td class="yes">Project or single task</td><td>"Guests only see what is explicitly shared with them" — share one task and they see that task</td><td class="part">Files attach to the task, not a folder</td></tr>
+      <tr><td>Nifty</td><td class="yes">Project</td><td>"Guests invited to a project in a Portfolio only see that project. They cannot see any other data, including the Portfolio name."</td><td class="yes">Yes — that project's Docs and Files</td></tr>
+      <tr><td>monday.com</td><td class="part">Shareable board</td><td>Only the Shareable boards they were invited to; Shareable boards need Standard or above</td><td class="part">Files on items in that board</td></tr>
+      <tr><td>Teamwork</td><td class="yes">Project, as a client user</td><td>Client-side view of one project with its own permissions</td><td class="yes">Yes — project files and notebooks</td></tr>
+      <tr><td>ProofHub</td><td class="yes">Project, as a client user</td><td>Only the project they were added to</td><td class="yes">Yes — that project's files</td></tr>
+      <tr><td>Hive</td><td class="part">Project guest</td><td>Guest access limited to assigned projects</td><td class="part">Files on the project</td></tr>
+      <tr><td>OpenProject</td><td class="yes">Project membership + role</td><td>A per-project role decides what they see; there is no branding or client portal</td><td class="yes">Yes — that project's documents</td></tr>
+      <tr><td>Plane</td><td class="part">Project member</td><td>Project-level membership, engineering vocabulary</td><td class="no">Attachments only</td></tr>
+      <tr><td>Trello</td><td class="part">Board</td><td>Only the boards they are added to</td><td class="part">Attachments on cards</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box green">
+    <h3>Where this lands</h3>
+    <p><strong>ClickUp is the only tool whose scoping unit is a folder</strong> — which is literally what you asked for: a client folder, with the client inside that folder and nowhere else, holding both the work and the documents. Nifty's project-level scoping is cleaner in the interface and tells the client even less (not even the portfolio name), but the container is a project, not a folder. Asana's scoping is the tightest of all — you can share a single task — which is brilliant for approvals and awkward for a client who needs to browse their own space.</p>
+  </div>
+
+  <p class="tiny">One caution from ClickUp's own community: a guest inside a shared folder sees every task in that folder, so keep a client folder narrow rather than reusing a project folder for several clients.</p>
+
+  <div class="pnum">02 / 03</div>
+</section>
+
+<!-- ===== PAGE 3 ===== -->
+<section class="page">
+  <div class="runhead"><span>API and MCP</span><span>Where the agents get in — and what it costs</span></div>
+  <h2>Six have a first-party MCP server. One of them throttles it unless you pay again.</h2>
+  <p>An MCP server is the difference between an agent that can read your projects and one that can run them. Most now ship one — but ClickUp's is the only one that caps you in a way that matters.</p>
+  <table>
+    <thead><tr><th>Tool</th><th>Official MCP</th><th>API</th><th>What would bite us</th></tr></thead>
+    <tbody>
+      <tr><td>Asana</td><td class="yes">Yes — V2, GA 4 Feb 2026</td><td>REST, well documented</td><td class="yes">Strongest agent story of the six</td></tr>
+      <tr><td>monday.com</td><td class="yes">Yes (mondaycom/mcp)</td><td>GraphQL, near-total coverage</td><td class="yes">MCP tools map to GraphQL, so nothing is locked away</td></tr>
+      <tr><td>Nifty</td><td class="yes">Yes — "Nifty MCP"</td><td>API + webhooks</td><td class="yes">Included at a flat price — the cheapest agent access in the field</td></tr>
+      <tr><td>Plane</td><td class="yes">Yes, first-party</td><td>REST; self-host via <code>PLANE_BASE_URL</code></td><td class="part">Works on your own server; users report the MCP is rough</td></tr>
+      <tr><td>ClickUp</td><td class="yes">Yes — public beta, all plans</td><td>REST v2</td><td class="no">300 calls per 24h without the Everything AI add-on; only then do you get API-level limits. OAuth only, no deletes</td></tr>
+      <tr><td>OpenProject</td><td class="part">No first-party MCP</td><td>API v3, OpenAPI 3.1</td><td class="part">Excellent API, but we would build the MCP ourselves</td></tr>
+      <tr><td>Teamwork</td><td class="no">No MCP found</td><td>Documented REST API</td><td class="part">Integration work lands on us</td></tr>
+      <tr><td>ProofHub · Basecamp · Trello · Hive</td><td class="no">None</td><td>Thin or limited</td><td class="no">Not agent-addressable in any practical sense</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The cost of agent access, at 50 seats</h2>
+  <table>
+    <thead><tr><th>Stack</th><th>Annual incl VAT</th><th>MCP reality</th></tr></thead>
+    <tbody>
+      <tr><td>Nifty Unlimited</td><td class="num"><strong>R90,643</strong></td><td class="yes">MCP included, flat</td></tr>
+      <tr><td>Teamwork Basics</td><td class="num">R113,474</td><td class="no">No MCP — we build it</td></tr>
+      <tr><td>ClickUp Business</td><td class="num">R136,305</td><td class="part">MCP included but 300 calls a day</td></tr>
+      <tr><td>ClickUp Business + Everything AI</td><td class="num">R454,349</td><td class="yes">API-level limits — add-on alone is R318,044</td></tr>
+      <tr><td>monday Pro</td><td class="num">R215,816</td><td class="yes">MCP + GraphQL, no add-on</td></tr>
+      <tr><td>Asana Advanced</td><td class="num">R283,854</td><td class="yes">MCP V2 GA, no add-on</td></tr>
+      <tr><td>Asana + Harvest <span class="tiny">(Asana's own timer is manual entry only)</span></td><td class="num">R408,800</td><td class="yes">Two vendors, two bills</td></tr>
+      <tr><td>OpenProject CE</td><td class="num"><strong>R0</strong> + hosting</td><td class="part">API v3 only; we write the MCP</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box red">
+    <h3>The awkward finding</h3>
+    <p>ClickUp is the best tool for your staff and the worst for your agents. Three hundred MCP calls a day is one busy morning of my work — I would be locked out before lunch. The Everything AI add-on fixes it and costs <strong>R318,044 a year on its own</strong>, taking ClickUp to R454,349: R170,494 more than Asana, R238,533 more than monday. <strong>If agents run this work, Nifty at R90,643 flat is the cheap answer and monday Pro at R215,816 the strong one.</strong></p>
+  </div>
+
+  <h2>What I would do</h2>
+  <ul>
+    <li><strong>Keep WorkDrive.</strong> It is the document system, it already has client folders and external sharing, and it is inside a bill you are paying anyway.</li>
+    <li><strong>Pick for the humans first.</strong> Staff loading files and logging time each need a real seat; that is the bill, not a seat mix.</li>
+    <li><strong>Prove the MCP before you commit.</strong> One afternoon, one agent, one task, on Nifty and monday — if it cannot run on the free tier, the cheap option is not cheap.</li>
+  </ul>
+
+  <div class="foot">Prepared for Ricardo Maio by Bruce Wayne · chief of staff, all companies. Fourth page in the series. Sources read 19 October 2026: developer.clickup.com (MCP server, rate limits), developers.asana.com (MCP V2), developer.monday.com (platform MCP) and github.com/mondaycom/mcp, developers.plane.so (MCP server), help.niftypm.com (API and webhooks, guest permissions), openproject.org/docs/api, apidocs.teamwork.com, help.clickup.com (permissions in detail), help.asana.com (guests FAQ), support.monday.com (guest access), help.niftypm.com (working with guests), proofhub.com/pricing, niftypm.com/pricing, clickup.com/pricing, teamwork.com/pricing. Nothing installed, signed up for or bought. FX R16.4619/USD, VAT 15%.</div>
+
+  <div class="pnum">03 / 03</div>
+</section>
+
+</body>
+</html>
