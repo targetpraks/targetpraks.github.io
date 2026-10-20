@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 33,
+   "ms": 35,
    "ok": true,
    "note": "tool hub"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 4,
+   "ms": 14,
    "ok": true,
    "note": "memory"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 76,
+   "ms": 406,
    "ok": true,
    "note": "memory ui"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 80,
+   "ms": 99,
    "ok": true,
    "note": "local models"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 3,
    "ok": true,
    "note": "vault search"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 2,
    "ok": true,
    "note": "decision gates"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 52,
+   "ms": 174,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 18,
+   "ms": 16,
    "ok": true,
    "note": "company control plane"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 16,
+   "ms": 128,
    "ok": true,
    "note": "IPTV server"
   }
@@ -94,7 +94,7 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 4531,
+   "ms": 2940,
    "ok": false
   },
   {
@@ -108,42 +108,42 @@ var MAIO_DATA = {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 191,
+   "ms": 2295,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 194,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 192,
    "ok": false
   },
   {
@@ -164,18 +164,60 @@ var MAIO_DATA = {
  "devServersStaleSince": "",
  "reports": [
   {
+   "agent": "splinter",
+   "path": "AI-Drive/Agent-Output/splinter/published.csv",
+   "date": "2026-10-20",
+   "ext": "csv",
+   "kb": 19
+  },
+  {
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
+   "date": "2026-10-20",
+   "ext": "csv",
+   "kb": 7
+  },
+  {
    "agent": "poppins",
-   "path": "AI-Drive/Agent-Output/poppins/kids-calendar/2026-10-20.md",
+   "path": "AI-Drive/Agent-Output/poppins/kids-calendar-sync/2026-10-20.md",
    "date": "2026-10-20",
    "ext": "md",
+   "kb": 3
+  },
+  {
+   "agent": "dexter",
+   "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
+   "date": "2026-10-20",
+   "ext": "csv",
    "kb": 1
   },
   {
-   "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+   "agent": "default",
+   "path": "AI-Drive/Agent-Output/default/published.csv",
    "date": "2026-10-20",
-   "ext": "",
-   "kb": 1
+   "ext": "csv",
+   "kb": 2
+  },
+  {
+   "agent": "courage",
+   "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
+   "date": "2026-10-20",
+   "ext": "json",
+   "kb": 4
+  },
+  {
+   "agent": "bruce-wayne",
+   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-20T09:03:51+02:00/report.md",
+   "date": "2026-10-20",
+   "ext": "md",
+   "kb": 2
+  },
+  {
+   "agent": "batman",
+   "path": "AI-Drive/Agent-Output/batman/published.csv",
+   "date": "2026-10-20",
+   "ext": "csv",
+   "kb": 62
   },
   {
    "agent": "adrianna",
@@ -185,13 +227,6 @@ var MAIO_DATA = {
    "kb": 16
   },
   {
-   "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/sugar-kids-brain-evidence-and-videos-2026-10-19.md",
-   "date": "2026-10-19",
-   "ext": "md",
-   "kb": 2
-  },
-  {
    "agent": "scribe",
    "path": "AI-Drive/Agent-Output/scribe/2026-10-19-memory-overview.md",
    "date": "2026-10-19",
@@ -199,39 +234,11 @@ var MAIO_DATA = {
    "kb": 8
   },
   {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-   "date": "2026-10-19",
-   "ext": "csv",
-   "kb": 6
-  },
-  {
-   "agent": "dexter",
-   "path": "AI-Drive/Agent-Output/dexter/metrics/model-prices-history.csv",
-   "date": "2026-10-19",
-   "ext": "csv",
-   "kb": 5
-  },
-  {
-   "agent": "bruce-wayne",
-   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-19T17:05:58+02:00/report.md",
-   "date": "2026-10-19",
-   "ext": "md",
-   "kb": 2
-  },
-  {
    "agent": "beast",
    "path": "AI-Drive/Agent-Output/beast/gates-pending/2026-10-19-t_93bdac9e-gates.csv",
    "date": "2026-10-19",
    "ext": "csv",
    "kb": 2
-  },
-  {
-   "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/published.csv",
-   "date": "2026-10-19",
-   "ext": "csv",
-   "kb": 61
   },
   {
    "agent": "xavier",
@@ -309,13 +316,6 @@ var MAIO_DATA = {
    "date": "2026-10-15",
    "ext": "csv",
    "kb": 5
-  },
-  {
-   "agent": "default",
-   "path": "AI-Drive/Agent-Output/default/2026-10-15-kids-write-lane-prep/findings.md",
-   "date": "2026-10-15",
-   "ext": "md",
-   "kb": 4
   },
   {
    "agent": "papa",
@@ -585,10 +585,28 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "path": "DevMini/targetpraks.github.io/papa-pasta-and-tlf-ceiling-answers-2026-10.html",
     "date": "2026-10-20",
     "ext": "html",
     "kb": 0
+   }
+  },
+  {
+   "name": "OpenKnowledge_Macmini",
+   "family": "dev",
+   "root": "DevMini/OpenKnowledge_Macmini",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": true,
+   "prdNewest": {
+    "path": "DevMini/OpenKnowledge_Macmini/_templates/prd-template.md",
+    "date": "2026-10-20"
+   },
+   "artifact": {
+    "path": "DevMini/OpenKnowledge_Macmini/_templates/skill-template.md",
+    "date": "2026-10-20",
+    "ext": "md",
+    "kb": 1
    }
   },
   {
@@ -641,14 +659,14 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/bateman",
    "what": "Bateman",
-   "lastTouched": "2026-10-18",
+   "lastTouched": "2026-10-20",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/bateman/scripts/zoho_mail_grant.py",
-    "date": "2026-10-18",
-    "ext": "py",
-    "kb": 8
+    "path": "DevMini/bateman/docs/DIGEST-FORMAT.md",
+    "date": "2026-10-20",
+    "ext": "md",
+    "kb": 2
    }
   },
   {
@@ -700,6 +718,21 @@ var MAIO_DATA = {
    }
   },
   {
+   "name": "computer-use-stack",
+   "family": "dev",
+   "root": "DevMini/computer-use-stack",
+   "what": "computer-use-stack",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/computer-use-stack/tests/verify_chain.sh",
+    "date": "2026-10-20",
+    "ext": "sh",
+    "kb": 1
+   }
+  },
+  {
    "name": "constellation",
    "family": "dev",
    "root": "DevMini/constellation",
@@ -712,6 +745,42 @@ var MAIO_DATA = {
     "date": "2026-10-19",
     "ext": "md",
     "kb": 6
+   }
+  },
+  {
+   "name": "divorced-dads",
+   "family": "dev",
+   "root": "DevMini/divorced-dads",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": true,
+   "prdNewest": {
+    "path": "DevMini/divorced-dads/docs/PRD-private-beta-q4-2026.md",
+    "date": "2026-10-20"
+   },
+   "artifact": {
+    "path": "DevMini/divorced-dads/vite.config.js",
+    "date": "2026-10-20",
+    "ext": "js",
+    "kb": 1
+   }
+  },
+  {
+   "name": "divorced-dads-laravel",
+   "family": "dev",
+   "root": "DevMini/divorced-dads-laravel",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": true,
+   "prdNewest": {
+    "path": "DevMini/divorced-dads-laravel/docs/PRD-private-beta-q4-2026.md",
+    "date": "2026-10-20"
+   },
+   "artifact": {
+    "path": "DevMini/divorced-dads-laravel/vite.config.js",
+    "date": "2026-10-20",
+    "ext": "js",
+    "kb": 1
    }
   },
   {
@@ -733,6 +802,81 @@ var MAIO_DATA = {
    }
   },
   {
+   "name": "esoteric-libs-survey",
+   "family": "dev",
+   "root": "DevMini/esoteric-libs-survey",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/esoteric-libs-survey/pyjhora_test.py",
+    "date": "2026-10-20",
+    "ext": "py",
+    "kb": 1
+   }
+  },
+  {
+   "name": "ffAirbyte",
+   "family": "dev",
+   "root": "DevMini/ffAirbyte",
+   "what": "airbyte-webapp",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/ffAirbyte/vite.config.mts",
+    "date": "2026-10-20",
+    "ext": "mts",
+    "kb": 3
+   }
+  },
+  {
+   "name": "ff_chat2db",
+   "family": "dev",
+   "root": "DevMini/ff_chat2db",
+   "what": "<div align=\"center\">",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/ff_chat2db/script/chat2db-client/yarn.lock",
+    "date": "2026-10-20",
+    "ext": "lock",
+    "kb": 1
+   }
+  },
+  {
+   "name": "flowise",
+   "family": "dev",
+   "root": "DevMini/flowise",
+   "what": "flowise",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/flowise/turbo.json",
+    "date": "2026-10-20",
+    "ext": "json",
+    "kb": 1
+   }
+  },
+  {
+   "name": "fluxflowairbyte",
+   "family": "dev",
+   "root": "DevMini/fluxflowairbyte",
+   "what": "airbyte",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/fluxflowairbyte/values.yaml.test",
+    "date": "2026-10-20",
+    "ext": "test",
+    "kb": 60
+   }
+  },
+  {
    "name": "gsd-dashboard",
    "family": "dev",
    "root": "DevMini/gsd-dashboard",
@@ -743,6 +887,39 @@ var MAIO_DATA = {
    "artifact": {
     "path": "DevMini/gsd-dashboard/graphify-out/manifest.json",
     "date": "2026-10-01",
+    "ext": "json",
+    "kb": 1
+   }
+  },
+  {
+   "name": "hermes-agent",
+   "family": "dev",
+   "root": "DevMini/hermes-agent",
+   "what": "hermes-agent \u2014 An AI agent with advanced tool-calling capabilities, featuring a flexible toolsets system for o",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/hermes-agent/uv.lock",
+    "date": "2026-10-20",
+    "ext": "lock",
+    "kb": 719
+   }
+  },
+  {
+   "name": "hermes-backup",
+   "family": "dev",
+   "root": "DevMini/hermes-backup",
+   "what": "Hermes Agent Backup \u2014 rmmacbook",
+   "lastTouched": "2026-10-20",
+   "hasPRD": true,
+   "prdNewest": {
+    "path": "DevMini/hermes-backup/hermes-home/p_PRD_Skill_Library.md",
+    "date": "2026-10-20"
+   },
+   "artifact": {
+    "path": "DevMini/hermes-backup/hermes-home/web-ui-build-stamp.json",
+    "date": "2026-10-20",
     "ext": "json",
     "kb": 1
    }
@@ -811,6 +988,51 @@ var MAIO_DATA = {
    }
   },
   {
+   "name": "n8n-fabric",
+   "family": "dev",
+   "root": "DevMini/n8n-fabric",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/n8n-fabric/workflows/JARVIS-Webhook-Fabric-\u2014-ping-7dU0Mj3a38qfZPvs.json",
+    "date": "2026-10-20",
+    "ext": "json",
+    "kb": 1
+   }
+  },
+  {
+   "name": "papa-pasta-equipment-rfq",
+   "family": "dev",
+   "root": "DevMini/papa-pasta-equipment-rfq",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/papa-pasta-equipment-rfq/index.html",
+    "date": "2026-10-20",
+    "ext": "html",
+    "kb": 35
+   }
+  },
+  {
+   "name": "papa-pasta-formula-v2",
+   "family": "dev",
+   "root": "DevMini/papa-pasta-formula-v2",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/papa-pasta-formula-v2/top4_kitchen_manual_fresh_v2.html",
+    "date": "2026-10-20",
+    "ext": "html",
+    "kb": 53
+   }
+  },
+  {
    "name": "papa-pasta-main-website",
    "family": "dev",
    "root": "DevMini/papa-pasta-main-website",
@@ -829,6 +1051,21 @@ var MAIO_DATA = {
    }
   },
   {
+   "name": "papa-pasta-zones",
+   "family": "dev",
+   "root": "DevMini/papa-pasta-zones",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/papa-pasta-zones/pricing.html",
+    "date": "2026-10-20",
+    "ext": "html",
+    "kb": 919
+   }
+  },
+  {
    "name": "quote-program",
    "family": "dev",
    "root": "DevMini/quote-program",
@@ -840,6 +1077,21 @@ var MAIO_DATA = {
     "path": "DevMini/quote-program/test-results/.last-run.json",
     "date": "2026-10-06",
     "ext": "json",
+    "kb": 1
+   }
+  },
+  {
+   "name": "rmmacbook-dev-environment-backup",
+   "family": "dev",
+   "root": "DevMini/rmmacbook-dev-environment-backup",
+   "what": "Dev Environment Backup \u2014 rmmacbook",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/rmmacbook-dev-environment-backup/launch-agents/sh.brew.herdr.plist",
+    "date": "2026-10-20",
+    "ext": "plist",
     "kb": 1
    }
   },
@@ -863,17 +1115,17 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/sunscout",
    "what": "sunscout",
-   "lastTouched": "2026-10-01",
+   "lastTouched": "2026-10-20",
    "hasPRD": true,
    "prdNewest": {
     "path": "DevMini/sunscout/docs/PRD_v2.md",
     "date": "2026-07-24"
    },
    "artifact": {
-    "path": "DevMini/sunscout/graphify-out/manifest.json",
-    "date": "2026-10-01",
-    "ext": "json",
-    "kb": 69
+    "path": "DevMini/sunscout/server/socialLinks.ts",
+    "date": "2026-10-20",
+    "ext": "ts",
+    "kb": 4
    }
   },
   {
@@ -889,6 +1141,36 @@ var MAIO_DATA = {
     "date": "2026-09-16",
     "ext": "txt",
     "kb": 1
+   }
+  },
+  {
+   "name": "the-good-stuff",
+   "family": "dev",
+   "root": "DevMini/the-good-stuff",
+   "what": "The Good Stuff",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/the-good-stuff/tools/template.html",
+    "date": "2026-10-20",
+    "ext": "html",
+    "kb": 3
+   }
+  },
+  {
+   "name": "the-local-farmer",
+   "family": "dev",
+   "root": "DevMini/the-local-farmer",
+   "what": "\u2014",
+   "lastTouched": "2026-10-20",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/the-local-farmer/tokens.json",
+    "date": "2026-10-20",
+    "ext": "json",
+    "kb": 6
    }
   },
   {
@@ -1304,7 +1586,7 @@ var MAIO_DATA = {
    "role": "Work family lead",
    "latest": {
     "path": "AI-Drive/Agent-Output/batman/published.csv",
-    "date": "2026-10-19"
+    "date": "2026-10-20"
    },
    "portrait": "assets/cast/batman.jpg",
    "sheet": "https://targetpraks.github.io/bruce-wayne-character-sheet.html"
@@ -1343,8 +1625,8 @@ var MAIO_DATA = {
    "name": "bruce-wayne",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-19T17:05:58+02:00/report.md",
-    "date": "2026-10-19"
+    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-20T09:03:51+02:00/report.md",
+    "date": "2026-10-20"
    },
    "portrait": "assets/cast/batman.jpg",
    "sheet": null
@@ -1417,7 +1699,7 @@ var MAIO_DATA = {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
+    "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
     "date": "2026-10-20"
    },
    "portrait": "assets/cast/courage.jpg",
@@ -1451,8 +1733,8 @@ var MAIO_DATA = {
    "name": "default",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/default/2026-10-15-kids-write-lane-prep/findings.md",
-    "date": "2026-10-15"
+    "path": "AI-Drive/Agent-Output/default/published.csv",
+    "date": "2026-10-20"
    },
    "portrait": "assets/cast/adrianna.jpg",
    "sheet": null
@@ -1461,8 +1743,8 @@ var MAIO_DATA = {
    "name": "dexter",
    "role": "Quantified researcher \u2014 metrics & telemetry",
    "latest": {
-    "path": "AI-Drive/Agent-Output/dexter/metrics/model-prices-history.csv",
-    "date": "2026-10-19"
+    "path": "AI-Drive/Agent-Output/dexter/metrics/spend-daily.csv",
+    "date": "2026-10-20"
    },
    "portrait": "assets/cast/dexter.jpg",
    "sheet": "https://targetpraks.github.io/dexter-character-sheet.html"
@@ -1545,7 +1827,7 @@ var MAIO_DATA = {
    "name": "poppins",
    "role": "Family & personal CRM \u00b7 weekly wheel",
    "latest": {
-    "path": "AI-Drive/Agent-Output/poppins/kids-calendar/2026-10-20.md",
+    "path": "AI-Drive/Agent-Output/poppins/kids-calendar-sync/2026-10-20.md",
     "date": "2026-10-20"
    },
    "portrait": "assets/cast/poppins.jpg",
@@ -1556,7 +1838,7 @@ var MAIO_DATA = {
    "role": "Research arm",
    "latest": {
     "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-    "date": "2026-10-19"
+    "date": "2026-10-20"
    },
    "portrait": "assets/cast/researcher.jpg",
    "sheet": null
@@ -1615,8 +1897,8 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/sugar-kids-brain-evidence-and-videos-2026-10-19.md",
-    "date": "2026-10-19"
+    "path": "AI-Drive/Agent-Output/splinter/published.csv",
+    "date": "2026-10-20"
    },
    "portrait": "assets/cast/splinter.jpg",
    "sheet": "https://targetpraks.github.io/splinter-character-sheet.html"
@@ -1717,7 +1999,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 51806,
+     "pid": 66134,
      "exit": 0
     },
     {
@@ -1763,7 +2045,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.filestage.checker",
      "pid": null,
-     "exit": 0
+     "exit": 126
     },
     {
      "label": "com.maio.mount-nas",
@@ -1896,6 +2178,11 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.kids-calendar-sync",
+     "pid": null,
+     "exit": 0
+    },
+    {
      "label": "com.maio.ram-guard",
      "pid": null,
      "exit": 0
@@ -1987,29 +2274,29 @@ var MAIO_DATA = {
     }
    ],
    "counts": {
-    "loaded": 63,
+    "loaded": 64,
     "running": 27
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 18 hours (healthy)",
+    "status": "Up 24 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 18 hours (healthy)",
+    "status": "Up 24 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 18 hours",
+    "status": "Up 24 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 18 hours (healthy)",
+    "status": "Up 24 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    }
   ],
@@ -2036,6 +2323,10 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:3773"
     },
     {
+     "url": "https://ricardos-mac-mini.taile9f837.ts.net",
+     "target": "http://127.0.0.1:3773"
+    },
+    {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:8443",
      "target": "http://127.0.0.1:9110"
     },
@@ -2048,88 +2339,88 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:9999"
     }
    ],
-   "count": 7
+   "count": 8
   },
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 557,
+    "done": 590,
     "scheduled": 2,
     "ready": 3,
-    "todo": 18,
-    "blocked": 6
+    "todo": 6,
+    "blocked": 1
    },
-   "total": 586,
+   "total": 602,
    "recent": [
     {
-     "id": "t_ad712528",
-     "title": "Vault: file 'Fleet architecture \u2014 the agent stack on one Mac mini' to AI-Space/2.Automations-Skills/2026-10-19-fleet-architecture-the-agent-stack-on-one-mac-min",
+     "id": "t_534e31ba",
+     "title": "Vault: file '51 Trichardt Street \u2014 Structural Engineer Proposals: Five Firms Compared' to Personal/5.PARA/2.Area/E.Places/2026-10-20-51-trichardt-street-structu",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_231c070d",
-     "title": "Vault: UPDATE 'Maio LLM Fleet \u2014 Master Benchmark Matrix' in place \u2014 worker allocation correction (no new note)",
+     "id": "t_f8fe0040",
+     "title": "Vault: mark 'Local Test Bench \u2014 Vikunja \u00d7 Plane' as uninstalled",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_134cb796",
-     "title": "Vault: UPDATE Memory-Overview + Memory-Recording-Guide in place (no new note) \u2014 rule-4 from scribe",
+     "id": "t_aa76f4fb",
+     "title": "Vault: file 'The Maio family \u2014 what's what' to AI-Space/2.Automations-Skills/Reports/2026-10-20-maio-family-naming-map.html \u2014 rule-4 handoff from adrianna",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_437d885f",
-     "title": "Vault: UPDATE 'Maio LLM Fleet \u2014 Master Benchmark Matrix' in place \u2014 M3.1 Flash revision (no new note)",
+     "id": "t_0afb94e0",
+     "title": "Vault: file 'Three rooms, three ceilings \u2014 Papa Pasta and TLF' to AI-Space/2.Automations-Skills/Reports/2026-10-20-three-rooms-three-ceilings-papa-pasta-and-tlf",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_e9dad3b3",
-     "title": "Vault rewrite: Memory-Overview + Memory-Recording-Guide describe a system we retired \u2014 refresh both to today's memory stack",
-     "status": "done",
-     "assignee": "scribe"
-    },
-    {
-     "id": "t_93bdac9e",
-     "title": "Vault: file 'Infinity Brands \u2014 project platform decision (replace Zoho Projects + Filestage)' to Work/2.Automations-Skills/Reports/2026-10-19-infinity-brands-pr",
+     "id": "t_ea3187e5",
+     "title": "Vault: file 'T3 Code \u2014 permissions on every machine (2026-10-20)' to AI-Space/2.Automations-Skills/Reports/2026-10-20-t3-code-permissions-on-every-machine-2026-",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_b963ed0e",
-     "title": "Vault: file 'The evidence behind the deck \u2014 Hive vs ClickUp, six features at 40 seats' to AI-Space/2.Automations-Skills/Reports/2026-10-19-the-evidence-behind-t",
+     "id": "t_3e0e22f2",
+     "title": "Vault: file 'Flush plaster vs stretch canvas ceiling' to AI-Space/2.Automations-Skills/Reports/2026-10-20-flush-plaster-vs-stretch-canvas-ceiling.html \u2014 rule-4 ",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_6a6a3b25",
-     "title": "Vault: UPDATE in place \u2014 Nimrod gap scorecard (T3 server side completed 18:22)",
+     "id": "t_83a57c42",
+     "title": "Vault: file '51 Trichardt Street \u2014 Structural Engineer Replies: 3 in, 3 drafts' to Personal/5.PARA/2.Area/E.Places/2026-10-20-51-trichardt-street-structural-eng",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_a181e221",
-     "title": "Vault: file 'Slip and slide \u2014 what to buy (Oct 2026)' to Personal/2.Automations-Skills/Reports/2026-10-19-slip-and-slide-what-to-buy-oct-2026-2.md \u2014 rule-4 hand",
+     "id": "t_9380805f",
+     "title": "Vault: file '51 Trichardt Street \u2014 Structural Engineer Replies: 3 in, 3 drafts' to Personal/5.PARA/2.Area/E.Places/2026-10-20-51-trichardt-street-structural-eng",
+     "status": "blocked",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_3ab5c4bd",
+     "title": "Vault: file 'Amazon.co.za Black Friday \u2014 household cart, staged and price-checked' to Personal/2.Automations-Skills/Reports/2026-10-20-amazon-co-za-black-friday",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_456cef99",
-     "title": "Vault: file 'Nimrod's 100-project AI stack \u2014 gap scorecard (19 Oct 2026)' to AI-Space/2.Automations-Skills/Reports/2026-10-19-2026-10-19-nimrod-s-100-project-ai",
+     "id": "t_e62ab633",
+     "title": "Vault: file 'T3 Code \u2014 permissions on every machine (2026-10-20)' to AI-Space/2.Automations-Skills/Reports/2026-10-20-t3-code-permissions-on-every-machine-2026-",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_4ac6d270",
-     "title": "Vault: file 'Nimrod's 100-project AI stack \u2014 gap scorecard (19 Oct 2026)' to AI-Space/2.Automations-Skills/Reports/2026-10-19-nimrod-s-100-project-ai-stack-gap-",
+     "id": "t_6ca5dea2",
+     "title": "File to vault: Dia pinned tabs \u2014 verified identical on both Macs (20 Oct 2026)",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_d3940a95",
-     "title": "Vault: file 'Fork a repo or start fresh \u2014 the fork tax, measured' to AI-Space/2.Automations-Skills/Reports/2026-10-19-fork-a-repo-or-start-fresh-the-fork-tax-me",
+     "id": "t_1c6fb279",
+     "title": "File in vault: Dia sync \u2014 third-device check (20 Oct 2026)",
      "status": "done",
      "assignee": "beast"
     }
@@ -2539,6 +2830,27 @@ var MAIO_DATA = {
    "path": "Vault/Maio Hub/Work/3.PRD/Active/Infinity-Brands-GM/Mr-Infinity-Cron-Architecture.md",
    "date": "2026-09-27",
    "area": "Work"
+  },
+  {
+   "title": "prd-template.md",
+   "project": "OpenKnowledge_Macmini",
+   "path": "DevMini/OpenKnowledge_Macmini/_templates/prd-template.md",
+   "date": "2026-10-20",
+   "area": "disk scan"
+  },
+  {
+   "title": "PRD-private-beta-q4-2026.md",
+   "project": "divorced-dads",
+   "path": "DevMini/divorced-dads/docs/PRD-private-beta-q4-2026.md",
+   "date": "2026-10-20",
+   "area": "disk scan"
+  },
+  {
+   "title": "p_PRD_Skill_Library.md",
+   "project": "hermes-backup",
+   "path": "DevMini/hermes-backup/hermes-home/p_PRD_Skill_Library.md",
+   "date": "2026-10-20",
+   "area": "disk scan"
   },
   {
    "title": "PRD_FEATURE.md",
@@ -3080,25 +3392,60 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-20T04:45:02Z"
+  "mergedAt": "2026-10-20T10:45:06Z"
  },
  "summary": {
-  "projects": 61,
-  "prds": 60,
+  "projects": 79,
+  "prds": 63,
   "stackLive": 9,
   "stackTotal": 9,
   "devOnline": 0,
   "devTotal": 10,
   "reports": 33,
   "roster": 39,
-  "launchdLoaded": 63,
+  "launchdLoaded": 64,
   "dockerUp": 4,
-  "libraryPublic": 82,
+  "libraryPublic": 86,
   "libraryInternal": 200,
-  "docs": 140
+  "docs": 143
  },
  "library": {
   "public": [
+   {
+    "title": "Flush plaster vs stretch canvas ceiling &mdash; comparison",
+    "url": "ceiling-plaster-vs-stretch-canvas-2026-10.html",
+    "dir": "ceiling-plaster-vs-stretch-canvas-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 39
+   },
+   {
+    "title": "The evidence behind the deck \u2014 Hive vs ClickUp, Infinity Brands at 40 seats",
+    "url": "hive-vs-clickup-evidence-2026-10.html",
+    "dir": "hive-vs-clickup-evidence-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 20
+   },
+   {
+    "title": "Open source at 40 seats \u2014 the shortlist, with the websites",
+    "url": "open-source-shortlist-with-websites-2026-10.html",
+    "dir": "open-source-shortlist-with-websites-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 19
+   },
+   {
+    "title": "Three rooms, one ceiling answer each &mdash; Papa Pasta &amp; TLF",
+    "url": "papa-pasta-and-tlf-ceiling-answers-2026-10.html",
+    "dir": "papa-pasta-and-tlf-ceiling-answers-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 31
+   },
+   {
+    "title": "The project platform review \u2014 every report in one place",
+    "url": "project-platform-review-index-2026-10.html",
+    "dir": "project-platform-review-index-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 10
+   },
    {
     "title": "Building Asana ourselves \u2014 measured answer",
     "url": "clone-asana-build-estimate-oct-2026.html",
@@ -3168,13 +3515,6 @@ var MAIO_DATA = {
     "dir": "project-management-top3-delivery-review-context-2026-10.html",
     "date": "2026-10-19",
     "kb": 18
-   },
-   {
-    "title": "The project platform review \u2014 every report in one place",
-    "url": "project-platform-review-index-2026-10.html",
-    "dir": "project-platform-review-index-2026-10.html",
-    "date": "2026-10-19",
-    "kb": 8
    },
    {
     "title": "Adrianna A \u2014 Character Sheet",
@@ -3675,9 +4015,9 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 82,
+   "public": 86,
    "internal": 200,
-   "docs": 140
+   "docs": 143
   }
  }
 };
