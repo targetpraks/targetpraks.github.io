@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 35,
+   "ms": 13,
    "ok": true,
    "note": "tool hub"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 14,
+   "ms": 5,
    "ok": true,
    "note": "memory"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 406,
+   "ms": 30,
    "ok": true,
    "note": "memory ui"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 99,
+   "ms": 37,
    "ok": true,
    "note": "local models"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 3,
+   "ms": 1,
    "ok": true,
    "note": "vault search"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 2,
+   "ms": 0,
    "ok": true,
    "note": "decision gates"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 174,
+   "ms": 7,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 16,
+   "ms": 4,
    "ok": true,
    "note": "company control plane"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 128,
+   "ms": 22,
    "ok": true,
    "note": "IPTV server"
   }
@@ -94,70 +94,70 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2940,
+   "ms": 2927,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2191,
+   "ms": 2192,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2295,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 195,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 195,
+   "ms": 213,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 190,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 189,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 191,
    "ok": false
   }
  ],
@@ -168,7 +168,7 @@ var MAIO_DATA = {
    "path": "AI-Drive/Agent-Output/splinter/published.csv",
    "date": "2026-10-20",
    "ext": "csv",
-   "kb": 19
+   "kb": 20
   },
   {
    "agent": "research",
@@ -182,7 +182,7 @@ var MAIO_DATA = {
    "path": "AI-Drive/Agent-Output/poppins/kids-calendar-sync/2026-10-20.md",
    "date": "2026-10-20",
    "ext": "md",
-   "kb": 3
+   "kb": 5
   },
   {
    "agent": "dexter",
@@ -200,24 +200,24 @@ var MAIO_DATA = {
   },
   {
    "agent": "courage",
-   "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
+   "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
    "date": "2026-10-20",
-   "ext": "json",
-   "kb": 4
+   "ext": "",
+   "kb": 1
   },
   {
    "agent": "bruce-wayne",
-   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-20T09:03:51+02:00/report.md",
+   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-20T17:00:32+02:00/apply.jsonl",
    "date": "2026-10-20",
-   "ext": "md",
-   "kb": 2
+   "ext": "jsonl",
+   "kb": 1
   },
   {
    "agent": "batman",
    "path": "AI-Drive/Agent-Output/batman/published.csv",
    "date": "2026-10-20",
    "ext": "csv",
-   "kb": 62
+   "kb": 76
   },
   {
    "agent": "adrianna",
@@ -582,10 +582,10 @@ var MAIO_DATA = {
    "root": "DevMini/targetpraks.github.io",
    "what": "GitHub Pages \u2014 Maio OS, charts, reports live here",
    "lastTouched": "2026-10-20",
-   "hasPRD": false,
+   "hasPRD": true,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/papa-pasta-and-tlf-ceiling-answers-2026-10.html",
+    "path": "DevMini/targetpraks.github.io/papa-pasta-shop-design-pack-annexure.html",
     "date": "2026-10-20",
     "ext": "html",
     "kb": 0
@@ -644,14 +644,14 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/Wheel of Life",
    "what": "wheel-of-life",
-   "lastTouched": "2026-10-01",
+   "lastTouched": "2026-10-20",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/Wheel of Life/graphify-out/manifest.json",
-    "date": "2026-10-01",
-    "ext": "json",
-    "kb": 10
+    "path": "DevMini/Wheel of Life/next-env.d.ts",
+    "date": "2026-10-20",
+    "ext": "ts",
+    "kb": 1
    }
   },
   {
@@ -1283,14 +1283,14 @@ var MAIO_DATA = {
    "family": "work",
    "root": "AI-Drive/Work/Papa Pasta",
    "what": "\u2014",
-   "lastTouched": "2026-10-16",
+   "lastTouched": "2026-10-20",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "AI-Drive/Work/Papa Pasta/Icon\r",
-    "date": "2026-10-16",
-    "ext": "",
-    "kb": 1
+    "path": "AI-Drive/Work/Papa Pasta/qa-collateral.png",
+    "date": "2026-10-20",
+    "ext": "png",
+    "kb": 6431
    }
   },
   {
@@ -1625,7 +1625,7 @@ var MAIO_DATA = {
    "name": "bruce-wayne",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-20T09:03:51+02:00/report.md",
+    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-20T17:00:32+02:00/apply.jsonl",
     "date": "2026-10-20"
    },
    "portrait": "assets/cast/batman.jpg",
@@ -1699,7 +1699,7 @@ var MAIO_DATA = {
    "name": "courage",
    "role": "Scheduled jobs & checks",
    "latest": {
-    "path": "AI-Drive/Agent-Output/courage/ram/ram-evidence-latest.json",
+    "path": "AI-Drive/Agent-Output/courage/.watchtower-probe",
     "date": "2026-10-20"
    },
    "portrait": "assets/cast/courage.jpg",
@@ -1999,7 +1999,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 66134,
+     "pid": 28841,
      "exit": 0
     },
     {
@@ -2281,22 +2281,22 @@ var MAIO_DATA = {
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 24 hours (healthy)",
+    "status": "Up 30 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 24 hours (healthy)",
+    "status": "Up 30 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 24 hours",
+    "status": "Up 30 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 24 hours (healthy)",
+    "status": "Up 30 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    }
   ],
@@ -2309,6 +2309,10 @@ var MAIO_DATA = {
     {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:10000",
      "target": "http://127.0.0.1:8789"
+    },
+    {
+     "url": "https://ricardos-mac-mini.taile9f837.ts.net:10010",
+     "target": "http://127.0.0.1:3010"
     },
     {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:12008",
@@ -2339,88 +2343,88 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:9999"
     }
    ],
-   "count": 8
+   "count": 9
   },
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 590,
+    "done": 617,
     "scheduled": 2,
     "ready": 3,
     "todo": 6,
-    "blocked": 1
+    "blocked": 2
    },
-   "total": 602,
+   "total": 630,
    "recent": [
     {
-     "id": "t_534e31ba",
+     "id": "t_d01c38b6",
+     "title": "Vault: file 'Papa Pasta \u2014 Shop Design Pack PP-SDP-001 Rev01 (79 pp)' to Work/2.Automations-Skills/Reports/2026-10-20-papa-pasta-shop-design-pack-pp-sdp-001-rev0",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_138cff7a",
+     "title": "Vault: file 'Papa Pasta \u2014 Shop Design Pack PP-SDP-001 Rev01 (77 pp)' to Work/2.Automations-Skills/Reports/2026-10-20-papa-pasta-shop-design-pack-pp-sdp-001-rev0",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_0ab2384b",
+     "title": "Vault: file 'Papa Pasta \u2014 Colourway Annexure PP-CWA-001 \u00b7 Store 01 Studio Blue' to Work/2.Automations-Skills/Reports/2026-10-20-papa-pasta-colourway-annexure-pp",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_9327a045",
+     "title": "Vault: file 'Papa Pasta \u2014 Shop Design Pack PP-SDP-001 Rev01 (75 pp)' to Work/2.Automations-Skills/Reports/2026-10-20-papa-pasta-shop-design-pack-pp-sdp-001-rev0",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_ed40c8fc",
+     "title": "Vault: file 'Signet \u2014 build PRD: an approval and proofing platform' to AI-Space/2.Automations-Skills/Reports/2026-10-20-signet-build-prd-an-approval-and-proofin",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_81ea8102",
      "title": "Vault: file '51 Trichardt Street \u2014 Structural Engineer Proposals: Five Firms Compared' to Personal/5.PARA/2.Area/E.Places/2026-10-20-51-trichardt-street-structu",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_f8fe0040",
-     "title": "Vault: mark 'Local Test Bench \u2014 Vikunja \u00d7 Plane' as uninstalled",
+     "id": "t_62d33b74",
+     "title": "Vault: file 'Papa Pasta Colourway Annexure \u2014 PP-CWA-001 Store 01 Studio Blue' (rev 2, corrected count) to Work/2.Automations-Skills/Reports/2026-10-20-papa-past",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_aa76f4fb",
-     "title": "Vault: file 'The Maio family \u2014 what's what' to AI-Space/2.Automations-Skills/Reports/2026-10-20-maio-family-naming-map.html \u2014 rule-4 handoff from adrianna",
+     "id": "t_8e1b66c8",
+     "title": "PP-CWA-001: closure-cost warning says four painted surfaces, the surface map tags five",
+     "status": "done",
+     "assignee": "batman"
+    },
+    {
+     "id": "t_9a9e7204",
+     "title": "Vault: file 'Papa Pasta Shop Design Pack PRD \u2014 v1.5 built record' to Work/2.Automations-Skills/Reports/2026-10-20-papa-pasta-shop-design-pack-prd-v1-5-built-rec",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_0afb94e0",
-     "title": "Vault: file 'Three rooms, three ceilings \u2014 Papa Pasta and TLF' to AI-Space/2.Automations-Skills/Reports/2026-10-20-three-rooms-three-ceilings-papa-pasta-and-tlf",
+     "id": "t_ce26ad98",
+     "title": "Vault: file 'Market Teardown \u2014 Asana, ClickUp, Hive (REA pass 1)' to AI-Space/2.Automations-Skills/Reports/2026-10-20-market-teardown-asana-clickup-hive-rea-pas",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_ea3187e5",
-     "title": "Vault: file 'T3 Code \u2014 permissions on every machine (2026-10-20)' to AI-Space/2.Automations-Skills/Reports/2026-10-20-t3-code-permissions-on-every-machine-2026-",
+     "id": "t_649b7a87",
+     "title": "Vault: file 'Papa Pasta Shop Design Pack \u2014 PP-SDP-001 Rev 01' to Work/2.Automations-Skills/Reports/2026-10-20-papa-pasta-shop-design-pack-pp-sdp-001-rev-01-2.ht",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_3e0e22f2",
-     "title": "Vault: file 'Flush plaster vs stretch canvas ceiling' to AI-Space/2.Automations-Skills/Reports/2026-10-20-flush-plaster-vs-stretch-canvas-ceiling.html \u2014 rule-4 ",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_83a57c42",
-     "title": "Vault: file '51 Trichardt Street \u2014 Structural Engineer Replies: 3 in, 3 drafts' to Personal/5.PARA/2.Area/E.Places/2026-10-20-51-trichardt-street-structural-eng",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_9380805f",
-     "title": "Vault: file '51 Trichardt Street \u2014 Structural Engineer Replies: 3 in, 3 drafts' to Personal/5.PARA/2.Area/E.Places/2026-10-20-51-trichardt-street-structural-eng",
-     "status": "blocked",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_3ab5c4bd",
-     "title": "Vault: file 'Amazon.co.za Black Friday \u2014 household cart, staged and price-checked' to Personal/2.Automations-Skills/Reports/2026-10-20-amazon-co-za-black-friday",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_e62ab633",
-     "title": "Vault: file 'T3 Code \u2014 permissions on every machine (2026-10-20)' to AI-Space/2.Automations-Skills/Reports/2026-10-20-t3-code-permissions-on-every-machine-2026-",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_6ca5dea2",
-     "title": "File to vault: Dia pinned tabs \u2014 verified identical on both Macs (20 Oct 2026)",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_1c6fb279",
-     "title": "File in vault: Dia sync \u2014 third-device check (20 Oct 2026)",
+     "id": "t_f01ef1bc",
+     "title": "Vault: file 'Papa Pasta Colourway Annexure \u2014 PP-CWA-001 Store 01 Studio Blue' to Work/2.Automations-Skills/Reports/2026-10-20-papa-pasta-colourway-annexure-pp-c",
      "status": "done",
      "assignee": "beast"
     }
@@ -3392,7 +3396,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-20T10:45:06Z"
+  "mergedAt": "2026-10-20T16:45:04Z"
  },
  "summary": {
   "projects": 79,
@@ -3405,7 +3409,7 @@ var MAIO_DATA = {
   "roster": 39,
   "launchdLoaded": 64,
   "dockerUp": 4,
-  "libraryPublic": 86,
+  "libraryPublic": 97,
   "libraryInternal": 200,
   "docs": 143
  },
@@ -3419,11 +3423,53 @@ var MAIO_DATA = {
     "kb": 39
    },
    {
+    "title": "Artwork and video approval inside ClickUp \u2014 better than Filestage?",
+    "url": "clickup-artwork-video-approval-vs-filestage-2026-10.html",
+    "dir": "clickup-artwork-video-approval-vs-filestage-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 30
+   },
+   {
+    "title": "Filestage vs PageProof \u2014 a reverse-engineering teardown",
+    "url": "filestage-vs-pageproof-teardown-2026-10.html",
+    "dir": "filestage-vs-pageproof-teardown-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 27
+   },
+   {
     "title": "The evidence behind the deck \u2014 Hive vs ClickUp, Infinity Brands at 40 seats",
     "url": "hive-vs-clickup-evidence-2026-10.html",
     "dir": "hive-vs-clickup-evidence-2026-10.html",
     "date": "2026-10-20",
     "kb": 20
+   },
+   {
+    "title": "Infinity Brands \u2014 project &amp; review platform evaluation, October 2026",
+    "url": "infinity-brands-platform-evaluation-2026-10.html",
+    "dir": "infinity-brands-platform-evaluation-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 37
+   },
+   {
+    "title": "Infinity Brands \u2014 Project Management Programme",
+    "url": "infinity-pm-programme-2026-10.html",
+    "dir": "infinity-pm-programme-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 17
+   },
+   {
+    "title": "How LEDs go through a stretch ceiling \u2014 Papa Pasta concept store, October 2026",
+    "url": "led-through-stretch-ceiling-2026-10.html",
+    "dir": "led-through-stretch-ceiling-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 51
+   },
+   {
+    "title": "Monthly vs annual at 40 seats \u2014 Asana, ClickUp, Hive",
+    "url": "monthly-vs-annual-asana-clickup-hive-2026-10.html",
+    "dir": "monthly-vs-annual-asana-clickup-hive-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 14
    },
    {
     "title": "Open source at 40 seats \u2014 the shortlist, with the websites",
@@ -3440,11 +3486,46 @@ var MAIO_DATA = {
     "kb": 31
    },
    {
+    "title": "Papa Pasta \u2014 Colourway Annexure PP-CWA-001 \u00b7 Store 01",
+    "url": "papa-pasta-shop-design-pack-annexure.html",
+    "dir": "papa-pasta-shop-design-pack-annexure.html",
+    "date": "2026-10-20",
+    "kb": 359
+   },
+   {
+    "title": "Papa Pasta \u2014 Shop Design Pack PRD \u00b7 PP-SDP-001 v1.5",
+    "url": "papa-pasta-shop-design-pack-prd.html",
+    "dir": "papa-pasta-shop-design-pack-prd.html",
+    "date": "2026-10-20",
+    "kb": 413
+   },
+   {
+    "title": "Papa Pasta \u2014 Shop Design Pack PP-SDP-001",
+    "url": "papa-pasta-shop-design-pack.html",
+    "dir": "papa-pasta-shop-design-pack.html",
+    "date": "2026-10-20",
+    "kb": 12213
+   },
+   {
     "title": "The project platform review \u2014 every report in one place",
     "url": "project-platform-review-index-2026-10.html",
     "dir": "project-platform-review-index-2026-10.html",
     "date": "2026-10-20",
     "kb": 10
+   },
+   {
+    "title": "Signet \u2014 build PRD",
+    "url": "signet-build-prd.html",
+    "dir": "signet-build-prd.html",
+    "date": "2026-10-20",
+    "kb": 160
+   },
+   {
+    "title": "Stretch ceiling suppliers \u2014 Johannesburg (October 2026)",
+    "url": "stretch-ceiling-suppliers-jhb-2026-10.html",
+    "dir": "stretch-ceiling-suppliers-jhb-2026-10.html",
+    "date": "2026-10-20",
+    "kb": 31
    },
    {
     "title": "Building Asana ourselves \u2014 measured answer",
@@ -4015,7 +4096,7 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 86,
+   "public": 97,
    "internal": 200,
    "docs": 143
   }
