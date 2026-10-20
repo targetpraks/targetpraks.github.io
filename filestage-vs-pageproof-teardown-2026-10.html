@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Filestage vs PageProof — a reverse-engineering teardown</title>
+<meta name="description" content="Filestage and PageProof taken apart with REA: object models, decision states, thresholds, audit trails, AI review agents and integration surfaces, read from their shipping front-end code.">
+<link rel="canonical" href="https://targetpraks.github.io/filestage-vs-pageproof-teardown-2026-10.html">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#fdfaf3;color:#12203a;font:16px/1.62 "Iowan Old Style",Georgia,serif}
+.wrap{max-width:1000px;margin:0 auto;padding:0 26px}
+header{background:#12203a;color:#fdfaf3;padding:44px 0 38px;border-bottom:6px solid #e0653f}
+header .wrap{padding-top:0}
+.eyebrow{font:700 12px/1 "Helvetica Neue",Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#f2b544;margin:0 0 14px}
+h1{font:700 40px/1.12 "Iowan Old Style",Georgia,serif;margin:0 0 12px}
+.sub{font-size:17px;max-width:720px;color:#d8dfea;margin:0 0 20px}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.chip{background:#1d2f4d;border:1px solid #33496e;border-radius:999px;padding:7px 14px;font:600 13px/1.2 "Helvetica Neue",Arial,sans-serif}
+.chip b{color:#f2b544}
+nav.toc{background:#fff;border-bottom:2px solid #e6dfd1;padding:14px 0;position:sticky;top:0;z-index:5}
+nav.toc .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;font:600 13px/1.4 "Helvetica Neue",Arial,sans-serif}
+nav.toc a{color:#12203a;text-decoration:none;border-bottom:2px solid #cfe3e0}
+nav.toc a:hover{border-color:#e0653f}
+section{padding:40px 0 8px;border-top:5px solid #12203a;margin-top:34px}
+section:first-of-type{border-top:none;margin-top:0}
+.pnum{font:700 12px/1 "Helvetica Neue",Arial,sans-serif;letter-spacing:.16em;color:#e0653f;text-transform:uppercase;margin-bottom:8px}
+h2{font:700 27px/1.2 "Iowan Old Style",Georgia,serif;margin:0 0 10px}
+h3{font:700 18px/1.3 "Iowan Old Style",Georgia,serif;margin:26px 0 8px}
+p{margin:0 0 14px}
+.lede{font-size:17px;color:#2b3d5c}
+.card{background:#fff;border:2px solid #e6dfd1;border-radius:10px;padding:18px 20px;margin:14px 0}
+.card h4{margin:0 0 8px;font:700 15px/1.3 "Helvetica Neue",Arial,sans-serif;letter-spacing:.02em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.tscroll{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;background:#fff;font:14px/1.5 "Helvetica Neue",Arial,sans-serif}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #e6dfd1;vertical-align:top}
+thead th{background:#12203a;color:#fdfaf3;font-weight:700;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}
+tbody tr:nth-child(even){background:#fbf7ee}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font:700 11px/1.7 "Helvetica Neue",Arial,sans-serif;text-transform:uppercase;letter-spacing:.05em}
+.fs{background:#fde7df;color:#a33b1c}
+.pp{background:#d9ece9;color:#12564c}
+.even{background:#eee9dd;color:#4a4534}
+code{background:#f0e8d6;padding:1px 5px;border-radius:4px;font:13px/1.5 "SF Mono",Menlo,monospace}
+ul,ol{margin:0 0 14px;padding-left:22px}
+li{margin:0 0 7px}
+.note{border-left:5px solid #f2b544;background:#fff9e8;padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0}
+.warn{border-left:5px solid #e0653f;background:#fdefea;padding:14px 18px;margin:16px 0;border-radius:0 8px 8px 0}
+.band{background:#12203a;color:#fdfaf3;padding:34px 0;margin-top:44px}
+.band .wrap{max-width:1000px}
+.band h2{color:#fdfaf3}
+.band ol{margin:10px 0 0}
+.band li{margin-bottom:10px;color:#d8dfea}
+footer{padding:26px 0 44px;font:13px/1.6 "Helvetica Neue",Arial,sans-serif;color:#5b6474}
+.src{font:13px/1.6 "Helvetica Neue",Arial,sans-serif;color:#4a5568}
+.src li{margin-bottom:5px}
+.ev{font:12px/1.5 "SF Mono",Menlo,monospace;color:#12564c;overflow-wrap:anywhere}
+@media(max-width:760px){
+  h1{font-size:28px}
+  table{min-width:620px}
+  .wrap{padding:0 16px}
+}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="eyebrow">Reverse-engineering teardown · 20 October 2026</div>
+<h1>Two approval engines, taken apart</h1>
+<p class="sub">Filestage and PageProof, read from their own front-end code rather than their marketing. What each one can
+actually decide, who it lets decide, and what it can prove afterwards.</p>
+<div class="chips">
+  <div class="chip">Filestage wins <b>AI review + integrations</b></div>
+  <div class="chip">PageProof wins <b>thresholds, audit, signing</b></div>
+  <div class="chip">The vocabulary gap <b>does not exist</b></div>
+</div>
+</div></header>
+<nav class="toc"><div class="wrap">
+<a href="#p1"><b>1</b> Method</a><a href="#p2"><b>2</b> Two architectures</a><a href="#p3"><b>3</b> Filestage model</a>
+<a href="#p4"><b>4</b> Filestage decisions</a><a href="#p5"><b>5</b> Review Agents</a><a href="#p6"><b>6</b> Integrations</a>
+<a href="#p7"><b>7</b> PageProof model</a><a href="#p8"><b>8</b> PageProof decisions</a><a href="#p9"><b>9</b> My error</a>
+<a href="#p10"><b>10</b> Scores</a><a href="#p11"><b>11</b> What we do</a>
+</div></nav>
+<section id="p1"><div class="wrap"><div class="pnum">Section 01 of 11</div>
+<h2>What I actually did</h2>
+<p class="lede">No sales decks, no spec sheets. I loaded both products in a controlled browser, let REA record every
+request the page makes, and then read the front-end code and the shipping translation files as evidence. That gives the
+object model, the decision vocabulary and the integration surface as the product itself defines them.</p>
+
+<div class="grid2">
+  <div class="card"><h4>Filestage</h4>
+    <p><b>106</b> network transactions captured, <b>87</b> lazy-loaded code chunks downloaded and read, and the full
+    English UI dictionary: <b>6,840</b> strings.</p>
+    <p class="ev">ev_763561b4f0a156f572d4f30062f25efcc49a812449504f74bf5c820d59a76982</p>
+  </div>
+  <div class="card"><h4>PageProof</h4>
+    <p><b>32</b> network transactions captured, <b>4</b> application bundles read, and its UI dictionary:
+    <b>4,012</b> strings.</p>
+    <p class="ev">ev_4d9bd2fb79f67dfe746b2de382e1360904b0592292855f4ac2e1d8f7390d1775</p>
+  </div>
+</div>
+
+<div class="note"><b>What this cannot prove.</b> These are the signed-out surfaces, so plan gating and entitlements are
+read from feature strings and flags, not from a live paid account. A string in a bundle means the code ships; it does not
+prove your plan turns it on. Where that matters I say so.</div>
+</div></section><section id="p2"><div class="wrap"><div class="pnum">Section 02 of 11</div>
+<h2>The two engines are built in different decades</h2>
+<p>This matters more than any feature list, because it decides how each one is extended, automated and integrated.</p>
+<div class="tscroll"><table><thead><tr><th></th><th>Filestage</th><th>PageProof</th></tr></thead><tbody><tr><td>Build shape</td><td>Vite single-page app, 87 route-level chunks, React + Material UI</td><td>Server-rendered partials (<code>/templates/partials/…</code>) with a large legacy bundle</td></tr><tr><td>Auth</td><td>AWS Cognito (<code>eu-central-1</code>) + own <code>/auth/authorize</code></td><td>Own <code>/api/users/*</code> auth endpoints, reauthentication gate for signing</td></tr><tr><td>Hosting / delivery</td><td>S3 accelerated, CloudWatch logging, Pusher for live events</td><td>Cloudflare in front, asset cache-busting via <code>_ppxach</code></td></tr><tr><td>Offline / local state</td><td>Not observed</td><td><b>Dexie</b> (IndexedDB) — annotations survive a dropped connection</td></tr><tr><td>Upload path</td><td>Pre-signed S3 multipart (<code>s3-multipart-create-signedurl</code> → complete/abort)</td><td>Own media endpoints (<code>/api/media/file</code>, Dropbox import)</td></tr><tr><td>Document engine</td><td>Transcoding service per file, retry hook</td><td>WPS2 document conversion + server-side PDF text analysis (<code>/api/analyze/searchtext</code>) and scan-link analysis</td></tr><tr><td>UI dictionary size</td><td>6,840 strings, 40+ feature families</td><td>4,012 strings</td></tr></tbody></table></div></div></section><section id="p3"><div class="wrap"><div class="pnum">Section 03 of 11</div>
+<h2>Filestage: project → folder → file → version → review step</h2>
+<p>The route table is the object model. Filestage's deep link is the most honest sentence in the product:</p>
+<p><code>/review/:stepId/file/:fileId/:versionNumber/comment/:commentId</code></p>
+<p>A decision is attached to a <b>review step</b>, not to a file. The file carries versions; the step carries the people
+who must respond. That is why one project can run several review rounds over the same assets without losing the trail.</p>
+<div class="tscroll"><table><thead><tr><th>Front-end route or endpoint</th><th>What it tells you</th></tr></thead><tbody><tr><td><code>/review/:stepId</code></td><td>The review round — the unit that holds reviewers, due date and decision state</td></tr><tr><td><code>/reviews/decisions</code> (API)</td><td>Where a decision is written</td></tr><tr><td><code>/projects/bulk-archive · bulk-move-to-folder · clone</code></td><td>Project-level bulk operations on the API surface</td></tr><tr><td><code>/project-templates/:projectTemplateId</code></td><td>Reusable project scaffolding, linked to integrations</td></tr><tr><td>Reviewer groups</td><td>Save a set of reviewers once, add them to many projects; shareable group join link</td></tr></tbody></table></div></div></section><section id="p4"><div class="wrap"><div class="pnum">Section 04 of 11</div>
+<h2>Filestage: the decision machine</h2>
+<p>Four decisions ship in the dictionary, and two of them are the ones I told you only PageProof had.</p>
+<div class="grid2">
+  <div class="card"><h4>Approved</h4><p>The plain sign-off. Present on every plan.</p></div>
+  <div class="card"><h4>Requested changes</h4><p>The loop back to the person who loaded the file.</p></div>
+  <div class="card"><h4>Approved with changes</h4><p>Sign-off plus a change list, so the next round is not a fresh approval.</p></div>
+  <div class="card"><h4>Rejected</h4><p>Stop the asset, not just send it back.</p></div>
+</div>
+<p>Two mechanisms sit above those four:</p>
+<ul>
+  <li><b>Custom review decisions.</b> A team defines extra named decisions; disabling one warns that automations using it
+  will pause. So decisions are first-class configuration, not a fixed enum.</li>
+  <li><b>Decisions can be turned off per plan</b> — <code>Disable review decisions</code> invites people to comment without
+  signing anything. Useful for a client who will never press a button.</li>
+</ul>
+<div class="note"><b>The honest caveat.</b> <i>Approved with changes</i> and <i>rejected</i> live behind an early-access
+flag and a plan feature called <b>Extra review decisions</b>. It ships in the code; your plan is what decides whether you
+see it. Check the toggle in team settings before counting on it.</div>
+
+<h3>What replaces a numeric threshold</h3>
+<p>Filestage does not expose "this step needs 2 of 3 approvers". It gets there by automation conditions instead:
+<code>After receiving all review decisions</code> versus <code>After first matching decision</code>, plus a per-group
+choice of whether that group must give a decision at all. The trigger vocabulary is <code>Reviewer submits review
+decision</code> — so anything downstream fires on a decision, not on a file upload.</p>
+</div></section><section id="p5"><div class="wrap"><div class="pnum">Section 05 of 11</div>
+<h2>Filestage: the part with no PageProof answer — Review Agents</h2>
+<p>The dictionary lists <b>seven</b> AI reviewer types, with a credit economy around them, and one of them runs free:</p>
+<div class="tscroll"><table><thead><tr><th>Agent</th><th>What it does</th></tr></thead><tbody><tr><td>Forbidden Terms Agent</td><td>Highlights words and phrases on your banned list</td></tr><tr><td>Compliance Agent</td><td>Compares the file against regulations or guidelines you upload (text only, must be searchable)</td></tr><tr><td>Spelling &amp; Grammar Agent</td><td>Language rules, suggest-and-fix</td></tr><tr><td>Smart Text Agent</td><td>Free-form prompt run against text in documents and designs</td></tr><tr><td>Image Agent <span class='pill even'>credit free</span></td><td>Checks mandatory logos, icons and artwork against reference files — runs without burning credits</td></tr><tr><td>Metadata Agent</td><td>Verifies format, dimensions and size against configured properties</td></tr><tr><td>Barcode &amp; QR Agent</td><td>Finds and analyses barcodes, reports type, data, orientation, quality</td></tr><tr><td>Writing style checker</td><td>Brand-voice rules from an uploaded guideline or a custom prompt</td></tr></tbody></table></div>
+<p>Agents are invited like reviewers, comment like reviewers, and can be given a custom prompt up to 30,000 characters.
+That is a real operational lever for us: a barcode agent on packaging, a forbidden-terms agent on regulated copy, a
+compliance agent on the guideline PDF — all before a human opens the file.</p>
+</div></section><section id="p6"><div class="wrap"><div class="pnum">Section 06 of 11</div>
+<h2>Filestage: the integration surface is the strongest thing it has</h2>
+<div class="tscroll"><table><thead><tr><th>Integration</th><th>Evidence from the bundle</th></tr></thead><tbody><tr><td>Slack · Microsoft Teams</td><td>Project, channel and project-template mapping, plus review-decision notifications</td></tr><tr><td>monday.com · Asana</td><td>App auth, instance and project mapping, empty-review states handled</td></tr><tr><td>Google Drive</td><td>Project and template mapping, folder browsing</td></tr><tr><td>Adobe plugin</td><td>Desktop plugin login flow (Illustrator/Photoshop round-trip)</td></tr><tr><td>Zapier</td><td>Embedded app</td></tr><tr><td>OAuth for third parties</td><td><code>/integrations/oauth/authorize</code> and <code>/integrations/oauth/consent</code> — a real public auth flow</td></tr><tr><td><b>MCP server</b></td><td>Live endpoint <code>https://api.filestage.io/integrations/mcp</code> — connect Claude or another agent, with scopes for projects, files, comments and API reads</td></tr></tbody></table></div>
+<div class="note"><b>Why the MCP line matters to us.</b> Filestage already publishes an agent-connectable endpoint, which
+means our own fleet can drive it without waiting on Zapier: read projects, edit files, post comments, read the API. That
+is the cheapest way to put Ricardo's review queue into a morning briefing.</div>
+</div></section><section id="p7"><div class="wrap"><div class="pnum">Section 07 of 11</div>
+<h2>PageProof: proof and brief, not file and folder</h2>
+<p>The route table again: <code>/proof-screen/:proofId</code>, then <code>/proof/static|video|audio|web/:proofId</code>.
+Four proof types, one screen, and a second object type beside it — the <b>brief</b>, which is a request for work with its
+own states (<i>Brief created → Brief sent out → Proof uploaded → Awaiting proof</i>).</p>
+<div class="tscroll"><table><thead><tr><th>Route or endpoint</th><th>What it tells you</th></tr></thead><tbody><tr><td><code>/proof-workflow-manage/:workflowId</code></td><td>Workflows are first-class, saved objects — and exportable as a template with a <i>Mandatory decision threshold</i> column</td></tr><tr><td><code>/audit-log/:proofId</code></td><td>A per-proof audit trail, filterable, with CSV export</td></tr><tr><td><code>/dashboard/inbox</code> · <code>/dashboard/collection/:id</code></td><td>Collections group proofs; the inbox is the approver's queue</td></tr><tr><td><code>/api/decisions/proofs</code></td><td>Decision write endpoint</td></tr><tr><td><code>/api/workflows/permission/add · memberset</code></td><td>Per-step, per-member permission grants</td></tr><tr><td><code>/api/barcodes/scan</code> · <code>/api/analyze/searchtext</code></td><td>Barcode scanning and server-side text/link analysis of the PDF</td></tr></tbody></table></div></div></section><section id="p8"><div class="wrap"><div class="pnum">Section 08 of 11</div>
+<h2>PageProof: the decision machine is the best-engineered one in the market</h2>
+<p>Three decisions — <b>Approved</b>, <b>Changes please</b>, <b>Approved with changes</b> — but the machinery around them
+is what Filestage does not match.</p>
+<h3>Four roles, not one</h3>
+<p>A workflow step can hold <b>Approvers</b>, <b>Gatekeepers</b>, <b>Mandatory reviewers</b> and <b>Editors</b>. A
+gatekeeper does not just decide; a gatekeeper decides <i>and moves the proof on</i>: “Approve and send on”, or “Return
+to-do list”, which stops the workflow dead. That distinction — sign off, versus sign off and release — is exactly what a
+brand sign-off chain needs and what a flat reviewer list cannot express.</p>
+<h3>A real threshold, per step</h3>
+<p>Each step carries a mandatory decision threshold: <b>all</b> approvers of that role, or <b>one</b>. The UI states it
+plainly: “This step waits for {n} gatekeepers to approve.” An owner can also approve manually, and the audit records it
+as manual.</p>
+<h3>Decisions that can be changed, and withdrawn — on the record</h3>
+<p>Every one of these is an audit event: <i>changed decision</i>, <i>approval withdrawn</i>, <i>approved manually</i>,
+<i>approval and digital signatures withdrawn</i>. Withdrawing an approval is a supported action, not a support ticket.</p>
+<h3>The chase is built in</h3>
+<p><b>Nudge</b> and <b>Nudge all</b>, from the decision summary. Given that 144 of our reviews are past due and 89 are
+waiting on a named person, a one-click chase on a proof is worth more than a prettier dashboard.</p>
+<h3>Digital signing that means something</h3>
+<p>Approvers must <b>reauthenticate</b> to approve and sign; the signature is withdrawn with the approval; bulk approval is
+blocked on proofs that need a signature. Gated to Enterprise.</p>
+</div></section><section id="p9"><div class="wrap"><div class="pnum">Section 09 of 11</div>
+<h2>Where I was wrong on 19 October</h2>
+<div class="warn"><p><b>I told you PageProof beats Filestage because of decision thresholds and “approved with
+changes”.</b> Half of that was wrong.</p>
+<p><b>Filestage has approved-with-changes.</b> It also has rejected, custom decisions, and a per-group choice of whether a
+decision is required at all. It is flagged early-access and plan-gated as “Extra review decisions”, which is why it never
+appeared in our own workspace: the flag is off.</p>
+<p><b>What remains true:</b> PageProof's per-step numeric threshold, gatekeeper-and-send-on, per-proof audit log and
+reauthentication-backed digital signing have no Filestage equivalent in what I could observe. Those four are the real
+difference — not the decision names.</p></div>
+<p>Two consequences for the ClickUp recommendation: the PageProof case rests on the workflow engine, audit and signing, not
+on the vocabulary; and if Filestage's extra decisions are simply switched on, the cheapest version of your problem is a
+settings change, not a purchase.</p>
+</div></section><section id="p10"><div class="wrap"><div class="pnum">Section 10 of 11</div>
+<h2>What the bundle scores, read together</h2>
+<div class="card"><svg viewBox="0 0 900 480" width="100%" role="img" aria-label="Scored comparison, Filestage versus PageProof, out of ten"><text x="0" y="16" fill="#5b6474" font-family="Helvetica Neue,Arial" font-size="12">Filestage (coral) vs PageProof (teal) — a reading of the evidence, 0–10</text><text x="0" y="48" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Decision states</text><rect x="190" y="34" width="585.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="782.0" y="44" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">9</text><rect x="190" y="49" width="585.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="782.0" y="59" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">9</text><line x1="190" y1="28" x2="190" y2="62" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="88" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Step thresholds</text><rect x="190" y="74" width="390.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="587.0" y="84" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">6</text><rect x="190" y="89" width="585.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="782.0" y="99" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">9</text><line x1="190" y1="68" x2="190" y2="102" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="128" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Audit trail</text><rect x="190" y="114" width="390.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="587.0" y="124" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">6</text><rect x="190" y="129" width="585.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="782.0" y="139" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">9</text><line x1="190" y1="108" x2="190" y2="142" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="168" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Digital signing</text><rect x="190" y="154" width="195.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="392.0" y="164" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">3</text><rect x="190" y="169" width="585.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="782.0" y="179" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">9</text><line x1="190" y1="148" x2="190" y2="182" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="208" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">AI review agents</text><rect x="190" y="194" width="585.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="782.0" y="204" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">9</text><rect x="190" y="209" width="130.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="327.0" y="219" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">2</text><line x1="190" y1="188" x2="190" y2="222" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="248" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Native integrations</text><rect x="190" y="234" width="585.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="782.0" y="244" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">9</text><rect x="190" y="249" width="390.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="587.0" y="259" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">6</text><line x1="190" y1="228" x2="190" y2="262" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="288" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">API / MCP access</text><rect x="190" y="274" width="390.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="587.0" y="284" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">6</text><rect x="190" y="289" width="260.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="457.0" y="299" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">4</text><line x1="190" y1="268" x2="190" y2="302" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="328" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Proof formats</text><rect x="190" y="314" width="520.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="717.0" y="324" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">8</text><rect x="190" y="329" width="520.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="717.0" y="339" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">8</text><line x1="190" y1="308" x2="190" y2="342" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="368" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Chase / nudge</text><rect x="190" y="354" width="455.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="652.0" y="364" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">7</text><rect x="190" y="369" width="520.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="717.0" y="379" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">8</text><line x1="190" y1="348" x2="190" y2="382" stroke="#e6dfd1" stroke-width="1"/><text x="0" y="408" fill="#12203a" font-family="Helvetica Neue,Arial" font-size="13">Version compare</text><rect x="190" y="394" width="520.0" height="11" rx="3" fill="#e0653f" opacity="0.9"/><text x="717.0" y="404" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">8</text><rect x="190" y="409" width="455.0" height="11" rx="3" fill="#1f7f72" opacity="0.9"/><text x="652.0" y="419" fill="#4a5568" font-family="Helvetica Neue,Arial" font-size="11">7</text><line x1="190" y1="388" x2="190" y2="422" stroke="#e6dfd1" stroke-width="1"/></svg></div>
+<p class="src">Scores are my reading of the captured evidence, not vendor specifications: 10 means the capability is
+present, observable and well-formed in the front end; 5 means present but gated or partial; 2 means effectively absent.</p>
+</div></section><section id="p11"><div class="wrap"><div class="pnum">Section 11 of 11</div>
+<h2>So what do we do with this</h2>
+<div class="tscroll"><table><thead><tr><th>Move</th><th>Why</th><th>Who</th></tr></thead><tbody><tr><td>Turn on Extra review decisions in Filestage</td><td>Cheapest test we have. If the flag flips on your plan, the “approved with changes” gap closes today, for nothing.</td><td>Ricardo's call — it is a settings change in a paid account</td></tr><tr><td>Wire Filestage's MCP endpoint into the morning briefing</td><td>Overdue reviews, pending decisions and unreturned revisions land in your brief without a single scraper.</td><td>Me, next — read-only scopes</td></tr><tr><td>Do not buy PageProof for the vocabulary</td><td>That argument is dead. Buy it only if you need per-step thresholds, gatekeeper release, a per-proof audit log and signed approvals.</td><td>Only after the Filestage flag test</td></tr><tr><td>Copy four ideas into our own build</td><td>Step-level threshold, gatekeeper-vs-approver roles, per-object audit log, decision withdrawal. All four are cheap to model and none are patented.</td><td>The Infinity Projects build</td></tr><tr><td>Keep the chase discipline either way</td><td>144 past due, 89 owed by a named person, 47 revisions never returned. No platform fixes that; a nudge routine and a due date on every review does.</td><td>Already running</td></tr></tbody></table></div></div></section>
+
+<div class="band"><div class="wrap">
+<h2>The two decisions left</h2>
+<ol>
+  <li><b>Switch the Filestage flag on and look.</b> One setting decides whether the comparison that started this is even a comparison.</li>
+  <li><b>Then choose on workflow, not vocabulary.</b> PageProof wins on thresholds, gatekeeper release, audit and signing; Filestage wins on AI review agents, integrations and agent access.</li>
+</ol>
+</div></div>
+
+
+<footer><div class="wrap">
+<p><b>Evidence.</b> Captures and exports are on this machine under
+<code>…/cache/scratch/</code>: <code>filestage-capture.json</code>, <code>pageproof-capture.json</code>,
+<code>fs-bundles/</code> (87 chunks), <code>pp-bundles/</code> (4 bundles), <code>fs-en.json</code> (6,840 strings).
+Both captures were taken signed-out with no credentials and no customer data in scope.</p>
+<p>Reverse engineering by REA 6.7.0 · PageProof capture ev_4d9bd2fb79f67dfe746b2de382e1360904b0592292855f4ac2e1d8f7390d1775 ·
+Filestage capture ev_763561b4f0a156f572d4f30062f25efcc49a812449504f74bf5c820d59a76982 ·
+Filestage bundle analysis ev_5f2775b34c493518e52b5513aef9235da709f3b648e813e7cd6e252161f4dc20.</p>
+<p>REA's own stated limits apply and are not softened here: request bodies were not read, plan entitlements are inferred
+from feature strings, and Playwright-reported response bodies are API results rather than guaranteed wire bytes.</p>
+</div></footer>
+
+</body>
+</html>
