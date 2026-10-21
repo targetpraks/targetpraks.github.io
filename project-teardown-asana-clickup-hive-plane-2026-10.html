@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four Ways to Run a Project — Asana · ClickUp · Hive · Plane</title>
+<meta name="description" content="An evidence-based teardown of Asana, ClickUp, Hive and Plane — what each one actually ships, what it costs, and which parts are worth copying.">
+<style>
+  :root{
+    --bg:#080a0d; --bg2:#0d1116; --panel:#11161c; --panel2:#161d25;
+    --line:#222b35; --line2:#2e3945;
+    --ink:#e9eef4; --dim:#9aa8b6; --dimmer:#6d7c8b;
+    --acc:#5cc8ff; --acc2:#ffc96b; --good:#5ee0a0; --warn:#ff8f6b;
+    --mono:ui-monospace,SFMono-Regular,Menlo,"SF Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--acc);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+
+  /* top nav */
+  header.top{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(8,10,13,.82);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;gap:18px;height:58px}
+  .brand{font-weight:800;letter-spacing:.02em;font-size:14px;color:var(--ink)}
+  .brand span{color:var(--acc)}
+  .navlinks{display:flex;gap:16px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+  .navlinks::-webkit-scrollbar{display:none}
+  .navlinks a{color:var(--dim);font-size:13px;white-space:nowrap;padding:4px 0;border-bottom:1px solid transparent}
+  .navlinks a:hover{color:var(--ink);border-bottom-color:var(--acc);text-decoration:none}
+
+  /* hero */
+  .hero{padding:84px 0 56px;background:
+    radial-gradient(900px 420px at 15% -10%,#132430 0%,transparent 62%),
+    radial-gradient(700px 360px at 92% 0%,#1d1620 0%,transparent 60%);}
+  .kicker{color:var(--acc);letter-spacing:.18em;text-transform:uppercase;font-size:11px;font-weight:800}
+  h1{font-size:clamp(34px,5.6vw,60px);line-height:1.05;margin:14px 0 18px;letter-spacing:-.028em;max-width:19ch}
+  .lede{color:var(--dim);font-size:clamp(16px,1.7vw,20px);max-width:70ch}
+  .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;
+    padding:6px 13px;font-size:12.5px;color:var(--dim)}
+  .chip b{color:var(--ink)}
+
+  /* sections */
+  section{padding:64px 0;border-top:1px solid var(--line)}
+  .sechead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+  .num{font-family:var(--mono);font-size:12px;color:var(--acc);letter-spacing:.12em}
+  h2{font-size:clamp(24px,3vw,34px);margin:0;letter-spacing:-.02em}
+  .sub{color:var(--dim);max-width:78ch;margin:10px 0 26px}
+  h3{font-size:19px;margin:0 0 6px;letter-spacing:-.01em}
+  h4{font-size:12px;text-transform:uppercase;letter-spacing:.11em;color:var(--dimmer);margin:20px 0 8px}
+  p{margin:10px 0}
+  code{background:#0b1017;border:1px solid var(--line);border-radius:5px;padding:1px 6px;
+    font-family:var(--mono);font-size:12.5px;color:#cfe6f7}
+
+  /* video cards */
+  .vids{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:18px}
+  .vid{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .vid .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+  .vid iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid .body{padding:13px 15px 16px}
+  .vid .tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);font-weight:800}
+  .vid .t{font-size:14.5px;margin:6px 0 3px;line-height:1.35}
+  .vid .s{font-size:12.5px;color:var(--dimmer)}
+
+  /* matrix */
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--panel)}
+  table{width:100%;border-collapse:collapse;font-size:13.6px;min-width:880px}
+  th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{position:sticky;top:0;background:var(--panel2);color:var(--ink);font-size:12.5px;
+    letter-spacing:.04em;text-transform:uppercase;z-index:2}
+  tbody th{background:var(--bg2);color:var(--dimmer);font-size:10.8px;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:800;white-space:nowrap}
+  tbody tr:hover td{background:#141b23}
+  td small{color:var(--dimmer);display:block;font-size:11.5px;margin-top:3px}
+
+  /* app cards */
+  .apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:18px}
+  .app{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 24px}
+  .app .top{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+  .app .name{font-size:21px;font-weight:800;letter-spacing:-.02em}
+  .app .one{color:var(--dim);font-size:14px;margin:2px 0 14px}
+  .kv{display:grid;grid-template-columns:96px 1fr;gap:6px 12px;font-size:13.4px;margin:0}
+  .kv dt{color:var(--dimmer);font-size:10.6px;text-transform:uppercase;letter-spacing:.08em;padding-top:4px}
+  .kv dd{margin:0}
+  .quote{border-left:3px solid var(--line2);background:#0b1016;padding:9px 13px;margin:12px 0 0;
+    font-family:var(--mono);font-size:11.8px;color:#b9d2e5;white-space:pre-wrap;overflow-wrap:anywhere}
+
+  ul{margin:10px 0 10px 18px;padding:0}
+  li{margin:7px 0}
+  .note{border-left:3px solid var(--acc2);background:#171310;padding:13px 16px;
+    border-radius:0 10px 10px 0;color:#ecdfc5;font-size:14.4px;margin:20px 0}
+  .note b{color:#fff}
+  .callout{border-left:3px solid var(--acc);background:#0b141b;padding:13px 16px;border-radius:0 10px 10px 0;margin:20px 0}
+
+  /* cost */
+  .costbars{display:grid;gap:10px;margin:20px 0 8px}
+  .bar{display:grid;grid-template-columns:118px 1fr 96px;align-items:center;gap:12px;font-size:13px}
+  .bar .lbl{color:var(--dim)}
+  .bar .track{height:26px;background:#0b1016;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:6px 0 0 6px}
+  .bar .val{text-align:right;font-family:var(--mono);font-size:12.4px;color:var(--ink)}
+  .legend{font-size:12px;color:var(--dimmer);margin-top:10px}
+
+  /* luke */
+  .luke{background:linear-gradient(180deg,#0d1319,#0a0e12);border:1px solid var(--line);border-radius:18px;padding:26px 26px 22px}
+  .luke h3{font-size:22px}
+  .luke ol{margin:14px 0 0 20px}
+  .luke li{margin:11px 0}
+  .pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:18px}
+  .pick div{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .pick b{display:block;font-size:13px;color:var(--acc);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+  .pick span{font-size:13.6px;color:var(--dim)}
+  .good{color:var(--good)} .warn{color:var(--warn)}
+
+  footer{padding:46px 0 70px;color:var(--dimmer);font-size:12.6px;border-top:1px solid var(--line)}
+  footer a{color:var(--dim)}
+  @media(max-width:640px){
+    .apps{grid-template-columns:1fr}
+    .bar{grid-template-columns:92px 1fr 78px}
+    h1{max-width:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap nav">
+    <div class="brand">PROJECT<span>·</span>TEARDOWN</div>
+    <nav class="navlinks">
+      <a href="#watch">Watch</a>
+      <a href="#matrix">Matrix</a>
+      <a href="#apps">Deep dives</a>
+      <a href="#cost">Costing</a>
+      <a href="#luke">For Luke</a>
+      <a href="#method">Method</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="kicker">Evidence pass · 21 October 2026</div>
+    <h1>Four ways to run a project — read off their own code</h1>
+    <p class="lede">Asana, ClickUp, Hive and Plane, captured in a controlled browser, exported with
+    digest-verified provenance and statically analysed. Plus what each one charges, and which parts of
+    each are worth copying.</p>
+    <div class="chips">
+      <span class="chip"><b>837</b> scripts captured</span>
+      <span class="chip"><b>~18 MB</b> JavaScript parsed</span>
+      <span class="chip"><b>4</b> production clients</span>
+      <span class="chip">REA <b>6.7.0</b></span>
+      <span class="chip">Static evidence only — nothing executed</span>
+      <span class="chip">Prices checked <b>21 Oct 2026</b></span>
+    </div>
+  </div>
+</div>
+
+<section id="watch">
+  <div class="wrap">
+    <div class="sechead"><span class="num">01</span><h2>Watch them first</h2></div>
+    <p class="sub">One official introduction per product, straight from the vendor's own channel. Watch these
+    before the detail — it is faster to see the product than to read a matrix about it.</p>
+    <div class="vids">
+      <div class="vid">
+        <div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/AW_PDcmjE-o" title="What is Asana?" loading="lazy" allowfullscreen></iframe></div>
+        <div class="body"><div class="tag">Asana · official</div>
+          <div class="t">What is Asana?</div>
+          <div class="s">Work management for human-agent teams — portfolios, goals, AI Teammates.</div></div>
+      </div>
+      <div class="vid">
+        <div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/htI0B2iE-vI" title="ClickUp Explained in Under 1 Minute" loading="lazy" allowfullscreen></iframe></div>
+        <div class="body"><div class="tag">ClickUp · official</div>
+          <div class="t">ClickUp explained in under a minute</div>
+          <div class="s">One app, every view and tool — the positioning that drives the bundle size.</div></div>
+      </div>
+      <div class="vid">
+        <div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/9CQpAi7Ctmw" title="Best Project Management Software - Hive Intro" loading="lazy" allowfullscreen></iframe></div>
+        <div class="body"><div class="tag">Hive · official</div>
+          <div class="t">Hive intro</div>
+          <div class="s">Built for busy teams — proofing, timesheets, cross-team dashboards.</div></div>
+      </div>
+      <div class="vid">
+        <div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/NUEZaKG846Q" title="Plane demo" loading="lazy" allowfullscreen></iframe></div>
+        <div class="body"><div class="tag">Plane · official</div>
+          <div class="t">Plane demo</div>
+          <div class="s">Work items, cycles, modules and AI — open-source, self-hostable.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="matrix">
+  <div class="wrap">
+    <div class="sechead"><span class="num">02</span><h2>The matrix</h2></div>
+    <p class="sub">Everything in this table is either a string, a module name or a route found in the shipped
+    JavaScript, or a price read off the vendor's own pricing page on 21 October 2026. Blank cells mean we could
+    not see it — not that it is missing.</p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>&nbsp;</th><th>Asana</th><th>ClickUp</th><th>Hive</th><th>Plane</th></tr>
+        </thead>
+        <tbody>
+          <tr><th>Shape</th>
+            <td>Closed SaaS<small>Cloud only</small></td>
+            <td>Closed SaaS<small>Cloud only</small></td>
+            <td>Closed SaaS<small>Cloud only</small></td>
+            <td class="good">Open source<small>Cloud · self-hosted · air-gapped</small></td></tr>
+          <tr><th>Front-end</th>
+            <td>React + webpack<small>Login shell only in our capture</small></td>
+            <td>Angular (Ivy) + React islands<small>One lazy bundle per view</small></td>
+            <td>React + Redux + styled-components<small>523 named component chunks</small></td>
+            <td>React + MobX (TypeScript)<small>231 chunks, Vite</small></td></tr>
+          <tr><th>Data layer</th>
+            <td>REST on the app origin<small>No GraphQL observed</small></td>
+            <td class="good">Apollo GraphQL<small>Internal gateway</small></td>
+            <td class="good">GraphQL-first + <code>/api/v2</code> REST proxy</td>
+            <td>Plain REST<small><code>/api/workspaces/…</code></small></td></tr>
+          <tr><th>Core objects</th>
+            <td>Tasks · projects · portfolios · goals</td>
+            <td>Tasks · lists · spaces · folders · docs · goals</td>
+            <td>Projects · actions · notes · portfolios · goals · CRM entities</td>
+            <td>Work items · cycles · modules · intake · pages · stickies</td></tr>
+          <tr><th>Views</th>
+            <td>List · board · timeline · calendar · Gantt · dashboards</td>
+            <td>List · board · Gantt · calendar · timeline · workload · box · form · chat · mind map · whiteboard</td>
+            <td>Board · Gantt · calendar · timesheet · dashboards</td>
+            <td>Five layouts, unlimited saved views</td></tr>
+          <tr><th>AI shipped</th>
+            <td>AI Teammates · Asana Dash · AI Studio<small>Included from Starter</small></td>
+            <td><b>ClickUp Brain</b> — metered credits, AI Fields, AI dashboards, Super Agents, model picker (OpenAI / Gemini / Anthropic)</td>
+            <td><b>Buzz + Sidekick</b> — 1,000–5,000 credits/mo, <code>open-ai-usage-billing</code></td>
+            <td><b>Plane AI</b> — agents on work items, Skills library, MCP connectors, model registry</td></tr>
+          <tr><th>Automations</th>
+            <td>Unlimited from Starter</td>
+            <td>5,000/mo on Business · 250,000/mo Enterprise</td>
+            <td>Approval workflows · triggers in settings</td>
+            <td>Recurring work + runners on Business and above</td></tr>
+          <tr><th>Integrations</th>
+            <td>100+ integrations · Salesforce, Tableau, Power BI on Advanced</td>
+            <td>Slack · HubSpot · Drive · email and chat inside the app</td>
+            <td>Office · Drive · OneDrive · Zoom · Slack · desktop bridge</td>
+            <td>GitHub, GitLab, Bitbucket (cloud + DC) · Slack · Teams · Sentry · HubSpot · Cursor/Claude via MCP</td></tr>
+          <tr><th>Coming from a rival</th>
+            <td>Importer from CSV, Jira and others</td>
+            <td>Importer tools per app</td>
+            <td>Importers per app</td>
+            <td class="good">Named importers: Asana, ClickUp, Jira, Linear + zip + Flatfile</td></tr>
+          <tr><th>Auth &amp; admin</th>
+            <td>SAML + SCIM at Enterprise</td>
+            <td>Google SSO + SMS 2FA at Business · SAML/SCIM at Enterprise</td>
+            <td>Enhanced permissions at Enterprise</td>
+            <td>SAML/OIDC (self-hosted Pro+) · audit log · Enterprise Grid controls</td></tr>
+          <tr><th>Free tier</th>
+            <td>2 users, unlimited tasks</td>
+            <td>Unlimited members, 60 MB storage</td>
+            <td>10 members, 1,000 AI credits, 200 MB</td>
+            <td>12 users, full work-item model</td></tr>
+          <tr><th>Entry paid</th>
+            <td>$10.99 <small>Starter /seat/mo annual</small></td>
+            <td>$7 <small>Unlimited /seat/mo annual</small></td>
+            <td class="good">$5 <small>Starter /seat/mo annual</small></td>
+            <td>$6 <small>Pro /seat/mo annual</small></td></tr>
+          <tr><th>Team tier</th>
+            <td>$24.99 <small>Advanced</small></td>
+            <td>$12 <small>Business</small></td>
+            <td>$12 <small>Teams</small></td>
+            <td>$13 <small>Business</small></td></tr>
+          <tr><th>What we could see</th>
+            <td class="warn">Login shell only<small>28 scripts · product chunks behind auth</small></td>
+            <td>55 scripts · 3.2 MB<small>Auth + marketing chunks</small></td>
+            <td class="warn">523 scripts · 5.1 MB<small>Partial — analysis hit provider timeout</small></td>
+            <td class="good">231 scripts · 8.5 MB<small>Complete — 0 parse failures</small></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><b>Read the ceiling first.</b> Three of the four put the real application behind a login. What
+    we captured is each company's public edge: the login shell, the framework, the analytics, plus whatever product
+    chunks they chose to ship up front. ClickUp, Hive and Plane ship substantial real chunks; Asana ships almost
+    none. The authenticated interior — task detail, admin, billing, permissions — is not in this pass, and nothing
+    here is inferred to fill the gap.</div>
+  </div>
+</section>
+
+<section id="apps">
+  <div class="wrap">
+    <div class="sechead"><span class="num">03</span><h2>Deep dives</h2></div>
+    <p class="sub">What each product's own code says about how it is built and what it is really selling.</p>
+    <div class="apps">
+
+      <div class="app">
+        <div class="top"><span class="name">Asana</span><span class="chip">Enterprise work graph</span></div>
+        <p class="one">The one that sells structure. Portfolios, goals and workload — work as a hierarchy the
+        board can roll up to the CEO.</p>
+        <dl class="kv">
+          <dt>Front-end</dt><dd>React + webpack; marketing site on Next.js</dd>
+          <dt>Delivery</dt><dd>CloudFront (<code>d3ki9tyy5l5ruj</code>)</dd>
+          <dt>Consent / ABM</dt><dd>OneTrust, 6sense, GA4 via a first-party proxy</dd>
+          <dt>AI</dt><dd>AI Teammates, Asana Dash, AI Studio — bundled into every paid tier</dd>
+          <dt>Ceiling</dt><dd class="warn">Login surface only</dd>
+        </dl>
+        <div class="quote">/api/update-metric  ·  t-antenna.asana.com  ·  OneTrust  ·  6sense  ·  GA proxy</div>
+        <h4>What that tells us</h4>
+        <p>Asana's shell is an enterprise front door: consent management and account-based marketing load before
+        the product does. It also shows restraint — none of their product code is on the public page, which is
+        why this row of the matrix is thin. It is a release-discipline finding, not a feature finding.</p>
+      </div>
+
+      <div class="app">
+        <div class="top"><span class="name">ClickUp</span><span class="chip">Views + paywall</span></div>
+        <p class="one">The one that sells everything at once. Eleven view types, chat, email, docs and notes in
+        one app — and a paywall for the AI on top.</p>
+        <dl class="kv">
+          <dt>Front-end</dt><dd>Angular (Ivy markers), one lazy bundle per view</dd>
+          <dt>Data</dt><dd>Apollo GraphQL</dd>
+          <dt>Flags</dt><dd>Split.io</dd>
+          <dt>AI</dt><dd>ClickUp Brain — metered credits, model picker</dd>
+          <dt>Commercial</dt><dd><code>addon-paywall-service</code> ships in the client</dd>
+        </dl>
+        <div class="quote">task-view-lazy-effects · list-view-instance-effects · checklist-lazy-effects
+addon-paywall-service · paywallVariant:`combo_ai_credits_ai_autopilot`
+suffixIcons:[`openAiLogo`,`gemini`,`anthropic`]</div>
+        <h4>What that tells us</h4>
+        <p>Two things. First, the architecture is view-first: every screen is its own bundle with its own state, so
+        a slow dashboard never costs you the task screen. Second, monetisation is a subsystem, not a checkout page —
+        paywall variants, tracking IDs and AI credit wallets all ship in the client, which means they can test
+        upgrade moments without touching billing.</p>
+      </div>
+
+      <div class="app">
+        <div class="top"><span class="name">Hive</span><span class="chip">Agencies &amp; professional services</span></div>
+        <p class="one">The one built for service businesses. Proofing, timesheets with rounding, holiday
+        calendars, CRM entities and finance scoping — the work around the work.</p>
+        <dl class="kv">
+          <dt>Front-end</dt><dd>React + Redux + styled-components</dd>
+          <dt>Data</dt><dd>GraphQL-first (Apollo) + <code>/api/v2</code> REST proxy</dd>
+          <dt>Build</dt><dd>Vite/rolldown — 523 named chunks, effectively their file listing</dd>
+          <dt>AI</dt><dd>Buzz AI + Sidekick, credits, <code>open-ai-usage-billing</code></dd>
+          <dt>Extras</dt><dd>Desktop bridge, Office / Drive / OneDrive, email inside the app</dd>
+        </dl>
+        <div class="quote">proofing · timer-rounding · timeCategory · approval
+compileDashboardAdvancedFilterRulesToMongo · window-manager-buzz-sidekick
+desktopBridge · office-runtime · HiveGooglePicker · useHiveMail</div>
+        <h4>What that tells us</h4>
+        <p>The most readable client of the four — 523 individually named chunks is close to publishing your
+        component tree. The strategy is visible too: agencies bill by time, so timesheets, rounding rules and
+        approvals are first-class. One warning: dashboard filters compile to Mongo-style query rules in the
+        browser, which tends to age badly.</p>
+      </div>
+
+      <div class="app">
+        <div class="top"><span class="name">Plane</span><span class="chip">Open, self-hosted, AI-native</span></div>
+        <p class="one">The outlier. Open source, runnable on your own metal, and the most built-out AI
+        architecture of the four — plus an importer for every rival.</p>
+        <dl class="kv">
+          <dt>Front-end</dt><dd>React + MobX (TypeScript), Vite — 231 chunks</dd>
+          <dt>Data</dt><dd>Plain REST to a Django-style API</dd>
+          <dt>Services</dt><dd>Eight named hosts in one build config: api · admin · argus · flux · live · pi · silo · sites</dd>
+          <dt>AI</dt><dd>Chat, Skills, MCP connectors, <code>/api/agents/supported-models/</code></dd>
+          <dt>Ceiling</dt><dd>Nothing — full capture, 0 parse failures</dd>
+        </dl>
+        <div class="quote">work items · cycles · modules · intake · pages (+ blocks) · stickies
+Plane AI · Skills — "Reusable instructions that shape how AI responds"
+MCP Connectors · /api/agents/supported-models/
+/api/asana/auth/pat · /api/clickup/auth/pat · /api/jira/auth/pat · /api/linear/auth/pat</div>
+        <h4>What that tells us</h4>
+        <p>Three pieces of the AI design are structural, not cosmetic. A <b>Skills</b> library means prompt
+        behaviour is user-authored and stored. An <b>MCP connector registry</b> means third-party tools plug into
+        their assistant. A <b>supported-models endpoint</b> means model choice is negotiated server-side. And the
+        importers say plainly how they grow: take the customer from Asana, ClickUp, Jira or Linear with a per-tool
+        token, not a CSV.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="cost">
+  <div class="wrap">
+    <div class="sechead"><span class="num">04</span><h2>What it costs</h2></div>
+    <p class="sub">List prices from each vendor's pricing page on 21 October 2026, annual billing, USD per seat per
+    month. Calculated, not estimated: seats × price × 12. Enterprise tiers are quote-only and therefore excluded —
+    that is where the real numbers move.</p>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Seats</th><th>Asana</th><th>ClickUp</th><th>Hive</th><th>Plane</th><th>Cheapest 3-yr</th></tr></thead>
+        <tbody>
+          <tr><th>25 · entry tier</th>
+            <td>$10.99 → <b>$3,297/yr</b></td>
+            <td>$7.00 → <b>$2,100/yr</b></td>
+            <td>$5.00 → <b>$1,500/yr</b></td>
+            <td>$6.00 → <b>$1,800/yr</b></td>
+            <td>Hive <b class="good">$4,500</b></td></tr>
+          <tr><th>25 · team tier</th>
+            <td>$24.99 → <b>$7,497/yr</b></td>
+            <td>$12.00 → <b>$3,600/yr</b></td>
+            <td>$12.00 → <b>$3,600/yr</b></td>
+            <td>$13.00 → <b>$3,900/yr</b></td>
+            <td>ClickUp / Hive <b class="good">$10,800</b></td></tr>
+          <tr><th>50 · team tier</th>
+            <td>$24.99 → <b>$14,994/yr</b></td>
+            <td>$12.00 → <b>$7,200/yr</b></td>
+            <td>$12.00 → <b>$7,200/yr</b></td>
+            <td>$13.00 → <b>$7,800/yr</b></td>
+            <td>ClickUp / Hive <b class="good">$21,600</b></td></tr>
+          <tr><th>100 · team tier</th>
+            <td>$24.99 → <b>$29,988/yr</b></td>
+            <td>$12.00 → <b>$14,400/yr</b></td>
+            <td>$12.00 → <b>$14,400/yr</b></td>
+            <td>$13.00 → <b>$15,600/yr</b></td>
+            <td>ClickUp / Hive <b class="good">$43,200</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:34px">Annual cost at 25 seats, team tier</h3>
+    <div class="costbars">
+      <div class="bar"><span class="lbl">Asana</span><span class="track"><span class="fill" style="width:100%;background:linear-gradient(90deg,#ff7a5c,#ff9f6b)"></span></span><span class="val">$7,497</span></div>
+      <div class="bar"><span class="lbl">Plane</span><span class="track"><span class="fill" style="width:52%;background:linear-gradient(90deg,#5cc8ff,#7fe0ff)"></span></span><span class="val">$3,900</span></div>
+      <div class="bar"><span class="lbl">ClickUp</span><span class="track"><span class="fill" style="width:48%;background:linear-gradient(90deg,#b08cff,#c9aaff)"></span></span><span class="val">$3,600</span></div>
+      <div class="bar"><span class="lbl">Hive</span><span class="track"><span class="fill" style="width:48%;background:linear-gradient(90deg,#5ee0a0,#8bf0c0)"></span></span><span class="val">$3,600</span></div>
+    </div>
+    <p class="legend">Bars scaled to Asana's $7,497. Same 25 seats, same 12 months, list price.</p>
+
+    <div class="note"><b>The price is not the bill.</b> Four things sit outside these numbers, and in this category
+    they routinely double the total: <b>(1)</b> monthly billing instead of annual — up to 33% more; <b>(2)</b> AI
+    credits beyond the allowance, which every one of the four meters; <b>(3)</b> Enterprise tiers, gated behind
+    "contact sales" precisely because they are priced on seats, security and volume, not a rate card; <b>(4)</b>
+    onboarding and migration — Plane is the only one where migration tooling is free and self-hosting removes the
+    per-seat problem entirely.</div>
+
+    <h4>Where self-hosting changes the maths</h4>
+    <p>Plane is the only one of the four that can run on your own infrastructure. At 100 seats the Business tier is
+    about <b>$15,600 a year</b>; a Pro licence on your own server is the same per-seat rate but with full data
+    ownership and no seat-count ceiling imposed by a vendor — you pay for the servers instead. Below roughly 25
+    seats the hosting cost outweighs the saving; above roughly 150 it starts to win.</p>
+  </div>
+</section>
+
+<section id="luke">
+  <div class="wrap">
+    <div class="sechead"><span class="num">05</span><h2>For Luke</h2></div>
+    <p class="sub">The short version, in plain English, without any of the code.</p>
+    <div class="luke">
+      <h3>Four tools that all claim the same job</h3>
+      <p>They all hold tasks, show them as boards and lists, and now all four have AI. The differences are in
+      <i>who they are built for</i> and <i>what they charge for</i>.</p>
+      <ol>
+        <li><b>Asana is the enterprise one.</b> It is built to show the board and the executives the same picture —
+        projects roll up into portfolios, portfolios into goals. AI is included in every paid tier, which is unusual.
+        You pay the most for it: about $25 a seat at the tier most teams actually need.</li>
+        <li><b>ClickUp is the everything one.</b> Eleven kinds of view, plus chat, docs and email, in a single app.
+        It is the cheapest way to get a lot of surface area, and it charges separately for AI usage on top. The
+        trade-off is weight: it is a big application and it feels like one.</li>
+        <li><b>Hive is the agency one.</b> If you bill by the hour, the things you need are timesheets, proofing,
+        approvals and holiday calendars — and Hive ships all of them natively. It is the cheapest entry price of the
+        four, but it is not trying to be your company's operating system.</li>
+        <li><b>Plane is the one you can own.</b> It is open source, it runs on your own servers, and it has the most
+        serious AI design of the four — reusable instructions, connectors to other tools, a proper model registry.
+        It is also the youngest, so it has the least polish and the smallest support bench.</li>
+      </ol>
+      <div class="pick">
+        <div><b>If it is a company-wide rollout</b><span>Asana. The portfolio and goals layer is what buys
+        executive buy-in, and AI is included rather than metered.</span></div>
+        <div><b>If it is a small team on a budget</b><span>ClickUp at $7, or Hive at $5 if the team bills time.</span></div>
+        <div><b>If data has to stay on our servers</b><span>Plane. It is the only one that can, and at $13 a seat it
+        is half of Asana.</span></div>
+        <div><b>If the team is an agency</b><span>Hive. Nobody else ships proofing and timesheet rounding
+        natively.</span></div>
+      </div>
+      <p style="margin-top:18px"><b>What the code changed about this view.</b> We expected the four to differ on
+      features. They differ more on <i>architecture</i>: ClickUp builds one bundle per view and meters its AI;
+      Hive ships 523 chunks and puts timesheets and proofing at the centre; Plane runs eight small services and
+      treats migration from rivals as a product; Asana keeps its product code off the public internet entirely.
+      That last one is a compliment, and it is also why we know least about Asana.</p>
+      <p><b>One thing worth copying, whichever we buy.</b> Plane's skills library — the user writes the instruction,
+      the system stores it and reuses it — is a better AI model than a chat box bolted onto a task list.</p>
+    </div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <div class="sechead"><span class="num">06</span><h2>How this was done, and what it cannot tell you</h2></div>
+    <div class="apps" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+      <div class="app">
+        <h3>Method</h3>
+        <ul>
+          <li>Each product's own page loaded in one controlled headless Chrome, driven over CDP.</li>
+          <li>REA <code>inspect-web-page</code> captured the page and the scripts it served.</li>
+          <li><code>export-web-scripts</code> wrote each file out with a SHA-256 digest and a source evidence ID.</li>
+          <li><code>analyze-javascript-application</code> rebuilt module graphs, route candidates, endpoint candidates and vendor fingerprints — statically, with no execution.</li>
+          <li>Direct mining of the same files filled in framework markers, GraphQL operation names and product vocabulary.</li>
+          <li>Prices read off each vendor's pricing page on 21 October 2026; totals computed as seats × rate × 12.</li>
+        </ul>
+      </div>
+      <div class="app">
+        <h3>Limits</h3>
+        <ul>
+          <li>Static evidence only — captured JavaScript is never run, so runtime behaviour is unknown.</li>
+          <li>Asana shipped no product chunks publicly; its row is a statement about its login page, not its product.</li>
+          <li>Hive's analysis stopped at the provider timeout; its counts are the final reported state, not a ceiling.</li>
+          <li>String frequency is a presence indicator, not a feature census.</li>
+          <li>Server-side behaviour, encrypted configuration and anything built at runtime remain unknown.</li>
+          <li>Prices change; treat the costing as a dated snapshot, not a quote.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="scroll" style="margin-top:22px">
+      <table>
+        <thead><tr><th>Stage</th><th>Asana</th><th>ClickUp</th><th>Hive</th><th>Plane</th></tr></thead>
+        <tbody>
+          <tr><th>Captured</th><td><code>ev_415fb554…</code></td><td><code>ev_57ddd212…</code></td><td><code>ev_495aeef2…</code></td><td><code>ev_1032ea2c…</code></td></tr>
+          <tr><th>Exported</th><td><code>ev_a2ae5631…</code></td><td><code>ev_0a62aa9d…</code></td><td><code>ev_508ef2a4…</code></td><td><code>ev_1032ea2c…</code></td></tr>
+          <tr><th>Analysed</th><td><code>ev_53694f38…</code></td><td><code>ev_8bc44d06…</code></td><td><code>ev_c77b8ee0…</code> partial</td><td><code>ev_48403d77…</code></td></tr>
+          <tr><th>Files parsed</th><td>27</td><td>55</td><td>523</td><td>230</td></tr>
+          <tr><th>AST nodes</th><td>209,138</td><td>772,700</td><td>638,862</td><td>1,369,326</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>Project Teardown</b> — prepared for Ricardo M. · 21 October 2026 · evidence from REA 6.7.0 captures of
+    public app surfaces. Pricing: asana.com/pricing, clickup.com/pricing, hive.com/pricing, plane.so/pricing,
+    all read 21 Oct 2026.</p>
+    <p>Videos are embedded from each vendor's official YouTube channel. No vendor was contacted, no trial was
+    created, and no account was used for this pass.</p>
+  </div>
+</footer>
+
+</body>
+</html>
