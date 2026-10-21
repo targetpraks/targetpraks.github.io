@@ -119,7 +119,7 @@ img.castface{display:block;width:96px;height:96px;border-radius:50%;object-fit:c
 
 </style>
 
-<link rel="stylesheet" href="assets/theme.css">
+<link rel="stylesheet" href="assets/theme.css?v=v5a">
 
 <!-- ============ v2 daylight integration ============================
      Local layer + new windows. Everything here is optional garnish that
@@ -140,7 +140,7 @@ img.castface{display:block;width:96px;height:96px;border-radius:50%;object-fit:c
 .lbadge.err{color:var(--bad);border-color:var(--bad-line);background:var(--bad-soft)}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:10px}
 .mcard{background:var(--panel);border:var(--hair) solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-1);padding:12px 14px}
-.mcard h5{font-family:var(--grot);font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);margin-bottom:8px}
+.mcard h2.card-title, .mcard h5{font-family:var(--grot);font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim2);margin-bottom:8px}
 .mkv{display:flex;justify-content:space-between;gap:10px;font-size:.8rem;padding:2.5px 0}
 .mkv b{font-family:var(--mono);font-weight:500;color:var(--ink)}
 .mnote{font-size:.72rem;color:var(--dim2);margin-top:7px}
@@ -149,7 +149,7 @@ img.castface{display:block;width:96px;height:96px;border-radius:50%;object-fit:c
 .msess .mico{width:20px;text-align:center;flex:none;color:var(--gold)}
 .msess .mmeta{margin-left:auto;font-family:var(--mono);font-size:.72rem;color:var(--dim2);text-align:right}
 .kbcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:6px}
-.kbcol h5{font-family:var(--grot);font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2);margin:0 0 6px}
+.kbcol h2.card-title, .kbcol h5{font-family:var(--grot);font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2);margin:0 0 6px}
 .kbcard{background:var(--panel);border:var(--hair) solid var(--line);border-radius:var(--radius-sm);box-shadow:var(--shadow-1);padding:8px 10px;margin-bottom:7px;font-size:.78rem}
 .kbcard .kbt{color:var(--ink);line-height:1.35}
 .kbcard .kbm{margin-top:5px;display:flex;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:.75rem;color:var(--dim2)}
@@ -224,7 +224,7 @@ img.castface{display:block;width:96px;height:96px;border-radius:50%;object-fit:c
 .fileimg{display:flex;justify-content:center}
 .fileimg img{max-width:100%;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff}
 </style>
-<link rel="stylesheet" href="assets/workspace.css">
+<link rel="stylesheet" href="assets/workspace.css?v=v5a">
 </head>
 <body>
 <a class="skip-link" href="#workspace">Skip to content</a>
@@ -272,11 +272,8 @@ img.castface{display:block;width:96px;height:96px;border-radius:50%;object-fit:c
   function paintFail(detail){
     if(window.__maioState === 'ready') return;        // never replace a healthy cockpit
     if(boot) boot.remove();
-    /* hide the cockpit, and empty+hide the vitals status region so a stale "stack 0 0 0"
-       is never announced behind the error overlay (the shell restores it on recovery) */
+    /* hide the cockpit behind the error; the shell un-hides exactly these on recovery */
     ['page-host','section-nav'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
-    var v = document.getElementById('vitals');
-    if(v){ v.style.display = 'none'; v.textContent = ''; v.removeAttribute('aria-label'); }
     var e = document.getElementById('dataerr');
     if(!e){
       e = document.createElement('div'); e.id = 'dataerr'; e.setAttribute('role','alert');
@@ -385,6 +382,28 @@ function one(fn, fallback){ try{ return fn(); }catch(_){ return fallback; } }
    toString() on the way into markup. */
 const esc = v => str(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const escAttr = esc;
+/* The generator stores some report titles with their HTML entities intact (&mdash;,
+   &amp; …). data.js is regenerated and must never be hand-edited, so the display layer
+   decodes them exactly once. Everything still goes through esc() afterwards, so this
+   can only ever turn an entity into the character it already meant — never into markup. */
+const ENTITIES = {amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:'\u00a0',mdash:'\u2014',ndash:'\u2013',
+  hellip:'\u2026',rsquo:'\u2019',lsquo:'\u2018',ldquo:'\u201c',rdquo:'\u201d',middot:'\u00b7',
+  copy:'\u00a9',deg:'\u00b0',times:'\u00d7'};
+function decodeEntities(v){
+  const s = str(v);
+  if(s.indexOf('&') < 0) return s;
+  return s.replace(/&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]{1,7});/g, (m, body) => {
+    if(body.charAt(0) === '#'){
+      const hex = body.charAt(1) === 'x' || body.charAt(1) === 'X';
+      const cp = parseInt(hex ? body.slice(2) : body.slice(1), hex ? 16 : 10);
+      if(!isFinite(cp) || cp < 1 || cp > 0x10FFFF) return m;             // out of range: keep as written
+      if(cp >= 0xD800 && cp <= 0xDFFF) return m;                          // lone surrogate: keep as written
+      try{ return String.fromCodePoint(cp); }catch(_){ return m; }
+    }
+    const named = ENTITIES[body.toLowerCase()];
+    return named === undefined ? m : named;                             // unknown entity: keep as written
+  });
+}
 /* URL context: only http, https, mailto (and relative) survive; javascript:, data:,
    vbscript:, file: and any other scheme collapse to '' (so no such href is ever made). */
 function safeUrl(v){
@@ -554,8 +573,6 @@ function ensureCockpitVisible(){
   if(window.__maioDataFail){
     const e = document.getElementById('dataerr'); if(e) e.remove();
     window.__maioDataFail = false;
-    /* the failure state cleared the vitals strip; repaint it now that data is real again */
-
   }
 }
 /* plain-language failure state — never a healthy-looking empty cockpit */
@@ -570,11 +587,6 @@ function showDataError(detail){
     const b=$('#boot'); if(b && b.isConnected) b.remove();   // no fade: the failure must read immediately
     const hide = el => { if(el) el.style.display='none'; };
     hide($('#page-host')); hide($('#section-nav'));
-    /* The vitals strip is a role="status" region: leaving it in the DOM behind the error
-       overlay would announce healthy-looking zeros ("stack 0 0 0"). Hide it AND empty it,
-       so it is neither visible nor in the accessibility tree. markReady() puts it back. */
-    const v = $('#vitals');
-    if(v){ v.style.display = 'none'; v.textContent = ''; v.removeAttribute('aria-label'); }
     let e = $('#dataerr');
     if(!e){ e=document.createElement('div'); e.id='dataerr'; e.setAttribute('role','alert'); document.getElementById('workspace').appendChild(e); }
     e.innerHTML =
@@ -617,11 +629,30 @@ const LS = v => str(v);                    // local strings pass through str() f
    (top of the main script) so every renderer below can interpolate them. */
 function sprIcon(id){return `<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#${id}"></use></svg>`;}
 const MARK_ARROW=sprIcon('i-arrow-right'), MARK_UPRIGHT=sprIcon('i-arrow-up-right');
+/* The local companion only ever exists on its own origin (127.0.0.1:9111 or the tailnet
+   proxy): it synthesises local.js and /api/fix* per request, so no other origin can serve
+   them. Probing from anywhere else is a guaranteed 404/CORS miss, so we don't ask. */
+const ON_COMPANION = (() => {
+  try{
+    const h = location.hostname, p = location.port;
+    if(location.protocol.indexOf('http') !== 0) return false;
+    /* Loopback on ANY port is the companion: only our own server binds 127.0.0.1, so a
+       page served from loopback can only be the companion (this also keeps a second
+       instance on a QA port honest instead of pretending to be the public build). */
+    if(h === '127.0.0.1' || h === 'localhost' || h === '[::1]' || h === '::1') return true;
+    return p === '9111' || h.endsWith('.ts.net');
+  }catch(_){ return false; }
+})();
 const LOCAL_SRC = './local.js';
 let LOCAL = null;                          // last good MAIO_LOCAL payload
-let LOCAL_STATUS = 'loading';              // loading | live | offline | absent
+let LOCAL_STATUS = ON_COMPANION ? 'loading' : 'absent';   // loading | live | offline | absent
 let LOCAL_TS = 0;
 function LOCAL_REFRESH(){
+  if(!ON_COMPANION){                       // no companion on this origin: stay honestly absent
+    LOCAL_STATUS = LOCAL ? 'offline' : 'absent';
+    one(renderGen, null);
+    return Promise.resolve(LOCAL);
+  }
   if(LOCAL_REFRESH._busy) return Promise.resolve(LOCAL);
   LOCAL_REFRESH._busy = true;
   return new Promise(resolve => {
@@ -643,8 +674,10 @@ function LOCAL_REFRESH(){
   });
 }
 LOCAL_REFRESH();
-setInterval(LOCAL_REFRESH, 30000);
-addEventListener('focus', () => { if(Date.now()-LOCAL_TS > 25000) LOCAL_REFRESH(); });
+if(ON_COMPANION){
+  setInterval(LOCAL_REFRESH, 30000);
+  addEventListener('focus', () => { if(Date.now()-LOCAL_TS > 25000) LOCAL_REFRESH(); });
+}
 const LSEC = k => { const v = LOCAL && one(()=>LOCAL[k], null); return isObj(v) ? v : null; };
 function localBadge(){
   if(LOCAL_STATUS==='live')   return `<span class="lbadge live">local · live</span>`;
@@ -663,13 +696,13 @@ function agoTxt2(t){ const s=str(t); if(!s) return ''; const d=new Date(s); if(i
   return Math.floor(h/24)+'d ago'; }
 
 /* ---------- Machine section (local-only) ---------- */
-function machineRamCard(L){
+function machineRamCard(){
   const ram = LSEC('ram'); const slow = LSEC('slow');
-  if(!ram) return `<div class="mcard"><h5>Memory</h5><div class="empty">live RAM needs the local server (127.0.0.1:9111)</div></div>`;
+  if(!ram) return `<div class="mcard"><h2 class="card-title">Memory</h2><div class="empty">live RAM needs the local server (127.0.0.1:9111)</div></div>`;
   const pct = num(ram.usedPct, 0);
   const cls = slow && slow.level==='HIGH' ? 'bad' : (pct>=75 ? 'warn' : '');
   const top = Array.isArray(ram.top) ? ram.top.slice(0,6) : [];
-  return `<div class="mcard"><h5>Memory · ${esc(fmtGb(ram.usedPct!=null? (num(ram.totalGb,0)*num(ram.usedPct,0)/100) : null))} of ${esc(fmtGb(ram.totalGb))} used</h5>
+  return `<div class="mcard"><h2 class="card-title">Memory · ${esc(fmtGb(ram.usedPct!=null? (num(ram.totalGb,0)*num(ram.usedPct,0)/100) : null))} of ${esc(fmtGb(ram.totalGb))} used</h2>
     <div class="mgauge ${cls}"><i style="width:${clamp(pct,0,100).toFixed(1)}%"></i></div>
     <div class="mkv"><span>used</span><b>${esc(pct.toFixed(1))}%</b></div>
     <div class="mkv"><span>swap</span><b>${esc(fmtGb(ram.swapUsedGb))} / ${esc(fmtGb(ram.swapTotalGb))}</b></div>
@@ -710,14 +743,14 @@ function machineModelsCard(){
     const ms = Array.isArray(olx.models)? olx.models : [];
     if(ms.length) rows.push(`<div class="mnote">models: ${ms.slice(0,8).map(x=>esc(LS(x))).join(' · ')}</div>`);
   }
-  return `<div class="mcard"><h5>Local models</h5>${rows.join('') || '<div class="empty">needs the local server</div>'}</div>`;
+  return `<div class="mcard"><h2 class="card-title">Local models</h2>${rows.join('') || '<div class="empty">needs the local server</div>'}</div>`;
 }
 function machineSessionsCard(){
   const se = LSEC('sessions'); const sp = LSEC('spend');
-  if(!se && !sp) return `<div class="mcard"><h5>Sessions &amp; spend</h5><div class="empty">live sessions need the local server</div></div>`;
+  if(!se && !sp) return `<div class="mcard"><h2 class="card-title">Sessions &amp; spend</h2><div class="empty">live sessions need the local server</div></div>`;
   const cl = se && isObj(se.claude)? se.claude : null, cx = se && isObj(se.codex)? se.codex : null;
   const sess = (icon,name,sub,meta)=>`<div class="msess"><span class="mico">${icon}</span><span><b style="color:var(--ink)">${esc(name)}</b> <span style="color:var(--dim2)">· ${esc(sub)}</span></span><span class="mmeta">${meta}</span></div>`;
-  let out = `<div class="mcard"><h5>Sessions &amp; spend</h5>`;
+  let out = `<div class="mcard"><h2 class="card-title">Sessions &amp; spend</h2>`;
   if(cl) out += sess(sprIcon('i-agents'),'Claude',`${num(cl.sessions7d,0)} sessions · 7d`, `${esc(agoTxt2(cl.lastActivity))}${cl.lastProject?`<br>${esc(LS(cl.lastProject).replace(/^-/,'').slice(0,28))}`:''}`);
   if(cx) out += sess(sprIcon('i-agents'),'Codex',`${num(cx.sessions7d,0)} sessions · 7d`, esc(agoTxt2(cx.lastActivity)));
   out += sess(sprIcon('i-agents'),'ChatGPT','no local usage API','—');
@@ -729,7 +762,7 @@ function machineSessionsCard(){
 }
 function machineSystemCard(){
   const ld = LSEC('launchd'), dk = LSEC('docker'), sv = LSEC('serves'), m = LSEC('machine');
-  let out = `<div class="mcard"><h5>System</h5>`;
+  let out = `<div class="mcard"><h2 class="card-title">System</h2>`;
   if(m){ out += `<div class="mkv"><span>host</span><b>${esc(LS(m.hostname))}</b></div>
     <div class="mkv"><span>uptime</span><b>${esc(String(num(m.uptimeHours,0)))} h</b></div>
     <div class="mkv"><span>load</span><b>${Array.isArray(m.load)?m.load.map(x=>esc(String(x))).join(' / '):'—'}</b></div>`; }
@@ -755,7 +788,7 @@ function renderMachine(){
       ${machineSessionsCard()}
       ${machineSystemCard()}
     </div>
-    <div class="mcard" style="margin-top:10px"><h5>Recent actions</h5>
+    <div class="mcard" style="margin-top:10px"><h2 class="card-title">Recent actions</h2>
       <div class="fixhist" id="fixhist"><div class="empty">loading…</div></div>
       <div class="mnote">Every gated action (trim, model load/unload, service restarts, refresh) is logged locally — last 12 shown.</div>
     </div>`;
@@ -929,6 +962,9 @@ async function runRefreshData(btn){
 async function loadFixLog(){
   const out = $('#fixhist');
   if(!out) return;
+  /* The log lives on the companion origin only. Asking for it from another origin is a
+     guaranteed CORS refusal, so we skip the request and say so plainly. */
+  if(!ON_COMPANION){ out.innerHTML = '<div class="empty">action history needs the local server</div>'; return; }
   try{
     const r = await fetch(FIX_URL.replace(/\/api\/fix$/, '/api/fix/log'), { method:'GET' });
     const j = await r.json().catch(()=>null);
@@ -972,7 +1008,7 @@ function renderKanban(){
     <div class="kbcols">
       ${cols.map(c=>{
         const list = tasks.filter(t => LS(t.status)===c.s).slice(0, c.s==='done' ? 10 : 25);
-        return `<div class="kbcol"><h5>${esc(KB_LABEL[c.s]||c.s)} · ${c.n}</h5>
+        return `<div class="kbcol"><h2 class="card-title">${esc(KB_LABEL[c.s]||c.s)} · ${c.n}</h2>
           ${list.map(t=>`<div class="kbcard"><div class="kbt">${esc(LS(t.title))}</div>
             <div class="kbm"><span class="as">@${esc(LS(t.assignee)||'—')}</span><span>${esc(str(t.updated||t.updated_at||'').slice(0,10))}</span></div></div>`).join('') || `<div class="mnote">none</div>`}
         </div>`; }).join('')}
@@ -996,6 +1032,32 @@ function renderGen(){
 }
 
 /* ---------- sections ---------- */
+/* ---------- folded-in apps ----------
+   Wheel of Life and Top 8 Maio keep their own engines but no longer have a
+   standalone surface: the companion server reverse-proxies the app under /wheel
+   and serves the magazine's static build under /top8, and these two sections
+   frame them inside the workspace. Same origin, so no cross-origin or cookie
+   handling is involved.
+   Both routes exist ONLY on the companion (9111 / tailnet). On any other origin an
+   iframe would just swallow a 404 behind a blank box, so this renders the honest
+   unavailable state instead — the same contract the Machine and Vault sections use. */
+function appFrame(src, title, note){
+  if(!ON_COMPANION){
+    return `<div class="notebox"><b>${esc(title)} lives on the local companion</b> — the companion server
+      (127.0.0.1:9111, or the tailnet proxy) is the only thing that serves
+      <span style="font-family:var(--mono)">${esc(src)}</span>. This build has no embedded page to show, and a blank
+      frame would pretend otherwise. Open the cockpit from the machine to use it here.</div>`;
+  }
+  return `<div class="app-frame-tools"><span class="app-frame-note">${esc(note)}</span>`
+    + `<a class="btn sm" href="${escAttr(src)}" target="_blank" rel="noopener">Open full page ${MARK_UPRIGHT}</a></div>`
+    + `<iframe class="app-frame" src="${escAttr(src)}" title="${escAttr(title)}" loading="lazy"></iframe>`;
+}
+function renderWheel(){
+  return appFrame('/wheel', 'Wheel of Life', 'Monthly scoring · goals · ikigai · thinking profile · vision board');
+}
+function renderTop8(){
+  return appFrame('/top8/', 'Top 8 Maio', 'The computed magazine — every order rebuilt from evidence, never typed');
+}
 const SECTIONS = {
   overview:{title:'Overview', icon:'', sub:'A clear view of your projects, people, and systems.', render:renderDesk},
   projects:{title:'Projects', icon:'', sub:`${snum("projects",DATA.projects.length)} indexed`, render:renderProjects},
@@ -1006,6 +1068,8 @@ const SECTIONS = {
   vault:{title:'Vault', icon:'', sub:'read-only · search + read', render:renderVault},
   prds:{title:'PRDs', icon:'', sub:`${snum("prds",DATA.prds.length)} found`, render:renderPRDs},
   stack:{title:'Stack', icon:'', sub:'live truth', render:renderStack},
+  wheel:{title:'Wheel of Life', icon:'', sub:'monthly scoring · goals · ikigai · thinking · board', render:renderWheel},
+  top8:{title:'Top 8', icon:'', sub:'the computed magazine', render:renderTop8},
   search:{title:'Search', icon:'', sub:'Find a section, project, agent, or document.', render:renderSearch},
   file:{title:'File', icon:'', sub:'', hidden:true, render:renderFileBody},
   about:{title:'About Maio OS', icon:'', sub:'what this is + where it goes', render:renderAbout},
@@ -1088,6 +1152,15 @@ function updatePageContext(){
   document.querySelectorAll('.nav-link[data-open]').forEach(a=>{
     const selected=a.dataset.open===parent;
     if(selected) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+    /* On phones the rail scrolls sideways: bring the current chip into view so a deep
+       link never lands on a section whose chip is off-screen. Desktop is a no-op. */
+    if(selected && a.parentElement && getComputedStyle(a.parentElement).display === 'contents'){
+      const nav = a.closest('#section-nav');
+      if(nav && nav.scrollWidth > nav.clientWidth){
+        const r = a.getBoundingClientRect(), nr = nav.getBoundingClientRect();
+        if(r.left < nr.left || r.right > nr.right) nav.scrollLeft += (r.left - nr.left) - 12;
+      }
+    }
   });
   document.title=title+' — Maio OS';
 }
@@ -1183,7 +1256,7 @@ function renderProjectBody(p){
   if(p.what) h += drow('What', esc(p.what));
   if(p.root) h += drow('Root', `<code>${esc(p.root)}</code>`);
   if(a.path) h += drow('Artifact', `<code>${esc(a.path)}</code>${a.ext?` <span style="color:var(--dim2)">${esc(a.ext)}${a.kb!=null?' · '+esc(a.kb)+' KB':''}</span>`:''}`);
-  if(a.path) h += `<div class="dfoot"><button class="copy" data-report="${escAttr(a.path)}">copy artifact path ${sprIcon('i-copy')}</button></div>`;
+  if(a.path) h += `<div class="dfoot"><button class="copy" data-report="${escAttr(a.path)}" aria-label="${escAttr('Copy artifact path for ' + (p.name || 'this project'))}">copy artifact path ${sprIcon('i-copy')}</button></div>`;
   h += `</div>`;
   return h;
 }
@@ -1200,12 +1273,8 @@ function renderAgentBody(a){
   h += drow('Path', l && l.path ? `<code>${esc(l.path)}</code>` : '—');
   if(a.sheet) h += drow('Character sheet', `<a href="${escAttr(a.sheet)}" target="_blank" rel="noopener">open ${MARK_UPRIGHT}</a>`);
   h += `</div>`;
-  if(l && l.path) h += `<div class="dfoot"><button class="copy" data-report="${escAttr(l.path)}">copy latest path ${sprIcon('i-copy')}</button></div>`;
+  if(l && l.path) h += `<div class="dfoot"><button class="copy" data-report="${escAttr(l.path)}" aria-label="${escAttr('Copy latest output path for ' + (a.name||'this agent'))}">copy latest path ${sprIcon('i-copy')}</button></div>`;
   return h;
-}
-function renderDetail(p){
-  /* kept for back-compat: the project path through the single window */
-  return p ? renderProjectBody(p) : '<div class="empty">no project</div>';
 }
 function agentReports(a){
   if(!a || !a.name) return [];
@@ -1249,7 +1318,7 @@ function renderAgents(){
        the grid reads the same today as it will with the full cast. */
     const letters = String(a.name||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase() || '?';
     const face = a.portrait
-      ? `<img class="ava agc-face" src="${escAttr(a.portrait)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ava mono',textContent:${JSON.stringify(letters)}}))">`
+      ? `<img class="ava agc-face" src="${escAttr(a.portrait)}" alt="" loading="lazy" data-mono="${escAttr(letters)}">`
       : `<span class="ava mono" aria-hidden="true">${esc(letters)}</span>`;
     return `<button class="agc" data-agent="${escAttr(a.name)}" aria-label="${escAttr('Agent ' + a.name + (a.role ? ' — ' + a.role : '') + ' — open detail')}">
       ${face}
@@ -1274,21 +1343,18 @@ let libShelf = (location.port==='9111'||location.hostname.endsWith('.ts.net')) ?
 /* the shelf a plain visit to Library lands on — restored whenever a route means "the Library
    itself", so a #docs:/#report: filter can never outlive the URL that asked for it */
 const LIB_DEFAULT = libShelf;
-const LSERVER = (() => { try{
-    if(location.protocol.indexOf('http')===0 && (location.port==='9111' || location.hostname.endsWith('.ts.net'))) return '';
-  }catch(_){}
-  return 'http://127.0.0.1:9111';
-})();
 function libLive(){ return LOCAL_STATUS==='live' && LSEC('library'); }
-function fileHref(rel){ return LSERVER + '/files/' + String(rel).split('/').map(encodeURIComponent).join('/'); }
 function libPretty(s){
   /* filenames → display titles: drop a leading date, swap separators for spaces */
   s = str(s).replace(/^\d{4}-\d{2}-\d{2}[-_ ]*/, '').replace(/[-_]+/g, ' ').trim();
   return s || str(s);
 }
 function libCard(title, meta, pathLine, actions, cls){
+  /* Titles arrive with the generator's entities intact; decode exactly once here, then
+     escape. A filename is unaffected (decodeEntities leaves anything without "&" alone). */
+  const shown = libPretty(decodeEntities(title));
   return `<div class="libcard ${cls||''}">
-    <div class="lt" title="${escAttr(title)}">${esc(libPretty(title))}</div>
+    <div class="lt" title="${escAttr(shown)}">${esc(shown)}</div>
     <div class="lm">${meta}</div>
     ${pathLine?`<div class="lp" title="${escAttr(pathLine)}">${esc(pathLine)}</div>`:''}
     <div class="lacts">${actions}</div></div>`;
@@ -1318,7 +1384,7 @@ function renderLibrary(){
         i.title,
         `<span class="lbadge">${esc(i.where==='report'?'agent report':'project work')}</span><span>${esc(i.agent||'')}</span><span>${esc(fmtDate(i.date))}</span><span>${esc(i.kb+'KB')}</span>`,
         i.path,
-        `<button class="btn sm" data-file="${escAttr(i.rel)}" data-ftitle="${escAttr(i.title)}">Read</button><button class="copy" data-report="${escAttr(i.path)}">path ${sprIcon('i-copy')}</button>`
+        `<button class="btn sm" data-file="${escAttr(i.rel)}" data-ftitle="${escAttr(i.title)}">Read</button><button class="copy" data-report="${escAttr(i.path)}" aria-label="${escAttr('Copy path for ' + (i.title || fileBase(i.path)))}">path ${sprIcon('i-copy')}</button>`
       )).join('') || '<div class="empty">nothing matches</div>'}</div>`;
     }
   } else if(libShelf==='public'){
@@ -1328,7 +1394,7 @@ function renderLibrary(){
         p.title,
         `<span class="lbadge pub">public</span><span>${esc(fmtDate(p.date))}</span><span>${esc(p.kb+'KB')}</span>`,
         'targetpraks.github.io/' + (p.url==='index.html'?'':p.url),
-        `<a class="btn sm" href="${escAttr('https://targetpraks.github.io/'+p.url)}" target="_blank" rel="noopener noreferrer">Open ${MARK_UPRIGHT}</a><button class="copy" data-report="${escAttr('https://targetpraks.github.io/'+p.url)}">url ${sprIcon('i-copy')}</button>`
+        `<a class="btn sm" href="${escAttr('https://targetpraks.github.io/'+p.url)}" target="_blank" rel="noopener noreferrer">Open ${MARK_UPRIGHT}</a><button class="copy" data-report="${escAttr('https://targetpraks.github.io/'+p.url)}" aria-label="${escAttr('Copy URL for ' + p.title)}">url ${sprIcon('i-copy')}</button>`
       )).join('') || '<div class="empty">nothing matches</div>'}</div>`;
   } else {
     /* Docs: with the local server we have the full list (vault PRDs + agent markdown).
@@ -1353,8 +1419,8 @@ function renderLibrary(){
         `${d.vault?`<span class="lbadge vault">vault ${MARK_ARROW} Obsidian</span>`:'<span class="lbadge">agent markdown</span>'}<span>${esc(d.project||'')}${d.area?` · ${esc(d.area)}`:''}</span><span>${esc(fmtDate(d.date))}</span>`,
         d.path,
         d.vault
-          ? `<a class="btn sm" href="${escAttr(d.jump||'')}" target="_blank" rel="noopener noreferrer">Open in Obsidian ${MARK_UPRIGHT}</a><button class="copy" data-report="${escAttr(d.path)}">path ${sprIcon('i-copy')}</button>`
-          : `<button class="btn sm" data-file="${escAttr((d.path||'').replace(/^AI-Drive\//,''))}" data-ftitle="${escAttr(d.title||'')}">Read</button><button class="copy" data-report="${escAttr(d.path)}">path ${sprIcon('i-copy')}</button>`
+          ? `<a class="btn sm" href="${escAttr(d.jump||'')}" target="_blank" rel="noopener noreferrer">Open in Obsidian ${MARK_UPRIGHT}</a><button class="copy" data-report="${escAttr(d.path)}" aria-label="${escAttr('Copy path for ' + (d.title || fileBase(d.path)))}">path ${sprIcon('i-copy')}</button>`
+          : `<button class="btn sm" data-file="${escAttr((d.path||'').replace(/^AI-Drive\//,''))}" data-ftitle="${escAttr(d.title||'')}">Read</button><button class="copy" data-report="${escAttr(d.path)}" aria-label="${escAttr('Copy path for ' + (d.title || fileBase(d.path)))}">path ${sprIcon('i-copy')}</button>`
       )).join('') || `<div class="empty">${lib?'nothing matches':'no vault PRDs indexed'}</div>`}</div>`;
   }
   const stamp = lib ? `local data · ${esc(agoTxt2(lib.generatedAt))}` : 'snapshot build';
@@ -1372,10 +1438,8 @@ function renderPRDs(){
   <div class="rows" style="margin-top:12px">${ps.map(p=>`
     <div class="rrow"><span class="ra" style="min-width:150px">${esc(p.title)}</span>
     <span class="rp">${esc(p.project||'')}${p.area?' <span class="fam" style="font-size:.72rem">'+esc(p.area)+'</span>':''}</span>
-    <span class="rd">${esc(fmtDate(p.date))}</span><button class="copy" data-report="${escAttr(p.path)}">${sprIcon('i-copy')}</button></div>`).join('') || '<div class="empty">none found</div>'}</div>`;
+    <span class="rd">${esc(fmtDate(p.date))}</span><button class="copy" data-report="${escAttr(p.path)}" aria-label="${escAttr('Copy path for ' + (p.title||'this PRD'))}">${sprIcon('i-copy')}</button></div>`).join('') || '<div class="empty">none found</div>'}</div>`;
 }
-const enriched = DATA.enriched;
-const ENRICH_PRDS = Array.isArray(enriched.prds) ? enriched.prds : [];
 /* v3 — two-way card: restart an allowlisted service from the cockpit. Rendered
    from the local payload (services section); on the public build it degrades to
    an honest note. The server owns the allowlist/cooldowns; this only draws. */
@@ -1644,7 +1708,7 @@ function renderFileBody(){
       <span class="vbadge">${esc(fileRef.rel)}</span>
       ${st.size != null ? `<span class="vbadge">${esc(fmtBytes(st.size))}</span>` : ''}
       ${up ? `<a class="btn sm" href="${escAttr(href)}" target="_blank" rel="noopener noreferrer">Open in a tab ${MARK_UPRIGHT}</a>` : ''}
-      <button class="copy" data-report="${escAttr('AI-Drive/' + fileRef.rel)}">path ${sprIcon('i-copy')}</button>
+      <button class="copy" data-report="${escAttr('AI-Drive/' + fileRef.rel)}" aria-label="${escAttr('Copy path for ' + name)}">path ${sprIcon('i-copy')}</button>
     </div>`;
   if(!up) return h + `<div class="notebox" style="margin-top:10px"><b>Machine-only file</b> — this document lives on the Mac and is served by the local companion. Open the cockpit from the local build (<span style="font-family:var(--mono)">http://127.0.0.1:9111</span> or the tailnet) to read it here.</div>`;
   if(st.err) return h + `<div class="notebox" style="border-color:var(--bad-line)"><b style="color:var(--warn)">✗ ${esc(st.err)}</b></div>`;
@@ -1679,10 +1743,11 @@ function renderAbout(){
 const NAV_GROUPS=[
   {title:'Workspace',ids:['overview','search']},
   {title:'Work',ids:['projects','kanban','agents']},
+  {title:'Life',ids:['wheel','top8']},
   {title:'Knowledge',ids:['reports','prds','vault']},
   {title:'System',ids:['machine','stack','about']}
 ];
-const DICON={overview:'i-desk',search:'i-search',projects:'i-projects',agents:'i-agents',reports:'i-reports',kanban:'i-kanban',machine:'i-machine',vault:'i-vault',prds:'i-prds',stack:'i-stack',about:'i-about'};
+const DICON={overview:'i-desk',search:'i-search',projects:'i-projects',agents:'i-agents',reports:'i-reports',kanban:'i-kanban',machine:'i-machine',vault:'i-vault',prds:'i-prds',stack:'i-stack',wheel:'i-wheel',top8:'i-magazine',about:'i-about'};
 function sectionIcon(id){return `<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#${DICON[id]||'i-reports'}"></use></svg>`;}
 function sectionGroup(id){return NAV_GROUPS.find(g=>g.ids.includes(id))?.title||'Workspace';}
 function renderNavigation(){
@@ -1723,10 +1788,11 @@ addEventListener('keydown',e=>{
 });
 
 /* ---------- delegated clicks ----------
-   One handler covers every "open something" affordance in the shell: the dock and menu,
-   the desklet counters, the vitals-strip counters, project cards and agent cards. Buttons
-   and role="button" elements fire click on Enter/Space by themselves, so the keyboard path
-   and the pointer path share this code and can never drift apart. */
+   One handler covers every "open something" affordance in the shell: section links,
+   project cards, agent cards, vault results, files and copy buttons.
+   Real <button>/<a> elements already fire click on Enter/Space; <div role="button">
+   does NOT, so every such element is listed in the keydown delegate below
+   (.pcard[data-project] and .vres[data-vopen]). Keep the two lists in step. */
 function openTarget(el){
   const id=el.dataset.open;
   if(activeSection!==id) clearSectionRoute(id);
@@ -1736,10 +1802,13 @@ function openTarget(el){
 document.addEventListener('click', e => {
   const df = e.target.closest('[data-file]'); if(df){ openFile({rel: df.getAttribute('data-file'), title: df.getAttribute('data-ftitle') || ''}); return; }
   const cp=e.target.closest('[data-report]'); if(cp){
-    const label=cp.textContent;
+    /* Restore the button's MARKUP, not its text: the copy glyph is an <svg>, and
+       textContent would silently strip it after the first copy. */
+    const idle=cp.innerHTML;
+    const restore=ms=>setTimeout(()=>{ if(cp.isConnected) cp.innerHTML=idle; }, ms);
     const write=navigator.clipboard?.writeText(cp.dataset.report);
-    if(write) write.then(()=>{cp.textContent='Copied';setTimeout(()=>cp.textContent=label,1200);}).catch(()=>{cp.textContent='Copy unavailable';cp.title=cp.dataset.report;setTimeout(()=>cp.textContent=label,2500);});
-    else {cp.textContent='Copy unavailable';cp.title=cp.dataset.report;setTimeout(()=>cp.textContent=label,2500);}
+    if(write) write.then(()=>{cp.textContent='Copied';restore(1200);}).catch(()=>{cp.textContent='Copy unavailable';cp.title=cp.dataset.report;restore(2500);});
+    else {cp.textContent='Copy unavailable';cp.title=cp.dataset.report;restore(2500);}
     return;
   }
   const cd=e.target.closest('.pcard[data-project]'); if(cd){openDetail(DATA.projects[Number(cd.dataset.project)]);return;}
@@ -1752,8 +1821,29 @@ document.addEventListener('click', e => {
   const cl = e.target.closest('.chip[data-lib]'); if(cl){ libShelf = cl.dataset.lib || 'machine';
     const w = VIEWS.get('reports'); if(w && w.rerender) w.rerender(true); return; }
 });
+/* A missing cast portrait must never leave a broken-image box: swap in the monogram
+   that the markup already carries as data-mono. Capture phase, because image errors
+   do not bubble. This replaces the old inline onerror, whose JSON payload broke the
+   attribute into two (the fallback never ran). */
+document.addEventListener('error', e => {
+  const img = e.target;
+  if(!(img instanceof HTMLImageElement) || !img.classList.contains('agc-face')) return;
+  const mono = document.createElement('span');
+  mono.className = 'ava mono';
+  mono.setAttribute('aria-hidden', 'true');
+  mono.textContent = img.dataset.mono || '?';
+  img.replaceWith(mono);
+}, true);
+
+/* Keyboard activation for the non-native controls. A div with role="button" gets no
+   synthesised click, so each one is handled here; Space is included because that is what
+   a button does, and preventDefault stops the page from scrolling underneath. */
 document.addEventListener('keydown', e => {
-  if(e.key==='Enter'||e.key===' '){const dp=e.target.closest?.('.pcard[data-project]');if(dp){e.preventDefault();openDetail(DATA.projects[Number(dp.dataset.project)]);}}
+  if(e.key!=='Enter' && e.key!==' ') return;
+  const dp = e.target.closest?.('.pcard[data-project]');
+  if(dp){ e.preventDefault(); openDetail(DATA.projects[Number(dp.dataset.project)]); return; }
+  const vr = e.target.closest?.('.vres[data-vopen]');
+  if(vr){ e.preventDefault(); vaultOpen(vr.getAttribute('data-vopen')); return; }
 });
 let __projq='', __repq='';
 document.addEventListener('input', e => {

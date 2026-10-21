@@ -179,10 +179,39 @@ padding (38px 36px, tighter steps at 1150/760px).
 
 - **Overview:** 12-col feel via `grid-template-columns: 1fr 285px` (310px ≥1600px, 240px ≤1150px, single column ≤950px with the summary rail becoming a 2-up grid).
 - **Content sections:** card grids (auto-fill, min 250–280px), library grid ≥270px.
-- **≤760px (phones):** the app becomes a column; the sidebar grid turns into the attached
-  navigation row (brand + grouped section links) that stays fixed above the scrolling
-  content; safe-area insets respected; 44px hit targets on controls.
+- **≤760px (phones):** the app becomes a column. The sidebar becomes the attached nav:
+  brand on its own line, then a single snap-scrolling chip rail of all 13 sections
+  (groups dissolved, titles hidden, 44px chips, 18px edge fade, current chip scrolled
+  into view). The rail stays above the scrolling content and never widens the document.
+  Safe-area insets respected; every control ≥44px.
+- **Folded apps:** Wheel of Life and Top 8 render as full-height frames (`/wheel`,
+  `/top8/`) **only on the companion origin**; elsewhere they show the honest
+  "lives on the local companion" note. Same gate covers `local.js`, `/api/fix*` and vault
+  reads — see *Section model* below.
 - **Rhythm:** 36px between overview sections, 32px page-heading margin, 14px card gaps.
+
+## Section model and routes
+
+| Route | Section | Group | Data |
+|---|---|---|---|
+| `#overview` (and `#desk`) | Overview | Workspace | snapshot + live mix |
+| `#search` | Search | Workspace | index built from all sections |
+| `#projects` / `#project:<name>[@n]` | Projects → detail | Work | snapshot |
+| `#kanban` | Kanban | Work | companion live, snapshot fallback |
+| `#agents` / `#agent:<name>` | Agents → detail | Work | snapshot |
+| `#reports` / `#report:<q>` / `#docs:<q>` | Library (Machine/Public/Docs) | Knowledge | snapshot + companion |
+| `#prds` | PRDs | Knowledge | snapshot |
+| `#vault` | Vault | Knowledge | companion only (read-only) |
+| `#machine` | Machine | System | companion only |
+| `#stack` | Stack | System | snapshot probes + companion actions |
+| `#wheel` | Wheel of Life | Life | companion only |
+| `#top8` | Top 8 | Life | companion only |
+| `#about` | About | System | static |
+| `#file:<rel>` | File reader | Knowledge | companion only |
+
+`detail` and `file` are the shell's two reused views (never addressable without a subject).
+Unknown or malformed fragments fall back to Overview. Every route is bookmarkable and
+participates in ordinary Back/Forward history.
 
 ## Elevation & Depth
 
@@ -199,7 +228,10 @@ hover lifts a card one tonal step (`#FCFBF7`) and gold-warms its border; panel c
 ### Named Rules
 **The No-Floating-Windows Rule.** Nothing floats above the page: no window chrome, no
 pop-up search, no overlay panes. Search is a section; details open in the main content
-area. (Legacy `.win`/dock token styles exist for the old desktop and are unused here.)
+area. (The `.win` / `.dockbtn` / `.desklet` rules survive in `theme.css` only because
+`assets/preview.html`, the kit QA sheet, renders them as specimens — no page in the
+workspace uses them. The retired page-chrome ids `#dock`, `#scroller`, `.menubtn`,
+`#cmdbar*` and `#vitals` are gone.)
 
 ## Shapes
 
@@ -242,8 +274,12 @@ sprite symbols (`i-arrow-right`, `i-arrow-up-right`, `i-copy`), never Unicode gl
   count), warm-neutral surface, selected = gold-tinted row with deep-gold text.
 - **Topbar:** breadcrumbs (group / current) left, snapshot stamp + search button (with
   `⌘ K` kbd hint) right.
-- **Phones (≤760px):** the same nav groups render as an attached horizontal row pinned
-  above the scroll area; counts hide; group titles shrink to 11px uppercase.
+- **Phones (≤760px):** one attached chip rail (~125px tall, 15% of a 390×844 screen).
+  Groups dissolve (`display:contents`), group titles hide, and all 13 sections become
+  44px chips in a single horizontally snap-scrolling row with an 18px edge fade. The
+  current chip is scrolled into view on every route change, the fade is dropped while the
+  rail holds focus, and the rail's 5px vertical padding keeps every 2px focus ring whole.
+  The rail never widens the document (measured 0px overflow); counts hide.
 - **Breadcrumbs:** current page in ink; parent is a gold link; slash separators in hairline tone.
 
 ### Status primitives (signature)
@@ -290,13 +326,13 @@ correctly degrades to snapshot states; the live build on :9111 still serves the 
 desktop checkout, so the live layer was tested by stubbing `local.js` + `/api/fix/log`).
 
 ### Checks (all pass)
-- **Sections render:** Overview · Projects (79) · Kanban · Agents (39) · Library (200/97/143) · PRDs (63) · Vault · Machine · Stack (9 probes) · About · Search — every section opens, records render, `aria-current` follows.
+- **Sections render:** Overview · Projects (79) · Kanban · Agents (39) · Library (200/97/143) · PRDs (63) · Vault · Machine · Stack (9 probes) · About · Search — every section opens, records render, `aria-current` follows. (The later `Life` additions — Wheel of Life and Top 8 — are covered in the audit pass below.)
 - **Console:** zero uncaught/page errors on desktop and phone after a full walk incl. `#project:garden-plan`, `#agent:beast`, Back/Forward. Remaining console items are two documented environmental facts on the static rig: `local.js` 404 (absent by design) and the origin-gated `/api/fix/log` CORS refusal — both land in honest empty states ("action history needs the local server"); zero errors remain when the local layer is stubbed.
 - **History:** browser Back/Forward follows section + detail history (`#desk` ⇄ `#agent:beast` verified).
-- **Phone:** the nav row stays attached above the scrolling content (nav stays at top: 0 while the workspace scrolls 500px); no horizontal scroll at 390px on any section (workspace/page/document all 0px overscroll; search-row icon fitted into its 12px grid lane on phones).
+- **Phone:** the nav rail stays attached above the scrolling content (top: 0 while the workspace scrolls); no horizontal scroll at 390px on any section (workspace/page/document all 0px overscroll), and the rail's own horizontal scroll stays inside itself.
 - **Focus:** cyan halo removed from `:focus-visible`; keyboard focus is a 2px gold outline everywhere (page titles 2px gold, offset 4px; `#workspace` focus keeps a gold outline); searchbox focus = gold edge + `--ring-gold`. No `outline:none` without a replacement.
 - **Icons:** decorative `→ ▸ ✦ ☆ ◫ ▣ ▤ ▦ ⚙ ◉ ✎ 📖 ✳ ⚡ ⧉ ↻ ↗` replaced with sprite symbols; sprite carries `i-copy`, `i-arrow-right`, `i-arrow-up-right` (added in the same stroke/grid/stroke-width); `<use href="assets/icons.svg#…">` now 30+ in-page occurrences. `⌘ K` stays text.
-- **Type floor:** no `10px` declarations remain; operational labels raised to 11px (`nav-group-title`, `profile`, `kbd`, `activity-avatar`, `pcard .fam` 9px→11px, inline `.fam`/`.tagprd`/`sheet`/`vk` 0.6rem→0.72rem, mono metadata 0.62–0.68rem→0.72–0.75rem). Density re-checked at 390px: nothing overflows, hit targets keep ≥36px (44px on interactive phone controls).
+- **Type floor:** no `10px` declarations remain; operational labels raised to 11px (`nav-group-title`, `profile`, `kbd`, `activity-avatar`, `pcard .fam` 9px→11px, inline `.fam`/`.tagprd`/`sheet`/`vk` 0.6rem→0.72rem, mono metadata 0.62–0.68rem→0.72–0.75rem). Density re-checked at 390px: nothing overflows; every interactive control measures ≥44px (the nav chips included).
 - **Honest data:** stale-snapshot warns, `Snapshot · 1 day old` stamp, machine cards degrade to plain empty cards, fix-log shows "action history needs the local server" — no invented numbers anywhere. Library `&mdash;`/`&amp;` visible in three public titles is a data-generator double-encoding in `data.js` (regenerated every 6 h; hand-editing is forbidden) — flagged, not patched.
 
 ### Files changed (all inside `maio-os/`)
@@ -312,3 +348,63 @@ desktop checkout, so the live layer was tested by stubbing `local.js` + `/api/fi
 - `.impeccable/review/mobile-scrolled.png` — nav attached after 500px scroll; `mobile-projects.png`, `mobile-library.png`, `mobile-kanban.png`, `mobile-search.png` — 390×844
 
 Work left uncommitted as instructed; server on 127.0.0.1:9122 stopped with the session.
+## Audit & Fix Pass (2026-10-21)
+
+Second pass over the shipped workspace after the `Life` group (Wheel of Life, Top 8) landed.
+Method: static read of every renderer/handler, then Chromium measurements at 1440×900 and
+390×844 (contrast sweep, control sizes, heading outline, accessible names, overflow, console).
+
+### Defects found and fixed
+
+| # | Defect | Impact | Fix |
+|---|---|---|---|
+| 1 | `Life` sections framed `/wheel` and `/top8/` with an `<iframe>` on **every** origin | On the public Pages build the frame swallowed a 404 behind a blank box — a section that silently pretends to work | `appFrame()` now renders the same honest "lives on the local companion" notebox used by Machine/Vault whenever `ON_COMPANION` is false |
+| 2 | Agent portrait fallback used an inline `onerror` whose JSON payload broke the attribute in two (`onerror="…textContent:` + stray `ad"}))"`) | A missing cast portrait left a broken-image box forever; the monogram fallback never ran | `data-mono` attribute + one capture-phase `error` listener that swaps in the monogram (verified: 38 imgs → 37 imgs + 1 monogram) |
+| 3 | Copy buttons restored their label with `textContent` after copying | The first clipboard action permanently deleted the sprite copy glyph | `innerHTML` snapshot/restore (verified: svg present → absent during "Copied" → restored) |
+| 4 | `local.js` probe and `/api/fix/log` fetch fired from every origin | Two guaranteed console errors (404 + CORS refusal) on any non-companion build | Both gated behind `ON_COMPANION`; status starts honestly `absent`. Console is now **completely clean** |
+| 5 | Card titles used `<h5>` directly under `<h1>` | Heading-level jump (H1→H5) for screen-reader navigation, on Machine and Kanban | Card titles are `<h2 class="card-title">`; both CSS layers retargeted |
+| 6 | Phone nav grew to **345px (41% of a 390×844 screen)** once `Life` added a 5th group | A third of the viewport spent on chrome before any content | Single attached chip rail: `flex-wrap: nowrap` + horizontal snap scroll + edge fade + active-chip scroll-into-view → **111px (13%)** |
+| 7 | Overview `Go to your vault` / activity titles were 17–19px tall on phones | Untappable by thumb (below the 44px guideline) | 44px min-height inline-flex targets in the phone block (all interactive controls now ≥36px, most 44px) |
+| 8 | `.btn:focus-visible` used `--cyber-cyan-ink` | Off-palette focus ring contradicting the documented gold system | Gold outline, matching every other control |
+| 9 | Library titles printed generator entities literally (`&mdash;`, `&amp;`) | 13 public-shelf titles read "…ceiling &mdash; comparison" | `decodeEntities()` at the card boundary (single pass, unknown/out-of-range entities preserved, output still `esc()`-escaped). `data.js` untouched |
+| 10 | Dead legacy-desktop CSS (`.win*`, `#dock`, `.dockbtn`, `#cmdbar`, `.desklet`, `#vitals`) and dead JS (`renderDetail`, `fileHref`, `LSERVER`, `ENRICH_PRDS`, unused `#vitals` branches) | ~24 CSS blocks of unreachable rules; duplicate origin resolver | Removed; `assets/preview.html` keeps its own layout copies and still renders |
+
+### Verified after the pass
+- All 13 sections render (Projects 79 · Agents 39 · Library 97 on Public · PRDs 63 · Stack 23 tiles · Search 12 section rows); Wheel/Top 8 show the companion note off-origin.
+- **Zero** console messages and zero page errors on desktop and phone across the full walk.
+- No horizontal overflow anywhere: document and workspace `scrollWidth − clientWidth = 0` at both sizes, all sections.
+- Phone rail stays attached above the scrolling content; the current chip is auto-scrolled into view on deep links (`#about` → `scrollLeft 819`, chip fully visible).
+- Contrast sweep (WCAG AA against the resolved background, every leaf text node in sidebar/topbar/workspace): **0 failures**.
+- Accessible names: 0 unnamed interactive controls; 0 images without `alt`; 0 duplicate ids.
+- Stylesheets carry `?v=v5` so a deploy cannot serve a stale `workspace.css` (this pass hit exactly that).
+
+### Captures (this pass)
+- `.impeccable/review/desktop.png`, `desktop-library.png`, `desktop-agents.png`, `desktop-machine.png`, `desktop-wheel.png` — 1440×900
+- `.impeccable/review/mobile.png`, `mobile-wheel.png`, `mobile-audit-nav.png` — 390×844
+
+### Correction to this pass (same day)
+Three items were re-opened and fixed after review:
+
+- **Vault results were keyboard-unreachable.** `.vres` is `role="button"` — a div gets no
+  synthesised click, and the keydown delegate only matched `.pcard`. The delegate now
+  handles `.pcard[data-project]` and `.vres[data-vopen]` (Enter + Space), and the comment
+  above it states the real rule instead of claiming role=button suffices.
+- **Rail focus rings were clipped.** `overflow-y:hidden` with 1px padding sliced the
+  2px/5px ring, and the edge fade half-transparented a chip focused in the last 18px.
+  Padding is now `5px 18px 5px 0` and `:focus-within` drops the mask. Verified by tabbing
+  through all 13 chips at 390px: **0 clipped rings**.
+- **Chips were 36px, below the documented 44px floor.** Now 44px (rail height 125px, 15%
+  of a 390×844 screen), and the control sweep threshold was corrected to test `<44`
+  instead of `<36` — it reported 0 undersized controls at 44px.
+- **Over-deleted theme rules restored.** `.win`, `.winbar`, `.winbody`, `.winresize`,
+  `.win.max`, `.desklet`, `.dockbtn*`, `.docksep` are rendered by `assets/preview.html`
+  (the kit QA sheet); deleting them silently shrank its window mock (winbar 40px→35px,
+  resize gradient gone). Restored; the genuinely orphaned page chrome (`#dock`,
+  `#scroller`, `.menubtn`, `#cmdbar*`, `#vitals`, plus their dead JS branches) stays removed.
+  Preview verified: winbar 41px, gradients and radii intact.
+
+### Known limits
+- The companion-only paths (`/wheel`, `/top8/`, `/api/fix*`, `/files/*`, vault reads) cannot be
+  exercised from a static server; they are verified only as honest fallbacks. Live behaviour
+  depends on `maio-os-local/server.mjs`, which serves a different checkout.
+- `data.js` remains generator-owned; entity decoding is a display-layer repair, not a data fix.

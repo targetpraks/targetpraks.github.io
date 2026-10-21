@@ -150,7 +150,7 @@ kbd {background: var(--bg2); border: 1px solid var(--line); font-family: var(--s
 img.agc-face, img.castface {box-shadow: none; border: 1px solid var(--line2);}
 .libgrid {grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));}
 .svcgrid, .mgrid {grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));}
-.mcard h5, .kbcol h5 {font-family: var(--sans); letter-spacing: 0; text-transform: none; font-size: 12px;}
+.mcard h2.card-title, .kbcol h2.card-title {font-family: var(--sans); letter-spacing: 0; text-transform: none; font-size: 12px;}
 .lbadge {font-family: var(--sans); font-size: 11px; white-space: normal; letter-spacing: 0;}
 .kbcols {grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr)); gap: 16px;}
 .kbcol {padding: 12px; background: var(--bg2); border-radius: 8px; min-width: 0;}
@@ -209,20 +209,31 @@ img.agc-face, img.castface {box-shadow: none; border: 1px solid var(--line2);}
 @media (max-width: 760px) {
   body {overflow: hidden;}
   .app-shell {display: flex; flex-direction: column; height: 100dvh;}
-  #sidebar {position: static; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; flex: none; padding: calc(10px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-left)) 10px; border-right: 0; border-bottom: 1px solid var(--line); overflow: visible;}
-  .brand {font-size: 18px; padding: 0; gap: 6px; align-self: center;}
+  /* Phones: one attached rail of section chips. The old 3-column grid grew to 345px
+     (41% of a 390x844 screen) once the Life group landed; a wrapping strip cost 226px.
+     A single snap-scrolling rail costs ~107px, keeps every destination one gesture away,
+     and never scrolls the page: the rail scrolls inside itself (document width stays 390).
+     Groups dissolve with display:contents; titles go; the rail fades at its edges and the
+     current chip is scrolled into view, so it reads as "more to the side", not as cut off. */
+  #sidebar {position: static; display: flex; flex-direction: column; gap: 8px; flex: none; padding: calc(9px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-left)) 9px; border-right: 0; border-bottom: 1px solid var(--line); overflow: visible;}
+  .brand {font-size: 18px; padding: 0; gap: 6px; align-self: flex-start; min-height: 32px;}
   .brand img {width: 23px; height: 23px;}
   .sidebar-caption {display: none;}
-  #section-nav {display: contents;}
-  .nav-group-title {display: block; font-size: 11px; letter-spacing: .8px; padding: 0 7px; margin: 3px 0 4px;}
-  .nav-group {min-width: 0;}
-  .nav-group:first-child {grid-column: 2 / -1; display: flex; justify-content: flex-end; align-items: center; gap: 3px;}
-  .nav-group:first-child .nav-group-title {display: none;}
-  .nav-group:first-child .nav-link {width: auto; gap: 6px; padding: 8px;}
-  .nav-link {font-size: 12px; min-height: 36px; padding: 6px 7px; gap: 7px;}
-  .nav-group:not(:first-child) .nav-icon {display: none;}
+  /* 5px padding clears the 2px/3px focus ring (5px outside the chip box) so a keyboard
+     focus ring is never sliced by overflow-y:hidden; the fade is dropped while the rail
+     holds focus, so a chip focused inside the last 18px is never half-transparent. */
+  #section-nav {display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 6px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 5px 18px 5px 0;
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 18px), transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 18px), transparent 100%);}
+  #section-nav:focus-within {mask-image: none; -webkit-mask-image: none;}
+  #section-nav::-webkit-scrollbar {display: none;}
+  .nav-group, #section-nav > .nav-group {display: contents;}
+  .nav-group-title {display: none;}
+  .nav-link {width: auto; flex: 0 0 auto; scroll-snap-align: start; gap: 6px; padding: 6px 10px; min-height: 44px; font-size: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel);}
+  .nav-link[aria-current="page"] {background: #e6dec7; border-color: #d6c99f;}
+  .nav-group:not(:first-child) .nav-icon {display: inline-block;}
   .nav-count {display: none;}
-  .nav-icon {width: 17px; height: 17px; flex-basis: 17px;}
+  .nav-icon {width: 15px; height: 15px; flex-basis: 15px;}
   .sidebar-footer {display: none;}
   .main-shell {flex: 1;}
   #topbar {padding: 5px 18px; min-height: 54px; gap: 8px;}
@@ -244,11 +255,16 @@ img.agc-face, img.castface {box-shadow: none; border: 1px solid var(--line2);}
   .project-family, .row-arrow {display: none;}
   .section-heading h2 {font-size: 16px;}
   .section-heading > a {min-height: 44px;}
-  .activity-row .copy {font-size: 11px; padding: 5px 7px; min-height: 44px;}
+  /* the overview's "go to" links and activity titles were 17–19px tall: below a
+     comfortable thumb target. Rows already breathe; the link itself must too. */
+  .knowledge-summary a, .section-action, .activity-copy a, .brand {display: inline-flex; align-items: center; min-height: 44px;}
   .activity-copy a {font-size: 12px;}
   .health-row {min-height: 44px; font-size: 12px;}
   .health-row .status-label {font-size: 11px;}
-  .board-counts a {min-height: 36px; align-items: center;}
+  .board-counts a {min-height: 44px; align-items: center;}
+  /* the kanban footnote link sits inside a sentence: pad the hit area without
+     changing line flow, so it clears 44px without breaking the text run */
+  .kbcols + .mnote a, .mnote a {display: inline-block; padding: 12px 0; min-height: 44px;}
   .knowledge-summary h2 {max-width: none;}
   .chip, .btn, .btn.sm, .copy, .obtn {min-height: 44px; min-width: 44px;}
   .search-result {grid-template-columns: 48px minmax(0, 1fr) 12px; gap: 10px; padding: 16px 0;}
@@ -266,4 +282,17 @@ img.agc-face, img.castface {box-shadow: none; border: 1px solid var(--line2);}
   .vaultbar {align-items: stretch;}
   .vaultbar .searchbox {min-width: 0; margin-bottom: 0;}
   .fileframe {min-height: 60vh; height: 70vh;}
+}
+
+/* ============ FOLDED-IN APPS — Wheel of Life, Top 8 ============
+   Each app keeps its own engine and its own process; this section only frames
+   it. The frame is sized off the viewport so the app scrolls inside itself
+   instead of stretching the cockpit page, and the toolbar carries the one thing
+   a frame cannot: a full-window link. */
+.app-frame-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;flex-wrap:wrap}
+.app-frame-note{font-size:12px;color:var(--dim);line-height:1.45}
+.app-frame{display:block;width:100%;height:calc(100dvh - 214px);min-height:520px;border:1px solid var(--line2);border-radius:10px;background:var(--panel);overflow:hidden}
+@media (max-width:760px){
+  .app-frame{height:calc(100dvh - 268px);min-height:420px;border-radius:8px}
+  .app-frame-tools{margin-bottom:8px}
 }
