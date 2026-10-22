@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 15,
+   "ms": 17,
    "ok": true,
    "note": "tool hub"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 3,
+   "ms": 5,
    "ok": true,
    "note": "memory"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 27,
+   "ms": 218,
    "ok": true,
    "note": "memory ui"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 48,
+   "ms": 68,
    "ok": true,
    "note": "local models"
   },
@@ -48,7 +48,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8181",
    "url": "http://127.0.0.1:8181/",
    "code": 404,
-   "ms": 0,
+   "ms": 1,
    "ok": true,
    "note": "vault search"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 9,
+   "ms": 26,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 13,
+   "ms": 15,
    "ok": true,
    "note": "company control plane"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 6,
+   "ms": 27,
    "ok": true,
    "note": "IPTV server"
   }
@@ -94,28 +94,28 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 3151,
+   "ms": 2931,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2194,
+   "ms": 2193,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2193,
+   "ms": 2214,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 203,
    "ok": false
   },
   {
@@ -143,21 +143,21 @@ var MAIO_DATA = {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 193,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 189,
+   "ms": 188,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 194,
+   "ms": 190,
    "ok": false
   }
  ],
@@ -168,7 +168,7 @@ var MAIO_DATA = {
    "path": "AI-Drive/Agent-Output/poppins/kids-calendar-sync/2026-10-22.md",
    "date": "2026-10-22",
    "ext": "md",
-   "kb": 1
+   "kb": 2
   },
   {
    "agent": "courage",
@@ -588,12 +588,12 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/targetpraks.github.io",
    "what": "GitHub Pages \u2014 Maio OS, charts, reports live here",
-   "lastTouched": "2026-10-21",
+   "lastTouched": "2026-10-22",
    "hasPRD": true,
    "prdNewest": null,
    "artifact": {
     "path": "DevMini/targetpraks.github.io/maio-os/data.js",
-    "date": "2026-10-21",
+    "date": "2026-10-22",
     "ext": "html",
     "kb": 0
    }
@@ -2016,7 +2016,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 82110,
+     "pid": 84915,
      "exit": 0
     },
     {
@@ -2081,7 +2081,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.constellation-dev",
-     "pid": null,
+     "pid": 80665,
      "exit": -15
     },
     {
@@ -2096,7 +2096,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.constellation-dev-watchdog",
-     "pid": 81796,
+     "pid": null,
      "exit": 0
     },
     {
@@ -2211,7 +2211,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.ram-guard",
-     "pid": null,
+     "pid": 98771,
      "exit": 0
     },
     {
@@ -2227,7 +2227,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.kids-calendar",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.superhuman-mcp",
@@ -2292,7 +2292,7 @@ var MAIO_DATA = {
     {
      "label": "com.maio.courage-nightcheck",
      "pid": null,
-     "exit": 0
+     "exit": 1
     },
     {
      "label": "com.maio.d3-gate",
@@ -2312,28 +2312,28 @@ var MAIO_DATA = {
    ],
    "counts": {
     "loaded": 68,
-    "running": 29
+    "running": 30
    }
   },
   "docker": [
    {
     "name": "hindsight",
-    "status": "Up 9 hours (healthy)",
+    "status": "Up 3 hours (healthy)",
     "ports": "127.0.0.1:8888->8888/tcp, 127.0.0.1:9999->9999/tcp"
    },
    {
     "name": "metamcp",
-    "status": "Up 9 hours (healthy)",
+    "status": "Up 15 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 9 hours",
+    "status": "Up 15 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 9 hours (healthy)",
+    "status": "Up 15 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    }
   ],
@@ -3433,7 +3433,7 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-21T22:45:05Z"
+  "mergedAt": "2026-10-22T04:45:03Z"
  },
  "summary": {
   "projects": 79,
