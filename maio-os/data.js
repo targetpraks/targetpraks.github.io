@@ -12,7 +12,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:12008",
    "url": "http://127.0.0.1:12008/health",
    "code": 200,
-   "ms": 17,
+   "ms": 21,
    "ok": true,
    "note": "tool hub"
   },
@@ -21,7 +21,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8888",
    "url": "http://127.0.0.1:8888/health",
    "code": 200,
-   "ms": 5,
+   "ms": 15,
    "ok": true,
    "note": "memory"
   },
@@ -30,7 +30,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9999",
    "url": "http://127.0.0.1:9999/",
    "code": 200,
-   "ms": 218,
+   "ms": 539,
    "ok": true,
    "note": "memory ui"
   },
@@ -39,7 +39,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:11434",
    "url": "http://127.0.0.1:11434/api/tags",
    "code": 200,
-   "ms": 68,
+   "ms": 75,
    "ok": true,
    "note": "local models"
   },
@@ -57,7 +57,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8792",
    "url": "http://127.0.0.1:8792/",
    "code": 200,
-   "ms": 0,
+   "ms": 1,
    "ok": true,
    "note": "decision gates"
   },
@@ -66,7 +66,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:9110",
    "url": "http://127.0.0.1:9110/",
    "code": 200,
-   "ms": 26,
+   "ms": 67,
    "ok": true,
    "note": "kanban + sessions UI"
   },
@@ -75,7 +75,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:3100",
    "url": "http://127.0.0.1:3100/",
    "code": 200,
-   "ms": 15,
+   "ms": 27,
    "ok": true,
    "note": "company control plane"
   },
@@ -84,7 +84,7 @@ var MAIO_DATA = {
    "port": "127.0.0.1:8800",
    "url": "http://127.0.0.1:8800/",
    "code": 200,
-   "ms": 27,
+   "ms": 100,
    "ok": true,
    "note": "IPTV server"
   }
@@ -94,81 +94,102 @@ var MAIO_DATA = {
    "name": "ChromaCommand",
    "url": "http://o3oc10fm2z0gzffee963rmkx.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2931,
+   "ms": 2246,
    "ok": false
   },
   {
    "name": "Divorced Dads",
    "url": "http://x29f5ohoi3vcsb71f3elzfsd.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2193,
+   "ms": 199,
    "ok": false
   },
   {
    "name": "Esoteric Command",
    "url": "http://j626owap98e8hxudwx6amo02.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 2214,
+   "ms": 192,
    "ok": false
   },
   {
    "name": "GSD Dashboard",
    "url": "http://t5ffr1yc018j0kxd8s8sr4jo.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 203,
+   "ms": 404,
    "ok": false
   },
   {
    "name": "INFX Web Media",
    "url": "http://gc9d19ckjl9o5xbv7ll0iwu6.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 327,
    "ok": false
   },
   {
    "name": "Papa Pasta",
    "url": "http://z51m00l0vfw3erypmwrw7drb.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 216,
    "ok": false
   },
   {
    "name": "Personal Site",
    "url": "http://p1aei61r7j1jplux91cx54gp.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 192,
+   "ms": 200,
    "ok": false
   },
   {
    "name": "Quorum",
    "url": "http://et35kngos0rqjkviatyame9b.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 193,
+   "ms": 196,
    "ok": false
   },
   {
    "name": "SunScout",
    "url": "http://usolei362859c24hssx15rj8.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 188,
+   "ms": 293,
    "ok": false
   },
   {
    "name": "Wheel of Life",
    "url": "http://qq1u6zmllgg4xl1oxcyp40mq.192.168.0.154.sslip.io",
    "code": null,
-   "ms": 190,
+   "ms": 307,
    "ok": false
   }
  ],
  "devServersStaleSince": "",
  "reports": [
   {
+   "agent": "splinter",
+   "path": "AI-Drive/Agent-Output/splinter/2026-10-22-cliq-jaques-water-slide-pool-cleaner.md",
+   "date": "2026-10-22",
+   "ext": "md",
+   "kb": 2
+  },
+  {
+   "agent": "research",
+   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
+   "date": "2026-10-22",
+   "ext": "csv",
+   "kb": 7
+  },
+  {
    "agent": "poppins",
    "path": "AI-Drive/Agent-Output/poppins/kids-calendar-sync/2026-10-22.md",
    "date": "2026-10-22",
    "ext": "md",
-   "kb": 2
+   "kb": 4
+  },
+  {
+   "agent": "dexter",
+   "path": "AI-Drive/Agent-Output/dexter/telemetry/state.json",
+   "date": "2026-10-22",
+   "ext": "json",
+   "kb": 1
   },
   {
    "agent": "courage",
@@ -178,53 +199,32 @@ var MAIO_DATA = {
    "kb": 1
   },
   {
+   "agent": "bruce-wayne",
+   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-22T17:06:33+02:00/report.md",
+   "date": "2026-10-22",
+   "ext": "md",
+   "kb": 2
+  },
+  {
+   "agent": "beast",
+   "path": "AI-Drive/Agent-Output/beast/gates-pending/2026-10-22-t_13869ef5-gates.csv",
+   "date": "2026-10-22",
+   "ext": "csv",
+   "kb": 4
+  },
+  {
+   "agent": "batman",
+   "path": "AI-Drive/Agent-Output/batman/published.csv",
+   "date": "2026-10-22",
+   "ext": "csv",
+   "kb": 80
+  },
+  {
    "agent": "adrianna",
    "path": "AI-Drive/Agent-Output/adrianna/maio-os-scout-merge.json",
    "date": "2026-10-22",
    "ext": "json",
    "kb": 16
-  },
-  {
-   "agent": "splinter",
-   "path": "AI-Drive/Agent-Output/splinter/mail-draft-pass-state.json",
-   "date": "2026-10-21",
-   "ext": "json",
-   "kb": 1
-  },
-  {
-   "agent": "research",
-   "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-   "date": "2026-10-21",
-   "ext": "csv",
-   "kb": 7
-  },
-  {
-   "agent": "dexter",
-   "path": "AI-Drive/Agent-Output/dexter/telemetry/state.json",
-   "date": "2026-10-21",
-   "ext": "json",
-   "kb": 1
-  },
-  {
-   "agent": "bruce-wayne",
-   "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-21T17:00:29+02:00/apply.jsonl",
-   "date": "2026-10-21",
-   "ext": "jsonl",
-   "kb": 1
-  },
-  {
-   "agent": "beast",
-   "path": "AI-Drive/Agent-Output/beast/gates-pending/2026-10-21-t_38732650-gates.csv",
-   "date": "2026-10-21",
-   "ext": "csv",
-   "kb": 3
-  },
-  {
-   "agent": "batman",
-   "path": "AI-Drive/Agent-Output/batman/published.csv",
-   "date": "2026-10-21",
-   "ext": "csv",
-   "kb": 78
   },
   {
    "agent": "default",
@@ -592,7 +592,7 @@ var MAIO_DATA = {
    "hasPRD": true,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/targetpraks.github.io/maio-os/data.js",
+    "path": "DevMini/targetpraks.github.io/sa-cash-rates-7m-liquidity-2026-10.html",
     "date": "2026-10-22",
     "ext": "html",
     "kb": 0
@@ -640,10 +640,10 @@ var MAIO_DATA = {
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/Top 8 Maio-runs/assets-visuals/REPORT.md",
+    "path": "DevMini/Top 8 Maio-runs/p4/REPORT.md",
     "date": "2026-10-17",
     "ext": "md",
-    "kb": 47
+    "kb": 46
    }
   },
   {
@@ -696,14 +696,14 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/bruce-wayne",
    "what": "Bruce Wayne \u2014 review loop + apply engine",
-   "lastTouched": "2026-10-15",
+   "lastTouched": "2026-10-22",
    "hasPRD": false,
    "prdNewest": null,
    "artifact": {
-    "path": "DevMini/bruce-wayne/docs/zoho-lane-facts.md",
-    "date": "2026-10-15",
-    "ext": "md",
-    "kb": 16
+    "path": "DevMini/bruce-wayne/tests/bruce_wayne_review_tests.py",
+    "date": "2026-10-22",
+    "ext": "py",
+    "kb": 31
    }
   },
   {
@@ -820,6 +820,21 @@ var MAIO_DATA = {
     "path": "DevMini/esoteric-libs-survey/pyjhora_test.py",
     "date": "2026-10-20",
     "ext": "py",
+    "kb": 1
+   }
+  },
+  {
+   "name": "eval-opus55-video",
+   "family": "dev",
+   "root": "DevMini/eval-opus55-video",
+   "what": "\u2014",
+   "lastTouched": "2026-10-22",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/eval-opus55-video/lemo-opuscar/tools/web_cuts.sh",
+    "date": "2026-10-22",
+    "ext": "sh",
     "kb": 1
    }
   },
@@ -944,21 +959,6 @@ var MAIO_DATA = {
     "date": "2026-10-19",
     "ext": "py",
     "kb": 49
-   }
-  },
-  {
-   "name": "maio-tools-fix-handoff-read",
-   "family": "dev",
-   "root": "DevMini/maio-tools-fix-handoff-read",
-   "what": "maio-tools",
-   "lastTouched": "2026-10-13",
-   "hasPRD": false,
-   "prdNewest": null,
-   "artifact": {
-    "path": "DevMini/maio-tools-fix-handoff-read/docs/document-publishing-convention.md",
-    "date": "2026-10-13",
-    "ext": "md",
-    "kb": 48
    }
   },
   {
@@ -1104,17 +1104,32 @@ var MAIO_DATA = {
    "family": "dev",
    "root": "DevMini/signet",
    "what": "Signet",
-   "lastTouched": "2026-10-21",
+   "lastTouched": "2026-10-22",
    "hasPRD": true,
    "prdNewest": {
     "path": "DevMini/signet/docs/prd/signet-build-prd.html",
     "date": "2026-10-20"
    },
    "artifact": {
-    "path": "DevMini/signet/web/viewer/viewer.js",
-    "date": "2026-10-21",
-    "ext": "js",
-    "kb": 4
+    "path": "DevMini/signet/internal/store/store_test.go",
+    "date": "2026-10-22",
+    "ext": "go",
+    "kb": 7
+   }
+  },
+  {
+   "name": "signet-worktrees",
+   "family": "dev",
+   "root": "DevMini/signet-worktrees",
+   "what": "\u2014",
+   "lastTouched": "2026-10-22",
+   "hasPRD": false,
+   "prdNewest": null,
+   "artifact": {
+    "path": "DevMini/signet-worktrees/s4-04-video/web/embed.go",
+    "date": "2026-10-22",
+    "ext": "go",
+    "kb": 1
    }
   },
   {
@@ -1593,7 +1608,7 @@ var MAIO_DATA = {
    "role": "Work family lead",
    "latest": {
     "path": "AI-Drive/Agent-Output/batman/published.csv",
-    "date": "2026-10-21"
+    "date": "2026-10-22"
    },
    "portrait": "assets/cast/batman.jpg",
    "sheet": "https://targetpraks.github.io/bruce-wayne-character-sheet.html"
@@ -1612,8 +1627,8 @@ var MAIO_DATA = {
    "name": "beast",
    "role": "Vault steward \u2014 hygiene & lifecycle",
    "latest": {
-    "path": "AI-Drive/Agent-Output/beast/gates-pending/2026-10-21-t_38732650-gates.csv",
-    "date": "2026-10-21"
+    "path": "AI-Drive/Agent-Output/beast/gates-pending/2026-10-22-t_13869ef5-gates.csv",
+    "date": "2026-10-22"
    },
    "portrait": "assets/cast/beast.jpg",
    "sheet": "https://targetpraks.github.io/beast-character-sheet.html"
@@ -1632,8 +1647,8 @@ var MAIO_DATA = {
    "name": "bruce-wayne",
    "role": "\u2014",
    "latest": {
-    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-21T17:00:29+02:00/apply.jsonl",
-    "date": "2026-10-21"
+    "path": "AI-Drive/Agent-Output/bruce-wayne/runs/2026-10-22T17:06:33+02:00/report.md",
+    "date": "2026-10-22"
    },
    "portrait": "assets/cast/batman.jpg",
    "sheet": null
@@ -1761,7 +1776,7 @@ var MAIO_DATA = {
    "role": "Quantified researcher \u2014 metrics & telemetry",
    "latest": {
     "path": "AI-Drive/Agent-Output/dexter/telemetry/state.json",
-    "date": "2026-10-21"
+    "date": "2026-10-22"
    },
    "portrait": "assets/cast/dexter.jpg",
    "sheet": "https://targetpraks.github.io/dexter-character-sheet.html"
@@ -1855,7 +1870,7 @@ var MAIO_DATA = {
    "role": "Research arm",
    "latest": {
     "path": "AI-Drive/Agent-Output/research/agent-sector-ledger.csv",
-    "date": "2026-10-21"
+    "date": "2026-10-22"
    },
    "portrait": "assets/cast/researcher.jpg",
    "sheet": null
@@ -1914,8 +1929,8 @@ var MAIO_DATA = {
    "name": "splinter",
    "role": "Personal family lead",
    "latest": {
-    "path": "AI-Drive/Agent-Output/splinter/mail-draft-pass-state.json",
-    "date": "2026-10-21"
+    "path": "AI-Drive/Agent-Output/splinter/2026-10-22-cliq-jaques-water-slide-pool-cleaner.md",
+    "date": "2026-10-22"
    },
    "portrait": "assets/cast/splinter.jpg",
    "sheet": "https://targetpraks.github.io/splinter-character-sheet.html"
@@ -1971,8 +1986,8 @@ var MAIO_DATA = {
    "jobs": [
     {
      "label": "com.maio.snappier-playlists",
-     "pid": 78096,
-     "exit": -15
+     "pid": 16749,
+     "exit": 0
     },
     {
      "label": "com.maio.hiksemi-recover",
@@ -1991,7 +2006,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-local",
-     "pid": 829,
+     "pid": 16182,
      "exit": 0
     },
     {
@@ -2000,8 +2015,13 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
+     "label": "com.maio.snappier-failover",
+     "pid": null,
+     "exit": 0
+    },
+    {
      "label": "com.maio.copilot-mcp",
-     "pid": 850,
+     "pid": 14277,
      "exit": 0
     },
     {
@@ -2016,7 +2036,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.maio-os-refresh",
-     "pid": 84915,
+     "pid": 20285,
      "exit": 0
     },
     {
@@ -2036,7 +2056,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.gamma-mcp",
-     "pid": 845,
+     "pid": 15617,
      "exit": 0
     },
     {
@@ -2051,6 +2071,11 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.bruce-wayne-review",
+     "pid": null,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.cast-grind",
      "pid": null,
      "exit": 0
     },
@@ -2070,19 +2095,24 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "ai.hermes.gateway",
-     "pid": 82782,
-     "exit": 75
+     "label": "com.maio.hermes-dashboard",
+     "pid": 15897,
+     "exit": 0
     },
     {
-     "label": "com.maio.hermes-dashboard",
-     "pid": 871,
+     "label": "ai.hermes.gateway",
+     "pid": 13554,
      "exit": 0
     },
     {
      "label": "com.maio.constellation-dev",
-     "pid": 80665,
-     "exit": -15
+     "pid": null,
+     "exit": 1
+    },
+    {
+     "label": "com.maio.snappier-xtream-filter",
+     "pid": 988,
+     "exit": 0
     },
     {
      "label": "com.maio.wheel-johnny",
@@ -2091,32 +2121,32 @@ var MAIO_DATA = {
     },
     {
      "label": "ing.paperclip.paperclipai",
-     "pid": 826,
+     "pid": 927,
      "exit": 0
     },
     {
      "label": "com.maio.constellation-dev-watchdog",
-     "pid": null,
+     "pid": 20351,
      "exit": 0
     },
     {
      "label": "com.maio.docs-mcp",
-     "pid": 832,
+     "pid": 15272,
      "exit": 0
     },
     {
      "label": "com.maio.ok-vault-server",
-     "pid": 3094,
-     "exit": -15
+     "pid": 16383,
+     "exit": 0
     },
     {
      "label": "com.maio.constellation-manco-docs",
-     "pid": 854,
+     "pid": 14259,
      "exit": 0
     },
     {
      "label": "com.maio.composio-mcp",
-     "pid": 855,
+     "pid": 14130,
      "exit": 0
     },
     {
@@ -2131,7 +2161,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.orca-serve",
-     "pid": 859,
+     "pid": 83585,
      "exit": 0
     },
     {
@@ -2151,12 +2181,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.cloudflare-mcp",
-     "pid": 834,
+     "pid": 14053,
      "exit": 0
     },
     {
      "label": "com.maio.vault-agent",
-     "pid": 838,
+     "pid": 17063,
      "exit": 0
     },
     {
@@ -2170,13 +2200,13 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.agent-usage-ledger",
-     "pid": null,
+     "label": "com.maio.krea-mcp",
+     "pid": 16072,
      "exit": 0
     },
     {
-     "label": "com.maio.krea-mcp",
-     "pid": 875,
+     "label": "com.maio.agent-usage-ledger",
+     "pid": null,
      "exit": 0
     },
     {
@@ -2190,28 +2220,28 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.serve-ensure",
-     "pid": null,
-     "exit": 0
-    },
-    {
-     "label": "com.maio.todoist-mcp",
-     "pid": 843,
-     "exit": 0
-    },
-    {
-     "label": "com.maio.pipedream-mcp",
-     "pid": 844,
-     "exit": 0
-    },
-    {
      "label": "com.maio.wheel-jean",
      "pid": null,
      "exit": 0
     },
     {
+     "label": "com.maio.todoist-mcp",
+     "pid": 17004,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.serve-ensure",
+     "pid": null,
+     "exit": 0
+    },
+    {
+     "label": "com.maio.pipedream-mcp",
+     "pid": 16540,
+     "exit": 0
+    },
+    {
      "label": "com.maio.ram-guard",
-     "pid": 98771,
+     "pid": null,
      "exit": 0
     },
     {
@@ -2221,17 +2251,17 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.browseruse-mcp",
-     "pid": 856,
+     "pid": 13960,
      "exit": 0
     },
     {
      "label": "com.maio.kids-calendar",
      "pid": null,
-     "exit": 1
+     "exit": 0
     },
     {
      "label": "com.maio.superhuman-mcp",
-     "pid": 872,
+     "pid": 16973,
      "exit": 0
     },
     {
@@ -2241,7 +2271,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.snappier-server",
-     "pid": 882,
+     "pid": 16824,
      "exit": 0
     },
     {
@@ -2251,7 +2281,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.agent-desktop-guard",
-     "pid": 819,
+     "pid": 13821,
      "exit": 0
     },
     {
@@ -2261,12 +2291,12 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.magnific-mcp",
-     "pid": 836,
+     "pid": 16160,
      "exit": 0
     },
     {
      "label": "com.maio.gate-mcp",
-     "pid": 852,
+     "pid": 15708,
      "exit": 0
     },
     {
@@ -2281,7 +2311,7 @@ var MAIO_DATA = {
     },
     {
      "label": "com.maio.qmd-mcp",
-     "pid": 866,
+     "pid": 16584,
      "exit": 0
     },
     {
@@ -2290,32 +2320,57 @@ var MAIO_DATA = {
      "exit": 0
     },
     {
-     "label": "com.maio.courage-nightcheck",
-     "pid": null,
-     "exit": 1
+     "label": "com.maio.d3-gate",
+     "pid": 14529,
+     "exit": 0
     },
     {
-     "label": "com.maio.d3-gate",
-     "pid": 877,
+     "label": "com.maio.courage-nightcheck",
+     "pid": null,
      "exit": 0
     },
     {
      "label": "com.maio.keep-awake",
-     "pid": 881,
+     "pid": 16045,
      "exit": 0
     },
     {
      "label": "com.maio.status-agent",
-     "pid": 885,
+     "pid": 16949,
      "exit": 0
     }
    ],
    "counts": {
-    "loaded": 68,
+    "loaded": 71,
     "running": 30
    }
   },
   "docker": [
+   {
+    "name": "signet-s4-04-video",
+    "status": "Up 46 minutes",
+    "ports": "127.0.0.1:55435->5432/tcp"
+   },
+   {
+    "name": "signet-pg-s408",
+    "status": "Up 2 hours",
+    "ports": "127.0.0.1:55436->5432/tcp"
+   },
+   {
+    "name": "signet-pg-s403",
+    "status": "Up 2 hours",
+    "ports": "127.0.0.1:55434->5432/tcp"
+   },
+   {
+    "name": "signet-pg-x01",
+    "status": "Up 2 hours",
+    "ports": "127.0.0.1:55433->5432/tcp"
+   },
+   {
+    "name": "signet-pg",
+    "status": "Up 2 hours",
+    "ports": "127.0.0.1:55432->5432/tcp"
+   },
    {
     "name": "hindsight",
     "status": "Up 3 hours (healthy)",
@@ -2323,17 +2378,17 @@ var MAIO_DATA = {
    },
    {
     "name": "metamcp",
-    "status": "Up 15 hours (healthy)",
+    "status": "Up 3 hours (healthy)",
     "ports": "127.0.0.1:12008->12008/tcp"
    },
    {
     "name": "constellation-dev-pg",
-    "status": "Up 15 hours",
+    "status": "Up 3 hours",
     "ports": "127.0.0.1:55440->5432/tcp"
    },
    {
     "name": "metamcp-pg",
-    "status": "Up 15 hours (healthy)",
+    "status": "Up 3 hours (healthy)",
     "ports": "127.0.0.1:9433->5432/tcp"
    }
   ],
@@ -2368,6 +2423,10 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:3773"
     },
     {
+     "url": "https://ricardos-mac-mini.taile9f837.ts.net:6767",
+     "target": "http://127.0.0.1:6767"
+    },
+    {
      "url": "https://ricardos-mac-mini.taile9f837.ts.net:8443",
      "target": "http://127.0.0.1:9110"
     },
@@ -2380,89 +2439,89 @@ var MAIO_DATA = {
      "target": "http://127.0.0.1:9999"
     }
    ],
-   "count": 9
+   "count": 10
   },
   "kanban": {
    "board": "default",
    "counts": {
-    "done": 648,
+    "done": 659,
     "scheduled": 2,
     "ready": 4,
     "todo": 6,
-    "blocked": 4
+    "blocked": 6
    },
-   "total": 664,
+   "total": 677,
    "recent": [
     {
-     "id": "t_d7e540de",
-     "title": "Vault: file 'Maiotastic \u2014 the living guide: a concept board' to AI-Space/3.PRD/Active/2026-10-21-maiotastic-living-guide-concept.html \u2014 rule-4 handoff from adri",
+     "id": "t_c29addc2",
+     "title": "Vault: file 'Omnigent 0.19.1 \u2014 Mac mini main server and local harness wiring' to AI-Space/1.Setup-Config/2026-10-22-omnigent-0-19-1-mac-mini-main-server-and-loc",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_38732650",
-     "title": "Vault: file 'Maiotastic \u2014 PRD rev 6: a buying guide with a day guide attached' to AI-Space/3.PRD/Active/2026-10-21-maiotastic-prd-rev6.html \u2014 rule-4 handoff fro",
+     "id": "t_13869ef5",
+     "title": "Vault: file 'Papa Pasta: borrow R2.5m or pay cash' to Work/2.Automations-Skills/Reports/2026-10-22-papa-pasta-borrow-r2-5m-or-pay-cash.md \u2014 rule-4 handoff from ",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_4717e5c4",
-     "title": "Vault: file 'T3 Code \u2014 Headless Cutover & Access' to AI-Space/2.Automations-Skills/Reports/2026-10-21-t3-code-headless-cutover-access.md \u2014 rule-4 handoff from a",
+     "id": "t_e920d16d",
+     "title": "Vault: file 'Play therapy \u2014 four ready-to-send enquiries' to Personal/4.Research/2026-10-22-play-therapy-four-ready-to-send-enquiries.html \u2014 rule-4 handoff from",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_5e355f84",
-     "title": "Vault: file 'T3 Code \u2014 Full Settings Audit (Mac mini)' to AI-Space/2.Automations-Skills/Reports/2026-10-21-t3-code-full-settings-audit-mac-mini-2.md \u2014 rule-4 ha",
+     "id": "t_e879c7c6",
+     "title": "Vault: file 'Play therapy near Welgemoed \u2014 the psychologist shortlist' to Personal/4.Research/2026-10-22-play-therapy-near-welgemoed-the-psychologist-shortlist.",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_04aa22c5",
-     "title": "Vault: file 'T3 Code \u2014 Full Settings Audit (Mac mini)' to AI-Space/2.Automations-Skills/Reports/2026-10-21-t3-code-full-settings-audit-mac-mini.md \u2014 rule-4 hand",
+     "id": "t_e0949578",
+     "title": "Vault: file 'Play therapy near Welgemoed \u2014 the psychologist shortlist' to Personal/4.Research/2026-10-22-play-therapy-near-welgemoed-the-psychologist-shortlist.",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_adaa539a",
-     "title": "Vault: file 'Mail Triage \u2014 Work Drafts Enabled, Three Runs a Day' to AI-Space/2.Automations-Skills/Reports/2026-10-21-mail-triage-work-drafts-enabled-three-runs",
+     "id": "t_1f6a85f2",
+     "title": "Vault: file 'R7 million at 32 days, above 7.5% \u2014 SA cash rates (22 Oct 2026)' to Work/4.Research/2026-10-22-r7-million-still-reachable-above-7-5-sa-cash-rates-2",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_3b61b393",
-     "title": "Vault: file 'Mail triage \u2014 both mailboxes, live' to AI-Space/2.Automations-Skills/Reports/2026-10-21-mail-triage-both-mailboxes-live.md \u2014 rule-4 handoff from ad",
+     "id": "t_59261a18",
+     "title": "Vault: file 'R7 million, still reachable, above 7.5% \u2014 SA cash rates (22 Oct 2026)' to Work/4.Research/2026-10-22-r7-million-still-reachable-above-7-5-sa-cash-r",
      "status": "done",
      "assignee": "beast"
     },
     {
-     "id": "t_b9c9ac60",
-     "title": "Vault: file 'Mail Triage \u2014 Live, Sorted, Both Mailboxes' to AI-Space/2.Automations-Skills/Reports/2026-10-21-mail-triage-live-sorted-both-mailboxes.md \u2014 rule-4 ",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_836959b2",
-     "title": "Vault: file 'Mail Triage \u2014 First Live Pass, Both Mailboxes' to AI-Space/2.Automations-Skills/Reports/2026-10-21-mail-triage-first-live-pass-both-mailboxes.md \u2014 ",
-     "status": "done",
-     "assignee": "beast"
-    },
-    {
-     "id": "t_c5a4c382",
-     "title": "OK service: clear stale asset conflict so the Maiotastic plan note can be renamed",
-     "status": "ready",
-     "assignee": "adrianna"
-    },
-    {
-     "id": "t_7e8792e1",
-     "title": "Vault in-place replace: Maiotastic build plan rev 5",
+     "id": "t_7ca2caf9",
+     "title": "Vault: append the t_2b15965f entry to AI-Space/2.Automations-Skills/Reports/log.md (blocked until Ricardo clears an OK conflict on that log)",
      "status": "blocked",
      "assignee": "beast"
     },
     {
-     "id": "t_4640b102",
-     "title": "Vault: file 'Maiotastic \u2014 Cape Town Life Guide: Build Plan' to AI-Space/3.PRD/Active/2026-10-21-maiotastic-cape-town-life-guide-plan.html \u2014 rule-4 handoff from ",
+     "id": "t_2b15965f",
+     "title": "Vault: file 'Opus 5.5 video repos \u2014 verified scorecard' to AI-Space/2.Automations-Skills/Reports/2026-10-22-opus-5-5-video-repos-verified-scorecard-2.html \u2014 rul",
      "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_94d25213",
+     "title": "Vault: file 'South Africa: best 32-day+ notice account rates (22 Oct 2026)' to Work/4.Research/2026-10-22-south-africa-best-32-day-notice-account-rates-22-oct-2",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_67e18f05",
+     "title": "Vault: file 'South Africa: best 32-day+ notice account rates (22 Oct 2026)' to Work/4.Research/2026-10-22-south-africa-best-32-day-notice-account-rates-22-oct-2",
+     "status": "done",
+     "assignee": "beast"
+    },
+    {
+     "id": "t_7c4adafc",
+     "title": "Vault: file 'Zoho Analytics \u2014 dashboard inventory' to AI-Space/2.Automations-Skills/Reports/2026-10-22-zoho-analytics-dashboard-inventory.md \u2014 rule-4 handoff fr",
+     "status": "blocked",
      "assignee": "beast"
     }
    ]
@@ -3433,10 +3492,10 @@ var MAIO_DATA = {
   ],
   "enrichedWhat": {},
   "soulFound": true,
-  "mergedAt": "2026-10-22T04:45:03Z"
+  "mergedAt": "2026-10-22T16:45:05Z"
  },
  "summary": {
-  "projects": 79,
+  "projects": 80,
   "prds": 63,
   "stackLive": 9,
   "stackTotal": 9,
@@ -3444,14 +3503,28 @@ var MAIO_DATA = {
   "devTotal": 10,
   "reports": 34,
   "roster": 40,
-  "launchdLoaded": 68,
-  "dockerUp": 4,
-  "libraryPublic": 98,
+  "launchdLoaded": 71,
+  "dockerUp": 9,
+  "libraryPublic": 100,
   "libraryInternal": 200,
   "docs": 143
  },
  "library": {
   "public": [
+   {
+    "title": "R7 million at 32 days, above 7.5% \u2014 South Africa, 22 October 2026",
+    "url": "sa-cash-rates-7m-liquidity-2026-10.html",
+    "dir": "sa-cash-rates-7m-liquidity-2026-10.html",
+    "date": "2026-10-22",
+    "kb": 15
+   },
+   {
+    "title": "South Africa \u2014 Best 32-Day+ Notice Account Rates \u00b7 22 October 2026",
+    "url": "sa-notice-rates-2026-10.html",
+    "dir": "sa-notice-rates-2026-10.html",
+    "date": "2026-10-22",
+    "kb": 11
+   },
    {
     "title": "Four Ways to Run a Project \u2014 Asana \u00b7 ClickUp \u00b7 Hive \u00b7 Plane",
     "url": "project-teardown-asana-clickup-hive-plane-2026-10.html",
@@ -4140,7 +4213,7 @@ var MAIO_DATA = {
    }
   ],
   "counts": {
-   "public": 98,
+   "public": 100,
    "internal": 200,
    "docs": 143
   }
