@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commit, push, deploy — what actually moves</title>
+<style>
+  :root{
+    --ink:#171a20; --ink-2:#3d4450; --muted:#6b7280; --paper:#fbfaf7; --card:#ffffff;
+    --line:#e4e0d8; --line-2:#d3cec3;
+    --green:#2f6f5e; --green-bg:#e9f2ee;
+    --amber:#a8641c; --amber-bg:#fbf1e3;
+    --red:#a8392a; --red-bg:#fbeceb;
+    --blue:#2c5b8f; --blue-bg:#eaf1f8;
+    --shadow:0 1px 2px rgba(23,26,32,.05), 0 8px 24px -12px rgba(23,26,32,.18);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:56px 24px 96px}
+  header{margin-bottom:44px}
+  .kicker{
+    display:inline-block; font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--muted); font-weight:650; margin-bottom:14px;
+  }
+  h1{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:clamp(30px,5vw,50px); line-height:1.1; letter-spacing:-.02em;
+    margin:0 0 16px; font-weight:600;
+  }
+  h1 em{font-style:italic; color:var(--green)}
+  .lede{font-size:18px; color:var(--ink-2); max-width:64ch; margin:0}
+  h2{
+    font-family:"Iowan Old Style",Palatino,Georgia,serif;
+    font-size:25px; letter-spacing:-.01em; margin:0 0 6px; font-weight:600;
+  }
+  .sub{color:var(--muted); font-size:14.5px; margin:0 0 22px}
+  section{margin-top:56px}
+  .rule{height:1px; background:var(--line); margin:52px 0 0}
+
+  /* ---- three copies ---- */
+  .copies{display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; align-items:stretch}
+  .copy{
+    background:var(--card); border:1px solid var(--line); padding:20px 18px;
+    box-shadow:var(--shadow); position:relative;
+  }
+  .copy:first-child{border-radius:12px 0 0 12px}
+  .copy:last-child{border-radius:0 12px 12px 0}
+  .copy + .copy{border-left:none}
+  .copy .tag{font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:700}
+  .copy h3{margin:6px 0 6px; font-size:16.5px; letter-spacing:-.01em}
+  .copy p{margin:0; font-size:13.5px; color:var(--ink-2); line-height:1.5}
+  .copy .path{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11.5px; color:var(--muted); margin-top:10px; word-break:break-all}
+  .wire{
+    display:flex; align-items:center; gap:10px; justify-content:center;
+    padding:10px 4px; font-size:12px; font-weight:650; color:var(--muted);
+  }
+  .wire .line{flex:1; height:0; border-top:2px dashed var(--line-2); position:relative; top:1px}
+  .wire.on{color:var(--green)}
+  .wire.on .line{border-color:var(--green); border-top-style:solid}
+  .wire.off{color:var(--red)}
+  .wire.off .line{border-color:var(--red); border-top-style:dashed}
+
+  /* ---- ladder ---- */
+  .ladder{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+  .step{
+    text-align:left; background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:16px 15px 14px; cursor:pointer; font:inherit; color:inherit;
+    box-shadow:var(--shadow); transition:border-color .15s, transform .15s, background .15s;
+    position:relative;
+  }
+  .step:hover{border-color:var(--line-2); transform:translateY(-1px)}
+  .step[aria-pressed="true"]{border-color:var(--ink); background:#fffdf8}
+  .step .num{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:24px; height:24px; border-radius:50%; background:var(--ink); color:#fff;
+    font-size:12px; font-weight:700; margin-bottom:10px;
+  }
+  .step h4{margin:0 0 4px; font-size:15px; letter-spacing:-.01em}
+  .step .cmd{font-family:ui-monospace,Menlo,monospace; font-size:11px; color:var(--muted); display:block; margin-top:8px; word-break:break-all}
+
+  .panel{
+    margin-top:14px; background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:22px 22px 20px; box-shadow:var(--shadow); min-height:132px;
+  }
+  .panel h3{margin:0 0 8px; font-size:17px; letter-spacing:-.01em}
+  .panel p{margin:0 0 10px; color:var(--ink-2); font-size:14.5px}
+  .panel p:last-child{margin-bottom:0}
+  .panel .truth{
+    display:flex; gap:9px; align-items:flex-start; margin-top:14px; padding-top:14px;
+    border-top:1px dashed var(--line-2); font-size:14px;
+  }
+  .panel .truth b{color:var(--ink)}
+  .panel .truth .mark{color:var(--green); font-weight:800}
+
+  /* ---- table ---- */
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--card); box-shadow:var(--shadow)}
+  table{border-collapse:collapse; width:100%; font-size:14px; min-width:680px}
+  th,td{text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:700; background:#fcfbf8}
+  tr:last-child td{border-bottom:none}
+  td .name{font-weight:650}
+  td .note{display:block; color:var(--muted); font-size:12.5px; margin-top:2px}
+  .pill{
+    display:inline-block; font-size:11px; font-weight:700; letter-spacing:.04em;
+    padding:3px 8px; border-radius:999px; white-space:nowrap;
+  }
+  .pill.auto{background:var(--green-bg); color:var(--green)}
+  .pill.manual{background:var(--amber-bg); color:var(--amber)}
+  .pill.none{background:var(--red-bg); color:var(--red)}
+  .pill.na{background:#f1f0ec; color:var(--muted)}
+
+  /* ---- callouts ---- */
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; box-shadow:var(--shadow)}
+  .card h3{margin:0 0 8px; font-size:16px}
+  .card p{margin:0 0 10px; font-size:14.5px; color:var(--ink-2)}
+  .card p:last-child{margin:0}
+  .keys{list-style:none; padding:0; margin:10px 0 0}
+  .keys li{display:flex; gap:10px; padding:9px 0; border-top:1px solid var(--line); font-size:14px; align-items:flex-start}
+  .keys li:first-child{border-top:none}
+  .keys .state{font-family:ui-monospace,Menlo,monospace; font-size:11px; font-weight:700; padding:2px 7px; border-radius:5px; white-space:nowrap; margin-top:2px}
+  .keys .state.bad{background:var(--red-bg); color:var(--red)}
+  .keys .state.good{background:var(--green-bg); color:var(--green)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em; background:#f2f0ea; padding:1.5px 5px; border-radius:4px}
+  pre{
+    background:#171a20; color:#e8e6e0; padding:16px 16px; border-radius:10px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; line-height:1.65; margin:12px 0 0;
+  }
+  pre .c{color:#8d94a3}
+  footer{margin-top:60px; padding-top:22px; border-top:1px solid var(--line); color:var(--muted); font-size:13px}
+
+  @media (max-width:820px){
+    .ladder{grid-template-columns:1fr 1fr}
+    .copies{grid-template-columns:1fr}
+    .copy{border-radius:12px !important; border-left:1px solid var(--line) !important; margin-bottom:8px}
+    .grid2{grid-template-columns:1fr}
+  }
+  @media (max-width:520px){
+    .wrap{padding:36px 18px 64px}
+    .ladder{grid-template-columns:1fr}
+    .step{padding:15px 14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="kicker">Plain English · 23 October 2026</span>
+    <h1>Your files live in <em>three</em> places.<br>Nothing moves between them by itself.</h1>
+    <p class="lede">Commit and push are two separate steps, and neither one is a backup or a deploy.
+      Here is what each one actually does, and which of the wires are connected on this Mac right now.</p>
+  </header>
+
+  <section>
+    <h2>The three copies</h2>
+    <p class="sub">Same code, three places. A wire only exists if somebody built it.</p>
+
+    <div class="copies">
+      <div class="copy">
+        <span class="tag">Copy 1</span>
+        <h3>Your folder</h3>
+        <p>Where you and I edit files. Saving is instant and affects only this Mac.</p>
+        <div class="path">/Volumes/Hiksemi 1TB/DevMini/esoteric-command</div>
+      </div>
+      <div class="copy">
+        <span class="tag">Copy 2</span>
+        <h3>GitHub</h3>
+        <p>A copy on the internet. It only changes when someone <b>pushes</b>. It is not a live site.</p>
+        <div class="path">github.com/targetpraks/esoteric-command</div>
+      </div>
+      <div class="copy">
+        <span class="tag">Copy 3</span>
+        <h3>The live app</h3>
+        <p>A running program people open. It only changes when something <b>deploys</b> to it.</p>
+        <div class="path">none — nothing is running</div>
+      </div>
+    </div>
+
+    <div class="wire off">
+      <span class="line"></span>
+      <span>push — manual, needs a password</span>
+      <span class="line"></span>
+    </div>
+    <div class="wire off">
+      <span class="line"></span>
+      <span>deploy — never built for this app</span>
+      <span class="line"></span>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <h2>The four steps, in order</h2>
+    <p class="sub">Click a step to see what it really means.</p>
+
+    <div class="ladder" id="ladder">
+      <button class="step" data-k="save" aria-pressed="true">
+        <span class="num">0</span>
+        <h4>Save a file</h4>
+        <p style="margin:0;font-size:13px;color:var(--muted)">Instant. Local only.</p>
+        <span class="cmd">⌘S</span>
+      </button>
+      <button class="step" data-k="commit" aria-pressed="false">
+        <span class="num">1</span>
+        <h4>Commit</h4>
+        <p style="margin:0;font-size:13px;color:var(--muted)">Seal a version.</p>
+        <span class="cmd">git commit -m "…"</span>
+      </button>
+      <button class="step" data-k="push" aria-pressed="false">
+        <span class="num">2</span>
+        <h4>Push</h4>
+        <p style="margin:0;font-size:13px;color:var(--muted)">Send it to GitHub.</p>
+        <span class="cmd">git push origin main</span>
+      </button>
+      <button class="step" data-k="deploy" aria-pressed="false">
+        <span class="num">3</span>
+        <h4>Deploy</h4>
+        <p style="margin:0;font-size:13px;color:var(--muted)">Run it for users.</p>
+        <span class="cmd">(a separate system)</span>
+      </button>
+    </div>
+
+    <div class="panel" id="panel" aria-live="polite">
+      <h3>Save a file</h3>
+      <p>You edit a file and save it. The change exists on this Mac immediately. Nothing else has seen it —
+        not the history, not GitHub, not any running app.</p>
+      <p>If a development server is running with <code>npm run dev</code>, it reloads by itself and you see the
+        change in the browser. That feels like a live update, but it is your own Mac re-reading the same file.</p>
+      <div class="truth"><span class="mark">✓</span><span><b>Cost:</b> none. This is the only automatic step.</span></div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <h2>What is actually wired on this Mac</h2>
+    <p class="sub">Measured now, not assumed.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Edits appear live?</th>
+            <th>Reaches GitHub?</th>
+            <th>Reaches a live app?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="name">esoteric-command</span><span class="note">the one we just committed</span></td>
+            <td><span class="pill none">No</span><span class="note">nothing on port 3000</span></td>
+            <td><span class="pill manual">Manual</span><span class="note">commit made · push blocked on password</span></td>
+            <td><span class="pill none">None</span><span class="note">only checks code; no deploy step</span></td>
+          </tr>
+          <tr>
+            <td><span class="name">Wheel of Life</span><span class="note">next-server running</span></td>
+            <td><span class="pill auto">Yes</span><span class="note">localhost:3210</span></td>
+            <td><span class="pill manual">Manual</span><span class="note">no automation wired</span></td>
+            <td><span class="pill na">Local only</span><span class="note">it is the live app</span></td>
+          </tr>
+          <tr>
+            <td><span class="name">Maio OS</span><span class="note">targetpraks.github.io</span></td>
+            <td><span class="pill auto">Yes</span><span class="note">refresh script regenerates data</span></td>
+            <td><span class="pill auto">Yes</span><span class="note">refresh job commits and pushes</span></td>
+            <td><span class="pill auto">Yes</span><span class="note">GitHub Pages serves the push</span></td>
+          </tr>
+          <tr>
+            <td><span class="name">metamcp</span><span class="note">docker container</span></td>
+            <td><span class="pill none">No</span><span class="note">container runs a built image</span></td>
+            <td><span class="pill na">Not used</span><span class="note">third-party source</span></td>
+            <td><span class="pill manual">Manual</span><span class="note">rebuild the container</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="sub" style="margin-top:14px">Maio OS feels automatic because someone wired all three steps together for it.
+      Everything else is still one step at a time.</p>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <h2>Why the push stopped</h2>
+    <p class="sub">Sending code to GitHub is not permission-free. The machine has to prove it is you.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Three ways to prove it — all three failed</h3>
+        <ul class="keys">
+          <li><span class="state bad">-25308</span><span><b>Mac keychain.</b> A GitHub password is stored, but an automated process cannot pop the "allow access" window.</span></li>
+          <li><span class="state bad">invalid</span><span><b>GitHub CLI token.</b> Expired. Needs a fresh sign-in.</span></li>
+          <li><span class="state bad">denied</span><span><b>SSH key.</b> Exists on this Mac, never added to your GitHub account.</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>One-time fix, then never again</h3>
+        <p>Add this public key at <b>GitHub → Settings → SSH and GPG keys</b>. It is public — safe to share.</p>
+        <pre>ssh-ed25519 AAAAC3NzaC1lZDI1NTE5
+AAAAIBE8ZES8XcLz1kMFR+Jp/yQbvcmvBpzsu
++a3D0M0SWYe</pre>
+        <p style="margin-top:10px">After that I can push on my own, with no prompt and no password — for every project, not just this one.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section>
+    <h2>What you actually have to decide</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>Nothing — if "saved somewhere safe" is enough</h3>
+        <p>The work is committed. It is on this Mac, in the history, with a message. That is a real save point.
+          GitHub is a second copy, not the only copy.</p>
+        <p style="color:var(--muted)">Risk: only one disk holds it.</p>
+      </div>
+      <div class="card">
+        <h3>Two minutes — if you want it off this Mac</h3>
+        <p>Add the key above, tell me, and I push it. From then on every repo I touch can reach GitHub without asking you.</p>
+        <p style="color:var(--muted)">This is the one that stops the recurring "why is nothing on GitHub" question.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Built from live readings on 23 October 2026: <code>git status</code> · <code>lsof -iTCP -sTCP:LISTEN</code> ·
+    <code>.github/workflows/ci.yml</code> · <code>git push</code> failure output.
+    Commit <code>871c99f</code>, 107 files, tree clean, 1 commit ahead of GitHub.
+  </footer>
+</div>
+
+<script>
+  const COPY = {
+    save: {
+      h: "Save a file",
+      p: ["You edit a file and save it. The change exists on this Mac immediately. Nothing else has seen it — not the history, not GitHub, not any running app.",
+          "If a development server is running with <code>npm run dev</code>, it reloads by itself and you see the change in the browser. That feels like a live update, but it is your own Mac re-reading the same file."],
+      t: "<b>Cost:</b> none. This is the only automatic step."
+    },
+    commit: {
+      h: "Commit — seal a version",
+      p: ["A commit is a snapshot of the folder plus a note explaining it. It lives inside the folder, in a hidden <code>.git</code> directory. The files on disk do not change, and nothing leaves the Mac.",
+          "This is what makes a mistake undoable: you can always go back to a commit. Without a commit, an overwritten file is simply gone."],
+      t: "<b>Cost:</b> one command. <b>Who sees it:</b> only this Mac."
+    },
+    push: {
+      h: "Push — send commits to GitHub",
+      p: ["Push uploads the commits you have made to the GitHub copy. Two things follow: the work survives this Mac dying, and other people (or agents on another machine) can read it.",
+          "Push does not run your code. It does not change any website. It only moves the history from here to there — and it is the step that needs proof of identity."],
+      t: "<b>Cost:</b> one command plus a one-time sign-in. <b>Who sees it:</b> GitHub, and anyone with access."
+    },
+    deploy: {
+      h: "Deploy — put it in front of people",
+      p: ["Deploying means taking the code and starting it somewhere people can reach. That is a completely separate system: a server, a container, or a service like GitHub Pages.",
+          "esoteric-command has no deploy step. Its only automation runs your tests and build on every push — it checks the code, it does not publish it. That is why pushing would still not create a live site."],
+      t: "<b>Cost:</b> a real decision — where should it run? <b>Who sees it:</b> whoever you give the address to."
+    }
+  };
+
+  const panel = document.getElementById('panel');
+  const buttons = [...document.querySelectorAll('.step')];
+
+  function show(k){
+    const c = COPY[k];
+    panel.innerHTML = '<h3>' + c.h + '</h3>' +
+      c.p.map(x => '<p>' + x + '</p>').join('') +
+      '<div class="truth"><span class="mark">✓</span><span>' + c.t + '</span></div>';
+    buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k)));
+  }
+
+  buttons.forEach(b => b.addEventListener('click', () => show(b.dataset.k)));
+</script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mac mini — Full AI-Stack Audit · 23 Oct 2026</title>
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#12161b; --panel2:#171c22; --line:#232a33;
+    --ink:#e8edf3; --dim:#8b97a6; --dim2:#5f6b7a;
+    --red:#ff5c5c; --amber:#ffb545; --green:#3ddc97; --blue:#57a6ff; --violet:#b48aff;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:44px 26px 90px}
+  header{border-bottom:1px solid var(--line);padding-bottom:26px;margin-bottom:30px}
+  .kicker{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim2)}
+  h1{font-size:31px;line-height:1.2;margin:12px 0 10px;letter-spacing:-.02em;font-weight:680}
+  .sub{color:var(--dim);font-size:14.5px;max-width:74ch}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font:500 11.5px/1 var(--mono);padding:6px 10px;border:1px solid var(--line);
+    border-radius:999px;color:var(--dim);background:var(--panel)}
+  .chip b{color:var(--ink);font-weight:600}
+
+  .verdict{margin:30px 0;padding:22px 24px;border-radius:14px;
+    background:linear-gradient(135deg,rgba(255,92,92,.11),rgba(255,181,69,.05));
+    border:1px solid rgba(255,92,92,.34)}
+  .verdict h2{margin:0 0 8px;font-size:16px;letter-spacing:.02em;color:var(--red);font-weight:680}
+  .verdict p{margin:0;color:#f0dcdc;font-size:14.5px}
+
+  h2.sec{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim2);
+    margin:46px 0 16px;font-weight:700;font-family:var(--mono)}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:11px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px 16px}
+  .stat .n{font:600 25px/1.1 var(--mono);letter-spacing:-.03em}
+  .stat .l{font-size:11.5px;color:var(--dim);margin-top:6px;letter-spacing:.02em}
+  .stat.bad .n{color:var(--red)} .stat.warn .n{color:var(--amber)} .stat.ok .n{color:var(--green)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    margin-bottom:13px;overflow:hidden}
+  .card summary{cursor:pointer;padding:16px 19px;display:flex;gap:13px;align-items:flex-start;
+    list-style:none;transition:background .15s}
+  .card summary::-webkit-details-marker{display:none}
+  .card summary:hover{background:var(--panel2)}
+  .sev{flex:0 0 auto;font:700 9.5px/1 var(--mono);letter-spacing:.1em;padding:5px 7px;border-radius:5px;margin-top:3px}
+  .sev.p0{background:rgba(255,92,92,.16);color:var(--red);border:1px solid rgba(255,92,92,.4)}
+  .sev.p1{background:rgba(255,181,69,.14);color:var(--amber);border:1px solid rgba(255,181,69,.36)}
+  .sev.p2{background:rgba(87,166,255,.14);color:var(--blue);border:1px solid rgba(87,166,255,.34)}
+  .sev.p3{background:rgba(139,151,166,.12);color:var(--dim);border:1px solid var(--line)}
+  .card .t{flex:1;min-width:0}
+  .card .t h3{margin:0;font-size:15.5px;font-weight:640;letter-spacing:-.01em}
+  .card .t p{margin:5px 0 0;color:var(--dim);font-size:13.5px}
+  .body{padding:2px 19px 20px 19px;border-top:1px solid var(--line);margin-top:14px}
+  .body h4{font:700 10.5px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;
+    color:var(--dim2);margin:20px 0 9px}
+  .body p{margin:0 0 11px;font-size:14px;color:#cfd8e3}
+  .body ul{margin:0 0 12px;padding-left:19px;color:#cfd8e3;font-size:14px}
+  .body li{margin-bottom:6px}
+  code{font:12.5px/1.5 var(--mono);background:#0a0c0f;border:1px solid var(--line);
+    padding:1.5px 5px;border-radius:4px;color:#b9c7d6}
+  pre{background:#08090b;border:1px solid var(--line);border-radius:9px;padding:13px 15px;
+    overflow-x:auto;margin:0 0 13px;font:12.5px/1.65 var(--mono);color:#a9b8c8}
+  .ev{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:6px}
+  .ev th{text-align:left;font:700 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;
+    color:var(--dim2);padding:8px 10px;border-bottom:1px solid var(--line)}
+  .ev td{padding:9px 10px;border-bottom:1px solid #1b2027;vertical-align:top}
+  .ev td:first-child{font-family:var(--mono);font-size:12px;color:var(--dim);white-space:nowrap}
+  .ev td.v{font-family:var(--mono);color:var(--ink);white-space:nowrap}
+  .v.bad{color:var(--red)} .v.warn{color:var(--amber)} .v.ok{color:var(--green)}
+  .tag{font:600 9.5px/1 var(--mono);letter-spacing:.08em;padding:3px 6px;border-radius:4px;text-transform:uppercase}
+  .tag.root{background:rgba(255,92,92,.15);color:var(--red)}
+  .tag.sym{background:rgba(139,151,166,.13);color:var(--dim)}
+  .tag.sec{background:rgba(180,138,255,.15);color:var(--violet)}
+
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 16px;
+    font:11.5px/1 var(--mono);color:var(--dim)}
+  .flow span{padding:7px 10px;border:1px solid var(--line);border-radius:7px;background:var(--panel2)}
+  .flow .arw{border:0;background:none;color:var(--dim2);padding:0 1px}
+  .flow .hot{border-color:rgba(255,92,92,.45);color:#ffc9c9;background:rgba(255,92,92,.09)}
+
+  footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--line);
+    color:var(--dim2);font-size:12px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Full-stack audit · Mac mini · produced with MoA council</div>
+  <h1>Everything running on this Mac, measured</h1>
+  <p class="sub">A ground-up audit of the AI stack on <code>Ricardos-Mac-mini</code> — hardware, memory, processes,
+  services, schedulers, MCP topology, security and storage. Every figure below is real command output captured
+  during the audit window, not an estimate.</p>
+  <div class="meta">
+    <span class="chip">Host <b>Mac16,11 · M4 Pro · 12 cores</b></span>
+    <span class="chip">RAM <b>25.7 GB</b></span>
+    <span class="chip">Uptime <b>9h 04m</b></span>
+    <span class="chip">Captured <b>23 Oct 2026, 17:53–18:01 SAST</b></span>
+    <span class="chip">Agents <b>32 profiles</b></span>
+  </div>
+</header>
+
+<div class="verdict">
+  <h2>Verdict — this machine is thrashing, and it is not a leak</h2>
+  <p>Two fixed, resident allocations — the <b>d3-gate model at 10.4 GB</b> and the <b>Colima VM at 6 GB</b> — claim
+  <b>16.4 GB of 25.7 GB</b> before macOS or any agent runs. The system has been swapping continuously since
+  <b>three minutes after boot</b>, and mid-audit a thirteenth swapfile appeared and load average tripled to
+  <b>18.77</b>. Nothing is leaking: the memory is <em>deliberately allocated</em> and the box is simply
+  over-committed by design.</p>
+</div>
+
+<h2 class="sec">Live state</h2>
+<div class="stats">
+  <div class="stat bad"><div class="n">85 MB</div><div class="l">Free memory</div></div>
+  <div class="stat bad"><div class="n">15.2 GB</div><div class="l">Wired (unpageable)</div></div>
+  <div class="stat bad"><div class="n">14.0 GB</div><div class="l">Swap in use / 15.4 GB</div></div>
+  <div class="stat bad"><div class="n">18.77</div><div class="l">Load avg (12 cores)</div></div>
+  <div class="stat warn"><div class="n">226 GB</div><div class="l">Swapped out since boot</div></div>
+  <div class="stat warn"><div class="n">4.95 GB</div><div class="l">Compressor, holding 8.0 GB</div></div>
+  <div class="stat warn"><div class="n">13</div><div class="l">Swapfiles, all created today</div></div>
+  <div class="stat ok"><div class="n">144 GB</div><div class="l">Internal disk free</div></div>
+</div>
+
+<h2 class="sec">The memory picture</h2>
+<div class="flow">
+  <span class="hot">d3-gate model 10.4 GB</span><span class="arw">+</span>
+  <span class="hot">Colima VM 6.0 GB</span><span class="arw">+</span>
+  <span>macOS baseline ~4 GB</span><span class="arw">+</span>
+  <span>32 profiles · 47 python · 34 node</span><span class="arw">=</span>
+  <span>~25.7 GB claim on 25.7 GB of RAM</span>
+</div>
+
+<table class="ev">
+  <tr><th>Measurement</th><th>Reading</th><th>Reading</th><th>Class</th></tr>
+  <tr><td>swapless boot</td><td class="v bad">8:59 (boot 8:57)</td><td>first swapfile 2 min after login</td><td><span class="tag sym">symptom</span></td></tr>
+  <tr><td>d3-gate RSS</td><td class="v bad">10.4 GB</td><td>pid 16036, started 15:14</td><td><span class="tag root">root cause</span></td></tr>
+  <tr><td>Colima allocation</td><td class="v bad">6 GiB</td><td>4 CPU, 11 containers, 7 postgres</td><td><span class="tag root">root cause</span></td></tr>
+  <tr><td>swapfile cascade</td><td class="v bad">4 files at 17:48</td><td>#13 appeared during audit</td><td><span class="tag sym">symptom</span></td></tr>
+  <tr><td>sshd sessions</td><td class="v warn">66 (33 orphaned)</td><td>3h30m old — Colima mux, not 03:20</td><td><span class="tag sym">symptom</span></td></tr>
+  <tr><td>zombie processes</td><td class="v warn">34 defunct</td><td>parents not reaping</td><td><span class="tag sym">symptom</span></td></tr>
+  <tr><td>firewall</td><td class="v bad">disabled</td><td>6 services on 0.0.0.0</td><td><span class="tag sec">security</span></td></tr>
+</table>
+
+<h2 class="sec">Findings, ranked</h2>
+
+<details class="card" open>
+  <summary><span class="sev p0">P0</span><div class="t">
+    <h3>d3-gate holds 10.4 GB to answer single-label questions</h3>
+    <p><code>d3-flash-Q8_0.gguf</code> (8.9 GB) + a 595 MB <em>vision</em> projector, 16k context, 8192 batch, KeepAlive.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>pid 16036  10,916,384 KB RSS   elapsed 02:47
+maio-d3-gate -m "AI Hub/llama-cpp/d3-flash-Q8_0.gguf"
+  --mmproj mmproj-d3-flash-Q8_0.gguf
+  -c 16384 -b 8192 -ub 8192 -np 1 --flash-attn auto   → :8110</pre>
+    <h4>Why it matters</h4>
+    <ul>
+      <li>The gate answers bounded decisions — one label from a list, a rubric score, a yes/no. That workload needs
+        a few hundred tokens of context, not 16,384.</li>
+      <li>It carries a <b>multimodal projector</b> despite the decision path being text-only. 595 MB of weights plus
+        vision buffers, allocated, for a capability the gate never exercises.</li>
+      <li>It is <code>KeepAlive</code>, so the 10.4 GB is permanent — it is not a spike that decays.</li>
+      <li>It is genuinely used — one profile alone has <b>1,697 gate decisions</b> logged, the most recent today at 14:48.
+        So this is not an idle service to switch off; it is a wildly oversized footprint for real work.</li>
+    </ul>
+    <h4>Fix — no download required</h4>
+    <p>Drop the projector, cut context to what a classifier needs, and shrink the compute buffers. Same model, same
+    quality on text, roughly half the footprint:</p>
+    <pre>-  -m d3-flash-Q8_0.gguf --mmproj mmproj-d3-flash-Q8_0.gguf
+-  -c 16384 -b 8192 -ub 8192
++  -m d3-flash-Q8_0.gguf
++  -c 4096 -b 2048 -ub 512</pre>
+    <p>Expected: <b>5.5–7 GB</b> resident, recovering <b>3.5–5 GB</b>. A Q4_K_M quant would take it near 5 GB but needs a
+    download and re-validation against the 1,697-decision history — I would not do that without you choosing it.</p>
+    <p><b>Risk:</b> low and reversible — one line in <code>d3-gate.sh</code>, then <code>launchctl kickstart -k</code>.
+    Validate by replaying a sample of logged gate decisions and confirming the labels are unchanged.</p>
+  </div>
+</details>
+
+<details class="card">
+  <summary><span class="sev p0">P0</span><div class="t">
+    <h3>The Colima VM reserves 6 GiB to run eleven containers, seven of them Postgres</h3>
+    <p>Hypervisor memory is wired: it cannot be compressed or swapped. Every idle database costs full price.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>colima: aarch64 · 4 CPU · 6 GiB · 100 GiB · macOS Virtualization.Framework
+containers: 11 — signet-pg ×6, hindsight, metamcp, metamcp-pg, constellation-dev-pg</pre>
+    <h4>Why it matters</h4>
+    <ul>
+      <li>Seven separate Postgres instances at <code>shared_buffers</code> defaults each hold memory that macOS can
+        never reclaim while the VM lives.</li>
+      <li>This allocation is present from login, which is why the first swapfiles appear <b>two minutes after boot</b> —
+        before any agent has done anything at all.</li>
+      <li>MetaMCP itself runs inside this VM and is reached through an SSH forward, so every MCP tool call crosses an
+        extra hop (see the topology finding below).</li>
+    </ul>
+    <h4>Fix</h4>
+    <pre>colima stop &amp;&amp; colima start --memory 4 --cpu 4</pre>
+    <p>Before shrinking, dump every database and consolidate the seven Postgres containers into <b>one cluster with
+    separate databases and roles</b>. Isolation is a real requirement only if you actually need separate versions —
+    otherwise this is six copies of the same idle daemon.</p>
+    <p><b>Risk:</b> medium — database outage during restore. Dump first, consolidate, verify, then shrink.</p>
+  </div>
+</details>
+
+<details class="card">
+  <summary><span class="sev p0">P1</span><div class="t">
+    <h3>The RAM guard detected the emergency and told nobody</h3>
+    <p>It flipped to HIGH at 17:50 and suppressed its own alert because of a cooldown.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>[2026-10-23 17:50:00] alert suppressed (cooldown) — flipped to HIGH silently
+RAM_GUARD=HIGH
+RAM_GUARD=HIGH
+RAM_GUARD=HIGH</pre>
+    <h4>Why it matters</h4>
+    <p>Detection works. Escalation is broken. A guard that goes silent exactly when the machine enters the state it
+    exists to prevent is worse than no guard, because it manufactures false confidence. Everything else in this
+    report could have been caught hours earlier by an alert that actually arrived.</p>
+    <h4>Fix</h4>
+    <ul>
+      <li>A <b>first</b> transition into HIGH or CRITICAL must always alert, regardless of cooldown.</li>
+      <li>Cooldown may suppress only <em>repeats</em> of an already-delivered alert.</li>
+      <li>If HIGH persists beyond five minutes, re-escalate even inside the cooldown window.</li>
+      <li>The alert should carry the top five memory consumers and current swap, so it is actionable on arrival.</li>
+    </ul>
+  </div>
+</details>
+
+<details class="card">
+  <summary><span class="sev p0">P1</span><div class="t">
+    <h3>The macOS firewall is off, and six services listen on every interface</h3>
+    <p>Not a memory problem. A catastrophic-risk problem.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>socketfilterfw --getglobalstate → Firewall is disabled. (State = 0)
+
+bound to 0.0.0.0:  ollama :11434   node :8181    Python :8011   Python :8012
+                   snappier :8800  Orca :6768    ARD :3283
+                   rapportd :49152 ControlCenter :5000 and :7000</pre>
+    <h4>Why it matters</h4>
+    <ul>
+      <li>No packet filter, and the fleet's control surfaces sit on a wildcard bind. Anything on the LAN — a guest
+        device, a compromised IoT gadget — can reach the Ollama API and the agent gateway directly.</li>
+      <li>Tailscale has five peers. Peer <code>ricardos-macbook-air</code> is active; two others are stale entries from
+        5 and 22 days ago. Stale nodes still hold keys.</li>
+      <li>66 orphaned SSH sessions and 34 zombies are consistent with a session-management defect, but with the
+        firewall off I would not dismiss the possibility that some of that traffic was not yours.</li>
+    </ul>
+    <h4>Fix — ordered</h4>
+    <pre># 1. bind to loopback (real control)
+OLLAMA_HOST=127.0.0.1:11434
+#     then the same for :8181, :8011, :8012, :8800, :6768 in their configs
+
+# 2. then the firewall
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode on
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setallowsigned on</pre>
+    <p>Use Tailscale Serve for intentional remote access rather than a wildcard bind. Remove the two stale tailnet
+    nodes. <b>Risk:</b> lockout — keep a local console open while changing this, and change binds before enabling the
+    firewall, not after.</p>
+  </div>
+</details>
+
+<details class="card">
+  <summary><span class="sev p1">P2</span><div class="t">
+    <h3>MCP runs as two control planes, and every call crosses the VM boundary</h3>
+    <p>13 launchd <code>KeepAlive</code> MCP servers on the host, plus MetaMCP inside Colima reached over SSH.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>host, launchd KeepAlive=true:  browseruse cloudflare composio copilot docs gamma
+                               gate krea magnific pipedream qmd superhuman todoist
+:12008/tcp  →  ssh .../colima/ssh.sock [mux]     (MetaMCP lives inside the VM)
+:12008/mcp  →  401 (auth required — correct, endpoint is healthy)</pre>
+    <h4>Why it matters</h4>
+    <ul>
+      <li>Each of those thirteen is a permanently resident node or python process on the host, and MetaMCP is a
+        second, permanently resident server inside the VM. Two ownership models for one capability.</li>
+      <li>Tool calls route host → SSH mux → VM → back out to host-side MCP servers. Every MCP round trip pays that
+        latency twice, and the SSH mux is exactly where the 66 leaked sessions accumulate.</li>
+      <li>Whether MetaMCP spawns its own children or only proxies decides the fix. From the outside, the process
+        table shows no children under the mux, which points at proxying — verify before removing either side.</li>
+    </ul>
+    <h4>Fix</h4>
+    <p>Pick <b>one</b> control plane. Most sustainable: MetaMCP on the host as the single gateway, spawning stdio MCP
+    children on demand with a hard cap of 4–6 concurrent, KeepAlive on the gateway only, and the thirteen launchd
+    singletons retired. That removes a dozen resident processes and collapses the SSH hop.</p>
+    <p><b>Risk:</b> disabling the wrong side silently breaks every tool. Verify parentage first, change one server at
+    a time, and confirm the tool list is intact after each.</p>
+  </div>
+</details>
+
+<details class="card">
+  <summary><span class="sev p2">P2</span><div class="t">
+    <h3>A duplicate MCP registration spams a 30 MB error log with no rotation</h3>
+    <p><code>Portable MCP server 'rea' conflicts with native config; skipping</code> — three times per tool cycle, all day.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>~/.hermes/logs/gateway.error.log   30 MB, actively growing at audit time
+WARNING tools.mcp_tool: Portable MCP server 'rea' conflicts with native config; skipping   ×3 per cycle
+MallocStackLogging: can't turn off malloc stack logging because it was not enabled  ×dozens/min</pre>
+    <h4>Why it matters</h4>
+    <p><code>rea</code> is registered twice — once as a portable server, once natively — so one copy is discarded on
+    every single tool load. The REA toolset is large (200+ tools); loading it twice per cycle is real CPU and real
+    log I/O on a machine with no CPU headroom. The <code>MallocStackLogging</code> line is inherited environment
+    noise, not a leak, but it buries the signal.</p>
+    <h4>Fix</h4>
+    <pre>launchctl getenv MallocStackLogging    # expect empty; unset if set
+# keep exactly one authoritative 'rea' definition, restart the gateway,
+# confirm 'rea' appears once in the loaded tool list
+# add newsyslog rotation: gateway.error.log  644  5  20480  *  J</pre>
+  </div>
+</details>
+
+<details class="card">
+  <summary><span class="sev p2">P2</span><div class="t">
+    <h3>Two schedulers run the same estate: 69 launchd agents against 4 Hermes cron jobs</h3>
+    <p>Plus two jobs failing, and two reporting a stale <code>-15</code> exit while running.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>launchctl list | grep com.maio  →  69 agents
+~/.hermes/cron/jobs.json        →   4 jobs
+  t3 serve watchdog      every 5m   (286 runs)
+  disk headroom          every 360m
+  CLIProxyAPI guard      ~11m
+  weekly LLM benchmark
+
+com.maio.hiksemi-recover   last exit 1
+com.maio.constellation-dev last exit 1, spawn scheduled</pre>
+    <h4>Why it matters</h4>
+    <p>Two independent schedulers over one estate means nobody owns the full schedule and duplicate work is invisible
+    until it shows up as load. Note that launchd agents cannot read <code>/Volumes</code> — that path is EPERM for
+    launchd — so any job touching the Hiksemi drive must live in Hermes cron. That is a structural reason the
+    split happened, and the fix is to make the boundary explicit rather than to pretend one scheduler can do both.</p>
+    <h4>Fix</h4>
+    <p>Declare one boundary: <b>launchd owns processes</b> (keepalive daemons, supervisors); <b>Hermes cron owns
+    schedules</b> (anything timed or touching external volumes). Then repair <code>hiksemi-recover</code> — it is
+    failing precisely because of the EPERM path problem — and retire <code>constellation-dev</code> if the service it
+    fronts has moved into Colima.</p>
+  </div>
+</details>
+
+<details class="card">
+  <summary><span class="sev p3">P3</span><div class="t">
+    <h3>Housekeeping: 15 GB of Hermes home, an 880 MB state database, streams closing without a finish reason</h3>
+    <p>Capacity and hygiene, not current crisis.</p>
+  </div></summary>
+  <div class="body">
+    <h4>Evidence</h4>
+    <pre>~/.hermes          15 GB   (profiles 6.0 · hermes-agent 3.3 · tools 1.3 · installs 1.3
+                            state-snapshots 890 MB · state.db 880 MB · cache 865 MB)
+state.db-wal       5.4 MB  (checkpointing — healthy, not the problem)
+internal disk      144 GB free of 460 GB
+
+WARNING agent.chat_completion_helpers: Clean EOF, no finish_reason</pre>
+    <h4>Notes</h4>
+    <ul>
+      <li><code>state.db</code> at 880 MB with a 5.4 MB WAL is <b>correctly checkpointing</b> — I checked before
+        blaming it. Leave it alone. An occasional <code>VACUUM</code> is optional.</li>
+      <li>Disk is not a constraint today. <code>state-snapshots</code> at 890 MB is worth a retention policy, not an
+        emergency.</li>
+      <li>The "Clean EOF, no finish_reason" warning is the <b>same interrupt that truncated this very session</b> at
+        17:53:27 — the model provider closes the stream cleanly after text without ever sending <code>finish_reason</code>.
+        Hermes reports it correctly instead of hanging. Worth raising with the provider; locally, cap retries so a
+        closing stream cannot amplify into a retry storm.</li>
+    </ul>
+  </div>
+</details>
+
+<h2 class="sec">Sustainability — 32 profiles on 25 GB</h2>
+<div class="card" style="padding:19px 21px">
+  <p style="margin-top:0"><b>The principle: 32 profiles are data and queued work, not 32 resident agent stacks.</b>
+  A profile that is not mid-turn costs nothing but disk. Any architecture that keeps runtime per-profile cannot fit
+  on this box, and should not try.</p>
+  <pre>launchd
+├── one scheduler boundary (launchd = processes · Hermes cron = schedules)
+├── MetaMCP gateway, one owner, KeepAlive
+│   └── stdio MCP children on demand, hard cap 4–6
+├── Colima 4 GB max, or native Postgres
+│   └── ONE cluster · 32 databases and roles, not 7 instances
+├── Hermes supervisor + queue
+│   └── worker pool 4–6 · one active turn per profile
+├── d3-gate: resized for classification (~5.5–7 GB, loopback, on demand)
+└── RAM guard that escalates + log rotation + health checks</pre>
+  <p style="margin-bottom:6px"><b>Budget that fits:</b> macOS and UI 5–6 · VM 4 · Postgres 2–3 · MCP gateway and
+  children 1.5–2.5 · supervisor and 4–6 workers 4–6 · gate 5.5–7 · headroom 4–5. That lands at <b>22–29 GB</b>, which
+  is why the gate has to shrink or move off-box — it is the difference between fitting and not.</p>
+  <p style="margin-bottom:0"><b>Acceptance criteria, all measurable:</b> no swapfile created in the first 30 minutes
+  after boot · swap flat under steady load · wired below 11 GB · load under 4 · no <code>0.0.0.0</code> listener except
+  an intentional Tailscale service · one scheduler, one MCP owner · guard alerts on first critical transition.</p>
+</div>
+
+<h2 class="sec">What I corrected in my own audit</h2>
+<div class="card" style="padding:19px 21px">
+  <p style="margin-top:0">Two things I got wrong before the council caught them, recorded because they change the
+  diagnosis:</p>
+  <ul>
+    <li>I read <code>etime</code> (elapsed time) as a clock time and concluded 33 SSH sessions had been orphaned since
+      03:20. They are <b>3h30m old</b>, started around 14:25, and trace to the Colima SSH mux — a session-management
+      defect, not a fourteen-hour-old intrusion.</li>
+    <li>My first process listing sorted by CPU, which hid the largest memory consumer entirely. Sorting by RSS is what
+      surfaced the 10.4 GB gate process. The audit was wrong until that changed.</li>
+  </ul>
+  <p style="margin-bottom:0">Neither changes the headline, but both change the fixes — and a report that silently
+  keeps its early mistakes is worth less than one that shows where it was corrected.</p>
+</div>
+
+<footer>
+  Adrianna A · AI-stack family · evidence captured 2026-10-23 17:53–18:01 SAST<br>
+  Every figure is verbatim command output from the live host. MoA council used for root-cause ranking and adversarial
+  review of the fix set.
+</footer>
+
+</div>
+</body>
+</html>

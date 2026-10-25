@@ -1,0 +1,1616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Business Floor — mapping a whole business and running it in three.js</title>
+<meta name="description" content="A deep dive into the software that maps a business and shows it running in three.js: the exact render recipe, the simulation engine, and the toolchain to build our own.">
+<meta property="og:title" content="The Business Floor">
+<meta property="og:description" content="How Airsup maps a whole business and shows it running in three.js — the look recipe, the engine, and the tools.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://targetpraks.github.io/business-floor-2026-10.html">
+<style>
+:root{
+  --paper:#fdfaf3; --card:#fff; --ink:#12203a; --mute:#5d6478; --line:#e6e0d2;
+  --coral:#c85a3c; --gold:#c99a2e; --teal:#2f7b78; --plum:#6b4a76;
+  --shadow:0 1px 2px rgba(18,32,58,.05), 0 18px 44px rgba(18,32,58,.07);
+}
+*{box-sizing:border-box}
+html{background:var(--paper);scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);line-height:1.62;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+a{color:var(--ink)}
+nav.top{display:flex;justify-content:space-between;align-items:center;padding:22px 0;font-size:14px;border-bottom:1px solid var(--line)}
+nav.top .brand{font-weight:700;letter-spacing:-.01em}
+nav.top .links{display:flex;gap:20px}
+nav.top .links a{text-decoration:none;color:var(--mute)}
+nav.top .links a:hover{color:var(--ink)}
+header.hero{padding:44px 0 8px}
+.eyebrow{display:inline-block;background:var(--ink);color:var(--paper);font-size:11.5px;letter-spacing:.14em;
+  text-transform:uppercase;padding:5px 10px;border-radius:2px;font-weight:600}
+h1{font-size:clamp(34px,5.2vw,58px);line-height:1.04;letter-spacing:-.025em;margin:18px 0 14px;max-width:20ch}
+h1 em{font-style:normal;color:var(--coral)}
+.lede{font-size:18.5px;color:#3c4763;max-width:64ch;margin:0 0 20px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--mute);margin-bottom:6px}
+.chip{border:1px solid var(--line);background:var(--card);padding:3px 9px;border-radius:999px}
+
+/* demo */
+.demo{margin:26px 0 10px;background:var(--card);border:2px solid var(--ink);box-shadow:var(--shadow)}
+.demo-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.demo-head b{font-size:14px;letter-spacing:-.01em}
+.demo-head .sub{font-size:12.5px;color:var(--mute)}
+.stagewrap{position:relative;background:#e8e1d4}
+#scene{display:block;width:100%;height:520px;cursor:grab}
+#scene:active{cursor:grabbing}
+.hud{position:absolute;top:12px;left:12px;width:270px;background:rgba(253,250,243,.93);border:1px solid #d9d2c2;
+  border-radius:3px;padding:11px 12px;backdrop-filter:blur(6px);font-size:12.5px;pointer-events:none}
+.hud .k{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.hud .k span:first-child{color:var(--mute)}
+.hud .k b{font-variant-numeric:tabular-nums}
+.hud .big{font-size:26px;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.hud .target{font-size:11.5px;color:var(--mute);margin-bottom:8px}
+.hud .state{display:inline-block;font-size:11px;padding:2px 7px;border-radius:2px;margin-top:2px}
+.hud .state.ok{background:#dff0e4;color:#1e6b3a}.hud .state.warn{background:#fbefd3;color:#8a5f0a}.hud .state.bad{background:#f9ded8;color:#8f2f18}
+.bars{margin-top:10px;border-top:1px solid #e2dbcb;padding-top:8px;pointer-events:auto}
+.bar{display:grid;grid-template-columns:1fr 92px 34px;gap:8px;align-items:center;padding:2px 0;cursor:pointer}
+.bar:hover .nm{color:var(--ink)}
+.bar .nm{font-size:11.5px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .trk{position:relative;height:7px;background:#e8e2d3;border-radius:2px;overflow:hidden}
+.bar .trk i{position:absolute;left:0;top:0;bottom:0;display:block}
+.bar .trk .up{background:#c9c3b4;z-index:0}
+.bar .trk .busy{z-index:1}
+.bar .trk .dn{background:#c8503a;z-index:2}
+.bar .pc{font-size:11px;text-align:right;font-variant-numeric:tabular-nums;color:var(--mute)}
+.bar.bn .nm{color:var(--coral);font-weight:700}
+.bar.sel{background:#f3ecdd;outline:1px solid #ddd2ba}
+#inspector{position:absolute;right:12px;top:12px;width:290px;background:rgba(253,250,243,.96);border:1px solid #d9d2c2;
+  border-radius:3px;padding:12px 13px;font-size:12.5px;box-shadow:0 12px 30px rgba(18,32,58,.12)}
+#inspector[hidden]{display:none}
+.ins-h{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:8px}
+.ins-h button{background:none;border:0;font-size:20px;line-height:1;cursor:pointer;color:var(--mute)}
+.ins-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed #e4dccb;gap:10px}
+.ins-row .ctl{display:flex;align-items:center;gap:7px}
+.ins-row .ctl button{width:22px;height:22px;border:1px solid #d5ccb9;background:#fff;border-radius:2px;cursor:pointer;font-size:14px;line-height:1}
+.ins-row .ctl input[type=range]{width:82px;accent-color:var(--coral)}
+.ins-note{font-size:11.5px;color:var(--mute);margin:9px 0 6px}
+.ins-size{font-size:10.5px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f3eee2;padding:6px 7px;
+  border-radius:2px;color:#4a4438;margin:0 0 7px;overflow-wrap:anywhere}
+.ins-live{font-size:11px;color:var(--mute);margin:0}
+.demo-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.seg button{background:#fff;border:0;border-right:1px solid var(--line);padding:5px 10px;font:500 12px Inter,system-ui;cursor:pointer;color:var(--ink)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.demo-foot .hint{font-size:12px;color:var(--mute)}
+
+/* sections */
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;padding:20px 0 4px;border-bottom:1px solid var(--line);margin-bottom:6px}
+nav.toc a{text-decoration:none;font-size:13px;color:var(--mute);border:1px solid var(--line);background:var(--card);
+  padding:5px 10px;border-radius:2px}
+nav.toc a:hover{color:var(--ink);border-color:var(--ink)}
+nav.toc a b{color:var(--coral);margin-right:6px}
+section{padding:44px 0 6px}
+h2{font-size:clamp(25px,3.3vw,36px);line-height:1.12;letter-spacing:-.02em;margin:0 0 10px}
+h2 .n{color:var(--coral);font-size:.62em;vertical-align:super;margin-right:10px;letter-spacing:0}
+h3{font-size:17px;margin:26px 0 8px;letter-spacing:-.01em}
+p{margin:0 0 14px;max-width:74ch}
+ul,ol{margin:0 0 14px;padding-left:20px;max-width:74ch}
+li{margin:0 0 6px}
+.standfirst{font-size:17px;color:#3c4763;max-width:70ch;margin-bottom:18px}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+p code,li code{background:#f2ecdd;padding:1px 5px;border-radius:2px;color:#4a4438}
+.callout{border-left:3px solid var(--coral);background:#fff8ef;padding:14px 16px;margin:18px 0;max-width:76ch}
+.callout b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--coral);margin-bottom:4px}
+.callout p:last-child{margin-bottom:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0}
+.card{background:var(--card);border:1px solid var(--line);padding:15px 16px;box-shadow:0 1px 2px rgba(18,32,58,.04)}
+.card h4{margin:0 0 6px;font-size:14.5px;letter-spacing:-.01em}
+.card .kicker{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--coral);font-weight:600;margin-bottom:5px}
+.card p{font-size:13.8px;color:#414c66;margin:0}
+.card ul{font-size:13.5px;margin:0;padding-left:18px}
+.tscroll{overflow-x:auto;margin:16px 0 8px;border:1px solid var(--line);background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f5efe1;font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:#5a5344;font-weight:600}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;font-weight:600;white-space:nowrap}
+.pill.use{background:#dff0e4;color:#1b6337}
+.pill.opt{background:#fbf0d6;color:#7f5a08}
+.pill.no{background:#f7e2dd;color:#8b2d17}
+.fig{background:var(--card);border:1px solid var(--line);padding:18px;margin:20px 0}
+.fig figcaption{font-size:12.5px;color:var(--mute);margin-top:10px}
+.quote{border-left:2px solid var(--gold);padding-left:14px;color:#4a4438;font-size:14.5px;margin:14px 0}
+.band{background:var(--ink);color:#f4efe3;padding:34px 0 30px;margin-top:44px}
+.band h2{color:#fff;margin-bottom:14px}
+.band p{color:#cfd5e2}
+.band ol{color:#e8ecf3}
+.band .q{font-size:16.5px;color:#fff;max-width:70ch}
+footer{padding:26px 0 40px;font-size:12.5px;color:var(--mute);border-top:1px solid var(--line)}
+footer a{color:var(--mute)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:13.5px;margin:14px 0}
+.kv dt{color:var(--mute)}
+.kv dd{margin:0}
+@media(max-width:860px){
+  .grid2,.grid3{grid-template-columns:1fr}
+  #scene{height:400px}
+  .hud{width:210px;font-size:11.5px}
+  #inspector{width:min(290px,calc(100% - 24px))}
+  .kv{grid-template-columns:1fr}
+}
+/* phone: the HUD becomes a sheet under the floor instead of a card on top of it,
+   and the station rows drop the track so the names have room to be read */
+@media(max-width:620px){
+  .stagewrap{display:flex;flex-direction:column;height:auto}
+  #scene{height:300px;order:1}
+  .hud{position:static;order:2;width:100%;border:0;border-top:1px solid #d9d2c2;
+       background:#fdfaf3;display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;padding:12px 14px}
+  .hud .big,.hud .target{grid-column:1 / -1}
+  .hud .bars{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .bar{grid-template-columns:1fr 26px;gap:6px}
+  .bar .trk{grid-column:1 / -1;margin-top:-3px;height:5px}
+  .bar .nm{font-size:11px}
+  #inspector{position:static;width:100%;order:3}
+}
+</style>
+</head>
+<body>
+
+<nav class="top wrap">
+  <div class="brand">The Business Floor</div>
+  <div class="links">
+    <a href="#s1">What it is</a>
+    <a href="#s2">The look</a>
+    <a href="#s3">The engine</a>
+    <a href="#s4">The mapping</a>
+    <a href="#s5">Tools</a>
+    <a href="#s6">Ours</a>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <span class="eyebrow">Deep dive · AI-Drive · 23 October 2026</span>
+  <h1>The business, <em>on a table</em>, running live in three.js</h1>
+  <p class="lede">You sent me Konstantin Saifoulline's warehouse and factory sims. I went into the source,
+  pulled the actual stack apart, and rebuilt the thing below from what I found — so this is not a description
+  of how it looks good. It is the recipe, running in front of you.</p>
+  <div class="meta">
+    <span class="chip">three.js r185</span>
+    <span class="chip">No React, no asset files</span>
+    <span class="chip">MIT-licensed source</span>
+    <span class="chip">Live discrete event simulation</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============================================================ DEMO -->
+<div class="demo">
+  <div class="demo-head">
+    <div><b>The floor</b> <span class="sub">— six stations, one product, every number below comes from the simulation</span></div>
+    <div class="sub" id="h-clock">day 1 · 06:00</div>
+  </div>
+  <div class="stagewrap">
+    <canvas id="scene"></canvas>
+    <div class="hud">
+      <div class="big" id="h-tput">0</div>
+      <div class="target">cases / day, measured over the last 15 minutes of production &nbsp;·&nbsp; commitment <b id="h-target">2,400</b> &nbsp;<span class="state bad" id="h-state">starting</span></div>
+      <div class="k"><span>takt</span><b id="h-takt">—</b></div>
+      <div class="k"><span>WIP</span><b id="h-wip">—</b></div>
+      <div class="k"><span>lead time</span><b id="h-lead">—</b></div>
+      <div class="k"><span>bottleneck</span><b id="h-bn">—</b></div>
+      <div class="bars" id="h-bars"></div>
+      <div style="font-size:10.5px;color:#8b8474;margin-top:7px;line-height:1.35">bar = each station's load on its own capacity. Click a station to add machines, stretch a cycle time or resize a buffer.</div>
+    </div>
+    <div id="inspector" hidden></div>
+  </div>
+  <div class="demo-foot">
+    <div class="seg" role="group" aria-label="speed">
+      <button data-speed="3">1×</button>
+      <button data-speed="12">4×</button>
+      <button data-speed="60" class="on">20×</button>
+      <button data-speed="180">60×</button>
+    </div>
+    <button class="seg" id="t-post" style="border:1px solid var(--line);background:#fff;padding:5px 10px;font:500 12px Inter,system-ui;cursor:pointer">post off</button>
+    <div class="hint">Drag to orbit · click a machine to add one and watch the bottleneck move</div>
+  </div>
+</div>
+<p style="font-size:12.5px;color:var(--mute);max-width:80ch">The model is a typical pasta line — cycle times, breakdown rates and buffer sizes are
+placeholders chosen to be plausible, not measured from our plant. The <em>engine</em> is real: when you add a machine, the
+simulation runs a fresh server, the conveyor drains, and the red outline moves to the next constraint. Swap the numbers for
+measured ones and the same page becomes a real assessment.</p>
+
+<p style="font-size:12.5px;color:var(--mute);max-width:80ch"><b>Why 4,100 against a 2,400 commitment.</b> The sizing rule asks the
+sealer for <em>0.7</em> of a machine. Nobody sells 0.7 of a sealer, so it gets one — and one sealer at fourteen seconds a case is
+4,100 a day. The arithmetic wanted 2,800; the integer delivered 4,100 and it is still the constraint. That gap between the
+fraction and the whole machine is where most real plants actually live, and it is the reason a capacity number quoted from a
+spreadsheet and a capacity number measured on the floor rarely agree.</p>
+
+<nav class="toc">
+  <a href="#s1"><b>1</b>What this software actually is</a>
+  <a href="#s2"><b>2</b>The look — exact recipe</a>
+  <a href="#s3"><b>3</b>The engine underneath</a>
+  <a href="#s4"><b>4</b>Mapping a business</a>
+  <a href="#s5"><b>5</b>The toolchain</a>
+  <a href="#s6"><b>6</b>How we build ours</a>
+</nav>
+
+<!-- ============================================================ 1 -->
+<section id="s1">
+  <h2><span class="n">1</span>What this software actually is</h2>
+  <p class="standfirst">Three public repos, one man, and an unusually disciplined idea: a business process is a queueing system,
+  so draw it, simulate it, and make it look like a photograph of a model.</p>
+
+  <p>Saifoulline ships three separate products, and they share almost no code:</p>
+  <div class="grid3">
+    <div class="card">
+      <div class="kicker">air-sup lab</div>
+      <h4>Machines you can take apart</h4>
+      <p>Fusion reactor, Raptor 3, Cybertruck, humanoid — 90-odd machines. TypeScript, Vite, one page each, photoreal and cutaway.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">machine-skill</div>
+      <h4>One line in, a machine out</h4>
+      <p>An open Claude Code skill: <span class="mono">SKILL.md</span> + a small runtime + a recorder. 378 stars, MIT.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">factory-skill</div>
+      <h4>The business floor</h4>
+      <p>"A line that makes 2,000 e-bike motors a day" becomes a tilt-shift miniature with a real discrete event simulation under it. This is the one that maps a business.</p>
+    </div>
+  </div>
+
+  <h3>The number that tells you everything</h3>
+  <p>I cloned the lab and read its manifest. <span class="mono">package.json</span> has exactly one runtime dependency:</p>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Package</th><th>Version</th><th>What it is</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">three</td><td class="num">^0.185.1</td><td>The entire engine. That is the whole dependency list.</td></tr>
+        <tr><td class="mono">vite</td><td class="num">^8.2.2</td><td>Dev server, dev-only</td></tr>
+        <tr><td class="mono">typescript</td><td class="num">^5.5.4</td><td>Types, dev-only</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>No React. No <span class="mono">@react-three/fiber</span>. No drei. No <span class="mono">postprocessing</span> library.
+  No GLTF models, no HDRI files, no texture downloads. Every machine, every material, every post effect is code.</p>
+
+  <div class="callout">
+    <b>Why that matters to us</b>
+    <p>This kind of page has no art pipeline to maintain and no asset drift. Change a cycle time and the geometry, the numbers
+    and the HUD move together, because they all read the same spec object. That is why one person can ship a new "factory"
+    almost every day — and why we could too.</p>
+  </div>
+
+  <h3>The distribution trick</h3>
+  <p><span class="mono">factory-skill</span> builds the finished page into <strong>one HTML file of about 1 MB</strong> with three.js,
+  the runtime and the spec inlined. It opens from disk with no server and no network. For a business audience that is the killer
+  detail: a plant manager gets a single file, double-clicks it, and watches their own line run. Nothing to install, nothing to
+  sign into, nothing that breaks when a CDN moves.</p>
+  <p>There is also a film mode: <span class="mono">?film=1</span> stops the clock, and a scripted cursor and camera step through
+  numbered beats while a recorder screenshots each frame — with a magenta-frame scanner that refuses a bad capture. The
+  LinkedIn clip and the page are the same artefact.</p>
+</section>
+
+<!-- ============================================================ 2 -->
+<section id="s2">
+  <h2><span class="n">2</span>The look — the exact recipe</h2>
+  <p class="standfirst">It looks good because of seven choices, and six of them are numbers. Here they are, read straight out of
+  their render code — the same chain is running in the canvas above.</p>
+
+  <p>The miniature is not a CAD view. It is a photograph of a model on a table, faked the way tilt-shift photographers fake it:
+  high viewpoint, one narrow band of sharp focus, everything above and below melting into blur, saturated warm colour, direct sun.
+  In order of impact:</p>
+
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>#</th><th>Effect</th><th>Their setting</th><th>Why it reads as a model</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td><b>Narrow focus band</b><br><span class="mute">two-pass CoC blur</span></td>
+          <td class="mono">focusY 0.46 · band 0.07 · amount 20 px @1080p · power 1.25</td>
+          <td>The brain reads a thin depth of field as "small object, close lens". Gathers only from samples at least as blurred, so sharp edges don't bleed.</td></tr>
+        <tr><td class="num">2</td><td><b>One warm sun</b><br><span class="mute">long soft shadows</span></td>
+          <td class="mono">#ffeed2 · intensity 4.0 · 4096² map · PCF radius 2.2 · bias −0.00025</td>
+          <td>Back-left, ~40°. Weak hemisphere fill so shadows stay readable rather than washing flat.</td></tr>
+        <tr><td class="num">3</td><td><b>Ambient occlusion</b></td>
+          <td class="mono">GTAO radius 1.1 · 16 samples · blend 1.0</td>
+          <td>Contact shadow under every machine, cart and person. Without it, objects look pasted on the floor.</td></tr>
+        <tr><td class="num">4</td><td><b>Grade after tone map</b></td>
+          <td class="mono">sat 1.32 · contrast 1.14 · warm (1.02,1.0,0.965) · vignette 0.38 · grain 0.018</td>
+          <td>Saturation is what separates a photo from a render. Grain and vignette are the camera, not the scene.</td></tr>
+        <tr><td class="num">5</td><td><b>Density</b></td>
+          <td class="mono">free floor filled with pallets, carts, drums</td>
+          <td>Empty floor reads as a render. Their world generator racks the back wall and litters every free square metre.</td></tr>
+        <tr><td class="num">6</td><td><b>Cut-away hall on a plinth</b></td>
+          <td class="mono">back + left walls 6 m · front + right cut at 1.1 m · section face coloured</td>
+          <td>You see inside without losing the room. A grass ring, a truck yard and a dark plinth under the diorama sell the table.</td></tr>
+        <tr><td class="num">7</td><td><b>Colour discipline</b></td>
+          <td class="mono">cream machines · one accent per station · graphite conveyors · yellow zone tape</td>
+          <td>The eye can track one accent colour per station, so the line reads as a sequence, not a pile.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Tone mapping is the quiet one</h3>
+  <p>They light in HDR and tone map at the very end: a half-float render target with 4× MSAA, then ACES Filmic at exposure 0.98,
+  then the grade. Bloom threshold sits at <strong>2.6</strong> — above the sunlit surfaces — so only genuinely emissive parts
+  glow. That single number is why the page looks like daylight rather than a screensaver.</p>
+
+  <h3>And the higher tier, for machines</h3>
+  <p>The lab's own pipeline is hand-written and goes further: a 7-level bloom mip chain with a knee-based prefilter, GTAO sampled
+  at half resolution from the resolved depth and blurred depth-aware, a 40-tap golden-angle depth of field that refuses to let a
+  sharp foreground bleed onto the blurred background, chromatic aberration at the frame edge, an ACES fit in the final pass, and a
+  live <strong>section cut</strong> — every part is a closed solid, and the shader draws the cut face from the back faces at the
+  clipping plane, so the section can sweep instead of being pre-built.</p>
+  <p>Two tiers, one lesson: the expensive-looking parts are shader work, not model work.</p>
+
+  <div class="quote">"What to avoid: a top-down orthographic view (kills the miniature effect), bloom on sunlit surfaces,
+  labels floating in 3D, and pure white materials (they clip under ACES)." — their own <span class="mono">look.md</span></div>
+</section>
+
+<!-- ============================================================ 3 -->
+<section id="s3">
+  <h2><span class="n">3</span>The engine underneath</h2>
+  <p class="standfirst">The pictures are the argument, but the simulation is the explanation. Every number on screen comes out of
+  it. If the line misses its target, that is the finding — they never tune inputs to get a nicer answer.</p>
+
+  <p>The engine is about 530 lines of plain JavaScript and it is a classic discrete event simulation, not a game loop:</p>
+  <ul>
+    <li><b>Event heap.</b> A binary heap of timestamps. Nothing is integrated per frame; only real state changes are processed.</li>
+    <li><b>Servers and batches.</b> Each station owns N identical machines. A machine takes a batch from every input buffer, works
+      for a lognormal time with mean <em>ct</em> and coefficient of variation <em>cv</em>, then hands the units on.</li>
+    <li><b>Blocking after service.</b> When the next buffer is full the machine holds its output and goes BLOCKED. Blocking chains
+      upstream — this is the whole reason buffers matter.</li>
+    <li><b>Starving.</b> An idle machine with nothing in its input is STARVED. Blocked and starved are different diagnoses and the
+      HUD shows them in different colours.</li>
+    <li><b>Operation-dependent breakdowns.</b> Time-to-failure counts busy time only; the interrupted cycle resumes where it stopped.</li>
+    <li><b>Scrap.</b> Each finished unit is scrapped with probability 1 − yield at the station that caused it.</li>
+    <li><b>Determinism.</b> A seeded mulberry32 generator drives every draw, so a spec and a seed give identical numbers in Node and
+      in the browser. That is what makes a forecast quotable.</li>
+  </ul>
+
+  <h3>The sizing rule it prints on screen</h3>
+  <div class="callout">
+    <b>Machines from demand, not from vibes</b>
+    <p class="mono" style="font-size:14px">machines = CEIL( rate_in × cycle_time ÷ ( batch × availability × target_utilisation ) )</p>
+    <p>The page shows that formula with the actual numbers substituted, next to the machine count. A plant engineer can argue with
+    the arithmetic instead of with the animation.</p>
+  </div>
+
+  <h3>How it decides the bottleneck</h3>
+  <p>Every machine's time in each state is accumulated exactly (not sampled), snapshotted every 5 production minutes, and the HUD
+  reports a rolling 4-hour window. The bottleneck is the station with the highest <em>busy + down</em> share — the active period
+  share. In capacity mode the machines before it read BLOCKED and the machines after it read STARVED, which is how you can tell a
+  capacity constraint from a downtime constraint without touching a spreadsheet.</p>
+
+  <h3>Where I departed from them, and why</h3>
+  <p>Their bottleneck is the highest <em>busy + down</em> share, which is correct — with one artefact. The demo above releases raw
+  material at capacity, so the first machine is fed for ever and reads ~99% busy even when the real constraint is three stations
+  down the line. I rank stations by <b>load on their own capacity</b> instead: the rate the line actually achieves, divided by what
+  that station could do on its own. It picks the same constraint when the head station is genuinely the constraint, and the right
+  one when it isn't. Throughput is a rolling 15-minute measure rather than a 4-hour average, so a what-if answers in seconds rather
+  than in an afternoon.</p>
+
+  <h3>Where the sim stops — say it out loud</h3>
+  <p>Their own reference is honest about the limits: one sink, a tree rather than a network, no rework loops, no changeovers
+  between variants, no shared labour pool, no material-handling capacity (forklifts and AMRs are scenery), and a breakdown on a
+  continuous machine stops one slot rather than the whole tunnel. For a first, legible model of a line that is the right set of
+  cuts. For a plant-level capacity study you would graduate to AnyLogic or Simio — and you would still steal this presentation.</p>
+</section>
+
+<!-- ============================================================ 4 -->
+<section id="s4">
+  <h2><span class="n">4</span>Mapping a business: the part that isn't three.js</h2>
+  <p class="standfirst">The reason this lands with a business audience is that the mapping is one-to-one. Every word a manager
+  uses already has a parameter in the simulation.</p>
+
+  <p>A business process is a queueing system with money attached. You do not need a 3D model of the company to start — you need a
+  station table. The translation is mechanical:</p>
+
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>What the business says</th><th>What the model calls it</th><th>Where the number comes from</th></tr></thead>
+      <tbody>
+        <tr><td>"the process steps"</td><td class="mono">stations[]</td><td>The value stream, in flow order. Six to ten steps, branches where sub-work is made in parallel.</td></tr>
+        <tr><td>"how long a step takes"</td><td class="mono">ct</td><td>Timestamps: ticket in → stage → stage → closed. Median, not average, and a spread.</td></tr>
+        <tr><td>"how many people / machines"</td><td class="mono">servers</td><td>Derived from the sizing rule, then checked against the real headcount.</td></tr>
+        <tr><td>"how much work sits in the queue"</td><td class="mono">buffer</td><td>Actual WIP in the tracker on a normal day.</td></tr>
+        <tr><td>"it breaks / people are off"</td><td class="mono">mtbf · mttr</td><td>Downtime logs, leave, rework. Availability = MTBF ÷ (MTBF + MTTR).</td></tr>
+        <tr><td>"we redo a lot of it"</td><td class="mono">yield</td><td>Rework and reject rates at that step. This is usually the biggest surprise.</td></tr>
+        <tr><td>"we need X a day"</td><td class="mono">demand.perDay</td><td>The commitment, not the wish. Takt follows from it.</td></tr>
+        <tr><td>"where are we stuck?"</td><td class="mono">bottleneck</td><td><em>Output</em> of the simulation — never an input. If you write it down in advance, it isn't a study.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The data spine we already have</h3>
+  <p>This is the part that makes it ours rather than a demo. A process-mining event log is three columns — case id, activity,
+  timestamp. That is exactly what a Zoho Projects ticket already produces as it moves through a list: created, stage moved,
+  commented, closed. Add Cliq activity and WorkDrive document events and each of the five companies already emits a case-level
+  event log strong enough to measure station cycle times and real buffers.</p>
+  <p>So the build order is inverted from the usual: <strong>map first from data we have, then render</strong>. The 3D is the last
+  step and the cheapest one — it is the part an LLM writes in an afternoon.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="kicker">What a good first map looks like</div>
+      <h4>One line, six stations, measured</h4>
+      <ul>
+        <li>The boundary named out loud ("cases out of the plant, from mixer to pallet")</li>
+        <li>Every cycle time carrying a note: where it came from, or "typical"</li>
+        <li>The sizing formula printed next to each machine count</li>
+        <li>One honest finding, e.g. "the sealer is fine; the packer's 15-minute repairs cost 190 cases a day"</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="kicker">What kills it</div>
+      <h4>Three ways this goes wrong</h4>
+      <ul>
+        <li>Tuning inputs until the picture matches the hope — the model then proves nothing</li>
+        <li>Modelling the whole company at once: twenty stations and nobody looks</li>
+        <li>Pretty first, numbers later — then it is a video, and the first engineer who asks a question ends it</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 5 -->
+<section id="s5">
+  <h2><span class="n">5</span>The toolchain — what to use, and what to skip</h2>
+  <p class="standfirst">Three tiers. The bottom tier is what you actually need; the rest is what you add when it becomes a product
+  instead of a page.</p>
+
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>Tool</th><th>Job</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td><b>three.js r185</b> <span class="mono">three</span></td><td>The renderer, the scene, the whole thing</td><td><span class="pill use">core</span></td></tr>
+        <tr><td><span class="mono">GTAOPass</span></td><td>Ground-truth ambient occlusion — the contact shadows that make objects sit on the floor</td><td><span class="pill use">core</span></td></tr>
+        <tr><td><span class="mono">UnrealBloomPass</span></td><td>Glow on emissive parts only, threshold above the sunlight</td><td><span class="pill use">core</span></td></tr>
+        <tr><td><span class="mono">OutputPass</span></td><td>ACES tone map + sRGB at the end of the chain</td><td><span class="pill use">core</span></td></tr>
+        <tr><td><span class="mono">ShaderPass</span></td><td>The tilt-shift blur and the warm grade — hand-written, ~60 lines each</td><td><span class="pill use">core</span></td></tr>
+        <tr><td><span class="mono">RoomEnvironment</span></td><td>PMREM studio environment for believable metal without an HDRI file</td><td><span class="pill use">core</span></td></tr>
+        <tr><td><span class="mono">RoundedBoxGeometry</span></td><td>Soft edges on machines. Hard CG edges are the single biggest "render" tell</td><td><span class="pill use">core</span></td></tr>
+        <tr><td><span class="mono">InstancedMesh</span></td><td>Hundreds of tokens, bolts, people from one draw call</td><td><span class="pill use">when dense</span></td></tr>
+        <tr><td><b>Vite</b></td><td>Dev server for the multi-page lab; skipped entirely by the one-file build</td><td><span class="pill opt">dev only</span></td></tr>
+        <tr><td><b>React Three Fiber + drei</b></td><td>If this becomes an app with routes, state, forms. Costs you the single-file property</td><td><span class="pill opt">product tier</span></td></tr>
+        <tr><td><b>theatre.js</b> / <b>GSAP</b></td><td>Choreographed camera moves and the "film" beats, edited rather than coded</td><td><span class="pill opt">if filming</span></td></tr>
+        <tr><td><b>Rapier</b> (WASM)</td><td>Real physics — only when things must actually collide or topple</td><td><span class="pill no">usually skip</span></td></tr>
+        <tr><td><b>Draco / meshopt / KTX2</b></td><td>Compress imported models and textures — irrelevant while everything is procedural</td><td><span class="pill no">when importing</span></td></tr>
+        <tr><td><b>Blender → glTF</b></td><td>For a real hero machine or an existing CAD asset</td><td><span class="pill opt">sometimes</span></td></tr>
+        <tr><td><b>Playwright</b></td><td>The headless checker and the film recorder — screenshots the page and fails on a bad frame</td><td><span class="pill use">quality gate</span></td></tr>
+        <tr><td><b>AnyLogic / Simio / FlexSim</b></td><td>Serious DES when the process has rework loops, shared labour and changeovers</td><td><span class="pill opt">later</span></td></tr>
+        <tr><td><b>Celonis / process mining</b></td><td>Deriving the station table from real event logs instead of interviews</td><td><span class="pill opt">the data spine</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The craft rules worth stealing</h3>
+  <ul>
+    <li><b>Procedural over imported.</b> No asset files means no drift, instant parameter changes, and a page that still works in three years.</li>
+    <li><b>One accent colour per station.</b> The eye follows colour along the line; without it, machines merge into grey.</li>
+    <li><b>One label per station, on a post.</b> No floating 3D text — it is the fastest way to make a scene look like a dashboard in space.</li>
+    <li><b>Density sells realism.</b> Pallets, carts, drums, people. Half the perceived quality is clutter, not shaders.</li>
+    <li><b>Check it headless before you look at it.</b> Their pipeline runs the sim in Node, prints per-station machines, capacity,
+      busy, blocked, starved and failures, and only then builds the page. The numbers are reviewed like an engineer's, not a designer's.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ 6 -->
+<section id="s6">
+  <h2><span class="n">6</span>How we build ours</h2>
+  <p class="standfirst">Not a proposal for a platform — one page, one line, measured, then repeated. Staged by dependency, so the
+  first thing he can look at arrives before the hard part.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="kicker">Stage 1 — visible fast</div>
+      <h4>One floor, one company</h4>
+      <p>Pick the line with the clearest start and end. Pull six to ten stations and their cycle times out of ticket timestamps.
+      Ship one page in the shape of the demo above, with every number annotated by where it came from. This is the thing that
+      decides whether the rest is worth building.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">Stage 2 — the spine</div>
+      <h4>Measured, not estimated</h4>
+      <p>A nightly job turns Zoho Projects (plus Cliq and WorkDrive) into a case-level event log: case id, activity, timestamp.
+      Stations then read their cycle times from data, and the map updates itself when the process changes.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">Stage 3 — the fleet</div>
+      <h4>One page per company, one kit</h4>
+      <p>Shared machine kit, shared look, a switch at the top between the five floors. Each company gets its own bottleneck
+      instead of a monthly argument about whose team is behind.</p>
+    </div>
+    <div class="card">
+      <div class="kicker">Stage 4 — what-if</div>
+      <h4>Change it and see the forecast</h4>
+      <p>Add a person, change a cycle time, watch the constraint move and the forecast recalculate from a fresh seeded run. A link
+      per scenario, so a decision gets a URL instead of a slide.</p>
+    </div>
+  </div>
+
+  <h3>What I need from you</h3>
+  <div class="tscroll">
+    <table>
+      <thead><tr><th>#</th><th>Question</th><th>Why it changes the build</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td><b>Which line first?</b></td><td>Papa Pasta's production line is the obvious one — physical, visible, a real bottleneck. Infinity Brands' brief-to-delivery flow is more valuable to us but harder to boundary.</td></tr>
+        <tr><td class="num">2</td><td><b>Self-contained file or a hosted product?</b></td><td>One file is shareable and unbreakable; a product means auth, data refresh and R3F. Start with the file.</td></tr>
+        <tr><td class="num">3</td><td><b>Whose numbers are authoritative?</b></td><td>A model is only as good as the cycle times. If the GM won't own the inputs, the output gets argued with instead of used.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:16px">The canvas at the top of this page is the whole argument: six stations, a seeded simulation, a tilt-shift
+  pipeline and a bottleneck that moves when you click. Everything except the numbers is production-grade, and the numbers are the
+  one thing we can actually measure.</p>
+</section>
+</div>
+
+<div class="band">
+  <div class="wrap">
+    <h2>The short version</h2>
+    <p class="q">A business is a queueing system. Draw it as stations, simulate it honestly, and photograph the result as a model on a table — and a manager finally sees the whole floor at once.</p>
+    <ol>
+      <li><b>The look is seven numbers</b>, not a library: focus band, warm sun, AO, post-tone-map grade, density, cut-away plinth, one accent per station.</li>
+      <li><b>The engine is ~530 lines</b> of discrete event simulation with a printed sizing rule; the visuals read the simulation, never the other way round.</li>
+      <li><b>The mapping is one-to-one</b>: process step → station, cycle time → ct, WIP → buffer, downtime → MTBF/MTTR, rework → yield, and the bottleneck is an output.</li>
+      <li><b>Our event log already exists</b> in Zoho Projects. That is the difference between a demo and an assessment.</li>
+    </ol>
+  </div>
+</div>
+
+<footer class="wrap">
+  <p><b>Sources</b> — cloned and read today: <a href="https://github.com/AirsupHQ/airsup-lab">AirsupHQ/airsup-lab</a> (TypeScript, MIT,
+  <span class="mono">src/render/pipeline.ts</span>, <span class="mono">src/core/materials.ts</span>, <span class="mono">src/core/cut.ts</span>,
+  <span class="mono">package.json</span>), <a href="https://github.com/AirsupHQ/factory-skill">AirsupHQ/factory-skill</a> (MIT,
+  <span class="mono">SKILL.md</span>, <span class="mono">references/look.md</span>, <span class="mono">references/des.md</span>,
+  <span class="mono">references/process.md</span>, <span class="mono">runtime/look.js</span>, <span class="mono">runtime/des.js</span>),
+  <a href="https://github.com/AirsupHQ/machine-skill">AirsupHQ/machine-skill</a> (MIT), and the live pages at airsup.ai/lab including
+  <span class="mono">/lab/skill</span>. Post chain, camera, materials and simulation in the demo above were rebuilt from those sources
+  for this page; three.js r185 is loaded from jsDelivr.</p>
+  <p>Prepared by Bruce Wayne · 23 October 2026 · AI-Drive <span class="mono">Agent-Output/batman</span>. Every figure quoted is from the
+  source repositories as read today; the demo's cycle times are placeholders and labelled as such.</p>
+</footer>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+/* The Business Floor — a tilt-shift miniature of a production line, driven by a
+   discrete event simulation. Built on three.js r185 (CDN) with a hand-rolled
+   post chain: GTAO -> bloom -> ACES -> tilt-shift -> grade.
+   Numbers in the model are placeholders for a typical pasta line, and the page says so. */
+
+import * as THREE from 'three'
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js'
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js'
+
+/* ------------------------------------------------------------------ helpers */
+const R = (a, b) => a + Math.random() * (b - a)
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+const fmt = (n, d = 0) => n.toLocaleString('en-ZA', { minimumFractionDigits: d, maximumFractionDigits: d })
+
+/* --------------------------------------------------------------- the spec */
+const DAY = 57600 // 2 x 8 h shifts, production seconds
+const SPEC = {
+  product: { name: 'case of pasta', unit: 'cases', perToken: 1 },
+  demand: { perDay: 2400 },
+  calendar: { shifts: 2, hoursPerShift: 8, startHour: 6 },
+  targetUtil: 0.85,
+  seed: 11,
+  stations: [
+    { id: 'mix', name: 'Dough mixer', kind: 'mixer', ct: 600, batch: 60, cv: 0.05, buffer: 180,
+      mtbf: 100 * 3600, mttr: 40 * 60, accent: '#c2703f',
+      note: 'batch of 60 case-equivalents, 10 min per batch; typical durum line' },
+    { id: 'press', name: 'Extruder', kind: 'press', ct: 6, cv: 0.05, buffer: 90,
+      mtbf: 8 * 3600, mttr: 20 * 60,
+      accent: '#b8563f', note: '6 s per case through the die; bronze die, 1 head' },
+    { id: 'dry', name: 'Tunnel dryer', kind: 'tunnel', ct: 720, perMachine: 30, cv: 0.02, buffer: 60,
+      mtbf: 240 * 3600, mttr: 90 * 60, accent: '#8a6d4b',
+      note: '12 min dwell, 30 cases inside one tunnel (continuous flow)' },
+    { id: 'pack', name: 'Bag packer', kind: 'packer', ct: 20, cv: 0.12, buffer: 60,
+      mtbf: 5 * 3600, mttr: 15 * 60, yield: 0.985, accent: '#41707a',
+      note: '20 s per case, 1.5% seal rejects' },
+    { id: 'case', name: 'Case sealer', kind: 'sealer', ct: 14, cv: 0.06, buffer: 60,
+      mtbf: 30 * 3600, mttr: 10 * 60, yield: 0.997, accent: '#5d6b8a',
+      note: '14 s per case, tape head' },
+    { id: 'ship', name: 'Palletiser', kind: 'dispatch', ct: 9, cv: 0.08, buffer: 240,
+      mtbf: 60 * 3600, mttr: 20 * 60, accent: '#6f7a4f',
+      note: '9 s per case onto the pallet; the sink' },
+  ],
+}
+
+/* ------------------------------------------------------- discrete event sim */
+function lognorm(rng, mean, cv) {
+  const s = Math.sqrt(Math.log(1 + cv * cv))
+  const m = Math.log(mean) - (s * s) / 2
+  const u = Math.max(1e-9, rng()), v = rng()
+  return Math.exp(m + s * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v))
+}
+function expo(rng, mean) { return -Math.log(Math.max(1e-9, rng())) * mean }
+
+class Heap {
+  constructor() { this.a = [] }
+  push(item) {
+    const a = this.a; a.push(item); let i = a.length - 1
+    while (i > 0) { const p = (i - 1) >> 1; if (a[p].t <= a[i].t) break; [a[p], a[i]] = [a[i], a[p]]; i = p }
+  }
+  pop() {
+    const a = this.a; if (!a.length) return null
+    const top = a[0], last = a.pop()
+    if (a.length) { a[0] = last; let i = 0
+      for (;;) { const l = 2 * i + 1, r = l + 1; let s = i
+        if (l < a.length && a[l].t < a[s].t) s = l
+        if (r < a.length && a[r].t < a[s].t) s = r
+        if (s === i) break; [a[s], a[i]] = [a[i], a[s]]; i = s } }
+    return top
+  }
+  get size() { return this.a.length }
+}
+
+class Sim {
+  constructor(spec) {
+    this.spec = spec
+    this.rng = mulberry32(spec.seed)
+    this.t = 0
+    this.heap = new Heap()
+    this.seq = 0
+    this.units = new Map()
+    this.nextUnit = 1
+    this.done = 0
+    this.windowSec = 4 * 3600
+    this.winStart = 0
+    this.winDone = 0
+    this.ships = []
+    this.build()
+    this.resetWindow()
+    this.warmup()
+  }
+
+  build() {
+    const spec = this.spec
+    const rate = (spec.demand.perDay * spec.product.perToken) / DAY // cases per production second
+    this.stations = spec.stations.map((s, i) => {
+      const A = s.mtbf && s.mttr ? s.mtbf / (s.mtbf + s.mttr) : 1
+      const pm = s.perMachine || 1
+      const batch = s.batch || 1
+      const need = (rate * s.ct) / (batch * A * spec.targetUtil)
+      let perMachineSlots = Math.max(1, Math.ceil(need - 1e-9))
+      let machines = pm > 1 ? Math.ceil(perMachineSlots / pm) * 1 : perMachineSlots
+      const st = {
+        ...s, idx: i, pm, batch, A,
+        machines: machines,
+        servers: machines * pm,
+        sizing: `CEIL(${fmt(rate * DAY)} cases/day × ${s.ct} s / (${fmt(DAY)} s × ${batch > 1 ? batch + ' per batch × ' : ''}${A < 1 ? A.toFixed(2) + ' availability × ' : ''}${spec.targetUtil})) = ${machines * pm} place${machines * pm > 1 ? 's' : ''}${pm > 1 ? ` = ${machines} machine${machines > 1 ? 's' : ''} of ${pm}` : ''}`,
+        preds: [], succ: null,
+        inq: [], out: [], held: [], slots: [],
+        stat: { busy: 0, down: 0, blocked: 0, starved: 0, idle: 0 },
+        state: 'starved',
+      }
+      return st
+    })
+    this.stations.forEach((st, i) => {
+      st.preds = i === 0 ? [] : [i - 1]
+      st.inq = st.preds.map(() => [])
+      if (i > 0) this.stations[i - 1].succ = st
+      st.slots = new Array(st.servers).fill(null).map(() => ({ state: 'idle', unit: null, until: 0, remaining: 0, downUntil: 0, failAt: 0 }))
+    })
+    this.sink = this.stations[this.stations.length - 1]
+  }
+
+  resetWindow() {
+    this.winStart = this.t
+    this.winDone = 0
+    for (const st of this.stations) {
+      st.stat = { busy: 0, down: 0, blocked: 0, starved: 0, idle: 0 }
+      for (const slot of st.slots) slot.since = this.t
+    }
+  }
+
+  addUnit(stage) {
+    const id = this.nextUnit++
+    const u = { id, stage, loc: null, born: this.t }
+    this.units.set(id, u)
+    return u
+  }
+
+  /** a slot's state change is accounted here so the HUD is exact, not sampled */
+  setSlot(st, slot, state) {
+    if (slot.state === state) return
+    const dt = Math.max(0, this.t - (slot.since ?? this.t))
+    if (st.stat[slot.state] !== undefined) st.stat[slot.state] += dt
+    slot.state = state
+    slot.since = this.t
+  }
+
+  release() {
+    const head = this.stations[0]
+    // capacity release: raw material always available at the branch head
+    const free = head.slots.filter((s) => s.state === 'idle' || s.state === 'starved')
+    for (const slot of free) this.tryStart(head, slot)
+  }
+
+  /** a slot can start unless it is busy, blocked behind a full buffer, or broken */
+  canStart(slot) { return slot.state === 'idle' || slot.state === 'starved' }
+
+  tryStart(st, slot) {
+    if (!this.canStart(slot)) return false
+    if (st.preds.length === 0) {
+      // source: create a unit
+      const units = []
+      if (st.batch > 1) {
+        // batch station at the head: build a batch over time is out of scope, release batch at once
+        for (let i = 0; i < st.batch; i++) units.push(this.addUnit(st.id))
+      } else units.push(this.addUnit(st.id))
+      this.begin(st, slot, units)
+      return true
+    }
+    // every input must hold a batch
+    const take = []
+    for (const q of st.inq) if (q.length < st.batch) return false
+    for (const q of st.inq) take.push(...q.splice(0, st.batch))
+    // the first input's units carry on; the others are consumed into it
+    const carried = take.slice(0, st.batch)
+    this.begin(st, slot, carried)
+    // any station that was blocked handing to this queue can now move
+    for (const p of st.preds) this.unblock(this.stations[p])
+    return true
+  }
+
+  begin(st, slot, units) {
+    const d = lognorm(this.rng, st.ct, st.cv ?? 0.05)
+    slot.unit = units
+    slot.remaining = d
+    slot.endAt = this.t + d
+    slot.gen = (slot.gen || 0) + 1
+    const gen = slot.gen
+    this.setSlot(st, slot, 'busy')
+    slot.start = this.t
+    units.forEach((u, i) => { u.loc = { type: 'machine', st: st.idx, slot: st.slots.indexOf(slot), k: i } })
+    this.pushEvent(this.t + d, () => { if (slot.gen === gen) this.finish(st, slot) })
+    if (st.mtbf && st.mttr) {
+      const f = this.t + expo(this.rng, st.mtbf)
+      this.pushEvent(f, () => { if (slot.gen === gen && slot.state === 'busy') this.breakdown(st, slot) })
+    }
+  }
+
+  breakdown(st, slot) {
+    if (slot.state !== 'busy') return
+    slot.remaining = Math.max(0, slot.endAt - this.t)
+    slot.gen++
+    this.setSlot(st, slot, 'down')
+    const rep = expo(this.rng, st.mttr)
+    const gen = slot.gen
+    this.pushEvent(this.t + rep, () => { if (slot.gen === gen) this.repair(st, slot) })
+  }
+
+  repair(st, slot) {
+    if (slot.state !== 'down') return
+    const d = Math.max(0.5, slot.remaining || st.ct)
+    this.setSlot(st, slot, 'busy')
+    slot.start = this.t
+    slot.endAt = this.t + d
+    slot.gen++
+    const gen = slot.gen
+    this.pushEvent(this.t + d, () => { if (slot.gen === gen) this.finish(st, slot) })
+    if (st.mtbf && st.mttr) {
+      const f = this.t + expo(this.rng, st.mtbf)
+      this.pushEvent(f, () => { if (slot.gen === gen && slot.state === 'busy') this.breakdown(st, slot) })
+    }
+  }
+
+  finish(st, slot) {
+    if (slot.state !== 'busy') return
+    const units = slot.unit || []
+    slot.gen++
+    // scrap
+    const good = []
+    for (const u of units) {
+      const y = st.yield ?? 1
+      if (this.rng() <= y) good.push(u)
+      else this.units.delete(u.id)
+    }
+    slot.unit = null
+    slot.remaining = 0
+    if (!st.succ) {
+      // sink
+      for (const u of good) {
+        u.loc = { type: 'done', st: st.idx }
+        this.units.delete(u.id)
+        this.done++
+        this.winDone++
+        this.ships.push(this.t)
+      }
+      if (this.ships.length > 12000) this.ships.splice(0, this.ships.length - 12000)
+      this.setSlot(st, slot, 'starved'); slot.since = this.t
+      this.tryStart(st, slot)
+      return
+    }
+    st.out.push(...good)
+    good.forEach((u, i) => { u.loc = { type: 'out', st: st.idx, k: i } })
+    this.forward(st, slot)
+  }
+
+  /** push what fits into the next buffer; the machine stays blocked while it still holds output */
+  forward(st, slot) {
+    const nxt = st.succ
+    if (!nxt) return
+    const qi = nxt.preds.indexOf(st.idx)
+    const q = nxt.inq[qi]
+    const room = Math.max(0, nxt.buffer - q.length)
+    if (room > 0) {
+      const moved = st.out.splice(0, room)
+      q.push(...moved)
+      q.forEach((u, i) => { u.loc = { type: 'queue', st: nxt.idx, k: i } })
+      for (const s2 of nxt.slots) if (this.canStart(s2)) this.tryStart(nxt, s2)
+    }
+    st.out.forEach((u, i) => { u.loc = { type: 'out', st: st.idx, k: i } })
+    if (st.out.length > 0) {
+      this.setSlot(st, slot, 'blocked'); slot.since = this.t
+    } else {
+      this.setSlot(st, slot, 'idle'); slot.since = this.t
+      this.tryStart(st, slot)
+    }
+  }
+
+  unblock(st) {
+    for (const slot of st.slots) {
+      if (slot.state !== 'blocked') continue
+      this.forward(st, slot)
+    }
+  }
+
+  /** what-if: add or remove machines on a station without restarting the run */
+  setMachines(id, n) {
+    const st = this.stations.find((s) => s.id === id)
+    if (!st) return
+    st.machines = Math.max(1, Math.round(n))
+    st.servers = st.machines * st.pm
+    while (st.slots.length < st.servers) st.slots.push({ state: 'idle', unit: null, until: 0, remaining: 0, since: this.t, gen: 0 })
+    while (st.slots.length > st.servers) {
+      const sl = st.slots.pop()
+      if (sl.unit) sl.unit.forEach((u) => this.units.delete(u.id))
+    }
+    for (const sl of st.slots) if (this.canStart(sl)) this.tryStart(st, sl)
+    return st
+  }
+
+  pushEvent(t, fn) { this.heap.push({ t, fn, seq: this.seq++ }) }
+
+  step(dt) {
+    const target = this.t + dt
+    let guard = 0
+    while (this.heap.size && this.heap.a[0].t <= target) {
+      const e = this.heap.pop()
+      this.t = Math.max(this.t, e.t)
+      e.fn()
+      if (++guard > 200000) break
+    }
+    this.t = target
+    this.release()
+    // starving bookkeeping: any idle slot with no work waiting
+    for (const st of this.stations) {
+      for (const slot of st.slots) {
+        if (slot.state === 'idle') this.setSlot(st, slot, 'starved')
+      }
+    }
+    if (this.t - this.winStart > this.windowSec) {
+      const keep = this.snapshotWindow()
+      this.resetWindow()
+      this.lastWindow = keep
+    }
+  }
+
+  snapshotWindow() {
+    const span = this.t - this.winStart
+    const out = { span, perDay: (this.winDone / Math.max(1, span)) * DAY, stations: {} }
+    for (const st of this.stations) {
+      const s = st.stat
+      const tot = s.busy + s.down + s.blocked + s.starved + s.idle || 1
+      out.stations[st.id] = {
+        busy: s.busy / tot, down: s.down / tot, blocked: s.blocked / tot, starved: s.starved / tot,
+        active: (s.busy + s.down) / tot,
+      }
+    }
+    let bn = null
+    for (const st of this.stations) {
+      // how full is this station's own theoretical capacity at the rate the line actually
+      // achieves? That is the constraint question, and it does not reward the head station
+      // for being permanently fed.
+      const theo = (DAY * st.servers * st.batch) / st.ct * st.A
+      out.stations[st.id].load = theo > 0 ? out.perDay / theo : 0
+      if (!bn || out.stations[st.id].load > out.stations[bn.id].load) bn = st
+    }
+    out.bottleneck = bn ? bn.id : null
+    return out
+  }
+
+  metrics() {
+    // Throughput is a rolling measure over the last RATE_WIN seconds of production time:
+    // it reacts to a what-if within seconds of the new machines coming up, and it does not
+    // drag a stale average along for hours.
+    const RATE_WIN = 900
+    while (this.ships.length && this.ships[0] < this.t - RATE_WIN) this.ships.shift()
+    const span = Math.min(RATE_WIN, Math.max(1, this.t))
+    const perDay = (this.ships.length / span) * DAY
+    const wip = this.units.size
+    const lead = perDay > 0 ? (wip / perDay) * 24 : 0 // hours
+    const snap = this.snapshotWindow()
+    let bn = null
+    for (const st of this.stations) {
+      const theo = (DAY * st.servers * st.batch) / st.ct * st.A
+      snap.stations[st.id].load = theo > 0 ? perDay / theo : 0
+      if (!bn || snap.stations[st.id].load > snap.stations[bn.id].load) bn = st
+    }
+    snap.bottleneck = bn ? bn.id : null
+    const takt = SPEC.demand.perDay > 0 ? DAY / SPEC.demand.perDay : 0
+    return { perDay, takt, wip, lead, stations: snap.stations, bottleneck: snap.bottleneck, span }
+  }
+
+  warmup() {
+    // fill the line and close at least one full measurement window before the page opens,
+    // so the first HUD readout is a real rate rather than a divide-by-a-few-seconds
+    const t0 = this.t
+    while (this.t - t0 < 6 * 3600) this.step(60)
+    if (!this.lastWindow) this.lastWindow = this.snapshotWindow()
+  }
+
+  run(days) {
+    const target = this.t + days * DAY
+    let n = 0
+    while (this.t < target) { this.step(30); if (++n > 400000) break }
+    return this.metrics()
+  }
+}
+
+/* ----------------------------------------------------------- the miniature */
+const canvas = document.getElementById('scene')
+const errs = []
+window.addEventListener('error', (e) => errs.push(String(e.message)))
+window.__errs = errs
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' })
+renderer.outputColorSpace = THREE.SRGBColorSpace
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 0.98
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFShadowMap
+const DPR = Math.min(window.devicePixelRatio || 1, 2)
+renderer.setPixelRatio(DPR)
+
+const scene = new THREE.Scene()
+const BG = new THREE.Color('#e8e1d4')
+scene.background = BG
+scene.fog = new THREE.Fog(BG, 260, 900)
+
+const pmrem = new THREE.PMREMGenerator(renderer)
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
+scene.environmentIntensity = 0.42
+
+const camera = new THREE.PerspectiveCamera(22, 1, 1, 2000)
+camera.position.set(24, 20, 30)
+
+const sun = new THREE.DirectionalLight('#ffeed2', 4.0)
+sun.castShadow = true
+sun.shadow.mapSize.set(4096, 4096)
+sun.shadow.bias = -0.00025
+sun.shadow.normalBias = 0.025
+sun.shadow.radius = 2.2
+scene.add(sun, sun.target)
+scene.add(new THREE.HemisphereLight('#dfe9f5', '#a8957a', 0.62))
+const fill = new THREE.DirectionalLight('#dbe6ff', 0.45)
+fill.position.set(60, 30, 80)
+scene.add(fill)
+
+const controls = new OrbitControls(camera, canvas)
+controls.target.set(0, 1.2, 0)
+controls.enableDamping = true
+controls.dampingFactor = 0.07
+controls.minDistance = 18
+controls.maxDistance = 70
+controls.maxPolarAngle = Math.PI * 0.46
+controls.minPolarAngle = Math.PI * 0.14
+
+/* geometry helpers */
+const mats = {}
+function mat(name, color, o = {}) {
+  const key = name + color + JSON.stringify(o)
+  if (!mats[key]) mats[key] = new THREE.MeshStandardMaterial({ color, roughness: 0.5, metalness: 0.0, ...o })
+  return mats[key]
+}
+const M = {
+  floor: mat('floor', '#c8c4bb', { roughness: 0.92 }),
+  wall: mat('wall', '#e4e0d7', { roughness: 0.95 }),
+  wallCut: mat('wallcut', '#9aa0a4', { roughness: 0.7 }),
+  base: mat('base', '#3a3733', { roughness: 0.9 }),
+  grass: mat('grass', '#8d9a72', { roughness: 1 }),
+  asphalt: mat('asphalt', '#8b8983', { roughness: 1 }),
+  cream: mat('cream', '#efe7d6', { roughness: 0.45, metalness: 0.15 }),
+  cream2: mat('cream2', '#ded4c0', { roughness: 0.5, metalness: 0.1 }),
+  graphite: mat('graphite', '#43474c', { roughness: 0.45, metalness: 0.35 }),
+  steel: mat('steel', '#9aa1a8', { roughness: 0.35, metalness: 0.8 }),
+  darksteel: mat('darksteel', '#6b7278', { roughness: 0.4, metalness: 0.7 }),
+  tape: mat('tape', '#d9b64a', { roughness: 0.8 }),
+  walk: mat('walk', '#7d8a6f', { roughness: 0.95 }),
+  glass: new THREE.MeshStandardMaterial({ color: '#bfd6dd', transparent: true, opacity: 0.28, roughness: 0.1, metalness: 0.4 }),
+  glow: new THREE.MeshStandardMaterial({ color: '#ffe9b8', emissive: '#ffcf7a', emissiveIntensity: 1.4, roughness: 0.6 }),
+  pallet: mat('pallet', '#b08a5a', { roughness: 0.9 }),
+  cart: mat('cart', '#c96b3f', { roughness: 0.6 }),
+  drum: mat('drum', '#4f6d7a', { roughness: 0.6, metalness: 0.4 }),
+  person: mat('person', '#e7e1d4', { roughness: 0.8 }),
+  skin: mat('skin', '#c79a76', { roughness: 0.8 }),
+}
+
+function box(parent, w, h, d, material, x, y, z, round = 0.04) {
+  const g = round > 0 ? new RoundedBoxGeometry(w, h, d, 2, round) : new THREE.BoxGeometry(w, h, d)
+  const m = new THREE.Mesh(g, material)
+  m.position.set(x, y + h / 2, z)
+  m.castShadow = true; m.receiveShadow = true
+  parent.add(m)
+  return m
+}
+function cyl(parent, r, h, material, x, y, z, seg = 20) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), material)
+  m.position.set(x, y + h / 2, z)
+  m.castShadow = true; m.receiveShadow = true
+  parent.add(m)
+  return m
+}
+
+/* the world: hall on a diorama base */
+const world = new THREE.Group()
+scene.add(world)
+const HALL = { x0: -16, x1: 16, z0: -8, z1: 9 }
+
+// plinth + table
+box(world, 40, 1.2, 26, M.base, 0, -1.2, 0, 0.12)
+box(world, 44, 0.4, 30, mat('table', '#6d5744', { roughness: 0.95 }), 0, -1.7, 0, 0.1)
+// grass ring
+box(world, 38, 0.16, 24, M.grass, 0, -0.16, 0, 0.02)
+// hall floor
+const floor = box(world, HALL.x1 - HALL.x0, 0.4, HALL.z1 - HALL.z0, M.floor, 0, -0.4, (HALL.z0 + HALL.z1) / 2, 0.02)
+floor.receiveShadow = true
+// walkway + zone tape
+box(world, 30, 0.02, 2.2, M.walk, 0, 0.01, -6.2, 0)
+box(world, 30, 0.02, 0.18, M.tape, 0, 0.02, -5.05, 0)
+box(world, 30, 0.02, 0.18, M.tape, 0, 0.02, -1.9, 0)
+// cut-away walls: back and left full height, front and right cut low with a coloured section face
+const wallH = 6
+box(world, HALL.x1 - HALL.x0, wallH, 0.5, M.wall, 0, 0, HALL.z0, 0.02)
+box(world, 0.5, wallH, HALL.z1 - HALL.z0, M.wall, HALL.x0, 0, (HALL.z0 + HALL.z1) / 2, 0.02)
+const cutH = 1.1
+const fw = box(world, HALL.x1 - HALL.x0, cutH, 0.5, M.wall, 0, 0, HALL.z1, 0.02)
+const rw = box(world, 0.5, cutH, HALL.z1 - HALL.z0, M.wall, HALL.x1, 0, (HALL.z0 + HALL.z1) / 2, 0.02)
+// section faces
+box(world, HALL.x1 - HALL.x0, cutH, 0.06, M.wallCut, 0, 0, HALL.z1 + 0.26, 0)
+box(world, 0.06, cutH, HALL.z1 - HALL.z0, M.wallCut, HALL.x1 + 0.26, 0, (HALL.z0 + HALL.z1) / 2, 0)
+
+// racking along the back wall
+for (let i = 0; i < 9; i++) {
+  const x = -13 + i * 3.1
+  box(world, 2.6, 0.12, 1.2, M.graphite, x, 0, HALL.z0 + 1.3, 0.02)
+  for (let l = 0; l < 3; l++) box(world, 2.6, 0.08, 1.05, M.steel, x, 1.1 + l * 1.15, HALL.z0 + 1.3, 0.02)
+  for (let l = 0; l < 3; l++) for (let k = 0; k < 3; k++)
+    box(world, 0.6, 0.5, 0.7, k === 1 ? M.pallet : M.cream2, x - 0.7 + k * 0.7, 1.2 + l * 1.15, HALL.z0 + 1.3, 0.03)
+}
+
+// clutter on free floor (density is what sells it)
+const clutter = new THREE.Group(); world.add(clutter)
+for (let i = 0; i < 26; i++) {
+  const x = R(-14, 14), z = R(-4.6, 8.2)
+  if (Math.abs(z) < 2.4) continue
+  const kind = Math.random()
+  if (kind < 0.45) { // pallet stack
+    for (let l = 0; l < 3; l++) box(clutter, 1.2, 0.14, 0.9, M.pallet, x, 0.14 * l, z, 0.02)
+  } else if (kind < 0.75) {
+    box(clutter, 1.1, 0.75, 0.7, M.cart, x, 0, z, 0.05)
+  } else if (kind < 0.9) {
+    cyl(clutter, 0.34, 0.9, M.drum, x, 0, z, 14)
+  } else {
+    box(clutter, 0.8, 0.5, 0.6, M.graphite, x, 0, z, 0.04)
+  }
+}
+
+// truck yard outside the cut wall
+box(world, 9, 0.02, 7, M.asphalt, 8, 0, 12, 0)
+const truck = new THREE.Group(); truck.position.set(8, 0, 12.5); world.add(truck)
+box(truck, 2.6, 2.7, 7, M.cream, 0, 0, 0, 0.12)
+box(truck, 2.4, 1.1, 1.6, M.graphite, 0, 0, -4.4, 0.1)
+box(truck, 2.2, 0.9, 0.1, M.glass, 0, 1.6, -5.2, 0.02)
+
+/* conveyor spine */
+const LINE_X0 = -12, LINE_X1 = 12
+box(world, LINE_X1 - LINE_X0, 0.5, 1.1, M.graphite, (LINE_X0 + LINE_X1) / 2, 0.05, 0, 0.05)
+box(world, LINE_X1 - LINE_X0, 0.06, 0.85, mat('belt', '#2f3236', { roughness: 0.7 }), (LINE_X0 + LINE_X1) / 2, 0.55, 0, 0.02)
+for (let x = LINE_X0; x <= LINE_X1; x += 0.6) box(world, 0.08, 0.05, 0.9, M.steel, x, 0.585, 0, 0.01)
+
+/* stations */
+const ST = SPEC.stations
+const XS = [-10.5, -6.3, -1.9, 2.6, 7.0, 11.0]
+const stationGroups = []
+const hitboxes = []
+
+function stationBase(g, accent, w = 3.4, d = 2.6) {
+  box(g, w, 0.35, d, M.graphite, 0, 0, 0, 0.06)
+  box(g, w - 0.3, 0.06, d - 0.3, mat('deck', '#b9b4a9', { roughness: 0.8 }), 0, 0.35, 0, 0.02)
+  const acc = new THREE.MeshStandardMaterial({ color: accent, roughness: 0.55, metalness: 0.15 })
+  box(g, w - 0.2, 0.06, 0.18, acc, 0, 0.41, d / 2 - 0.2, 0.01)
+  return acc
+}
+
+function buildStation(i) {
+  const s = ST[i]
+  const g = new THREE.Group()
+  g.position.set(XS[i], 0, 1.9)
+  world.add(g)
+  const acc = stationBase(g, s.accent)
+  let live = []
+
+  if (s.kind === 'mixer') {
+    cyl(g, 1.15, 2.0, M.steel, 0, 0.4, 0, 28)
+    cyl(g, 1.05, 0.3, acc, 0, 2.4, 0, 28)
+    const ag = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.05, 8, 24), M.darksteel)
+    ag.position.set(0, 2.72, 0); ag.rotation.x = Math.PI / 2; g.add(ag); live.push(ag)
+    box(g, 0.9, 1.5, 0.9, M.cream, -1.5, 0.4, 0.7, 0.06)
+    cyl(g, 0.12, 2.2, M.darksteel, 1.4, 0.4, 0.6, 10)
+    box(g, 0.5, 1.2, 0.5, M.cream, 1.4, 2.6, 0.6, 0.05)
+  } else if (s.kind === 'press') {
+    box(g, 2.6, 1.5, 1.9, M.cream, 0, 0.4, 0, 0.08)
+    box(g, 1.0, 1.2, 0.9, M.glass, 0, 1.9, 0.1, 0.03)
+    const ram = box(g, 0.6, 0.9, 0.6, acc, 0, 2.9, 0, 0.05); live.push(ram)
+    box(g, 2.2, 0.25, 1.6, M.darksteel, 0, 3.85, 0, 0.04)
+    for (let k = 0; k < 4; k++) cyl(g, 0.09, 1.0, M.steel, -1.0 + k * 0.66, 1.9, -0.9, 10)
+  } else if (s.kind === 'tunnel') {
+    box(g, 3.2, 2.0, 2.0, M.cream, 0, 0.4, 0, 0.1)
+    for (let k = 0; k < 5; k++) box(g, 0.45, 0.7, 0.06, S_GLASS(), -1.2 + k * 0.6, 1.5, 1.02, 0.01)
+    box(g, 3.3, 0.2, 2.1, M.graphite, 0, 2.4, 0, 0.04)
+    for (let k = 0; k < 3; k++) {
+      const gp = box(g, 0.4, 0.18, 0.4, M.glow, 1.1, 2.6 + k * 0.42, -0.5, 0.03); live.push(gp)
+    }
+    box(g, 0.7, 2.2, 0.7, acc, -1.8, 0.4, 0.9, 0.05)
+  } else if (s.kind === 'packer') {
+    box(g, 2.4, 1.6, 1.8, M.cream, 0, 0.4, 0, 0.08)
+    box(g, 1.6, 0.9, 0.08, S_GLASS(), 0, 1.4, 0.92, 0.01)
+    const jaw = box(g, 0.5, 0.5, 0.5, acc, 0, 2.0, 0.2, 0.04); live.push(jaw)
+    cyl(g, 0.3, 1.4, M.steel, 1.1, 0.4, -0.6, 14)
+    const roll = cyl(g, 0.26, 0.9, M.pallet, -1.0, 0.4, -0.6, 14); roll.rotation.z = Math.PI / 2; live.push(roll)
+  } else if (s.kind === 'sealer') {
+    box(g, 2.2, 1.3, 1.6, M.cream, 0, 0.4, 0, 0.07)
+    for (let k = 0; k < 4; k++) { const r = cyl(g, 0.16, 1.2, M.steel, -0.6 + k * 0.4, 1.75, 0, 14); r.rotation.z = Math.PI / 2; live.push(r) }
+    box(g, 1.6, 0.14, 0.14, acc, 0, 2.3, 0, 0.02)
+  } else {
+    // palletiser
+    cyl(g, 0.55, 0.5, M.graphite, 0, 0.4, 0, 18)
+    box(g, 0.4, 2.6, 0.4, acc, 0, 0.9, 0, 0.04)
+    const arm = new THREE.Group(); arm.position.set(0, 3.3, 0); g.add(arm); live.push(arm)
+    box(arm, 2.2, 0.28, 0.4, M.cream, 0.9, -0.14, 0, 0.04)
+    box(arm, 0.5, 0.5, 0.5, M.graphite, 1.9, -0.5, 0, 0.05)
+    // pallets of product
+    for (let k = 0; k < 4; k++) {
+      box(g, 1.3, 0.16, 1.0, M.pallet, -1.3 + (k % 2) * 1.5, 0.4, -0.7 + Math.floor(k / 2) * 1.2, 0.02)
+      box(g, 1.0, 0.75, 0.8, M.cream2, -1.3 + (k % 2) * 1.5, 0.56, -0.7 + Math.floor(k / 2) * 1.2, 0.03)
+    }
+  }
+  // one plate per station, on a post (the only text in the scene)
+  const plate = makePlate(s.name, s.accent)
+  plate.position.set(0, 4.6, 1.6)
+  g.add(plate)
+  const post = box(g, 0.08, 4.4, 0.08, M.darksteel, 0, 0, 1.6, 0.01)
+  post.castShadow = false
+
+  const hb = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.6, 3.2), new THREE.MeshBasicMaterial({ visible: false }))
+  hb.position.set(XS[i], 1.8, 1.9)
+  world.add(hb)
+  hb.userData.station = i
+  hitboxes.push(hb)
+
+  stationGroups.push({ g, live, accent: acc })
+  return g
+}
+
+function S_GLASS() { return M.glass }
+
+function makePlate(text, accent) {
+  const c = document.createElement('canvas')
+  c.width = 512; c.height = 128
+  const ctx = c.getContext('2d')
+  ctx.fillStyle = '#f7f4ec'; ctx.fillRect(0, 0, 512, 128)
+  ctx.fillStyle = accent; ctx.fillRect(0, 0, 12, 128)
+  ctx.fillStyle = '#1d1c1a'
+  ctx.font = '600 44px Inter, system-ui, sans-serif'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(text, 34, 68)
+  const tex = new THREE.CanvasTexture(c)
+  tex.colorSpace = THREE.SRGBColorSpace
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 0.72), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }))
+  return m
+}
+
+ST.forEach((_, i) => buildStation(i))
+
+/* --------------------------------------------------- the constraint, marked
+   A red floor outline under whichever station the simulation says is the
+   constraint. It is driven by the engine, not hand-placed. */
+const bnRect = (() => {
+  const w = 2.9, h = 2.1, r = 0.28
+  const pts = []
+  const corner = (cx, cz, a0) => {
+    for (let k = 0; k <= 8; k++) {
+      const a = a0 + (k / 8) * (Math.PI / 2)
+      pts.push(new THREE.Vector3(cx + Math.cos(a) * r, 0, cz + Math.sin(a) * r))
+    }
+  }
+  corner(w - r, h - r, 0)
+  corner(-(w - r), h - r, Math.PI / 2)
+  corner(-(w - r), -(h - r), Math.PI)
+  corner(w - r, -(h - r), Math.PI * 1.5)
+  pts.push(pts[0].clone())
+  const geo = new THREE.BufferGeometry().setFromPoints(pts.map((v) => v.setY(0.055)))
+  const mat = new THREE.LineBasicMaterial({ color: 0xc0392b, transparent: true, opacity: 0.85, toneMapped: false })
+  const line = new THREE.Line(geo, mat)
+  line.visible = false
+  world.add(line)
+  return line
+})()
+let bnShown = null
+function markBottleneck(id) {
+  if (id === bnShown) return
+  bnShown = id
+  const i = ST.findIndex((s) => s.id === id)
+  if (i < 0) { bnRect.visible = false; return }
+  bnRect.position.set(XS[i], 0, 1.1)
+  bnRect.visible = true
+}
+
+/* people */
+function person(x, z, ry = 0) {
+  const g = new THREE.Group()
+  g.position.set(x, 0, z); g.rotation.y = ry
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.21, 0.55, 4, 10), M.person)
+  torso.position.y = 1.1; torso.castShadow = true; g.add(torso)
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 14, 12), M.skin)
+  head.position.y = 1.63; head.castShadow = true; g.add(head)
+  const legs = new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.45, 4, 8), mat('legs', '#4b4f55', { roughness: 0.9 }))
+  legs.position.y = 0.45; legs.castShadow = true; g.add(legs)
+  world.add(g)
+  return g
+}
+const people = []
+for (let i = 0; i < ST.length; i++) if (i !== 2) people.push(person(XS[i] + 1.5, 0.9, R(-0.6, 0.6)))
+for (let i = 0; i < 6; i++) people.push(person(R(-12, 12), -6.2, R(0, 6.28)))
+
+/* tokens */
+const tokenGeo = new RoundedBoxGeometry(0.44, 0.3, 0.36, 2, 0.04)
+const tokenMat = new THREE.MeshStandardMaterial({ color: '#e0c98a', roughness: 0.65, metalness: 0.05 })
+const tokenMeshes = new Map()
+function tokenMesh(id) {
+  let m = tokenMeshes.get(id)
+  if (!m) {
+    m = new THREE.Mesh(tokenGeo, tokenMat)
+    m.castShadow = true; m.receiveShadow = true
+    m.position.set(XS[0], 0.75, 0)
+    world.add(m)
+    tokenMeshes.set(id, m)
+  }
+  return m
+}
+
+/* ------------------------------------------------------------------- sim */
+const sim = new Sim(SPEC)
+
+function stationPos(i) { return new THREE.Vector3(XS[i], 0, 0) }
+
+function targetFor(u) {
+  const L = u.loc
+  if (!L) return null
+  if (L.type === 'queue') {
+    // two rows of waiting cases on the belt, so a full buffer reads as a queue not a clump
+    const row = L.k % 2
+    const col = Math.min(Math.floor(L.k / 2), 13)
+    return new THREE.Vector3(XS[L.st] - 1.9 - col * 0.52, 0.78, row ? 0.26 : -0.26)
+  }
+  if (L.type === 'machine') {
+    const slot = L.slot || 0
+    return new THREE.Vector3(XS[L.st] + ((slot % 8) - 3.5) * 0.34, 0.9, 1.3 + Math.floor(slot / 8) * 0.3)
+  }
+  if (L.type === 'out') {
+    const k = Math.min(L.k || 0, 7)
+    return new THREE.Vector3(XS[L.st] + 1.5 + k * 0.44, 0.78, 0)
+  }
+  return null
+}
+
+/* ------------------------------------------------------------- post chain */
+const TILT = {
+  uniforms: {
+    tDiffuse: { value: null }, dir: { value: new THREE.Vector2(1, 0) }, res: { value: new THREE.Vector2(1, 1) },
+    focusY: { value: 0.46 }, band: { value: 0.07 }, amount: { value: 20 }, tilt: { value: 0 }, power: { value: 1.25 },
+  },
+  vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+  fragmentShader: `
+    uniform sampler2D tDiffuse; uniform vec2 dir, res; uniform float focusY, band, amount, tilt, power;
+    varying vec2 vUv;
+    float coc(vec2 uv){ float y = uv.y + (uv.x - 0.5) * tilt; float d = abs(y - focusY);
+      float k = clamp((d - band) / max(0.05, 0.62 - band), 0.0, 1.0); return pow(k, power) * amount; }
+    void main(){
+      float c = coc(vUv);
+      if (c < 0.35) { gl_FragColor = texture2D(tDiffuse, vUv); return; }
+      vec4 sum = vec4(0.0); float ws = 0.0;
+      for (int i = -14; i <= 14; i++) {
+        float x = float(i) / 14.0; vec2 uv = vUv + dir * x * c / res;
+        float w = exp(-x * x * 2.2) * clamp(coc(uv) / max(c, 1e-3) * 1.5, 0.15, 1.0);
+        sum += texture2D(tDiffuse, uv) * w; ws += w;
+      }
+      gl_FragColor = sum / ws;
+    }`,
+}
+const GRADE = {
+  uniforms: {
+    tDiffuse: { value: null }, res: { value: new THREE.Vector2(1, 1) }, time: { value: 0 },
+    sat: { value: 1.32 }, contrast: { value: 1.14 }, warm: { value: new THREE.Vector3(1.02, 1.0, 0.965) },
+    vig: { value: 0.38 }, grain: { value: 0.018 },
+  },
+  vertexShader: TILT.vertexShader,
+  fragmentShader: `
+    uniform sampler2D tDiffuse; uniform vec2 res; uniform float time, sat, contrast, vig, grain; uniform vec3 warm;
+    varying vec2 vUv;
+    float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+    void main(){
+      vec3 c = texture2D(tDiffuse, vUv).rgb;
+      c = c * warm;
+      float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+      c = mix(vec3(l), c, sat);
+      c = (c - 0.5) * contrast + 0.5;
+      vec2 q = (vUv - 0.5) * vec2(res.x / res.y, 1.0);
+      c *= 1.0 - vig * smoothstep(0.35, 1.05, length(q));
+      c += (h(vUv * res + fract(time) * 91.7) - 0.5) * grain;
+      gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
+    }`,
+}
+
+const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 })
+const composer = new EffectComposer(renderer, rt)
+composer.addPass(new RenderPass(scene, camera))
+let aoPass, bloomPass, outPass, tiltH, tiltV, gradePass, postOn = true
+try {
+  aoPass = new GTAOPass(scene, camera, 1, 1)
+  aoPass.updateGtaoMaterial({ radius: 1.1, distanceExponent: 1.6, thickness: 1.2, scale: 1.15, samples: 16, distanceFallOff: 1 })
+  aoPass.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 })
+  aoPass.blendIntensity = 1.0
+  composer.addPass(aoPass)
+} catch (e) { errs.push('GTAO: ' + e.message) }
+bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.3, 0.45, 2.6)
+composer.addPass(bloomPass)
+outPass = new OutputPass()
+composer.addPass(outPass)
+tiltH = new ShaderPass(TILT); composer.addPass(tiltH)
+tiltV = new ShaderPass(TILT); tiltV.uniforms.dir.value.set(0, 1); composer.addPass(tiltV)
+gradePass = new ShaderPass(GRADE); composer.addPass(gradePass)
+
+/* ---------------------------------------------------------------- resize */
+function size() {
+  const w = canvas.clientWidth || 900, h = canvas.clientHeight || 520
+  renderer.setSize(w, h, false)
+  composer.setPixelRatio(DPR)
+  composer.setSize(w, h)
+  camera.aspect = w / h
+  camera.updateProjectionMatrix()
+  const W = w * DPR, H = h * DPR
+  for (const p of [tiltH, tiltV]) p.uniforms.res.value.set(W, H)
+  gradePass.uniforms.res.value.set(W, H)
+  const a = 20 * (H / 1080)
+  tiltH.uniforms.amount.value = a; tiltV.uniforms.amount.value = a
+  // fit the sun
+  const R2 = 26
+  sun.position.set(-0.55 * R2 * 2, R2 * 2, -0.42 * R2 * 2)
+  sun.target.position.set(0, 0, 0)
+  const c = sun.shadow.camera
+  c.left = -R2; c.right = R2; c.top = R2; c.bottom = -R2; c.near = 1; c.far = R2 * 5
+  c.updateProjectionMatrix()
+}
+window.addEventListener('resize', () => { size() })
+
+/* ------------------------------------------------------------------- HUD */
+const hud = {
+  tput: document.getElementById('h-tput'),
+  target: document.getElementById('h-target'),
+  takt: document.getElementById('h-takt'),
+  wip: document.getElementById('h-wip'),
+  lead: document.getElementById('h-lead'),
+  bn: document.getElementById('h-bn'),
+  bars: document.getElementById('h-bars'),
+  clock: document.getElementById('h-clock'),
+  state: document.getElementById('h-state'),
+}
+const stationRows = []
+ST.forEach((s, i) => {
+  const row = document.createElement('div')
+  row.className = 'bar'
+  row.innerHTML = `<span class="nm">${s.name}</span>
+    <span class="trk"><i class="busy"></i></span>
+    <span class="pc">0%</span>`
+  row.addEventListener('click', () => select(i))
+  hud.bars.appendChild(row)
+  stationRows.push(row)
+})
+
+let selected = -1
+const inspector = document.getElementById('inspector')
+
+function select(i) {
+  selected = i
+  stationRows.forEach((r, k) => r.classList.toggle('sel', k === i))
+  if (i < 0) { inspector.hidden = true; return }
+  inspector.hidden = false
+  renderInspector()
+}
+
+function renderInspector() {
+  const s = sim.stations[selected]
+  const m = sim.metrics()
+  const u = m.stations[s.id]
+  inspector.innerHTML = `
+    <div class="ins-h"><b>${s.name}</b><button id="ins-x" aria-label="close">×</button></div>
+    <div class="ins-row"><span>Machines</span><span class="ctl"><button data-m="-1">−</button><b>${s.machines}</b><button data-m="1">+</button></span></div>
+    <div class="ins-row"><span>Cycle time</span><span class="ctl"><input id="ct" type="range" min="${Math.round(s.ct * 0.4)}" max="${Math.round(s.ct * 2.2)}" value="${s.ct}"><b>${Math.round(s.ct)} s</b></span></div>
+    <div class="ins-row"><span>Buffer</span><span class="ctl"><input id="buf" type="range" min="5" max="${Math.max(30, s.buffer)}" value="${s.buffer}"><b>${s.buffer}</b></span></div>
+    <p class="ins-note">${s.note || ''}</p>
+    <p class="ins-size">${s.sizing}</p>
+    <p class="ins-live">busy ${(u.busy * 100).toFixed(0)}% · blocked ${(u.blocked * 100).toFixed(0)}% · starved ${(u.starved * 100).toFixed(0)}% · down ${(u.down * 100).toFixed(0)}%</p>`
+  inspector.querySelector('#ins-x').onclick = () => select(-1)
+  inspector.querySelectorAll('[data-m]').forEach((b) => b.onclick = () => {
+    sim.setMachines(s.id, s.machines + +b.dataset.m)
+    renderInspector()
+  })
+  const ctIn = inspector.querySelector('#ct')
+  ctIn.oninput = () => { s.ct = +ctIn.value; renderInspector() }
+  const bIn = inspector.querySelector('#buf')
+  bIn.oninput = () => { s.buffer = +bIn.value }
+}
+
+const ray = new THREE.Raycaster()
+canvas.addEventListener('pointerdown', (e) => {
+  const r = canvas.getBoundingClientRect()
+  const v = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1)
+  ray.setFromCamera(v, camera)
+  const hit = ray.intersectObjects(hitboxes, false)[0]
+  if (hit) select(hit.object.userData.station)
+})
+
+/* speed control */
+let speed = 60 // production seconds per real second (20x)
+document.querySelectorAll('[data-speed]').forEach((b) => {
+  b.onclick = () => {
+    document.querySelectorAll('[data-speed]').forEach((x) => x.classList.remove('on'))
+    b.classList.add('on')
+    speed = +b.dataset.speed
+  }
+})
+const postBtn = document.getElementById('t-post')
+if (postBtn) postBtn.onclick = () => { postOn = !postOn; postBtn.classList.toggle('on', postOn) }
+
+/* ------------------------------------------------------------- the clock
+   The model runs on its own timer, not on requestAnimationFrame. A backgrounded tab
+   throttles rAF to nothing, and a throttled clock would freeze the simulation and lie
+   about the state of the line. Rendering can be throttled; the plant cannot. */
+let lastTick = performance.now()
+function tick() {
+  const now = performance.now()
+  const dt = Math.min(0.6, (now - lastTick) / 1000)
+  lastTick = now
+  const stepSec = Math.min(dt * speed, 120)
+  if (stepSec > 0) sim.step(stepSec)
+  drawHud()
+}
+setInterval(tick, 60)
+
+/* ----------------------------------------------------------------- render */
+let last = performance.now()
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000)
+  last = now
+  // tokens
+  for (const [id, u] of sim.units) {
+    const t = targetFor(u)
+    if (!t) continue
+    const mesh = tokenMesh(id)
+    mesh.position.lerp(t, 0.16)
+    mesh.visible = true
+  }
+  for (const [id, mesh] of tokenMeshes) if (!sim.units.has(id)) { world.remove(mesh); tokenMeshes.delete(id) }
+
+  // machine life
+  for (let i = 0; i < sim.stations.length; i++) {
+    const st = sim.stations[i], g = stationGroups[i]
+    const busy = st.slots.some((s) => s.state === 'busy')
+    g.live.forEach((o, k) => {
+      if (o.type === 'Group') o.rotation.y += busy ? dt * 1.6 : 0
+      else if (o.geometry && o.geometry.type === 'TorusGeometry') o.rotation.z += busy ? dt * 2.2 : 0
+      else if (o.geometry && o.geometry.type === 'CylinderGeometry') o.rotation.x += busy ? dt * 1.2 : 0
+      else o.position.y += Math.sin(now / 260 + k) * (busy ? 0.0016 : 0.0002)
+    })
+    if (i === 1) { // press ram
+      const ram = g.live[0]
+      if (ram) ram.position.y = 2.9 + (busy ? Math.max(0, Math.sin(now / 130)) * 0.16 : 0)
+    }
+    if (i === 5) { const arm = g.live[0]; arm.rotation.y = busy ? Math.sin(now / 900) * 0.7 : 0 }
+  }
+
+  if (bnRect.visible) bnRect.material.opacity = 0.55 + Math.sin(now / 420) * 0.3
+
+  controls.update()
+  if (postOn) { gradePass.uniforms.time.value = now / 1000; composer.render() }
+  else renderer.render(scene, camera)
+  requestAnimationFrame(frame)
+}
+
+let hudRate = null
+function drawHud() {
+  const m = sim.metrics()
+  hudRate = hudRate === null ? m.perDay : hudRate * 0.82 + m.perDay * 0.18
+  m.perDay = hudRate
+  const prod = sim.t
+  const day = Math.floor(prod / DAY) + 1
+  const clockH = (6 + (prod % DAY) / 3600) % 24
+  const hour = Math.floor(clockH)
+  const mins = Math.floor((clockH - hour) * 60)
+  hud.tput.textContent = fmt(m.perDay)
+  hud.target.textContent = fmt(SPEC.demand.perDay)
+  hud.takt.textContent = m.takt.toFixed(0) + ' s'
+  hud.wip.textContent = fmt(m.wip)
+  hud.lead.textContent = m.lead.toFixed(1) + ' h'
+  const bn = sim.stations.find((s) => s.id === m.bottleneck)
+  hud.bn.textContent = bn ? bn.name : '—'
+  markBottleneck(m.bottleneck)
+  hud.clock.textContent = `day ${day} · ${String(hour).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+  const rate = m.perDay / SPEC.demand.perDay
+  hud.state.textContent = rate >= 1 ? 'meets commitment' : rate >= 0.9 ? 'just under commitment' : 'short of commitment'
+  hud.state.className = rate >= 1 ? 'ok' : rate >= 0.9 ? 'warn' : 'bad'
+  ST.forEach((s, i) => {
+    const u = m.stations[s.id]
+    const row = stationRows[i]
+    const load = u.load || 0
+    const b = row.querySelector('.busy')
+    b.style.width = (Math.min(1, load) * 100).toFixed(1) + '%'
+    b.style.background = load >= 0.95 ? '#c0392b' : load >= 0.85 ? 'var(--coral)' : s.accent
+    row.querySelector('.pc').textContent = Math.round(Math.min(1, load) * 100) + '%'
+    row.title = `${s.name}: load ${(load * 100).toFixed(0)}% of its own capacity · busy ${(u.busy * 100).toFixed(0)}% · blocked ${(u.blocked * 100).toFixed(0)}% · starved ${(u.starved * 100).toFixed(0)}% · down ${(u.down * 100).toFixed(0)}%`
+    row.classList.toggle('bn', s.id === m.bottleneck)
+  })
+  if (selected >= 0) {
+    const u = m.stations[sim.stations[selected].id]
+    const el = inspector.querySelector('.ins-live')
+    if (el) el.textContent = `busy ${(u.busy * 100).toFixed(0)}% · blocked ${(u.blocked * 100).toFixed(0)}% · starved ${(u.starved * 100).toFixed(0)}% · down ${(u.down * 100).toFixed(0)}%`
+  }
+}
+
+size()
+drawHud()
+requestAnimationFrame(frame)
+
+window.__twin = { sim, SPEC, select, metrics: () => sim.metrics(), errs }
+
+</script>
+</body>
+</html>

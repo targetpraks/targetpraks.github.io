@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MacBook Air — Full System Audit · 23 October 2026</title>
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#14171c; --panel2:#1a1e24; --line:#262b33;
+    --ink:#e8ecf1; --mute:#8b95a3; --dim:#5f6874;
+    --red:#f2555a; --amber:#f0a93b; --green:#3ecf8e; --blue:#5aa9f2; --violet:#a78bfa;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 28px 100px}
+  header.top{border-bottom:1px solid var(--line);padding:44px 0 30px;margin-bottom:34px}
+  .eyebrow{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+  h1{font-size:38px;line-height:1.12;margin:0 0 14px;letter-spacing:-.025em;font-weight:680}
+  h1 span{color:var(--mute);font-weight:400}
+  .sub{color:var(--mute);font-size:15px;max-width:74ch}
+  .ident{display:flex;flex-wrap:wrap;gap:0;margin-top:26px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+  .ident div{flex:1 1 150px;padding:12px 16px;border-right:1px solid var(--line)}
+  .ident div:last-child{border-right:0}
+  .ident b{display:block;font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .ident span{font-size:13.5px;color:var(--ink)}
+  h2{font-size:13px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);margin:52px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  h3{font-size:17px;margin:26px 0 8px;font-weight:640;letter-spacing:-.01em}
+  p{margin:0 0 14px;color:#d3d9e0}
+  .lead{font-size:16.5px;color:#dfe5ec}
+  .verdict{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:8px 0 4px}
+  @media(max-width:820px){.verdict{grid-template-columns:1fr}}
+  .vcard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--red);border-radius:10px;padding:18px 18px 16px}
+  .vcard.warn{border-left-color:var(--amber)}
+  .vcard.ok{border-left-color:var(--green)}
+  .vcard b{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:8px;font-family:var(--mono)}
+  .vcard.warn b{color:var(--amber)} .vcard.ok b{color:var(--green)}
+  .vcard p{margin:0;font-size:14px;color:#cfd6de}
+  .score{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+  .s{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:13px 14px;display:flex;gap:11px;align-items:flex-start}
+  .dot{width:8px;height:8px;border-radius:50%;margin-top:7px;flex:0 0 8px}
+  .g{background:var(--green)} .a{background:var(--amber)} .r{background:var(--red)} .b{background:var(--blue)}
+  .s .t{font-size:13.5px;font-weight:600;line-height:1.35}
+  .s .n{font-size:12px;color:var(--mute);margin-top:2px;line-height:1.4}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 10px}
+  th{text-align:left;font:600 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:0 12px 9px;border-bottom:1px solid var(--line)}
+  td{padding:11px 12px;border-bottom:1px solid #1c2027;vertical-align:top;color:#cdd4dc}
+  tr:hover td{background:#12151a}
+  td.sev{font:700 10.5px/1 var(--mono);letter-spacing:.06em;white-space:nowrap}
+  .p1{color:var(--red)} .p2{color:var(--amber)} .p3{color:var(--green)} .p0{color:var(--blue)}
+  code{font:12.5px/1.5 var(--mono);background:#0f1216;border:1px solid #222831;padding:1px 5px;border-radius:4px;color:#c4cdd8}
+  .ev{font:11.5px/1.55 var(--mono);color:#93a0ae;background:#0e1114;border:1px solid #20252c;border-radius:8px;padding:14px 16px;overflow-x:auto;white-space:pre;margin:14px 0}
+  .ev b{color:var(--green);font-weight:600}
+  .note{background:linear-gradient(180deg,#171a20,#14171c);border:1px solid var(--line);border-left:3px solid var(--violet);border-radius:10px;padding:16px 20px;margin:20px 0}
+  .note b{color:var(--violet)}
+  .decision{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+  .decision h4{margin:0 0 8px;font-size:15px;font-weight:650}
+  .decision .tag{font:700 9.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:4px;margin-left:8px;vertical-align:2px}
+  .adopt{background:rgba(62,207,142,.14);color:var(--green)}
+  .adapt{background:rgba(240,169,59,.14);color:var(--amber)}
+  .reject{background:rgba(242,85,90,.13);color:var(--red)}
+  .decision p{margin:0 0 8px;font-size:14px;color:#cfd6de}
+  .decision p:last-child{margin:0}
+  .wave{border-left:2px solid var(--line);padding:0 0 4px 22px;margin-left:6px}
+  .wave .w{position:relative;padding:0 0 24px}
+  .wave .w:before{content:"";position:absolute;left:-28px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--blue);border:2px solid var(--bg)}
+  .wave .w.w1:before{background:var(--red)} .wave .w.w2:before{background:var(--amber)} .wave .w.w3:before{background:var(--blue)}
+  .wave .w .h{font:700 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+  .wave .w .d{font-size:14.5px;font-weight:600;margin-bottom:4px}
+  .wave .w p{margin:0;font-size:13.5px;color:var(--mute)}
+  .diagram{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;margin:18px 0}
+  .diagram svg{width:100%;height:auto;display:block}
+  .cap{font-size:12.5px;color:var(--mute);margin-top:12px;text-align:center}
+  .foot{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--dim)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:820px){.two{grid-template-columns:1fr}}
+  ul{margin:0 0 14px;padding-left:20px} li{margin-bottom:7px;color:#ced5dd;font-size:14px}
+  .kpi{display:flex;gap:26px;flex-wrap:wrap;margin:16px 0 4px}
+  .kpi div{min-width:100px}
+  .kpi b{display:block;font-size:26px;font-weight:680;letter-spacing:-.02em;line-height:1}
+  .kpi span{font:600 10px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">System audit · Adrianna A · AI-stack owner</div>
+  <h1>MacBook Air M4 <span>— full audit of every function running on the machine</span></h1>
+  <p class="sub">Seven evidence passes over SSH, every claim tied to real command output, then a five-seat MoA review to turn the findings into decisions. Ricardo requested this on 23 October 2026; drafting method named as he asked: <b>MoA council</b>.</p>
+  <div class="ident">
+    <div><b>Machine</b><span>Mac16,13 · M4 · 24 GB</span></div>
+    <div><b>System</b><span>macOS 27.0.1 · 26A434</span></div>
+    <div><b>Uptime</b><span>Booted 11:39 today</span></div>
+    <div><b>Disk</b><span>215 / 460 GB · 47%</span></div>
+    <div><b>Battery</b><span>87 cycles · 94% health</span></div>
+  </div>
+</header>
+
+<h2>The verdict in three lines</h2>
+<div class="verdict">
+  <div class="vcard">
+    <b>Critical</b>
+    <p><b>The Air has no backup.</b> Time Machine reports no destination. 218 GB of family media sits on one unencrypted ExFAT stick at 94% full, and the home folder holds another 36 GB of photos and messages. One copy of everything.</p>
+  </div>
+  <div class="vcard warn">
+    <b>Broken and silent</b>
+    <p><b>Two rails have been dead without telling anyone.</b> The dev-share mount has failed since 18 October because the script still calls the mini's old address. A Quotio guard has failed every ten minutes all day against a service that is not running.</p>
+  </div>
+  <div class="vcard warn">
+    <b>Drifted</b>
+    <p><b>The laptop has quietly become an always-on node.</b> A public tunnel starts at login, an external disk holds sleep off, and a model runtime is installed that is never used — on a machine whose job is to be a console for the mini.</p>
+  </div>
+</div>
+
+<div class="kpi">
+  <div><b>16</b><span>Findings</span></div>
+  <div><b>3</b><span>Repaired already</span></div>
+  <div><b>5.9 GB</b><span>Caches reclaimed</span></div>
+  <div><b>218 GB</b><span>On one unbacked stick</span></div>
+  <div><b>0</b><span>Crashes or panics</span></div>
+</div>
+
+<h2>Scorecard — every domain, judged on evidence</h2>
+<div class="score">
+  <div class="s"><div class="dot r"></div><div><div class="t">Backup &amp; recovery</div><div class="n">No Time Machine target. Single-copy media on an unencrypted USB.</div></div></div>
+  <div class="s"><div class="dot a"></div><div><div class="t">Automation rails</div><div class="n">2 of 9 jobs broken; 1 fails every 10 minutes; 1 silent for 5 days.</div></div></div>
+  <div class="s"><div class="dot r"></div><div><div class="t">Inbound exposure</div><div class="n">Named Cloudflare tunnel auto-starts at login; pairing code in plaintext.</div></div></div>
+  <div class="s"><div class="dot a"></div><div><div class="t">AI stack</div><div class="n">Correctly pointed at the mini, but its local MoA preset cannot authenticate.</div></div></div>
+  <div class="s"><div class="dot g"></div><div><div class="t">Disk encryption</div><div class="n">FileVault on; SIP on; sealed system volume intact.</div></div></div>
+  <div class="s"><div class="dot g"></div><div><div class="t">Patching</div><div class="n">No software updates available; XProtect current.</div></div></div>
+  <div class="s"><div class="dot g"></div><div><div class="t">Hardware health</div><div class="n">87 cycles, 94% capacity, Normal; no thermal warnings.</div></div></div>
+  <div class="s"><div class="dot g"></div><div><div class="t">Stability</div><div class="n">Zero crash reports, zero panic files, no failed boots.</div></div></div>
+  <div class="s"><div class="dot a"></div><div><div class="t">Storage hygiene</div><div class="n">47% used is healthy, but 5.6 GB of caches and a 19 GB WhatsApp store.</div></div></div>
+  <div class="s"><div class="dot a"></div><div><div class="t">Resource leaks</div><div class="n">16 live SSH multiplexers and 32 leftover sockets to the mini.</div></div></div>
+  <div class="s"><div class="dot a"></div><div><div class="t">Power behaviour</div><div class="n">Sleep is held off by an always-mounted external disk.</div></div></div>
+  <div class="s"><div class="dot b"></div><div><div class="t">Network</div><div class="n">On LAN at .123 and tailnet at .126; MagicDNS primary; 2 stale tailnet nodes.</div></div></div>
+</div>
+
+<h2>Findings</h2>
+<table>
+  <thead><tr><th>Sev</th><th>Finding</th><th>Evidence</th></tr></thead>
+  <tbody>
+    <tr><td class="sev p1">P1</td><td><b>No backup of any kind.</b> Time Machine has no destination; the Air's media exists once.</td><td><code>tmutil destinationinfo</code> → "No destinations configured"</td></tr>
+    <tr><td class="sev p1">P1</td><td><b>218 GB of family media on one unencrypted ExFAT stick</b> at 94% full — Bali 132 GB, Photos 62 GB, Wedding 22 GB. ExFAT has no journaling, SMART unsupported.</td><td><code>diskutil info /dev/disk6s2</code> · <code>du -sh</code> per folder</td></tr>
+    <tr><td class="sev p1">P1</td><td><b>Dev-share mount dead since 18 October.</b> Script hardcodes 192.168.0.154; the mini moved to .158 and the script exits 0 without logging.</td><td>Last success line: <code>2026-10-18 10:26:25 mounted</code>; mini answers on .158</td></tr>
+    <tr><td class="sev p1">P1</td><td><b>Quotio guard failing every 10 minutes</b> against a proxy that is not running. 20 identical errors between 14:31 and 17:50.</td><td><code>guard.err.log</code> · <code>lsof -iTCP:8318</code> → nothing</td></tr>
+    <tr><td class="sev p1">P1</td><td><b>Public tunnel auto-starts at login</b> with a stored token, currently up since 14:30; pairing code sits in plaintext.</td><td><code>ps</code> shows cloudflared with <code>TUNNEL_TOKEN</code>; <code>~/.t3/pairing-code.txt</code> 288 B</td></tr>
+    <tr><td class="sev p2">P2</td><td><b>The Air's MoA preset cannot authenticate.</b> Aggregator is an Anthropic model, seats are Codex and OpenRouter; no keys exist on this machine.</td><td><code>auth.json</code> holds only <code>version</code>/<code>updated_at</code>; <code>.env</code> has no model keys</td></tr>
+    <tr><td class="sev p2">P2</td><td><b>5.6 GB of reclaimable caches</b> — Homebrew 4.5 GB including a 1 GB CapCut installer, Playwright 520 MB, three updater caches ~1.2 GB.</td><td><code>du -sh ~/Library/Caches/*</code></td></tr>
+    <tr><td class="sev p2">P2</td><td><b>WhatsApp store is 19 GB</b> — the largest single item on the machine.</td><td><code>du -sh Group Containers/group.net.whatsapp*</code></td></tr>
+    <tr><td class="sev p2">P2</td><td><b>Dormant model stack with no function:</b> Ollama app, cask, menu-bar agent, build folder and llama-rpc — while nothing listens on 11434.</td><td><code>curl :11434</code> → connection refused; <code>pgrep ollama</code> → empty</td></tr>
+    <tr><td class="sev p2">P2</td><td><b>16 persistent SSH multiplexers and 32 socket files</b> left by the desktop backend.</td><td><code>ps</code> ControlMaster count · <code>find ~/.hermes/desktop-ssh</code></td></tr>
+    <tr><td class="sev p2">P2</td><td><b>AnyDesk installed with three privileged launch items</b>, never running — an unused root-level remote-access surface.</td><td>2 daemons + 1 agent plist; <code>pgrep anydesk</code> → empty</td></tr>
+    <tr><td class="sev p2">P2</td><td><b>Zero-job daemons:</b> Hermes cron ticker and gateway run with no jobs and no platforms.</td><td><code>hermes cron list</code> → none; <code>gateway_state.json</code> → <code>platforms:{}</code></td></tr>
+    <tr><td class="sev p2">P2</td><td><b>Four Homebrew formulae outdated</b> — harfbuzz, yt-dlp, obsidian, ollama-app.</td><td><code>brew outdated</code></td></tr>
+    <tr><td class="sev p2">P2</td><td><b>Stale tailnet nodes</b> — a duplicate mini offline 22 days, a phone offline 5 days.</td><td><code>tailscale status</code></td></tr>
+    <tr><td class="sev p2">P2</td><td><b>The mini is dual-homed again</b> — Ethernet at .158 and Wi-Fi at .84 — and the Air's mDNS resolves the mini to the Wi-Fi address. This reverses the single-homing decision of 21 October that fixed Plex stream flapping.</td><td><code>ifconfig</code> on the mini shows both inet addresses</td></tr>
+    <tr><td class="sev p3">OK</td><td><b>Security baseline is sound:</b> FileVault, SIP, Gatekeeper and firewall all on; fully patched; healthy battery; clean thermals.</td><td><code>fdesetup</code>, <code>csrutil</code>, <code>spctl</code>, <code>socketfilterfw</code>, <code>pmset -g therm</code></td></tr>
+  </tbody>
+</table>
+
+<h2>Already repaired in this pass</h2>
+<p>Three of these needed no decision from Ricardo — they were unambiguous defects with reversible fixes — so I closed them while the audit was still running, and verified each one afterwards.</p>
+
+<div class="two">
+  <div>
+    <h3>Quotio guard stopped</h3>
+    <p>The launch agent was booted out and disabled in launchd, so it stays off across reboots. It is reversible with a single <code>launchctl enable</code>.</p>
+    <div class="ev">$ launchctl print-disabled gui/501
+"com.maio.quotio-providers" => <b>disabled</b>
+
+$ launchctl list | grep quotio
+<b>not listed</b>
+
+last error line: 18:00:26 — none since</div>
+  </div>
+  <div>
+    <h3>Caches reclaimed</h3>
+    <p>Homebrew downloads plus four updater caches, all recreatable on demand. Nothing user-created was touched, and the Playwright and Spotify caches were deliberately left alone.</p>
+    <div class="ev">$ brew cleanup --prune=all
+freed approximately <b>4.7 GB</b>
+
+removed updater caches  <b>1.5 GB</b>
+free before  <b>245.5 G</b>
+free after   <b>251.4 G</b></div>
+  </div>
+</div>
+
+<h3>Mount rail rebuilt — one human step left</h3>
+<p>The script no longer hardcodes an address: it resolves the mini live and probes each candidate until one answers the share port. Every outcome is now logged, and a real failure exits non-zero instead of pretending to succeed.</p>
+<p>One thing I deliberately did <b>not</b> do: force the first mount. The Air's keychain holds a password entry only for the old address, so repointing it blindly would have thrown a password dialog onto an unattended laptop — and that is a credential act I never perform. The script now detects this, logs exactly what is missing, and opens nothing.</p>
+<div class="ev">$ air-mount-devmini.sh
+2026-10-23 18:04:55 <b>NO KEYCHAIN ENTRY for 192.168.0.84</b> - not mounting
+(would pop a dialog). Run once by hand: air-mount-devmini.sh --connect
+
+$ /bin/zsh -n air-mount-devmini.sh
+<b>syntax ok</b> · plist lint ok · previous version kept beside it</div>
+<p><b>What Ricardo does, once:</b> run <code>air-mount-devmini.sh --connect</code> and confirm the share password when Finder asks. After that the rail mounts itself silently again.</p>
+
+<h2>The finding that reaches past the laptop</h2>
+<p class="lead">Auditing the Air exposed a problem in the fleet's shared assumption about backups. It is worth stating plainly because it changes what "backed up" means everywhere.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Backup topology diagram">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#5f6874"/>
+    </marker>
+  </defs>
+
+  <!-- Air -->
+  <rect x="20" y="30" width="250" height="120" rx="10" fill="#14171c" stroke="#262b33"/>
+  <text x="40" y="58" fill="#e8ecf1" font-size="15" font-weight="600" font-family="-apple-system,sans-serif">MacBook Air</text>
+  <text x="40" y="80" fill="#8b95a3" font-size="12" font-family="ui-monospace,monospace">no Time Machine target</text>
+  <text x="40" y="100" fill="#f2555a" font-size="12" font-family="ui-monospace,monospace">single copy of 218 GB</text>
+  <text x="40" y="120" fill="#8b95a3" font-size="12" font-family="ui-monospace,monospace">home: photos 30 GB</text>
+  <text x="40" y="138" fill="#8b95a3" font-size="12" font-family="ui-monospace,monospace">messages 6 GB</text>
+
+  <!-- USB stick -->
+  <rect x="20" y="200" width="250" height="96" rx="10" fill="#1a1416" stroke="#5a2a2d"/>
+  <text x="40" y="228" fill="#f2555a" font-size="14" font-weight="600" font-family="-apple-system,sans-serif">USB stick · 233 GB</text>
+  <text x="40" y="250" fill="#e8ecf1" font-size="12" font-family="ui-monospace,monospace">ExFAT · not encrypted</text>
+  <text x="40" y="268" fill="#e8ecf1" font-size="12" font-family="ui-monospace,monospace">218 GB used · 94% full</text>
+  <text x="40" y="286" fill="#8b95a3" font-size="12" font-family="ui-monospace,monospace">no journal · SMART n/a</text>
+  <line x1="145" y1="150" x2="145" y2="200" stroke="#5f6874" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="158" y="180" fill="#5f6874" font-size="11" font-family="ui-monospace,monospace">one-way only</text>
+
+  <!-- Mini -->
+  <rect x="375" y="30" width="250" height="120" rx="10" fill="#14171c" stroke="#262b33"/>
+  <text x="395" y="58" fill="#e8ecf1" font-size="15" font-weight="600" font-family="-apple-system,sans-serif">Mac mini · always on</text>
+  <text x="395" y="80" fill="#8b95a3" font-size="12" font-family="ui-monospace,monospace">31 profiles · all crons</text>
+  <text x="395" y="100" fill="#8b95a3" font-size="12" font-family="ui-monospace,monospace">vault · model fleet</text>
+  <text x="395" y="120" fill="#8b95a3" font-size="12" font-family="ui-monospace,monospace">desktop backend target</text>
+
+  <!-- Hiksemi -->
+  <rect x="375" y="200" width="250" height="96" rx="10" fill="#1a1714" stroke="#5a452a"/>
+  <text x="395" y="228" fill="#f0a93b" font-size="14" font-weight="600" font-family="-apple-system,sans-serif">Hiksemi SSD · 954 GB</text>
+  <text x="395" y="250" fill="#e8ecf1" font-size="12" font-family="ui-monospace,monospace">APFS · Encrypted: No</text>
+  <text x="395" y="268" fill="#e8ecf1" font-size="12" font-family="ui-monospace,monospace">live AI-Drive + Backups</text>
+  <text x="395" y="286" fill="#f0a93b" font-size="12" font-family="ui-monospace,monospace">same physical device</text>
+  <line x1="500" y1="150" x2="500" y2="200" stroke="#5f6874" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="512" y="180" fill="#5f6874" font-size="11" font-family="ui-monospace,monospace">writes + dumps</text>
+
+  <!-- Danger bracket -->
+  <path d="M285 60 Q330 60 330 130 Q330 230 330 250 Q330 260 375 260" fill="none" stroke="#3a3f47" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="300" y="330" fill="#5f6874" font-size="11" font-family="ui-monospace,monospace">ssh console</text>
+
+  <!-- NAS -->
+  <rect x="720" y="200" width="255" height="96" rx="10" fill="#111417" stroke="#2a3038" stroke-dasharray="5 5"/>
+  <text x="740" y="228" fill="#8b95a3" font-size="14" font-weight="600" font-family="-apple-system,sans-serif">NAS "Ricky" · 1 TB</text>
+  <text x="740" y="250" fill="#5f6874" font-size="12" font-family="ui-monospace,monospace">mounted at /Volumes/Plex</text>
+  <text x="740" y="268" fill="#f2555a" font-size="12" font-family="ui-monospace,monospace">no backup job targets it</text>
+  <text x="740" y="286" fill="#5f6874" font-size="12" font-family="ui-monospace,monospace">the free failure domain</text>
+  <line x1="625" y1="248" x2="720" y2="248" stroke="#3a3f47" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="640" y="238" fill="#5f6874" font-size="11" font-family="ui-monospace,monospace">unused</text>
+
+  <text x="720" y="70" fill="#3ecf8e" font-size="12" font-weight="600" font-family="ui-monospace,monospace">GOOD</text>
+  <text x="720" y="90" fill="#8b95a3" font-size="11.5" font-family="ui-monospace,monospace">encryption on · patched</text>
+  <text x="720" y="108" fill="#8b95a3" font-size="11.5" font-family="ui-monospace,monospace">stable · healthy battery</text>
+  <text x="720" y="126" fill="#f2555a" font-size="11.5" font-family="ui-monospace,monospace">no second failure domain</text>
+</svg>
+<div class="cap">Two copies live inside one failure domain. The nightly job that reports "backups OK" writes to the same physical SSD that holds the live data, and that SSD is not encrypted.</div>
+</div>
+
+<div class="ev">$ tail -3 ~/Library/Logs/com.maio.backup.log
+<b>[2026-10-23 03:31:27] backups OK (2026-10-23)</b>
+
+$ grep -n 'HIK=' ~/.config/maio-stack/backup.sh
+38:HIK="/Volumes/Hiksemi 1TB"; D="$HIK/AI-Drive/Backups"; T=$(date +%F)
+
+$ diskutil info "/Volumes/Hiksemi 1TB" | grep -i encrypted
+   <b>Encrypted:                 No</b>
+
+$ mount | grep smb
+//ricky@192.168.0.174/Plex on /Volumes/Plex (smbfs, ...)   <b>← mounted, never a backup target</b>
+</div>
+
+<div class="note">
+  <p><b>What this means.</b> The nightly backup is a real, verified dump — it ran clean at 03:31 today and every artifact passed its size and gzip check. But it protects against one thing only: a mistake inside the files. It does not protect against the SSD failing, being unplugged mid-write, stolen, or lost. Losing that drive loses the live AI-Drive and every backup of it at the same instant. The NAS is already mounted and idle, which makes the gap unusually cheap to close.</p>
+</div>
+
+<h2>What the MoA council decided</h2>
+<p>Five seats — a first-principles analyst, a skeptic, a pragmatist, a researcher, and a chairman — reviewed the findings against six decisions. Below is each call, and what I did with it after checking it against the machine.</p>
+
+<div class="decision">
+  <h4>1. Backup architecture <span class="tag adapt">Adopted, sharpened</span></h4>
+  <p><b>Council:</b> copy the USB media to the mini immediately as an emergency landing, then buy a second encrypted drive for Time Machine — and do not treat the mini as a real backup, because it is not a separate failure domain.</p>
+  <p><b>My check:</b> correct, and worse than the council knew. The mini's backup target is the <i>same unencrypted SSD</i> the live data sits on. So the mini is not a landing zone either. The NAS already mounted at <code>/Volumes/Plex</code> is the free separate failure domain, and nothing writes to it.</p>
+</div>
+
+<div class="decision">
+  <h4>2. The mount rail <span class="tag adopt">Adopted</span></h4>
+  <p><b>Council:</b> do not just fix the address — rebuild it so failure cannot look like success, use the stable tailnet name, and surface a health signal where you actually look.</p>
+  <p><b>My check:</b> agreed. The script's silent <code>exit 0</code> on an unreachable host is what turned a one-line break into five days of nothing.</p>
+</div>
+
+<div class="decision">
+  <h4>3. Quotio <span class="tag adopt">Adopted</span></h4>
+  <p><b>Council:</b> disable the launch agent now; do not repair a proxy that nothing uses on a machine that does its inference on the mini. Leave the app installed until Ricardo says otherwise.</p>
+  <p><b>My check:</b> nothing listens on 8318, the Air has no model credentials, and the guard has never succeeded today. Disabling is reversible; uninstalling is his call.</p>
+</div>
+
+<div class="decision">
+  <h4>4. Where MoA should run <span class="tag adopt">Adopted</span></h4>
+  <p><b>Council:</b> on the mini, over SSH — never fix this by putting keys back on a laptop that sleeps and travels.</p>
+  <p><b>My check:</b> the Air is already wired that way for agents. Only its stale local preset contradicts it, and that should fail loudly instead of degrading quietly.</p>
+</div>
+
+<div class="decision">
+  <h4>5. Exposure ranking <span class="tag adapt">Adopted, reordered</span></h4>
+  <p><b>Council:</b> the tunnel is the real problem; AnyDesk second; the Codex disk grant is an audit item; SSH multiplexers and firewall stealth are noise.</p>
+  <p><b>My note:</b> I keep the tunnel first but I am not touching it — it is a working feature of an app Ricardo uses daily. It gets reported with the exact lever, and he decides.</p>
+</div>
+
+<div class="decision">
+  <h4>6. The client-only thesis <span class="tag adapt">Adopted with one dissent</span></h4>
+  <p><b>Council:</b> the role is right, the machine has drifted, and it should be returned to a thin console that sleeps when idle.</p>
+  <p><b>My dissent:</b> that is only true if the USB stick keeps holding the family archive. Once the archive lives on the NAS and the drive, the laptop can go back to being a laptop. Sequence matters more than the cleanup list.</p>
+</div>
+
+<div class="note">
+  <p><b>The chairman's one-sentence close:</b> make a verified encrypted second copy of the single-copy media before any cleanup, because every other finding here is repairable but that loss is not.</p>
+</div>
+
+<h2>What I am doing about it</h2>
+<div class="wave">
+  <div class="w w1">
+    <div class="h">Wave 0 · done in this pass</div>
+    <div class="d">Stop the bleeding <span style="color:var(--green);font-size:12px;font-family:var(--mono);">✓ REPAIRED</span></div>
+    <p>Mount rail rebuilt to resolve the mini live and log its failures. Quotio guard disabled so the ten-minute failure loop stops. 5.9 GB of recreatable caches cleared. One human step left: the one-time share password confirmation.</p>
+  </div>
+  <div class="w w2">
+    <div class="h">Wave 1 · needs Ricardo's word</div>
+    <div class="d">Close the single-copy gap</div>
+    <p>Copy the 218 GB of media to the NAS as a second copy, verify it by checksum, and leave the stick untouched. Then decide on the durable shape: a second encrypted drive for Time Machine, or the NAS as the off-device tier.</p>
+  </div>
+  <div class="w w3">
+    <div class="h">Wave 2 · tidying, all reversible</div>
+    <div class="d">Return the laptop to its role</div>
+    <p>Fix or remove the Air's dead MoA preset so it fails loudly, retire the dormant Ollama stack, clear the stale SSH multiplexers and tailnet nodes, and decide whether the login-started tunnel and AnyDesk helpers stay.</p>
+  </div>
+</div>
+
+<h2>What is genuinely healthy</h2>
+<div class="two">
+  <div>
+    <h3>Security and integrity</h3>
+    <ul>
+      <li>FileVault on, SIP enabled, Gatekeeper assessing.</li>
+      <li>Application firewall on, though stealth mode is off.</li>
+      <li>No pending macOS updates; the build is current.</li>
+      <li>No panic files and no crash reports at all.</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Hardware and capacity</h3>
+    <ul>
+      <li>Battery at 87 cycles, 94% capacity, condition Normal.</li>
+      <li>No thermal or performance warnings recorded.</li>
+      <li>47% disk used — 246 GB free, comfortable headroom.</li>
+      <li>Clean boot history; nothing failed to start.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Method and limits</h2>
+<p>Seven probe passes ran over SSH from the mini to the Air, each writing raw output to a local evidence file before any interpretation. The figures quoted here come from <code>sw_vers</code>, <code>diskutil</code>, <code>tmutil</code>, <code>fdesetup</code>, <code>csrutil</code>, <code>spctl</code>, <code>socketfilterfw</code>, <code>pmset</code>, <code>system_profiler</code>, <code>launchctl</code>, <code>lsof</code>, <code>du</code>, <code>brew</code>, <code>tailscale</code> and the Air's own log files.</p>
+<p><b>Not probed:</b> sustained thermal behaviour under load, Wi-Fi signal quality over time, and whether the NAS drive itself is redundant. Those are follow-ups, not gaps in the findings above — and none of them changes the backup verdict.</p>
+<p><b>One number worth explaining:</b> an app reported as "never used" means macOS kept no launch record, not that it was never opened. It is a soft signal, and nothing was removed on the strength of it.</p>
+
+<div class="foot">
+  Audited 23 October 2026 by Adrianna A · evidence passes at 17:56–18:05 SAST · council run 569c7c07e4e5 ·
+  five seats, peer-reviewed · every figure traceable to command output on the MacBook Air.
+</div>
+
+</div>
+</body>
+</html>
