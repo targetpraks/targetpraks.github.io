@@ -1,30 +1,76 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Maio Hub Jump</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maio Hub · open</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070b1a">
 <style>
-body{background:#070b1a;color:#e6e9f5;font-family:-apple-system,'Inter',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
-.card{max-width:420px;padding:40px;text-align:center;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;backdrop-filter:blur(12px)}
-h1{font-size:18px;margin:0 0 6px}.muted{color:#8a93b5;font-size:13px;margin:0 0 24px}
-a.btn{display:block;margin:10px 0;padding:14px 18px;border-radius:12px;text-decoration:none;font-weight:600;font-size:14px}
-.oid{background:#7c5cff;color:#fff}.oin{background:rgba(255,255,255,.08);color:#e6e9f5;border:1px solid rgba(255,255,255,.15)}
-.err{color:#ff7b7b;font-size:13px;display:none;margin-top:18px}
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{background:#070b1a;color:#e6e9f5;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
+     display:flex;align-items:center;justify-content:center;min-height:100dvh;margin:0;padding:20px}
+.card{width:100%;max-width:420px;padding:30px 24px;text-align:center;background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);border-radius:20px;backdrop-filter:blur(14px);
+      box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.eyebrow{color:#8a93b5;font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 12px}
+h1{font-size:16px;font-weight:600;line-height:1.35;margin:0 0 22px;word-break:break-word}
+.muted{color:#8a93b5;font-size:13px;margin:14px 0 0;line-height:1.45}
+a.btn{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0;padding:15px 18px;
+      border-radius:14px;text-decoration:none;font-weight:650;font-size:15px;min-height:52px;
+      -webkit-tap-highlight-color:transparent;transition:transform .08s ease}
+a.btn:active{transform:scale(.985)}
+.html{background:linear-gradient(135deg,#7c5cff,#5b8cff);color:#fff;box-shadow:0 10px 26px rgba(92,110,255,.35)}
+.obs{background:rgba(255,255,255,.07);color:#e6e9f5;border:1px solid rgba(255,255,255,.15)}
+.hide{display:none}
+.err{color:#ff9a9a;font-size:12px;margin:16px 0 0;line-height:1.4}
 </style></head><body><div class="card">
-<h1 id="t">Opening vault doc…</h1>
-<p class="muted" id="s">Maio Hub · targetpraks.github.io</p>
-<a id="obs" class="btn oid" href="#">Open in Obsidian</a>
-<a id="ok" class="btn oin" href="#">Open in OpenKnowledge</a>
-<p class="err" id="e">App didn't open? Ask the agents to regenerate this link.</p>
+<p class="eyebrow">Maio Hub</p>
+<h1 id="t">Opening…</h1>
+<a id="html" class="btn html hide" href="#" rel="noopener">Read the HTML →</a>
+<a id="obs" class="btn obs hide" href="#">Open in Obsidian</a>
+<p class="muted" id="note"></p>
+<p class="err hide" id="e">Nothing opened? Ask the agents to regenerate this link.</p>
 <script>
-var p=new URLSearchParams(location.search);
-var v=p.get('vault'),f=p.get('file'),d=p.get('doc')||f,title=p.get('t');
-if(title){document.title='Maio Hub · '+title}
-if(f){document.getElementById('t').textContent=f}
-else if(d){document.getElementById('t').textContent=d}
-var ou='obsidian://open?vault='+encodeURIComponent(v||'');
-if(f){ou+='&file='+encodeURIComponent(f)}
-var ku='openknowledge://open?doc='+encodeURIComponent(d||'');
-if(v){ku+='&vault='+encodeURIComponent(v)}
-document.getElementById('obs').href=ou;
-document.getElementById('ok').href=ku;
-setTimeout(function(){document.getElementById('e').style.display='block'},2500);
+(function(){
+  var p=new URLSearchParams(location.search);
+  var v=p.get('vault')||'Maio Hub', f=p.get('file'), d=p.get('doc')||f, h=p.get('h'), title=p.get('t');
+  var $=function(id){return document.getElementById(id)};
+  var PAGES='https://targetpraks.github.io/';
+  $('t').textContent = title || f || d || 'Maio Hub';
+  if(title){document.title='Maio Hub · '+title}
+
+  // --- the HTML reading copy -------------------------------------------------------------
+  // `h` is the authoritative URL the publishing tool put on the link. Without it (an older
+  // link) the copy is derived from the document's own basename, which is exactly how the tool
+  // names it on the site. A 404 means no web edition was ever published: the button is then
+  // withdrawn rather than left to dead-end on GitHub's 404.
+  var href=null;
+  if(h){
+    if(/^https?:\/\//i.test(h)) href=h;
+    else if(/^[a-z0-9._\-\/%]+$/i.test(h)) href=PAGES+h.replace(/^\/+/,'');
+  } else if(f && /\.html$/i.test(f)){
+    href=PAGES+encodeURIComponent(f.split('/').pop());
+  }
+  if(href){
+    $('html').href=href;
+    $('html').classList.remove('hide');
+    $('note').textContent='The web edition — readable anywhere. Obsidian opens the vault note.';
+    var done=false;
+    var probe=setTimeout(function(){done=true},2500);
+    fetch(href,{method:'HEAD',mode:'cors',cache:'no-store'}).then(function(r){
+      clearTimeout(probe); done=true;
+      if(r.status===404){
+        $('html').classList.add('hide');
+        $('note').textContent='No web edition for this document — it opens in Obsidian.';
+      }
+    }).catch(function(){ /* offline or blocked: keep the button */ });
+  } else {
+    $('note').textContent='This document has no web edition — it opens in Obsidian.';
+  }
+
+  // --- the vault note --------------------------------------------------------------------
+  var ou='obsidian://open?vault='+encodeURIComponent(v||'');
+  if(d){ou+='&file='+encodeURIComponent(d)}
+  $('obs').href=ou;
+  $('obs').classList.remove('hide');
+  setTimeout(function(){ if(!document.hidden) $('e').classList.remove('hide'); },2500);
+})();
 </script></div></body></html>
