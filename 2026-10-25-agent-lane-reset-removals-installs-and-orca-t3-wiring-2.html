@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Agent lane reset — removals, installs, and Orca/T3 wiring</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4}
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c}
+thead th{background:#2c313c;color:#f6f2e8;border-bottom:2px solid #4a5162}
+th,td{border-bottom:1px solid #3c424f}
+tbody tr:nth-child(even){background:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:#1b1917;background:#e6ddc9;white-space:nowrap;
+         border-bottom:2px solid #c3b6a0}
+th,td{border-bottom:1px solid #cbbfa9;padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:#f0e9da}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="agent-lane-reset--removals-installs-and-orcat3-wiring">Agent lane reset — removals, installs, and Orca/T3 wiring</h1>
+<p><strong>Date:</strong> 2026-10-25 · <strong>Host:</strong> Ricardos-Mac-mini · <strong>By:</strong> Adrianna A</p>
+<p>Goal: remove pi, prime-agent, aider and the old OpenCode install; make OpenCode v2, Qwen Code and MiMo Code fully working — in the terminal, in Orca, and in T3 Code.</p>
+<hr />
+<h2 id="1-removed">1. Removed</h2>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>What it actually was</th>
+<th>How removed</th>
+<th>Verified</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>pi</strong></td>
+<td><code>@earendil-works/pi-coding-agent@1.4.0</code> → <code>/opt/homebrew/bin/pi</code> + <code>~/.pi</code> (11 MB)</td>
+<td><code>npm uninstall -g</code> (also <code>@mariozechner/pi</code>, the <code>pi-pods</code> vLLM pod manager that shared the name) then <code>rm -rf ~/.pi</code></td>
+<td><code>command -v pi</code> → none</td>
+</tr>
+<tr>
+<td><strong>prime-agent</strong></td>
+<td>Rust CLI <code>~/.local/bin/prime-agent</code>, <code>~/.prime</code> (212 MB), <code>~/.local/share/prime-agent</code> (60 MB)</td>
+<td>binaries + data dirs removed</td>
+<td><code>command -v prime-agent</code> → none</td>
+</tr>
+<tr>
+<td><strong>aider</strong></td>
+<td><code>uv tool</code> venv <code>aider-chat</code> (657 MB), <code>~/.local/bin/aider</code> → <code>maio-stack/tools/aider.sh</code>, <code>~/.aider.conf.yml</code>, <code>~/.aider.model.metadata.json</code></td>
+<td><code>uv tool uninstall aider-chat</code> + wrapper/config removal</td>
+<td><code>uv</code> printed <code>Uninstalled 1 executable: aider</code></td>
+</tr>
+<tr>
+<td><strong>opencode "v1"</strong></td>
+<td>no true v1 binary existed. What was there: a legacy non-brew install <code>~/.opencode</code> (239 MB) holding OpenCode <strong>2.0.29</strong> plus the v1-era <code>@opencode-ai/plugin@1.19.0</code>, and Orca's <code>opencode</code> (v1) agent slot switched off</td>
+<td><code>rm -rf ~/.opencode</code>; Orca's v1 slot stays disabled (<code>disabledTuiAgents: ["opencode"]</code>)</td>
+<td><code>which -a opencode</code> → only <code>/opt/homebrew/bin/opencode</code> (v2.1.4)</td>
+</tr>
+</tbody>
+</table>
+<p><code>npm uninstall -g</code> reported <strong>removed 225 packages</strong>. Disk reclaimed ≈ <strong>1.18 GB</strong>.</p>
+<p>Configs were archived before deletion (never destroyed): <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/adrianna/agent-removals-2026-10-25/</code> (<code>pi-config.tgz</code>, <code>prime-config.tgz</code>, <code>opencode-legacy.tgz</code>, aider wrapper + conf, <code>qwen-settings.before.json</code>, <code>t3-settings.before.json</code>).</p>
+<p>Dead-tool skills retired: <code>aider</code>, <code>pi-agent</code>.</p>
+<h2 id="2-installed--upgraded">2. Installed / upgraded</h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Version</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenCode v2</td>
+<td><strong>2.1.4</strong> (<code>brew upgrade opencode-v2</code>, was 2.1.3)</td>
+<td><code>/opt/homebrew/bin/opencode</code></td>
+</tr>
+<tr>
+<td>Qwen Code</td>
+<td><strong>0.26.1</strong> (self-reported; the npm keg declares 0.25.2)</td>
+<td><code>/opt/homebrew/bin/qwen</code> behind <code>~/.local/bin/qwen</code></td>
+</tr>
+<tr>
+<td>MiMo Code</td>
+<td><strong>0.1.15</strong> (Xiaomi, open-source OpenCode fork)</td>
+<td><code>~/.mimocode/bin/mimo</code> behind <code>~/.local/bin/mimo</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="credentials--nothing-new-stored">Credentials — nothing new stored</h3>
+<p>Every lane reads <code>OLLAMA_API_KEY</code> at <strong>runtime</strong> from <code>~/.config/maio-stack/secrets.env</code> through a wrapper (<code>qwen-cloud</code>, <code>mimo-cloud</code>). Config files carry no key: <code>~/.config/mimocode/mimocode.json</code> uses <code>"apiKey": "{env:OLLAMA_API_KEY}"</code>, <code>~/.qwen/settings.json</code> has no key field (grep count 0).</p>
+<h2 id="3-wiring">3. Wiring</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">subgraph</span> <span class="dt">Surfaces</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">O</span>[<span class="vs">Orca agent pane</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">T</span>[<span class="vs">T3 Code thread</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span>[<span class="vs">Terminal</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">end</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">subgraph</span> <span class="dt">Shims</span>[<span class="st">&quot;~/.local/bin wrappers (key read at runtime)&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">QC</span>[<span class="vs">qwen-cloud</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">MC</span>[<span class="vs">mimo-cloud</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">OA</span>[<span class="vs">qwen-acp</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">MA</span>[<span class="vs">mimo-acp</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">CA</span>[<span class="vs">opencode-acp</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">O2</span>[<span class="vs">opencode2</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">end</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">subgraph</span> <span class="dt">Reals</span>[<span class="st">&quot;Installed CLIs&quot;</span>]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Q</span>[<span class="vs">qwen 0.26.1</span>]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">M</span>[<span class="vs">mimo 0.1.15</span>]</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span>[<span class="vs">opencode 2.1.4</span>]</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">end</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="dt">L</span>[(<span class="vs">secrets.env</span><span class="sc">&lt;br/&gt;</span><span class="vs">OLLAMA_API_KEY</span>)]</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="dt">G</span>[<span class="vs">ollama.com/v1 · deepseek-v4.1-flash:1017</span>]</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="dt">O</span> <span class="pp">--&gt;</span><span class="vs">|command override|</span> <span class="dt">QC</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="dt">O</span> <span class="pp">--&gt;</span><span class="vs">|command override|</span> <span class="dt">MC</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">QC</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">MC</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="dt">T</span> <span class="pp">--&gt;</span><span class="vs">|source: local commandPath|</span> <span class="dt">OA</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="dt">T</span> <span class="pp">--&gt;</span><span class="vs">|source: local commandPath|</span> <span class="dt">MA</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="dt">T</span> <span class="pp">--&gt;</span><span class="vs">|source: local commandPath|</span> <span class="dt">CA</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="dt">O</span> <span class="pp">--&gt;</span> <span class="dt">O2</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="dt">QC</span> <span class="pp">--&gt;</span> <span class="dt">Q</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>  <span class="dt">MC</span> <span class="pp">--&gt;</span> <span class="dt">M</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>  <span class="dt">OA</span> <span class="pp">--&gt;</span> <span class="dt">Q</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="dt">MA</span> <span class="pp">--&gt;</span> <span class="dt">M</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CA</span> <span class="pp">--&gt;</span> <span class="dt">C</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="dt">O2</span> <span class="pp">--&gt;</span> <span class="dt">C</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>  <span class="dt">QC</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>  <span class="dt">MC</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  <span class="dt">OA</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  <span class="dt">MA</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>  <span class="dt">Q</span> <span class="pp">--&gt;</span> <span class="dt">G</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  <span class="dt">M</span> <span class="pp">--&gt;</span> <span class="dt">G</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">G</span></span></code></pre></div>
+<p><strong>Terminal</strong></p>
+<ul>
+<li><code>~/.local/bin/qwen</code> → <code>qwen-cloud</code> (exports <code>OPENAI_API_KEY</code>, <code>OPENAI_BASE_URL=https://ollama.com/v1</code>, <code>QWEN_DEFAULT_AUTH_TYPE=openai</code>, then execs the keg). Qwen's default model pinned to <code>deepseek-v4.1-flash:1017</code> in <code>~/.qwen/settings.json</code>.</li>
+<li><code>~/.local/bin/mimo</code> → <code>mimo-cloud</code> (exports <code>OLLAMA_API_KEY</code>).</li>
+<li><code>~/.local/bin/opencode2</code> → shim to the single brew binary (Orca's "OpenCode 2" detect name).</li>
+<li><code>~/.zprofile</code>: <code>~/.local/bin</code> forced ahead of <code>/opt/homebrew/bin</code> in non-interactive login shells (same path_helper workaround already used there for omlx and herdr; herdr-shims deliberately still first).</li>
+</ul>
+<p><strong>Orca</strong> (via its own runtime RPC — <code>settings.update</code> rejects <code>agentCmdOverrides</code>, <code>settings.mutateAgentLaunch</code> accepts it)</p>
+<ul>
+<li><code>agentCmdOverrides</code>: <code>qwen-code</code> → <code>~/.local/bin/qwen-cloud</code>, <code>mimo-code</code> → <code>~/.local/bin/mimo-cloud</code>.</li>
+<li><code>agentDefaultArgs['mimo-code'] = "--trust"</code> (MiMo's folder-trust prompt would otherwise block the pane; its <code>--dangerously-skip-permissions</code> adds a <em>second</em> blocking warning, so it is deliberately not used here).</li>
+<li><code>disabledTuiAgents</code> cleaned to <code>["opencode"]</code> (the removed v1 slot). All 32 other yolo args restored intact after one <code>settings.update</code> write replaced the whole map — full map re-sent and read back.</li>
+</ul>
+<p>Orca resolves agents from <strong>its own</strong> captured PATH, so a <code>~/.local/bin</code> wrapper alone is not enough: the per-agent <code>command</code> override is what makes the Qwen lane authenticated.</p>
+<p><strong>T3 Code</strong> (<code>~/.t3/userdata/settings.json</code>, service restarted with <code>launchctl kickstart</code>)</p>
+<ul>
+<li><code>pi</code> provider instance removed.</li>
+<li><code>acpRegistry_opencode_v2</code> converted to <code>source: "local"</code> → <code>~/.local/bin/opencode-acp</code> (<code>opencode acp</code>).</li>
+<li>Added <code>acpRegistry_qwen</code> → <code>~/.local/bin/qwen-acp</code> (<code>qwen --acp</code>).</li>
+<li>Added <code>acpRegistry_mimo</code> → <code>~/.local/bin/mimo-acp</code> (<code>mimo acp</code>).</li>
+</ul>
+<p>Readiness cache after restart (<code>~/.t3/caches/&lt;instance&gt;.json</code>): all three <code>status: "ready"</code>.</p>
+<h2 id="4-evidence--real-turns-not-launches">4. Evidence — real turns, not launches</h2>
+<table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Terminal</th>
+<th>ACP protocol</th>
+<th>Orca pane</th>
+<th>T3 thread</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenCode v2.1.4</td>
+<td><code>OPENCODE_SMOKE_OK</code></td>
+<td><code>OPENCODE_ACP_OK</code> (session <code>ses_e8daf76…</code>)</td>
+<td><code>ORCA_OC2C_OK</code></td>
+<td><code>T3_OC2_OK</code></td>
+</tr>
+<tr>
+<td>Qwen Code 0.26.1</td>
+<td><code>QWEN_SMOKE_OK</code>, <code>QWEN_SMOKE2_OK</code></td>
+<td><code>QWEN_ACP_OK</code></td>
+<td><code>ORCA_QWEN_OK</code></td>
+<td><code>T3_QWEN_OK</code>, <code>T3_QWEN_DEFAULT_OK</code></td>
+</tr>
+<tr>
+<td>MiMo Code 0.1.15</td>
+<td><code>MIMO_SMOKE_OK</code></td>
+<td><code>MIMO_ACP_OK</code> (reports agentName "OpenCode 0.1.15")</td>
+<td><code>ORCA_MIMO_OK</code></td>
+<td><code>T3_MIMO_OK</code></td>
+</tr>
+</tbody>
+</table>
+<p>Orca runs were real worktree launches (<code>orca worktree create --agent … --prompt …</code>) with the reply read out of each pane's on-disk scrollback (<code>terminal-history/&lt;repo&gt;::&lt;path&gt;@@&lt;id&gt;/output.log</code>); Qwen's pane also showed <code>API Key | deepseek-v4.1-flash:1017</code> and <code>YOLO mode</code>. T3 runs were <code>t3 thread start … --wait --json</code>, each returning <code>"status":"completed"</code> with the reply string.</p>
+<p>All smoke worktrees and the temporary T3 project were removed afterwards.</p>
+<h2 id="5-known-quirks-not-failures">5. Known quirks (not failures)</h2>
+<ul>
+<li><strong>Orca prompt prefill:</strong> MiMo's <code>flag-prompt</code> submits itself; OpenCode 2 and Qwen Code only put the text in the composer (Qwen's is usually eaten by its first draw). Pressing Enter / retyping works — proven above. <code>orca terminal read|send</code> reports <code>terminal_handle_stale</code> until <code>orca terminal switch --terminal &lt;handle&gt;</code> focuses the tab.</li>
+<li><strong>Orca's OpenCode pane shows <code>MCP server failed: maio-core</code>:</strong> <code>~/.config/opencode/opencode.json</code> points <code>maio-core</code>/<code>maio-memory</code> at <code>127.0.0.1:12008</code> with a bearer token that the gateway answers <strong>401</strong> to. Pre-existing, unrelated to these lanes; needs the current MetaMCP token or the entries disabled.</li>
+<li><strong>Qwen version string:</strong> <code>qwen --version</code> prints <code>0.26.1</code> while the Homebrew/npm keg metadata says <code>0.25.2</code>. The binary is stable and functional; the mismatch is in the package's own version reporting.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
