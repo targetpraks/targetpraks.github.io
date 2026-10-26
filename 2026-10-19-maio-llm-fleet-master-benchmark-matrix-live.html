@@ -1,0 +1,1516 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Maio LLM Fleet — Master Benchmark Matrix (LIVE)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4}
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c}
+thead th{background:#2c313c;color:#f6f2e8;border-bottom:2px solid #4a5162}
+th,td{border-bottom:1px solid #3c424f}
+tbody tr:nth-child(even){background:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:#1b1917;background:#e6ddc9;white-space:nowrap;
+         border-bottom:2px solid #c3b6a0}
+th,td{border-bottom:1px solid #cbbfa9;padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:#f0e9da}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="maio-llm-fleet--master-benchmark-matrix-live">Maio LLM Fleet — Master Benchmark Matrix (LIVE)</h1>
+<p><strong>Prepared by:</strong> Adrianna A · <strong>Date:</strong> 2026-10-26 (weekly benchmark run, 05:00–05:10 SAST) · <strong>Status:</strong> canonical fleet allocation reference</p>
+<p>This is the <strong>single canonical document</strong> for the fleet's model allocation and benchmark standing. It is updated in place weekly (never duplicated) by the benchmark cron <code>05dc60dd84d2</code>. Every number below came from a live pull (<code>bench-pull --source all</code>, 17 sources) or a live inference probe run on 2026-10-26. No figure is estimated.</p>
+<p><strong>Architecture note:</strong> Hermes homes use <strong>direct ollama-cloud lanes</strong> (32 config files: 31 profiles + the root config) since the 2026-10-17 retirement of LiteLLM as the primary path. <strong>LiteLLM is fully decommissioned as of 2026-10-19</strong> (containers and volume removed, no auto-start). Gateway-era references in older copies of this document are historical.</p>
+<hr />
+<h2 id="1-live-platform-status-2026-10-26">1. Live platform status (2026-10-26)</h2>
+<p>Every supplier probed host-side with one real chat completion on <strong>2026-10-26 between 05:03 and 05:05 SAST</strong>. "Latency" is wall-clock for a trivial prompt — a health signal, not a quality signal. <code>&lt;empty&gt;</code> means the lane answered <strong>200</strong> but the content came back blank because the 10-token budget was spent inside a reasoning block (<code>finish_reason: length</code>) — a probe artifact, not a failure.</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Free-tier allowance</th>
+<th>Probe result (2026-10-26)</th>
+<th>Live latency</th>
+<th>Models it serves</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ollama Cloud</td>
+<td>credit-gated (weekly)</td>
+<td><strong>ALIVE</strong> — both probed role models <strong>200</strong>; authenticated catalog read back <strong>23 models</strong></td>
+<td>0.8 s</td>
+<td>deepseek-v4.1-flash, deepseek-v4.1-flash:1017, glm-5.3, glm-5.3-flash, kimi-k3, minimax-m3, minimax-m3.1-flash, gpt-oss:20b, gemma4:31b, mistral-large-4, muse-spark-open (23 total)</td>
+</tr>
+<tr>
+<td>Dahl</td>
+<td>100M tokens one-off</td>
+<td><strong>LARGELY DEAD</strong> — deepseek <strong>429</strong>, glm <strong>429</strong>; only minimax-m2.7 answered <strong>200</strong></td>
+<td>1.7 s</td>
+<td>minimax-m2.7 only today</td>
+</tr>
+<tr>
+<td>JoinGonka</td>
+<td>3M tokens one-off</td>
+<td><strong>ALIVE</strong> — deepseek <strong>200</strong> (2.0 s), glm <strong>200</strong> (4.9 s)</td>
+<td>2.0–4.9 s</td>
+<td>deepseek-v4-flash, glm-5.3-flash</td>
+</tr>
+<tr>
+<td>Mingles</td>
+<td>3.9M/wk renewable</td>
+<td><strong>ALIVE</strong> — deepseek <strong>200</strong> (1.9 s), minimax <strong>200</strong> (2.1 s)</td>
+<td>1.9–2.1 s</td>
+<td>deepseek-v4-flash, minimax-m2.7</td>
+</tr>
+<tr>
+<td>OpenRouter</td>
+<td>$0 balance, 1000 req/day</td>
+<td><strong>DEGRADED — two wired hops are gone.</strong> <code>minimax/minimax-m3.1-flash:free</code> <strong>HTTP 404</strong> and <code>nvidia/nemotron-3-super-120b-a12b:free</code> <strong>HTTP 404</strong>; <code>nemotron-3.5-super-vl:free</code> <strong>200</strong> (0.6 s), <code>nemotron-3-ultra-550b:free</code> <strong>200</strong> (1.5 s), <code>nemotron-3.5-lightning:free</code> <strong>200</strong> (0.7 s), <code>gemma-4-31b:free</code> <strong>429</strong>, <code>laguna-xs:free</code> <strong>429</strong>, <code>inkling:free</code> <strong>403</strong></td>
+<td>0.6–1.5 s</td>
+<td><strong>17</strong> free models (was 19)</td>
+</tr>
+<tr>
+<td>NVIDIA NIM</td>
+<td>~1000 credits/mo, 40 RPM</td>
+<td><strong>SHRINKING</strong> — gpt-oss-20b <strong>200</strong> (0.9 s), llama-3.2-11b-vision <strong>200</strong> (10.2 s), nemotron-3-ultra <strong>200</strong> (1.7 s); glm-5.3 <strong>timeout</strong>; kimi-k3 <strong>HTTP 410</strong> (end of life)</td>
+<td>0.9–10.2 s</td>
+<td>gpt-oss-20b, llama-3.2-11b-vision, nemotron-3-ultra</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td>Free tier, daily caps</td>
+<td><strong>ALIVE</strong> — 3.6-flash <strong>200</strong> (1.5 s), 3.5-flash <strong>200</strong> (1.5 s), flash-lite-latest <strong>200</strong> (2.0 s); 3.7-flash <strong>timeout</strong></td>
+<td>1.5–2.0 s</td>
+<td>gemini-3.5/3.6-flash, flash-lite-latest</td>
+</tr>
+<tr>
+<td>Ollama (local)</td>
+<td>On-device, no quota</td>
+<td><strong>ALIVE</strong> — llama3.2:1b <strong>200</strong></td>
+<td>2.0 s</td>
+<td>llama3.2:1b, d3-gate, nomic-embed-text</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reading-of-the-board-ollama-cloud-is-the-only-supplier-carrying-every-role-primary-and-it-answered-cleanly--that-is-what-keeps-the-direct-oc-allocation-correct-on-2026-10-26-around-it-the-free-tier-has-rotted-dahl-429s-on-both-deepseek-and-glm-and-two-openrouter-hops-that-31-of-32-homes-still-carry-are-now-404-nvidia-lost-kimi-k3-permanently-410-and-times-out-on-glm-53-joingonka-and-mingles-remain-clean-deepworker-alternates-geminis-free-tier-still-answers-on-three-flash-lanes-the-fleet-is-healthy-on-its-primaries-and-stale-on-its-fallbacks--the-one-actionable-config-item-this-week-52"><strong>Reading of the board.</strong> <strong>Ollama Cloud is the only supplier carrying every role primary, and it answered cleanly</strong> — that is what keeps the direct-OC allocation correct on 2026-10-26. Around it the free tier has rotted: <strong>Dahl 429s on both deepseek and glm</strong>, and <strong>two OpenRouter hops that 31 of 32 homes still carry are now 404</strong>. NVIDIA lost kimi-k3 permanently (410) and times out on glm-5.3. JoinGonka and Mingles remain clean deep/worker alternates; Gemini's free tier still answers on three flash lanes. The fleet is <strong>healthy on its primaries and stale on its fallbacks</strong> — the one actionable config item this week (§5.2).</h2>
+<h2 id="2-benchmark-pull--source-inventory">2. Benchmark pull — source inventory</h2>
+<p><code>bench-pull --source all</code> on <strong>2026-10-26</strong>, finished in 38 s. <strong>17/17 sources ok</strong> — the first complete sweep since 2026-10-19.</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Records</th>
+<th>Pull time</th>
+<th>What it gives us</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LMArena</td>
+<td>779</td>
+<td>5.8 s</td>
+<td>Human-preference Elo, 4 boards (text 418, code_webdev, vision, document)</td>
+</tr>
+<tr>
+<td>LiveBench 2.0</td>
+<td>30</td>
+<td>0.1 s</td>
+<td>Contamination-free rotating benchmark, release <strong>2026-10-23</strong>, 7 categories (long_agentic, reasoning, coding, browser, data_analysis, research, design)</td>
+</tr>
+<tr>
+<td>SWE-bench</td>
+<td>323</td>
+<td>0.3 s</td>
+<td>Coding-agent leaderboard, 5 datasets</td>
+</tr>
+<tr>
+<td>SWE-bench-Live</td>
+<td>162</td>
+<td>0.1 s</td>
+<td>Monthly contamination-refreshed resolve rates</td>
+</tr>
+<tr>
+<td>SWE-rebench</td>
+<td>117</td>
+<td>0.9 s</td>
+<td>Continuously-updated resolve rate + SEM + passN (Nebius)</td>
+</tr>
+<tr>
+<td>LiveCodeBench</td>
+<td>69,408</td>
+<td>1.1 s</td>
+<td>4 scenarios — generation / execution / repair / testgen</td>
+</tr>
+<tr>
+<td>Aider polyglot</td>
+<td>69</td>
+<td>0.0 s</td>
+<td>225-exercise polyglot edit leaderboard with cost</td>
+</tr>
+<tr>
+<td>Terminal-Bench</td>
+<td>35</td>
+<td>0.1 s</td>
+<td>Agentic terminal tasks — model × agent × accuracy × cost</td>
+</tr>
+<tr>
+<td>Epoch AI</td>
+<td>90</td>
+<td>0.5 s</td>
+<td>Data hub (GPQA Diamond, FrontierMath, SWE-bench Verified, AIME, METR)</td>
+</tr>
+<tr>
+<td>Vals AI</td>
+<td>56</td>
+<td>16.1 s</td>
+<td>Independent industry evals</td>
+</tr>
+<tr>
+<td>Artificial Analysis</td>
+<td>266</td>
+<td>0.1 s</td>
+<td>Intelligence Index + context across 266 models</td>
+</tr>
+<tr>
+<td>Nous</td>
+<td>18</td>
+<td>0.4 s</td>
+<td>Hermes Index leaderboard with cost-per-task</td>
+</tr>
+<tr>
+<td>HELM</td>
+<td>3</td>
+<td>3.4 s</td>
+<td>Stanford HELM classic + capabilities</td>
+</tr>
+<tr>
+<td>Hugging Face</td>
+<td>50</td>
+<td>0.6 s</td>
+<td>Trending + downloads</td>
+</tr>
+<tr>
+<td>MTEB</td>
+<td>50</td>
+<td>1.0 s</td>
+<td>Embeddings leaderboard</td>
+</tr>
+<tr>
+<td>OpenRouter catalog</td>
+<td>467</td>
+<td>0.1 s</td>
+<td>Catalog, prices, context, free list</td>
+</tr>
+<tr>
+<td><strong>OpenRouter benchmarks</strong></td>
+<td>1,896</td>
+<td>3.1 s</td>
+<td><strong>Self-reported scores</strong> — AA indices, Design-Arena Elo, GPQA-D/τ-bench runs; the only evidence for preview models</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Two repairs this run (both live-verified):</strong></p>
+<ul>
+<li><strong>LiveBench 2.0 rotated its minified variable names again</strong> — the compact release ids moved from <code>_e=["20261014"]</code> to <code>Yt=["20261014"]</code> plus a spread <code>[...Yt,"20261023"]</code>, so the <code>_e=</code> anchor stopped matching and the puller raised <code>no table CSV found for recent releases</code>. The parser now falls back to collecting every six-digit release id from the bundle and probing newest-first. Result: release <strong>2026-10-23</strong>, 30 models — down from <strong>53</strong> models on the 2026-10-14 release, so a model missing from this board this week is <strong>not on the release</strong>, not scoring zero. <code>glm-5.3</code>, <code>kimi-k3</code> and <code>minimax-m3</code> are in that position (§3.1 shows <code>—</code>).</li>
+<li><strong>The "a partial sweep no longer aborts the run" guard from 2026-10-19 never worked.</strong> The guard read <code>${PIPESTATUS[0]}</code> on the line <em>after</em> a pipeline, and <code>set -euo pipefail</code> had already killed the script when <code>bench-pull</code> exited 1 on a single failed source. Today's 05:00 run died exactly there: sources pulled, then silence — <strong>document untouched at its 2026-10-19 mtime</strong>. Fixed by writing <code>bench-pull</code> to a temp file, capturing <code>$?</code> under <code>set +e</code>, then printing the tail. Same class of bug fixed on the <code>secrets.env</code> sourcing line.</li>
+</ul>
+<hr />
+<h2 id="3-top-benchmarks--every-accessible-model">3. Top benchmarks — every accessible model</h2>
+<p>"Accessible" = reachable today from a lane wired into the fleet (free tier or otherwise). Ranks are from the 2026-10-26 pull. AA = Artificial Analysis Intelligence Index; Hermes = Hermes Index (cost-per-task in brackets); LB = LiveBench 2.0 coding / reasoning.</p>
+<h3 id="31-cloud-models-we-can-actually-reach">3.1 Cloud models we can actually reach</h3>
+<p>"Accessible" = reachable today from a lane wired into the fleet. AA = Artificial Analysis Intelligence Index; Hermes = Hermes Index (cost-per-task in brackets); LB = LiveBench 2.0 <strong>release 2026-10-23</strong> coding / reasoning; LMArena rank (rating). <code>—</code> = the model has no row on that board this week.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>AA intel</th>
+<th>Hermes idx</th>
+<th>LB coding</th>
+<th>LB reasoning</th>
+<th>LMArena text</th>
+<th>LMArena code</th>
+<th>Served by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td><strong>45.10</strong></td>
+<td>36.91 ($0.259)</td>
+<td><strong>96.0</strong></td>
+<td>89.1</td>
+<td>—</td>
+<td>—</td>
+<td>Ollama Cloud, Dahl (429), JoinGonka, Mingles</td>
+</tr>
+<tr>
+<td>glm-5.3</td>
+<td>44.78</td>
+<td>39.23 ($3.78)</td>
+<td>—</td>
+<td>—</td>
+<td>26 (1480.7)</td>
+<td>25 (1622.8)</td>
+<td>Ollama Cloud, JoinGonka, Dahl (429)</td>
+</tr>
+<tr>
+<td>minimax-m3.1-flash</td>
+<td>42.71</td>
+<td>—</td>
+<td>83.9</td>
+<td>82.9</td>
+<td>—</td>
+<td>34 (1588.8)</td>
+<td>Ollama Cloud</td>
+</tr>
+<tr>
+<td>glm-5.3-flash</td>
+<td>41.81</td>
+<td>34.95 ($0.497)</td>
+<td>80.6</td>
+<td>77.6</td>
+<td>35 (1476.0)</td>
+<td>30 (1607.7)</td>
+<td>Ollama Cloud, JoinGonka, Dahl (429)</td>
+</tr>
+<tr>
+<td>muse-spark-open</td>
+<td>38.87</td>
+<td>—</td>
+<td>73.6</td>
+<td>73.7</td>
+<td>—</td>
+<td>—</td>
+<td>Ollama Cloud</td>
+</tr>
+<tr>
+<td>mistral-large-4</td>
+<td>38.38</td>
+<td>—</td>
+<td>60.0</td>
+<td>83.9</td>
+<td>—</td>
+<td>—</td>
+<td>Ollama Cloud</td>
+</tr>
+<tr>
+<td>deepseek-v4-pro:0813</td>
+<td>36.00</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Ollama Cloud</td>
+</tr>
+<tr>
+<td>beam (reflection)</td>
+<td>30.33</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Ollama Cloud</td>
+</tr>
+<tr>
+<td>minimax-m3</td>
+<td>29.22</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>97 (1439.8)</td>
+<td>67 (1482.3)</td>
+<td>Ollama Cloud, Mingles, Dahl</td>
+</tr>
+<tr>
+<td>nemotron-3.5-super-vl</td>
+<td>26.49</td>
+<td>—</td>
+<td>71.3</td>
+<td>74.6</td>
+<td>—</td>
+<td>—</td>
+<td>Ollama Cloud, OpenRouter free</td>
+</tr>
+<tr>
+<td>kimi-k2.7-code</td>
+<td>25.81</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Ollama Cloud</td>
+</tr>
+<tr>
+<td>nemotron-3-ultra-550b</td>
+<td>22.93</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>122 (1426.1)</td>
+<td>—</td>
+<td>Ollama Cloud, OpenRouter free, NVIDIA</td>
+</tr>
+<tr>
+<td>gemma4:31b</td>
+<td>14.67</td>
+<td>—</td>
+<td>49.0</td>
+<td>68.3</td>
+<td>76 (1452.3)</td>
+<td>112 (1368.4)</td>
+<td>Ollama Cloud, OpenRouter free</td>
+</tr>
+<tr>
+<td>gpt-oss:20b</td>
+<td>8.97 (High) / 9.95 (Low)</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>269 (1317.4)</td>
+<td>—</td>
+<td>Ollama Cloud, NVIDIA, OpenRouter</td>
+</tr>
+<tr>
+<td><strong>kimi-k3</strong></td>
+<td>— (no AA row)</td>
+<td>39.16 ($6.50)</td>
+<td>59.3</td>
+<td><strong>90.7</strong></td>
+<td>18 (1487.4)</td>
+<td>17 (1654.9)</td>
+<td>Ollama Cloud</td>
+</tr>
+<tr>
+<td>gemini-3.6-flash</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Gemini free</td>
+</tr>
+<tr>
+<td>llama-3.2-11b-vision</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>NVIDIA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Board leaders (context, not reachable on our lanes):</strong> AA #1 <strong>Claude Opus 5.5 — 57.62</strong>; Hermes #1 <strong>Claude Opus 5.5 — 63.31</strong> ($4.99/task); LB coding #1 <strong>claude-fable-5.1 — 97.7</strong>; LB reasoning #1 <strong>gemini-4-argon — 95.1</strong>; LMArena text #1 <strong>Gemini 4 Argon (High) — 1517.2</strong>; LMArena code #1 <strong>Claude Opus 5.5 (Max) — 1806.9</strong>; SWE-bench Verified #1 <strong>Claude 4.5 Opus — 79.2 %</strong>.</p>
+<p><strong>What the table says about our reachable set:</strong></p>
+<ul>
+<li><strong><code>deepseek-v4.1-flash:1017</code> is the strongest model we can reach on both index and coding.</strong> AA now scores it <strong>45.10</strong> — up from 39.46 last week, and within 2.7 points of glm-5.3 (44.78) while costing <strong>$0.259 vs $3.78 per task</strong>. LB coding <strong>96.0</strong> is third on the whole board behind claude-fable-5.1 (97.7) and claude-opus-5.5 (96.3), both of which we cannot reach.</li>
+<li><strong>The AA index-version drift flagged last week has closed</strong> — AA and the self-reported feed now agree that the 1017 refresh is the frontier-flash tier, so the orchestrator/worker/deep allocation is confirmed on evidence rather than on a disputed number.</li>
+<li><strong>kimi-k3 has dropped off the AA board entirely.</strong> Only <strong>Kimi K3.1 Pro</strong> (AA 55.09) carries a Kimi row now. kimi-k3 keeps the highest LB reasoning in our reachable set (<strong>90.7</strong>) and a top-20 LMArena standing on both boards, which is why the single reason seat still holds it — but its coding is the weakest in the top tier (59.3) and it costs <strong>$6.50/task</strong>, 25× the flash tier.</li>
+<li><strong><code>kimi-k3.1-pro</code> is the interesting miss:</strong> AA <strong>55.09</strong>, LB <strong>81.8 / 91.1</strong>, LMArena code <strong>#8</strong>. It is <em>not</em> on Ollama Cloud (the 23-model catalog has no K3.1) and exists on OpenRouter only as a <strong>paid</strong> model ($2/M in, $10/M out). At a $0 balance it is not wireable — held, not forgotten (§9).</li>
+<li><strong><code>minimax-m3.1-flash</code> is the best-value non-DeepSeek seat:</strong> AA 42.71, LB 83.9 / 82.9, on Ollama Cloud. It out-scores glm-5.3-flash on every board we have while costing less, and it is the only distinct lineage in the reachable set with both coding and reasoning above 80.</li>
+<li><strong>mistral-large-4</strong> (AA 38.38, LB reasoning <strong>83.9</strong>) is a new reachable option with a genuinely different failure mode to DeepSeek and Z.ai — it is the MoA panel's runner-up this week.</li>
+</ul>
+<h3 id="31a-flash-tier-on-artificial-analysis-v432--the-2026-10-19-evening-re-read-historical">3.1a Flash tier on Artificial Analysis v4.3.2 — the 2026-10-19 evening re-read (historical)</h3>
+<p><strong>Data-quality finding:</strong> the AA rows in §3.1 come from the OpenRouter benchmark feed (<code>openrouter_benchmarks.json</code>), which is now <strong>stale by one index version</strong>. AA's own live pages (v4.3.2) score the same models higher — <code>deepseek-v4.1-flash:1017</code> reads <strong>39.46</strong> in the feed but <strong>45</strong> on AA's site. Every flash-tier comparison below was re-read from AA's live model pages on 2026-10-19, and the fleet now uses those figures for allocation; the feed remains useful for coverage breadth, not for the headline index. (Fix for next week: add the AA model pages as source #18, or pin the index version in the feed parser.)</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>AA intel (v4.3.2)</th>
+<th>$/AA task</th>
+<th>Speed (tok/s)</th>
+<th>Params</th>
+<th>Context</th>
+<th>Ollama Cloud $/Mtok in · out</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>deepseek-v4.1-flash:1017 (Max)</td>
+<td><strong>45</strong></td>
+<td>$0.26</td>
+<td><strong>210.6</strong></td>
+<td>552B / 16B active</td>
+<td>1M</td>
+<td>0.30 · 1.20 (off-peak 0.15 · 0.60)</td>
+</tr>
+<tr>
+<td>glm-5.3-flash</td>
+<td>42</td>
+<td>$0.28</td>
+<td>78.0</td>
+<td>320B / 18B</td>
+<td>1M</td>
+<td>0.15 · 0.50</td>
+</tr>
+<tr>
+<td>minimax-m3.1-flash</td>
+<td>42</td>
+<td><strong>$0.22</strong></td>
+<td>122.8</td>
+<td>428B (Ollama) / undisclosed (AA)</td>
+<td>1M</td>
+<td>0.15 · 0.60 (cached input 0.015)</td>
+</tr>
+<tr>
+<td>deepseek-v4.1-flash (Max, non-1017)</td>
+<td>39</td>
+<td>$0.49</td>
+<td>232.1</td>
+<td>552B / 16B</td>
+<td>1M</td>
+<td>0.30 · 1.20 (off-peak 0.15 · 0.60)</td>
+</tr>
+<tr>
+<td>minimax-m3</td>
+<td>29</td>
+<td>$0.51</td>
+<td>—</td>
+<td>—</td>
+<td>1M</td>
+<td>0.60 · 2.40</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reading:</strong> the flash tier is now three-way tight on intelligence (45 / 42 / 42) and separated mainly by <strong>price per token and discipline</strong>. <code>deepseek-v4.1-flash:1017</code> keeps the crown and is the fastest of the three on our lane; <code>minimax-m3.1-flash</code> is the cheapest per AA task but is <strong>very verbose</strong> (180M tokens on the index) and has the worst hallucination discipline in the tier — AA measured a <strong>93% non-refusal rate</strong> (Omniscience index 16: when it is wrong it is confidently wrong rather than saying it does not know). <code>glm-5.3-flash</code> ties m3.1 on intelligence, costs 6 cents more per AA task, and is the slowest per AA's own API — but on OUR lane it is the faster of the two (2.3 s vs 5.5 s median) and it refuses instead of fabricating.</p>
+<h3 id="31b-our-own-orchestration-head-to-head-2026-10-19-live-on-ollama-cloud-historical">3.1b Our own orchestration head-to-head (2026-10-19, live on ollama-cloud) (historical)</h3>
+<p>Eight orchestration-shaped tasks (agent routing, JSON tool-call emission, constraint following, cost arithmetic, field extraction, plan formatting, refusal of a fake model, needle retrieval), <strong>2 runs each, temperature 0</strong>, auto-scored. Script + raw rows: <code>~/AI Hub/evals/orchestrator-flash-eval-2026-10-19.py</code>, <code>results-2026-10-19.jsonl</code>. Native tool-calling checked separately with a real <code>tools</code> payload.</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Pass</th>
+<th>Median latency</th>
+<th>Mean output tokens</th>
+<th>Measured $/short task</th>
+<th>Native tool call</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>deepseek-v4.1-flash:1017</td>
+<td>8/8 (100%)</td>
+<td><strong>1.8 s</strong></td>
+<td>124</td>
+<td>$0.00020</td>
+<td>1 correct call, 1.7 s</td>
+</tr>
+<tr>
+<td>glm-5.3-flash</td>
+<td>8/8 (100%)</td>
+<td>2.3 s</td>
+<td>210</td>
+<td><strong>$0.00013</strong></td>
+<td>1 correct call, 1.9 s</td>
+</tr>
+<tr>
+<td>minimax-m3.1-flash</td>
+<td>7.5/8 (94%)</td>
+<td>5.5 s</td>
+<td>173</td>
+<td><strong>$0.00013</strong></td>
+<td>1 correct call, 2.1 s</td>
+</tr>
+<tr>
+<td>deepseek-v4.1-flash (non-1017)</td>
+<td>8/8 (100%)</td>
+<td>1.3 s</td>
+<td>124</td>
+<td>$0.00022</td>
+<td>n/a (untested this run)</td>
+</tr>
+<tr>
+<td>minimax-m3</td>
+<td>8/8 (100%)</td>
+<td>3.2 s</td>
+<td>185</td>
+<td>$0.00056</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<p>The single m3.1 miss was an <strong>empty response</strong> on the refusal task (one of two runs) — it produced no content at all rather than a fabricated score. On short orchestration-shaped prompts all four models are competent; the separation is latency, verbosity and price, which is exactly what the allocation below reflects.</p>
+<h3 id="32-local-models-on-device">3.2 Local models (on-device)</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Params</th>
+<th>Quant</th>
+<th>Context</th>
+<th>Architecture</th>
+<th>Role</th>
+<th>Probe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>local-mlx</td>
+<td>—</td>
+<td>MLX</td>
+<td>—</td>
+<td>MLX</td>
+<td><code>local</code> — offline net</td>
+<td>resident</td>
+</tr>
+<tr>
+<td>shadow-mlx</td>
+<td>—</td>
+<td>MLX</td>
+<td>—</td>
+<td>MLX</td>
+<td><code>shadow</code> — private lane</td>
+<td>resident</td>
+</tr>
+<tr>
+<td>llama3.2:1b</td>
+<td>1.2B</td>
+<td>Q8_0</td>
+<td>131,072</td>
+<td>Llama</td>
+<td>net-of-last-resort in every chain</td>
+<td>200, 2.0 s (2026-10-26)</td>
+</tr>
+<tr>
+<td>d3-gate</td>
+<td>—</td>
+<td>Q4</td>
+<td>—</td>
+<td>Decision 3.0</td>
+<td>§8 decision gates (<code>:8110</code>)</td>
+<td>resident, health 200</td>
+</tr>
+<tr>
+<td>clef-flash</td>
+<td>9.1B</td>
+<td>Q8_0</td>
+<td>262,144</td>
+<td>Qwen3.5</td>
+<td>decision fast lane (retired from gates)</td>
+<td>resident</td>
+</tr>
+<tr>
+<td>nomic-embed-text</td>
+<td>137M</td>
+<td>F16</td>
+<td>2,048</td>
+<td>nomic-bert</td>
+<td>vault semantic search</td>
+<td>resident</td>
+</tr>
+<tr>
+<td>deepseek-v4.1-flash:1017-cloud</td>
+<td>—</td>
+<td>cloud tag</td>
+<td>—</td>
+<td>—</td>
+<td>local manifest entry for the OC lane</td>
+<td>21 h old</td>
+</tr>
+</tbody>
+</table>
+<p>Local models have <strong>no public benchmark standing</strong> — they are judged on availability and speed, which is why they are the last net, never a primary.</p>
+<hr />
+<h2 id="4-openrouter-free-pool-the-biggest-renewable-free-lane">4. OpenRouter free pool (the biggest renewable free lane)</h2>
+<p><strong>17 free models</strong> at $0 balance (zero-balance by design — free models only, never topped up). 1000 req/day, resets UTC midnight. Catalog 467 models. <strong>The pool shrank by two this week and both losses are hops the fleet still carries</strong>: <code>minimax/minimax-m3.1-flash:free</code> and <code>nvidia/nemotron-3-super-120b-a12b:free</code> now return <strong>HTTP 404</strong> (§5.2).</p>
+<h3 id="41-free-pool--state-and-self-reported-scores">4.1 Free pool — state and self-reported scores</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Endpoint status</th>
+<th>Latency p50 / tps</th>
+<th>Self-reported evidence</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nvidia/nemotron-3.5-super-vl:free</td>
+<td><strong>200 — recovered</strong> (was −2)</td>
+<td>0.6 s probe</td>
+<td><strong>AA-intel 26.5 · GPQA-D 88.0% · τ-bench 75.3% · website Elo 1169</strong></td>
+<td><strong>highest-scoring free lane that answered today — new fallback hop (§5.4)</strong></td>
+</tr>
+<tr>
+<td>thinkingmachines/inkling:free</td>
+<td>status 0, uptime 100%</td>
+<td>2173 ms / 30</td>
+<td>AA-intel 25.7 · GPQA-D 86.6%</td>
+<td><strong>403 on our key</strong> (agentic-only) — re-test</td>
+</tr>
+<tr>
+<td>thinkingmachines/inkling-small:free</td>
+<td>status 0, uptime 100%</td>
+<td>1412 ms / 111</td>
+<td>AA-intel 25.7 · GPQA-D 86.6%</td>
+<td>same 403 gate — re-test</td>
+</tr>
+<tr>
+<td>nvidia/nemotron-3-ultra-550b-a55b:free</td>
+<td>200</td>
+<td>1709 ms / 49</td>
+<td>AA-intel 22.9 · GPQA-D 81.2% · τ-bench 72.0% · code Elo 1147</td>
+<td>fallback lane in most chains</td>
+</tr>
+<tr>
+<td>google/gemma-4-26b-a4b-it:free</td>
+<td>200</td>
+<td>1030 ms / 41</td>
+<td>AA-intel 16.7 · GPQA-D 70.6% · τ-bench 69.5%</td>
+<td>spare</td>
+</tr>
+<tr>
+<td>google/gemma-4-31b-it:free</td>
+<td>200</td>
+<td>1330 ms / 24</td>
+<td>AA-intel 14.7 · GPQA-D 81.3% · τ-bench 76.6%</td>
+<td>spare (also on OC)</td>
+</tr>
+<tr>
+<td>nvidia/nemotron-3.5-lightning:free</td>
+<td>200</td>
+<td><strong>412 ms / 71</strong></td>
+<td>AA-intel 12.9 · GPQA-D 70.1% · τ-bench 65.3%</td>
+<td>fastest useful free lane</td>
+</tr>
+<tr>
+<td>nvidia/nemotron-3-super-120b-a12b:free</td>
+<td><strong>HTTP 404 — delisted</strong></td>
+<td>—</td>
+<td>AA-intel 12.8</td>
+<td><strong>gone — was the second OR hop in most chains</strong></td>
+</tr>
+<tr>
+<td>cohere/north-mini-code:free</td>
+<td>200</td>
+<td>757 ms / 26</td>
+<td>AA-intel 9.9</td>
+<td>code spare</td>
+</tr>
+<tr>
+<td>liquid/lfm-2.5-2.6b:free</td>
+<td>200</td>
+<td><strong>284 ms / 217</strong></td>
+<td>AA-intel 8.4</td>
+<td>micro/utility</td>
+</tr>
+<tr>
+<td>poolside/laguna-xs-2.1:free</td>
+<td>200</td>
+<td>756 ms / 63</td>
+<td>no benchmark rows</td>
+<td>code fallback (expires 2026-10-31)</td>
+</tr>
+<tr>
+<td>poolside/laguna-s-2.1:free</td>
+<td>200</td>
+<td>1650 ms / 40</td>
+<td>no benchmark rows</td>
+<td>code spare (expires 2026-10-31)</td>
+</tr>
+<tr>
+<td>xingchen-agi/xing4.0-29b-a4b:free</td>
+<td>200</td>
+<td>1468 ms / 24</td>
+<td>no benchmark rows yet</td>
+<td>new drop — unproven</td>
+</tr>
+<tr>
+<td>nvidia/nemotron-3.5-content-safety:free</td>
+<td>status −2</td>
+<td>329 ms / 69</td>
+<td>no rows</td>
+<td>safety only</td>
+</tr>
+<tr>
+<td>nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free</td>
+<td>status −5 (down)</td>
+<td>—</td>
+<td>AA-intel 10.3</td>
+<td>vision fallback — down today</td>
+</tr>
+<tr>
+<td>dots-studio/dots-3-note-preview:free</td>
+<td>200</td>
+<td>1026 ms / 59</td>
+<td>no benchmark rows yet</td>
+<td>notes/triage only</td>
+</tr>
+<tr>
+<td>google/lyria-3-clip-preview</td>
+<td>200</td>
+<td>2906 ms / 7.5</td>
+<td>no rows</td>
+<td>audio preview — not a chat lane</td>
+</tr>
+<tr>
+<td>google/lyria-3-pro-preview</td>
+<td>status −2</td>
+<td>4219 ms / 15</td>
+<td>no rows</td>
+<td>audio preview</td>
+</tr>
+<tr>
+<td>openrouter/free</td>
+<td>router alias</td>
+<td>—</td>
+<td>—</td>
+<td>auto-router, not a model</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-free-previews-and-paid-previews-self-reported-only">4.2 Free previews and paid previews (self-reported only)</h3>
+<p>Previews have no standing on external boards (those need a stable release), so the OpenRouter profile feed is their only capability evidence. 15 paid previews carry scores this week; the ones that matter:</p>
+<table>
+<thead>
+<tr>
+<th>Preview</th>
+<th>AA-intel</th>
+<th>Other self-reported</th>
+<th>Standing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stepfun/step-5-preview</td>
+<td><strong>43.7</strong></td>
+<td>code Elo 35, Hermes 32.83</td>
+<td>paid — the strongest preview we can see</td>
+</tr>
+<tr>
+<td>tencent/hy4-preview</td>
+<td>—</td>
+<td><strong>GPQA-D 90.2%</strong> · τ-bench present</td>
+<td>paid — strongest GPQA row in any preview</td>
+</tr>
+<tr>
+<td>google/gemini-3.1-pro-preview</td>
+<td>29.7</td>
+<td>AA-code 68.8 · agentic 8.2</td>
+<td>paid — the best Gemini preview</td>
+</tr>
+<tr>
+<td>google/gemini-3-flash-preview</td>
+<td>26.3</td>
+<td>website Elo 1198</td>
+<td>paid</td>
+</tr>
+<tr>
+<td>google/gemini-3.1-flash-lite-preview</td>
+<td>15.6</td>
+<td>AA-code 34.7 · agentic 1.6</td>
+<td>paid</td>
+</tr>
+<tr>
+<td>dots-studio/dots-3-note-preview</td>
+<td>—</td>
+<td>no rows yet</td>
+<td>free, no evidence</td>
+</tr>
+<tr>
+<td>moondream3 / auto-beta / gemini-3.1-pro-preview-customtools</td>
+<td>—</td>
+<td>no rows</td>
+<td>unproven</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Do not chain:</strong> inkling/inkling-small return <strong>403 "agentic harnesses only"</strong> on our key despite healthy endpoints; nemotron-3.5-super-vl is degraded (−2) despite the best free score. Neither is a wiring failure — they are gated or degraded upstream.</p>
+<hr />
+<h2 id="5-role--model-allocation-live--re-confirmed-by-d3-gate-2026-10-26">5. Role → model allocation (LIVE — re-confirmed by d3 gate 2026-10-26)</h2>
+<p><strong>Latest DeepSeek (<code>deepseek-v4.1-flash:1017</code>) is on every orchestration and deep-work seat.</strong> Every role primary is a <strong>direct ollama-cloud lane</strong> (the supplier carrying the weekly credit, verified 200 at 0.6–1.2 s on 2026-10-19 10:00). Fallback chains are flat: Ollama Cloud → NVIDIA → Gemini or OpenRouter-free → local. Counts are config files actually carrying the model.</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Primary (wired)</th>
+<th>Homes</th>
+<th>Why this model</th>
+<th>Fallback chain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>orchestrator / leadership</td>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td>13</td>
+<td>Latest DeepSeek refresh: LB coding 96.0, reasoning 89.1, $0.259/task — the strongest reachable tier at flash cost</td>
+<td>deepseek-v4.1-flash (OC) → gpt-oss-20b (NVIDIA) → nemotron-ultra:free (OR) → local</td>
+</tr>
+<tr>
+<td>deep work (research/review/scribe/code)</td>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td>4</td>
+<td>Same refresh for hard analysis and long-form work; best coding reachable</td>
+<td>deepseek-v4.1-flash (OC) → gpt-oss-20b (NVIDIA) → nemotron-ultra:free (OR) → local</td>
+</tr>
+<tr>
+<td>worker (drafting, one-ticket reads)</td>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td>10</td>
+<td>Re-confirmed 2026-10-26 at <strong>0.9818</strong> with the 1017 per-task price in the option set: AA <strong>45.10 at $0.259/task</strong> vs glm-5.3-flash 41.81 at $0.497 — smarter AND cheaper per finished task, and fastest on our lane (0.8 s). Applied 2026-10-19 22:58; held today</td>
+<td>glm-5.3-flash (OC) → gemini-3.5-flash-lite → <strong>nemotron-3.5-super-vl:free (OR, pending GO)</strong> → nemotron-ultra:free (OR) → local</td>
+</tr>
+<tr>
+<td>MoA reference seat (root + 30 profiles)</td>
+<td><strong>minimax-m3.1-flash</strong></td>
+<td>31 configs</td>
+<td>Adds a distinct lineage (MiniMax) to a panel that carried two Z.ai seats; AA 42 in the same price band as the seat it replaced</td>
+<td>aggregator stays deepseek-v4.1-flash:1017</td>
+</tr>
+<tr>
+<td>Council Researcher seat</td>
+<td><strong>minimax-m3.1-flash</strong> (low effort)</td>
+<td>root only</td>
+<td>Same reason: four seats now span Moonshot / NVIDIA / Z.ai / MiniMax instead of two Z.ai seats</td>
+<td>chairman stays deepseek-v4.1-flash:1017</td>
+</tr>
+<tr>
+<td>free fallback hop (all homes with an OpenRouter hop)</td>
+<td><strong>nvidia/nemotron-3.5-super-vl:free</strong> — gate <strong>0.9999</strong> — <strong>PREPARED, NOT APPLIED (needs Ricardo's GO: a 31-file bulk edit)</strong></td>
+<td>31</td>
+<td>The hop currently wired, <code>minimax/minimax-m3.1-flash:free</code>, returned <strong>HTTP 404 today</strong> — it has left the free pool. The replacement answered <strong>200 in 0.6 s</strong> and carries the <strong>highest AA index in the free pool (26.49)</strong>, ahead of the hop behind it (nemotron-ultra:free, 22.93, 200 in 1.5 s)</td>
+<td>sits ahead of nemotron-ultra:free, behind the OC and Gemini hops</td>
+</tr>
+<tr>
+<td>long-context / vision spare (unwired)</td>
+<td><strong>minimax-m3.1-flash</strong></td>
+<td>0 (no home pinned)</td>
+<td>Replaces minimax-m3 as the long-context specialist on paper: AA 42 vs 29, 1M ctx, $0.15/$0.60 vs $0.60/$2.40 — a 4× price cut for a 13-point gain whenever a long seat is wired</td>
+<td>becomes the primary of the <code>long</code> role if/when one is pinned</td>
+</tr>
+<tr>
+<td>fast / tiny (cron, high-frequency pings)</td>
+<td><strong>gpt-oss:20b</strong></td>
+<td>2 (courage, storm)</td>
+<td>0.7 s on OC; tool-calling tuned; cheapest lane for high-frequency pings</td>
+<td>deepseek-v4.1-flash (OC) → gpt-oss-20b (NVIDIA) → nemotron-ultra:free (OR) → local</td>
+</tr>
+<tr>
+<td>reason (deepest thinking)</td>
+<td><strong>kimi-k3</strong></td>
+<td>1 (bigbrains)</td>
+<td>Best reachable reasoning (LB 90.7) + top-20 LMArena text/code; flagship allowed on a 1-home seat</td>
+<td>glm-5.3 (OC) → glm-5.3-flash (OC) → deepseek-v4.1-flash (OC) → local</td>
+</tr>
+<tr>
+<td>shadow</td>
+<td>llama3.2:1b</td>
+<td>1</td>
+<td>Private, on-device, no cloud</td>
+<td>clef-27b (local)</td>
+</tr>
+<tr>
+<td>default (root)</td>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td>1 + splinter</td>
+<td>Latest DeepSeek on the main orchestration</td>
+<td>gpt-oss-20b (NVIDIA) → nemotron-ultra:free (OR) → gemini-flash-lite-latest → local</td>
+</tr>
+</tbody>
+</table>
+<h3 id="51-bulk-re-allocation-applied-2026-10-19-1000-sast-ricardo-go">5.1 Bulk re-allocation APPLIED 2026-10-19 10:00 SAST (Ricardo GO)</h3>
+<p>Ricardo's instruction — <em>"keep the latest DeepSeek on all the main orchestrations … make sure we use the right model for the job"</em> — was applied as a bulk config change across all 32 homes. Backups: <code>config.yaml.bak-20261019-models-v2</code> next to every file. Verified: <strong>32/32 configs parse</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>From</th>
+<th>To</th>
+<th>Applied</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Leadership + deep-work seats (17 homes)</td>
+<td>glm-5.3-flash / deepseek-v4-pro</td>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Worker seats (10 homes)</td>
+<td>glm-5.3-flash</td>
+<td><strong>deepseek-v4.1-flash</strong></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Fast seats (courage, storm)</td>
+<td>gpt-oss:20b (unverified tag)</td>
+<td><strong>gpt-oss:20b</strong> (OC 200, 0.7 s)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>bigbrains</td>
+<td>kimi-k3</td>
+<td>kimi-k3 (kept — best reasoning)</td>
+<td>✅ unchanged</td>
+</tr>
+<tr>
+<td>shadow</td>
+<td>llama3.2:1b</td>
+<td>llama3.2:1b (private, local)</td>
+<td>✅ unchanged</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-fallback-chain-gaps-found-config-fixes-needed">5.2 Fallback-chain gaps found (config fixes needed)</h3>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Home</th>
+<th>Problem</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 — DEAD HOP (31 homes)</strong></td>
+<td>all configs except <code>shadow</code></td>
+<td>The wired OpenRouter hop <code>minimax/minimax-m3.1-flash:free</code> returns <strong>HTTP 404</strong> — 62 occurrences across 31 config files. Every fallback chain in the fleet therefore walks past a dead first hop</td>
+<td>Replace <code>minimax/minimax-m3.1-flash:free</code> with <code>nvidia/nemotron-3.5-super-vl:free</code> (gate 0.9999, probed 200 / 0.6 s). <strong>Bulk edit across 31 files — prepared, awaiting Ricardo's GO</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>bigbrains</td>
+<td>All three fallbacks are <strong>ollama-cloud</strong> — one OC outage kills the reason seat</td>
+<td>Replace two hops with NVIDIA and OpenRouter free (4 distinct suppliers)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>scribe</td>
+<td>Only <strong>two</strong> fallbacks (OpenRouter, Gemini), no NVIDIA, no local net</td>
+<td>Add gpt-oss-20b (NVIDIA) + local</td>
+</tr>
+<tr>
+<td>4</td>
+<td>all chains</td>
+<td>Most carry 3 cloud + local = <strong>4 total</strong>, while the standing posture asks for 4 distinct suppliers + local net</td>
+<td>Add the missing supplier (dahl or gemini, whichever the home lacks) on the next config pass</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exact change prepared (not run):</strong></p>
+<pre><code># 31 config files: ~/.hermes/config.yaml + ~/.hermes/profiles/&lt;name&gt;/config.yaml (all except shadow)
+#   model: minimax/minimax-m3.1-flash:free   -&gt;   model: nvidia/nemotron-3.5-super-vl:free
+# 62 occurrences (two per file: primary hop + repeat), same provider: openrouter, same key_env</code></pre>
+<h3 id="53-m31-flash-revision--applied-2026-10-19-22552258-sast-ricardos-instruction-update-allocations-moa-and-council">5.3 M3.1 Flash revision — APPLIED 2026-10-19 22:55–22:58 SAST (Ricardo's instruction: "update allocations, MoA and council")</h3>
+<p>Announced on Ollama Cloud 2026-10-19 (US-hosted, zero data retention, 1M ctx, image understanding, tool calling). Verified on our account before touching any config: <code>GET /v1/models</code> lists it (23-model catalog), <code>POST /api/show</code> reports <code>capabilities: [completion, tools, thinking, vision]</code>, context 1,000,000, 428B params.</p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Before</th>
+<th>After</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Worker seats (10 homes)</td>
+<td>deepseek-v4.1-flash</td>
+<td><strong>deepseek-v4.1-flash:1017</strong> (first fallback now glm-5.3-flash)</td>
+<td>d3 <code>worker-v2</code> 0.599 + pairwise 0.610 / 0.746 both picked 1017 once it was an option: AA 45 at $0.26 per completed task vs 42 at $0.28. The interim glm-5.3-flash pick (0.885/0.828) was made before the 1017 price-per-task was in the state and was reversed</td>
+</tr>
+<tr>
+<td>Root MoA (4 refs)</td>
+<td>kimi-k3, nemotron-ultra, glm-5.3, JoinGonka GLM-5.3-Flash</td>
+<td>kimi-k3, nemotron-ultra, glm-5.3, <strong>minimax-m3.1-flash (high)</strong></td>
+<td>live probe: 4/4 <code>moa_reference</code> lines incl. m3.1 + <code>moa_aggregator</code>, answer in 20.8 s</td>
+</tr>
+<tr>
+<td>Profile MoA (30 profiles)</td>
+<td>glm-5.3, kimi-k3, glm-5.3-flash</td>
+<td>glm-5.3, kimi-k3, <strong>minimax-m3.1-flash (high)</strong></td>
+<td>30/30 blocks replaced; census confirms 30 seats on m3.1</td>
+</tr>
+<tr>
+<td>Council Researcher seat</td>
+<td>glm-5.3-flash (low)</td>
+<td><strong>minimax-m3.1-flash (low)</strong></td>
+<td><code>hermes council list</code>; live run 57 s: 4 members + 4 reviews + chairman, m3.1 present in all three stages</td>
+</tr>
+<tr>
+<td>Free fallback hop (31 homes)</td>
+<td>nemotron-ultra:free (AA 22.9)</td>
+<td><strong>minimax-m3.1-flash:free</strong> inserted AHEAD of it</td>
+<td>OpenRouter catalog: 1M ctx, $0 in/$0 out, probed 200 in 3.4 s with a correct code answer</td>
+</tr>
+<tr>
+<td>Orchestration / deep seats (18 homes)</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>unchanged</strong></td>
+<td>d3 <code>orch-pick</code> 0.973 — highest AA (45), fastest on our lane (1.8 s), 100% eval</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Verification:</strong> 32/32 configs parse; live MoA and council runs both engaged the new seat; <code>hermes -p beast chat</code> returns a real completion on the new worker model (<code>model=deepseek-v4.1-flash:1017 provider=ollama-cloud</code>, 2.6 s in <code>agent.log</code>). Census after the change: <strong>28 homes on deepseek-v4.1-flash:1017, 2 on gpt-oss:20b, 1 kimi-k3, 1 llama3.2:1b.</strong> Backups: <code>config.yaml.bak-20261019-m31</code> beside every config. Shadow deliberately untouched (local-only, no MoA, no OpenRouter hop).</p>
+<p><strong>The answer to Ricardo's question — which flash model gives the most bang for the buck:</strong> <strong><code>deepseek-v4.1-flash:1017</code></strong>. On AA v4.3.2 it is the smartest flash model we can reach (<strong>45</strong>) and, once verbosity is priced in, also the <strong>cheapest per completed task ($0.26)</strong> — cheaper than glm-5.3-flash (42 at $0.28) and only 4 cents above minimax-m3.1-flash (42 at $0.22) while scoring 3 points higher and running 3× faster on our lane. m3.1 wins only on raw token price for very short prompt-heavy calls (our eval: $0.00013 vs $0.00020 per task), and pays for it in latency and hallucination discipline. That is why m3.1 got the seats where its 1M context, vision and $0 price matter (MoA/council seat, free fallback hop) and not a primary.</p>
+<hr />
+<h3 id="54-role-re-pick--2026-10-26-d3-gate-run-all-seven-seats-held">5.4 Role re-pick — 2026-10-26 d3 gate run (all seven seats held)</h3>
+<p>Every seat was re-asked against today's evidence with the local d3 gate. <strong>All seven picks came back the same model that is already wired</strong> — so the allocation stands with no primary change. Two picks landed under 0.6 confidence and were confirmed by pairwise + mirror before being accepted.</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Form</th>
+<th>Winner (unchanged)</th>
+<th>Confidence</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>orchestrator / leadership</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>0.9853</strong></td>
+<td>AA 45.10 at $0.259/task beats glm-5.3 (44.78 at $3.78)</td>
+</tr>
+<tr>
+<td>deep work</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>0.9640</strong></td>
+<td>LB coding 96.0 — best reachable</td>
+</tr>
+<tr>
+<td>worker</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>0.9818</strong></td>
+<td>14× cheaper per task than glm-5.3</td>
+</tr>
+<tr>
+<td>reason</td>
+<td>3-way → pairwise</td>
+<td>kimi-k3</td>
+<td>0.5522 → <strong>0.9875 / mirror 0.8341</strong></td>
+<td>LB reasoning 90.7 highest reachable; flagship allowed on 1 home</td>
+</tr>
+<tr>
+<td>fast / tiny</td>
+<td>3-way choice</td>
+<td>gpt-oss:20b</td>
+<td><strong>0.8720</strong></td>
+<td>0.7 s, tool-calling tuned</td>
+</tr>
+<tr>
+<td>MoA reference seat</td>
+<td>4-way → pairwise</td>
+<td>minimax-m3.1-flash</td>
+<td>0.5584 → <strong>0.9966 / mirror 0.9816</strong></td>
+<td>distinct lineage + AA 42.71; mistral-large-4 is the new runner-up</td>
+</tr>
+<tr>
+<td>free fallback hop</td>
+<td>3-way choice</td>
+<td>nvidia/nemotron-3.5-super-vl:free</td>
+<td><strong>0.9999</strong></td>
+<td>replaces the 404'd minimax hop — <strong>needs GO</strong></td>
+</tr>
+</tbody>
+</table>
+<p>All eleven rows are in <code>gates.csv</code> (2026-10-26 05:06–05:07) and <code>bench-runs/gate-picks-2026-10-26.json</code>.</p>
+<h2 id="6-d3-decision-record-2026-10-26">6. d3 decision record (2026-10-26)</h2>
+<p>Seven role picks, two low-confidence confirmations. Gate: local <code>d3-gate</code> on :8110 (Decision 3.0), <code>route: local-d3</code> on every call, health <code>{daemon, inference, cli, mcp} = true</code>. Logged to <code>AI-Drive/Agent-Output/adrianna/gates.csv</code> — <strong>11 rows today</strong> (7 picks + 4 pairwise).</p>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Form</th>
+<th>Winner</th>
+<th>Confidence</th>
+<th>Confirmation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>orchestrator</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>0.9853</strong></td>
+<td>Clean pick; AA 45.10 vs glm-5.3 44.78 at 14× the cost per task</td>
+</tr>
+<tr>
+<td>deep</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>0.9640</strong></td>
+<td>Clean pick; LB coding 96.0 best reachable</td>
+</tr>
+<tr>
+<td>worker</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>0.9818</strong></td>
+<td>Clean pick on cost-per-finished-task, the worker's governing rule</td>
+</tr>
+<tr>
+<td>reason</td>
+<td>3-way → pairwise</td>
+<td>kimi-k3</td>
+<td>0.5522 → <strong>0.9875 y / 0.8341 n</strong></td>
+<td>Both directions agree; deepest reasoning reachable (90.7) wins on a 1-home flagship seat</td>
+</tr>
+<tr>
+<td>fast / tiny</td>
+<td>3-way choice</td>
+<td>gpt-oss:20b</td>
+<td><strong>0.8720</strong></td>
+<td>Clean pick on latency, the seat's governing rule</td>
+</tr>
+<tr>
+<td>MoA reference seat</td>
+<td>4-way → pairwise</td>
+<td>minimax-m3.1-flash</td>
+<td>0.5584 → <strong>0.9966 y / 0.9816 n</strong></td>
+<td>Both directions agree; distinct lineage to the DeepSeek aggregator and the Z.ai seats</td>
+</tr>
+<tr>
+<td>free fallback hop</td>
+<td>3-way choice</td>
+<td><strong>nvidia/nemotron-3.5-super-vl:free</strong></td>
+<td><strong>0.9999</strong></td>
+<td>Near-unanimous: the only free lane that is both alive today and at the top of the free pool's index</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why nothing changed but one thing must:</strong> the gate re-asked all seven seats and found the wired model best in every case, at higher confidence than last week — the allocation is settled. The exception is outside the seven: the <strong>free fallback hop's wired model no longer exists</strong>. That is a config defect, not a capability question, and it is the one change this run recommends (§5.2).</p>
+<h3 id="61-previous-week-2026-10-19--audit-trail">6.1 Previous week (2026-10-19) — audit trail</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Form</th>
+<th>Winner</th>
+<th>Confidence</th>
+<th>Confirmation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>orchestrator</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash</td>
+<td>0.891</td>
+<td>Volume×burn rule; cheapest strong flash tier, OC 200</td>
+</tr>
+<tr>
+<td>worker</td>
+<td>3-way + pairwise</td>
+<td>deepseek-v4.1-flash</td>
+<td>0.748 → <strong>0.835 / 0.909</strong></td>
+<td>Both pairwise directions agree; recommendation held (see §5.1)</td>
+</tr>
+<tr>
+<td>deep</td>
+<td>4-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td>0.569</td>
+<td>LB coding 96.0 — best reachable; low-volume seat</td>
+</tr>
+<tr>
+<td>fast / tiny</td>
+<td>3-way + pairwise</td>
+<td>gpt-oss:20b</td>
+<td>0.501 → <strong>0.576 / 0.719</strong></td>
+<td>Pairwise overrides the noisy 3-way; keeps the wired primary</td>
+</tr>
+<tr>
+<td>vision</td>
+<td>3-way + pairwise</td>
+<td><strong>contested</strong></td>
+<td>0.118</td>
+<td>Pairwise split (gemini fwd / gemma4 mirror). Availability rule: both alive, so keep <strong>gemma4:31b</strong> (OC, no quota) and hold gemini-3.6-flash as first fallback</td>
+</tr>
+<tr>
+<td>code</td>
+<td>3-way choice</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td>0.736</td>
+<td>LB coding 96.0 beats kimi-k2.7-code (no board row) and glm-5.3 (82.8)</td>
+</tr>
+<tr>
+<td>long</td>
+<td>3-way + pairwise</td>
+<td>minimax-m3</td>
+<td>0.304 → <strong>0.832 / 0.712</strong></td>
+<td>Both directions; long-context specialist holds the seat</td>
+</tr>
+<tr>
+<td>reason</td>
+<td>3-way + pairwise</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td>0.036 → <strong>0.946 / 0.956</strong></td>
+<td>Both directions, but <strong>contested on capability boards</strong>: kimi-k3 leads AA (43.59 vs 39.46) and Hermes (39.16 vs 36.91). No change applied — bigbrains stays on kimi-k3 pending Ricardo</td>
+</tr>
+<tr>
+<td>orchestrator (M3.1 re-check, 22:51)</td>
+<td>3-way choice</td>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td><strong>0.973</strong></td>
+<td>AA v4.3.2 45 vs 42 (m3.1) / 42 (glm-flash); 1.8 s vs 5.5 s / 2.3 s on our lane; 100% vs 94% on our eval — the standing DeepSeek rule holds on evidence</td>
+</tr>
+<tr>
+<td>worker (M3.1 re-check, 22:51)</td>
+<td>3-way → pairwise → re-run</td>
+<td><strong>deepseek-v4.1-flash:1017</strong></td>
+<td>0.281 → 0.885/0.828 (glm) → <strong>0.599 with 1017 in the set</strong>, pairwise <strong>0.610 / 0.746</strong></td>
+<td>The first pick was made without the 1017 per-task price; re-running with it reversed the result. Applied to the 10 worker homes at 22:58</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<hr />
+<h2 id="7-weekly-benchmark-cron">7. Weekly benchmark cron</h2>
+<ul>
+<li><strong>Job ID:</strong> <code>05dc60dd84d2</code> · <strong>Schedule:</strong> every Monday 05:00 SAST · <strong>Last run:</strong> 2026-10-26 05:00 SAST · <strong>Next run:</strong> 2026-11-02 05:00 SAST</li>
+<li><strong>Script:</strong> <code>AI-Drive/Agent-Output/adrianna/weekly-bench.sh</code> · <strong>Log:</strong> <code>AI-Drive/Agent-Output/adrianna/bench-runs/2026-10-26.log</code> (74 lines)</li>
+<li><strong>Skill:</strong> <code>weekly-llm-benchmark</code></li>
+</ul>
+<p>Each run, unattended:</p>
+<ol type="1">
+<li><code>bench-pull --source all</code> — refresh all 17 sources into a dated folder. <strong>Verified today that a single failed source no longer aborts the run</strong> (the 2026-10-19 guard did not work — see §2 and §8).</li>
+<li><code>preview_scan.py</code> — catalog + benchmarks + per-free-model endpoint probes → <code>preview-scan.json</code>.</li>
+<li>Live-probe every platform lane host-side, direct (no router).</li>
+<li>d3 gate for the role picks; rows appended to <code>gates.csv</code>.</li>
+<li><strong>Update THIS note in place</strong> — the one canonical vault document, never a second copy.</li>
+<li>Publish via the rule-4 handoff (Beast files it; the link keeps working).</li>
+</ol>
+<p><strong>Maintenance done this run:</strong> repaired the LiveBench puller for the third upstream schema change (<code>_e=</code> anchor lost to minified renaming) and fixed the pipeline guard that had silently killed the runner between the pull and the probe for at least one week.</p>
+<h2 id="publication-defect-found-and-fixed-this-run-publish-document-prefixes-the-vault-filename-with-the-run-date-so-each-weekly-run-was-creating-a-new-dated-note--six-copies-of-this-document-now-sit-in-the-vault-2026-10-11-3-on-2026-10-12-2-on-2026-10-19-publication-now-pins---date-2026-10-19---slug-maio-llm-fleet-master-benchmark-matrix-live---on-exists-supersede-which-overwrites-the-newest-existing-note-in-place-and-creates-nothing-new-the-older-copies-need-beast-to-archive-them-adrianna-cannot-delete-vault-records"><strong>Publication defect found and fixed this run:</strong> <code>publish-document</code> prefixes the vault filename with the run date, so each weekly run was creating a <strong>new</strong> dated note — six copies of this document now sit in the vault (2026-10-11, ×3 on 2026-10-12, ×2 on 2026-10-19). Publication now pins <code>--date 2026-10-19 --slug maio-llm-fleet-master-benchmark-matrix-live --on-exists supersede</code>, which overwrites <strong>the newest existing note in place</strong> and creates nothing new. The older copies need Beast to archive them (Adrianna cannot delete vault records).</h2>
+<h2 id="8-evidence">8. Evidence</h2>
+<ul>
+<li>Benchmark pull: <code>bench-sources/data/2026-10-26/</code> — <strong>17/17 sources</strong>, manifest at <code>manifest.json</code>.</li>
+<li>LiveBench 2.0 release <strong>2026-10-23</strong>, <strong>30</strong> models × 7 categories (<code>livebench.json</code>); the 2026-10-14 release carried 53, so absence this week is a release artefact.</li>
+<li>LMArena 779 records: text 418, code_webdev, vision, document (<code>lmarena.json</code>).</li>
+<li>Self-reported scores: <code>openrouter_benchmarks.json</code> — 1,896 rows.</li>
+<li>Preview scan: <code>bench-sources/preview/preview-scan.json</code> — 467 catalog models, 17 free, 10 previews surfaced.</li>
+<li>Live platform probes: <code>bench-runs/2026-10-26.log</code> — 74 raw lines, every lane, status + latency.</li>
+<li>Free-pool re-probes after the platform sweep (the four the chain depends on): <code>minimax/minimax-m3.1-flash:free</code> <strong>HTTP 404</strong> · <code>nvidia/nemotron-3-super-120b-a12b:free</code> <strong>HTTP 404</strong> (not wired) · <code>nvidia/nemotron-3.5-super-vl:free</code> <strong>200 / 0.6 s</strong> · <code>nvidia/nemotron-3-ultra-550b-a55b:free</code> <strong>200 / 1.5 s</strong> · <code>thinkingmachines/inkling:free</code> <strong>403</strong> · <code>google/gemma-4-31b-it:free</code> <strong>429</strong>.</li>
+<li>Ollama Cloud catalog (<code>GET https://ollama.com/v1/models</code>, authenticated): <strong>23 models</strong>. <strong>No <code>kimi-k3.1</code> entry</strong> — K3.1 Pro is OpenRouter-paid only (<code>moonshotai/kimi-k3.1-pro</code>, $2/M in, $10/M out).</li>
+<li>Fleet config census (32 files parse): <strong>28 homes on <code>deepseek-v4.1-flash:1017</code>, 2 on <code>gpt-oss:20b</code> (courage, storm), 1 <code>kimi-k3</code> (bigbrains), 1 <code>llama3.2:1b</code> (shadow)</strong>. <strong>31/32 homes carry the dead <code>minimax/minimax-m3.1-flash:free</code> hop, 62 occurrences</strong> (only <code>shadow</code> is clean).</li>
+<li>d3 gate decisions: <code>gates.csv</code> (11 rows dated 2026-10-26) + <code>bench-runs/gate-picks-2026-10-26.json</code>. Gate health at run time: <code>{daemon: true, inference: true, cli: true, mcp: true}</code>, <code>probe_noul 0.886</code>.</li>
+<li>Document backup before this update: <code>llm-fleet-master-benchmark-matrix.md.bak-2026-10-26</code> (40,205 bytes).</li>
+</ul>
+<hr />
+<h2 id="9-what-to-watch-next-week">9. What to watch next week</h2>
+<ul>
+<li><strong>The free pool is not renewable right now — it is shrinking.</strong> Two hops disappeared in one week (<code>minimax-m3.1-flash:free</code>, <code>nemotron-3-super-120b:free</code>). Treat every <code>:free</code> hop as a lease, not an asset: the chain must always name two live free fallbacks, and this run's probe set is the evidence.</li>
+<li><strong><code>kimi-k3.1-pro</code> is the first real upgrade candidate in a month</strong> (AA 55.09, LB reasoning 91.1, LMArena code #8) and it is blocked by money, not availability: Ollama Cloud does not carry it and OpenRouter sells it at $2/$10 per M. Worth a decision when a paid lane is next considered — not before.</li>
+<li><strong>kimi-k3 has fallen off the AA board.</strong> If the reason seat is judged on reasoning alone it is still the right pick (LB 90.7), but its coding (59.3) and $6.50/task make it a one-seat model. Watch whether AA restores a K3 row or whether K3.1 becomes the reference.</li>
+<li><strong>LiveBench release thinning</strong> — 53 models on 2026-10-14, 30 on 2026-10-23. If it keeps halving, the board stops being able to rank our tier and AA + LMArena have to carry the role picks alone.</li>
+<li><strong>Dahl 429 on both deepseek and glm</strong> is the first week the whole Dahl lane failed together; it was the deep/worker alternate. If it persists, the alternates are JoinGonka and Mingles only.</li>
+<li><strong>Ollama Cloud off-peak pricing</strong> — deepseek-v4.1-flash drops to $0.15/$0.60 outside 12:00–18:00 UTC on weekdays (all weekend). Batch work scheduled off-peak gets frontier-tier quality at flash-lite prices.</li>
+</ul>
+<h2 id="10-change-log--2026-10-19-1000-sast-re-allocation-ricardo-go">10. Change log — 2026-10-19 10:00 SAST re-allocation (Ricardo GO)</h2>
+<p>Applied in this session, verified live:</p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Before</th>
+<th>After</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hermes homes (32 configs)</td>
+<td>mixed glm-5.3-flash / deepseek-v4-pro / 1017</td>
+<td><strong>latest DeepSeek on every orchestration + deep seat; worker on deepseek-v4.1-flash; fast seats on gpt-oss:20b; bigbrains kimi-k3; shadow local</strong></td>
+<td>32/32 parse; probe of every OC model 200 (deepseek:1017 0.6 s, deepseek 0.7 s, glm-5.3-flash 0.9 s, kimi-k3 1.2 s, kimi-k2.7-code 1.0 s, minimax-m3 0.9 s, glm-5.3 0.6 s, gpt-oss:20b 0.7 s)</td>
+</tr>
+<tr>
+<td>MoA — root preset</td>
+<td>8 refs (3 dead lanes) + joingonka deepseek aggregator</td>
+<td><strong>4 live refs across 3 suppliers (kimi-k3 OC, nemotron-ultra NVIDIA, glm-5.3 OC, GLM-5.3-Flash JoinGonka) + latest-DeepSeek (<code>:1017</code>) aggregator</strong></td>
+<td>live MoA probe: 4/4 <code>moa_reference</code> + <code>moa_aggregator</code> logged; answer returned</td>
+</tr>
+<tr>
+<td>MoA — 31 profile presets</td>
+<td>3 OC refs + <code>deepseek-v4.1-flash:cloud</code> aggregator</td>
+<td>same 3 live OC refs + <strong><code>deepseek-v4.1-flash:1017</code> aggregator</strong></td>
+<td>block replaced in all 31; configs parse</td>
+</tr>
+<tr>
+<td>Council — default preset</td>
+<td>4 members (mingles minimax <strong>503</strong>, gemini-3.5-lite) + joingonka deepseek chairman</td>
+<td><strong>kimi-k3 / nemotron-ultra / glm-5.3 / glm-5.3-flash + <code>deepseek-v4.1-flash:1017</code> chairman</strong></td>
+<td><code>hermes council list</code>; live run: 4 members + 4 reviews + chairman engaged (log 10:07)</td>
+</tr>
+<tr>
+<td>Council timeouts</td>
+<td>chairman 30 s (hard-fail risk)</td>
+<td><strong>chairman 300 s, member/review 120 s</strong></td>
+<td><code>hermes config get auxiliary.council_chairman.timeout</code></td>
+</tr>
+<tr>
+<td>LiteLLM <code>:4000</code> (legacy callers)</td>
+<td>a live gateway still running</td>
+<td><strong>DECOMMISSIONED 2026-10-19 on Ricardo's instruction — never loaded again</strong>: containers, network and volume removed (DB dumped first), launchd watchdog + stack-up entry removed, watchers patched</td>
+<td><code>docker ps -a</code> empty, port 4000 free, no launchd job; archive <code>AI-Drive/Agent-Output/adrianna/litellm-removal-2026-10-19/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Platform truth at 10:00 (live probes):</strong> Ollama Cloud <strong>all 200</strong> (0.6–1.2 s) · JoinGonka 200 (deepseek 6.5 s) · Dahl deepseek <strong>429</strong> concurrency · Mingles <strong>503</strong> · NVIDIA nemotron-ultra 1.3 s / gpt-oss 0.9 s (glm-5.3 timeout) · Gemini 3.7-flash 3.4 s / flash-lite 0.9 s · OpenRouter nemotron-ultra 7.4 s / lightning 0.5 s. <strong>Ollama Cloud is the load-bearing supplier; every primary rides it, every chain has an independent second supplier.</strong></p>
+<p><strong>Also repaired this session:</strong> Colima lost its <code>/Volumes</code> virtiofs share (every bind mount failed with <code>mkdir /Volumes/Hiksemi 1TB: file exists</code>). <code>colima restart</code> restored it; <code>~/.config/maio-stack/stack-up.sh</code> brought LiteLLM back with the correct <code>--env-file</code> (a bare <code>docker compose up</code> had recreated the DB with an empty password and the gateway crash-looped on auth).</p>
+<h2 id="10a-change-log--2026-10-19-2255-sast-m31-revision-ricardos-instruction">10a. Change log — 2026-10-19 22:55 SAST (M3.1 revision, Ricardo's instruction)</h2>
+<p>Trigger: Ollama shipped <strong>MiniMax M3.1 Flash</strong> (1M ctx, vision, tool calling, US-hosted, zero data retention) at $0.15/$0.60 per Mtok. Ricardo: <em>"update your benchmark report, your model allocations where needed, your moa and your council … for our main orchestration I just want to know which flash model will give our usage more bang for its buck."</em></p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Before</th>
+<th>After</th>
+<th>Verified by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main orchestration (18 homes + root)</td>
+<td>deepseek-v4.1-flash:1017</td>
+<td><strong>unchanged</strong> — keeps 45 AA, 1.8 s, 100% eval</td>
+<td>d3 <code>orch-pick</code> 0.973</td>
+</tr>
+<tr>
+<td>Worker (10 homes)</td>
+<td>deepseek-v4.1-flash</td>
+<td><strong>deepseek-v4.1-flash:1017</strong> (fallback 1 → glm-5.3-flash)</td>
+<td>d3 <code>worker-v2</code> 0.599 + pairwise 0.610/0.746; <code>hermes -p beast</code> → <code>model=deepseek-v4.1-flash:1017</code></td>
+</tr>
+<tr>
+<td>Root MoA ref 4</td>
+<td>joingonka GLM-5.3-Flash</td>
+<td><strong>ollama-cloud minimax-m3.1-flash (high)</strong></td>
+<td>live probe 4/4 <code>moa_reference</code> + aggregator</td>
+</tr>
+<tr>
+<td>Profile MoA (30 profiles)</td>
+<td>glm-5.3-flash seat</td>
+<td><strong>minimax-m3.1-flash (high)</strong></td>
+<td>census 30 seats; 32/32 configs parse</td>
+</tr>
+<tr>
+<td>Council Researcher</td>
+<td>glm-5.3-flash (low)</td>
+<td><strong>minimax-m3.1-flash (low)</strong></td>
+<td><code>hermes council list</code>; 57 s live run</td>
+</tr>
+<tr>
+<td>OpenRouter fallback hop (31 homes)</td>
+<td>nemotron-ultra:free</td>
+<td><strong>minimax-m3.1-flash:free</strong> inserted ahead of it</td>
+<td>OR catalog 1M ctx $0; probe 200 in 3.4 s</td>
+</tr>
+<tr>
+<td>Benchmark doc</td>
+<td>05:00 run</td>
+<td><strong>this revision</strong> — new §3.1a/§3.1b tables, §5.3, §6 rows, §9 watch list</td>
+<td>this file</td>
+</tr>
+</tbody>
+</table>
+<h2 id="10b-change-log--2026-10-26-05000510-sast-weekly-benchmark-run-05dc60dd84d2">10b. Change log — 2026-10-26 05:00–05:10 SAST (weekly benchmark run 05dc60dd84d2)</h2>
+<p>Trigger: the scheduled Monday run. No instruction from Ricardo; no allocation changed.</p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Before</th>
+<th>After</th>
+<th>Verified by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Benchmark sources</td>
+<td>16/17 on 2026-10-19 (LiveBench broken)</td>
+<td><strong>17/17</strong> — LiveBench repaired for the third upstream rename, release 2026-10-23, 30 models</td>
+<td><code>bench-runs/2026-10-26.log</code></td>
+</tr>
+<tr>
+<td>Weekly runner</td>
+<td>Aborted silently after the pull — <code>PIPESTATUS</code> guard sat after a <code>set -e</code>-fatal pipeline</td>
+<td><strong>Completes</strong>; partial sweeps are noted, not fatal</td>
+<td>today's two runs: first produced no doc update, second completed</td>
+</tr>
+<tr>
+<td>Role allocations (7 seats)</td>
+<td>set 2026-10-19</td>
+<td><strong>unchanged</strong> — every seat re-confirmed</td>
+<td><code>gates.csv</code> 11 rows; §5.4</td>
+</tr>
+<tr>
+<td>Free fallback hop (31 homes, 62 occurrences)</td>
+<td><code>minimax/minimax-m3.1-flash:free</code> — now <strong>HTTP 404</strong></td>
+<td><strong><code>nvidia/nemotron-3.5-super-vl:free</code></strong> prepared, <strong>NOT APPLIED</strong> — 31-file bulk edit awaits Ricardo's GO</td>
+<td>gate 0.9999; probe 200 / 0.6 s</td>
+</tr>
+<tr>
+<td>This document</td>
+<td>2026-10-19 edition</td>
+<td><strong>2026-10-26 edition</strong> — §1 probes, §2 17/17 + both repairs, §3.1 rebuilt from today's pull, §4 free pool 19→17, §5.2 dead hop, §5.4 gate run, §6 new record, §7 runner + publishing defects, §8 evidence, §9 watch list</td>
+<td>this file</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Correction carried into this edition:</strong> the 2026-10-19 edition of §7 stated that a partial sweep "no longer aborts the run". That was not true — the guard was in the wrong place and this week's 05:00 run died on it. §2 and §7 now describe what was actually fixed and how it was verified.</p>
+<p><strong>Open for Ricardo:</strong> one decision — approve the 31-file fallback-hop replacement (§5.2). Everything else in this run is observation and record-keeping.</p>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="../../ReadME_MasterIndex.md">ReadME_MasterIndex</a></li>
+<li><a href="../4.Research/2026-10-10-maio-llm-fleet-master-allocation-benchmark-matrix-2026-10-10.md">LLM Fleet Master Allocation Benchmark Matrix (2026-10-10)</a></li>
+<li><a href="./2026-10-11-llm-fleet-free-credit-first-allocation-live-2026-10-11.md">Free-Credit-First Allocation (LIVE 2026-10-11)</a></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
