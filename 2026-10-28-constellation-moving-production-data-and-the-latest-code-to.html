@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Constellation — moving production data and the latest code to staging</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="constellation--moving-the-real-data-to-staging-and-shipping-the-latest-code">Constellation — moving the real data to staging, and shipping the latest code</h1>
+<p><strong>Status:</strong> ready on this Mac; two access grants and three decisions stand between us and a staging instance that looks like production. Nothing here has been run against a server yet.</p>
+<p>Prepared for Ricardo · 2026-10-28 · Adrianna A</p>
+<h2 id="1-what-actually-exists">1. What actually exists</h2>
+<table>
+<thead>
+<tr>
+<th>Instance</th>
+<th>URL</th>
+<th>State</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production</td>
+<td><code>https://constellation.infinityapps.co.za</code></td>
+<td>Live, healthy, holds the real staff data</td>
+<td><code>/api/health</code> → <code>{"status":"ok","db":"ok"}</code></td>
+</tr>
+<tr>
+<td>Staging</td>
+<td><code>https://constellation-staging.infinityapps.co.za</code></td>
+<td>Live, healthy, <strong>blank</strong> — no staff data</td>
+<td><code>/api/health</code> → ok; the invite you were sent is an empty tenant</td>
+</tr>
+<tr>
+<td>Local preview</td>
+<td><code>127.0.0.1:3220</code> (Docker, Colima)</td>
+<td>Demo only — <strong>not</strong> a data source</td>
+<td>all 3 orgs <code>isDemo = true</code>, names end in "(demo)"</td>
+</tr>
+</tbody>
+</table>
+<p>The old local <code>constellation_dev</code> database that used to hold the real data is gone — nothing is listening on its port any more — so the freshest copy of the real data on this machine is the verified dump taken on 23 October.</p>
+<h2 id="2-the-data-verified-today">2. The data, verified today</h2>
+<p>Dump: <code>AI-Drive/Backups/constellation-2026-10-23T130152Z/constellation.dump</code> (1.91 MB).</p>
+<p>I checked it again just now rather than trusting the note: checksums pass, and it restores into a scratch PostgreSQL 16 database with <code>--no-owner --no-acl --exit-on-error</code> and exit 0.</p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PositionFit</td>
+<td>29,850</td>
+</tr>
+<tr>
+<td>Response</td>
+<td>10,304</td>
+</tr>
+<tr>
+<td>Score</td>
+<td>1,684</td>
+</tr>
+<tr>
+<td>Staff</td>
+<td>45</td>
+</tr>
+<tr>
+<td>User</td>
+<td>43</td>
+</tr>
+<tr>
+<td>Position</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Department</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Organization</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>28 tables in total; newest migration in the dump is <code>2026-10-18</code>.</p>
+<p><strong>The catch:</strong> that dump is five days old. Production has been live since, so any assessments, edits or new people added after 23 October exist only in the production database. Moving the dump gives staging a five-day-old photograph, not a live mirror.</p>
+<h2 id="3-what-has-to-travel-with-the-data">3. What has to travel with the data</h2>
+<p>Names only — no values leave this machine through chat, cards or documents:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CONSTELLATION_ENC_KEY</code></td>
+<td><strong>Must be byte-identical.</strong> It decrypts every stored reading and revision. A new key makes the history permanently unreadable.</td>
+</tr>
+<tr>
+<td><code>CONSTELLATION_PREVIOUS_ENC_KEYS</code></td>
+<td>Same — carries the older key(s) still needed.</td>
+</tr>
+<tr>
+<td><code>AUTH_SECRET</code></td>
+<td>May be new; the only cost is signing everyone out.</td>
+</tr>
+<tr>
+<td><code>DATABASE_URL</code> / <code>MIGRATION_DATABASE_URL</code></td>
+<td>Staging's own database roles.</td>
+</tr>
+</tbody>
+</table>
+<p>All three secrets are present on this Mac in <code>~/.config/constellation/runtime.env</code> (mode 600). They can be carried across without ever being displayed.</p>
+<h2 id="4-the-code">4. The code</h2>
+<table>
+<thead>
+<tr>
+<th>Thing</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Latest merged line</td>
+<td><code>origin/main</code> = <code>cd61681</code> "c6-c13 (#11)", committed today 10:19 UTC</td>
+</tr>
+<tr>
+<td>Local checkout</td>
+<td>54 commits <strong>behind</strong> <code>origin/main</code> — never deploy from this working tree</td>
+</tr>
+<tr>
+<td>Unmerged work</td>
+<td><code>origin/codex/complete-reporting</code> — 4 commits, 16 files, +301/−23: individual staff onboarding, reflective + reasoning lenses on People, separate company/department filters, the Colima demo preview</td>
+</tr>
+<tr>
+<td>Merged already</td>
+<td><code>lane/c1-c5-containment</code> and <code>lane/c6-c13</code> both landed in main</td>
+</tr>
+</tbody>
+</table>
+<p>So "the latest work" is <code>main</code> today, plus those four commits if you want them in. Merging is your call, not mine — I will not merge on my own initiative.</p>
+<h2 id="5-what-stands-in-the-way">5. What stands in the way</h2>
+<table>
+<thead>
+<tr>
+<th>Blocker</th>
+<th>Who clears it</th>
+<th>Why it is not mine to clear</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Staging SSH still refused — <code>Permission denied (publickey)</code> on <code>bastion</code></td>
+<td>Infrastructure administrator: install the two public keys</td>
+<td>The keys were generated here; authorising them is the admin's act</td>
+</tr>
+<tr>
+<td>No access to the production host</td>
+<td>You, or the admin: the LXC's address and a key, or an admin-produced dump</td>
+<td>I have no credential for it, and I will not ask for a password</td>
+</tr>
+<tr>
+<td>The invite for <code>system@infinitybrands.co.za</code> needs a password set</td>
+<td>You</td>
+<td>Typing or inventing a password is a hard stop for me</td>
+</tr>
+<tr>
+<td>Real employees' data on a shared staging box</td>
+<td>You</td>
+<td>The staging guide itself says do not deploy personal data there. POPIA applies to 45 named staff</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-the-runbook-once-access-lands">6. The runbook, once access lands</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. target: staging VM (through the bastion)</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> macserver <span class="st">&#39;cd /srv/staging/apps/constellation &amp;&amp; git fetch --all &amp;&amp; git switch main &amp;&amp; git pull --ff-only &amp;&amp; git log --oneline -1&#39;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. data: dump production, stream to staging, restore — never through git or chat</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="op">&lt;</span>prod-host<span class="op">&gt;</span> <span class="st">&#39;pg_dump -Fc -d constellation&#39;</span> <span class="kw">|</span> <span class="dt">\</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ssh</span> macserver <span class="st">&#39;pg_restore --no-owner --no-acl --exit-on-error -d constellation&#39;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. secrets: copy the file, never print it</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> ~/.config/constellation/runtime.env macserver:/srv/staging/apps/constellation/.env.production</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. code: build and start</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> macserver <span class="st">&#39;cd /srv/staging/apps/constellation &amp;&amp; docker compose config --quiet &amp;&amp; docker compose up -d --build &amp;&amp; docker compose ps&#39;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. verify: counts must match production, then a real login and one assessment page</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> macserver <span class="st">&#39;psql &quot;$DATABASE_URL&quot; -tAc &quot;select (select count(*) from \&quot;Staff\&quot;), (select count(*) from \&quot;Response\&quot;)&quot;&#39;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-sS</span> https://constellation-staging.infinityapps.co.za/api/health</span></code></pre></div>
+<p>Done means: the restored counts equal production's counts, the encryption key is the original one so old readings open, and a real login reaches an assessment with history intact. A healthy <code>/api/health</code> is not that — both instances answer <code>ok</code> today while one of them is empty.</p>
+<h2 id="7-decisions-i-need-from-you">7. Decisions I need from you</h2>
+<ol type="1">
+<li><strong>Data source</strong> — fresh dump from production (needs prod access), or accept the 23 October dump and re-sync later?</li>
+<li><strong>Code</strong> — deploy <code>main</code> (<code>cd61681</code>) only, or merge <code>codex/complete-reporting</code>'s four commits first?</li>
+<li><strong>Population on staging</strong> — full real staff data, or a de-identified subset for the shared box?</li>
+</ol>
+<p>One line each is enough. With those three answers and the two access grants, the move is a short session's work, and I will verify it with row counts against production rather than a green tick.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
