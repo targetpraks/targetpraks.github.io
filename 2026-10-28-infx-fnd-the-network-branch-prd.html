@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>INFX FND — The Network Branch (PRD)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="infx-fnd--the-network-branch">INFX FND — the Network branch</h1>
+<p><strong>Franchise network development: territories, pipeline and plan, for three brands that draw a territory in three different ways.</strong></p>
+<table>
+<tbody>
+<tr>
+<td>Version</td>
+<td>1.0 — build spec</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>2026-10-28</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>Bruce Wayne (chief of staff)</td>
+</tr>
+<tr>
+<td>For</td>
+<td>Ricardo Maio</td>
+</tr>
+<tr>
+<td>Builds on</td>
+<td>INFX FND 0.4.0 (<code>DevMini/infx-fnd</code>, <code>docs/PRD-VERIFICATION-2026-10-28.md</code>)</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Ready to build — one open decision at the end</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="0-what-this-document-is">0. What this document is</h2>
+<p>Today INFX FND answers <em>"where is everyone?"</em>. It does not answer <em>"how do we build this network, in what order, for how much, and who owns which ground?"</em> That second question is the whole of franchise network development, and it is the question the three brands are now asking — each with a different answer.</p>
+<p>This PRD adds one branch to the product: <strong>Network</strong>. It holds a brand's territories, its candidate stores, and its build plan, and it does the arithmetic between them. It does not replace Explore (the map) or Research (the evidence workspaces). It sits beside them and reads the same data.</p>
+<p>Three things drove the spec, and each is a document, not an opinion:</p>
+<ol type="1">
+<li><strong>Papa Pasta</strong> has three competing zone schemes — 135 polygons, 96 zones, and a 38-cluster plan — and the app can hold only one of them.</li>
+<li><strong>The Local Farmer</strong> sells a <em>radius</em>, not a polygon: seven kilometres from the premises, per Annexure "E" of its franchise agreement. The database cannot store that today.</li>
+<li><strong>ACDC Express</strong> builds a network country by country, with five Namibian cities sequenced in four phases and a six-million-rand store. Those are candidates and phases, not pins on a competitor map.</li>
+</ol>
+<hr />
+<h2 id="1-what-exists-today--verified-not-assumed">1. What exists today — verified, not assumed</h2>
+<p>Everything below is in the repository at <code>DevMini/infx-fnd</code> and was exercised in the 0.4.0 verification run (5,073 locations, 61 brands, 135 zones).</p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Where</th>
+<th>Notes that matter to this PRD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brand and company model</td>
+<td><code>tenant</code>, <code>brand</code>, <code>tenant_brand_link</code></td>
+<td>Three tenants already exist: <code>papa-pasta</code>, <code>the-local-farmer</code>, <code>acdc-express</code></td>
+</tr>
+<tr>
+<td>Store points</td>
+<td><code>location</code> (PostGIS point), <code>/api/locations</code></td>
+<td>5,073 rows; <code>status</code> includes <code>open</code>, <code>coming_soon</code>, <code>closed</code></td>
+</tr>
+<tr>
+<td>Territory polygons</td>
+<td><code>zone_set</code>, <code>zone</code> (<code>geom MultiPolygon NOT NULL</code>), <code>/api/zones</code></td>
+<td>Papa Pasta's 135 zones only</td>
+</tr>
+<tr>
+<td>Zone summaries</td>
+<td><code>/api/zones/summary</code>, <code>/api/zones/[code]/summary</code></td>
+<td>Openings/closures with the D5 rules</td>
+</tr>
+<tr>
+<td>Candidate pipeline</td>
+<td><code>candidate_site</code> with stages <code>researching → visit_needed → shortlisted → on_hold → rejected → approved</code></td>
+<td>No brand, no territory, no study document</td>
+</tr>
+<tr>
+<td>Evidence review</td>
+<td><code>evidence_review</code>, <code>research_event</code>, <code>research_snapshot</code></td>
+<td>Audit pattern to copy, not to reinvent</td>
+</tr>
+<tr>
+<td>Pricing as a capability</td>
+<td><code>src/lib/visibility.ts</code>, decision D3</td>
+<td><code>pricing:read</code> role gate; never serialised to share links</td>
+</tr>
+<tr>
+<td>Share links</td>
+<td><code>/s/[token]</code>, field allow-lists</td>
+<td>D2: pins on, closed never default</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Two structural facts decide the design.</strong></p>
+<ul>
+<li><code>zone_set</code> is scoped to a <strong>tenant</strong>, not a <strong>brand</strong>. The 0.4.0 migration even inserts two honest empty sets — <code>the-local-farmer territories</code> and <code>acdc-express territories</code>, source <em>"Awaiting reviewed company boundaries"</em> — because the 135 Papa Pasta polygons must not be copied onto other brands.</li>
+<li><code>zone.geom</code> is <code>NOT NULL</code> and typed <code>MultiPolygon</code>. A seven-kilometre circle can be <em>drawn</em> as a polygon, but nothing in the schema records that the polygon is a derived circle — so when the radius changes, nothing knows to redraw it.</li>
+</ul>
+<hr />
+<h2 id="2-the-gap-in-the-brands-own-numbers">2. The gap, in the brands' own numbers</h2>
+<h3 id="21-papa-pasta--three-schemes-one-map">2.1 Papa Pasta — three schemes, one map</h3>
+<table>
+<thead>
+<tr>
+<th>Scheme</th>
+<th>Source</th>
+<th>Territories</th>
+<th>Stores</th>
+<th>Money attached</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zone set v7.2</td>
+<td><code>data/seed/papa-pasta-zones-v7.2.geojson</code></td>
+<td>135 polygons</td>
+<td>234–357 (per-zone 2–3)</td>
+<td>R102,700,000 in zone fees</td>
+</tr>
+<tr>
+<td>Zone-owner working paper</td>
+<td>Vault: <code>2026-10-27-papa-pasta-zone-owner.md</code></td>
+<td>96 zones</td>
+<td>189–273</td>
+<td>5% royalty, 2 points to the zone, R100,000 launch</td>
+</tr>
+<tr>
+<td>Luke Harrison development plan</td>
+<td><code>Papa_Pasta_MD_Investor_Review.pdf</code>, 27 Oct 2026</td>
+<td>38 clusters</td>
+<td>311</td>
+<td>R12,900,000 in territory fees</td>
+</tr>
+</tbody>
+</table>
+<p>The 135-zone set, by tier and priority (computed from the geojson, not estimated):</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tier</td>
+<td>Value 56 · Emerging 24 · Premium 18 · Standard 30 · Ultra-Premium 7</td>
+</tr>
+<tr>
+<td>Priority</td>
+<td>Medium 85 · High 30 · Low 20</td>
+</tr>
+<tr>
+<td>Phase</td>
+<td>1: 26 · 2: 34 · 3: 40 · 4: 20 · 5: 15</td>
+</tr>
+<tr>
+<td>Province</td>
+<td>Gauteng 42 · Western Cape 23 · KwaZulu-Natal 21 · Eastern Cape 16 · Limpopo 8 · Free State 7 · Mpumalanga 7 · North West 6 · Northern Cape 5</td>
+</tr>
+</tbody>
+</table>
+<p>The 38-cluster plan, by tier:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th style="text-align: right;">Clusters</th>
+<th style="text-align: right;">Target stores</th>
+<th style="text-align: right;">Territory fees</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Strategic</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">70</td>
+<td style="text-align: right;">R3,000,000</td>
+</tr>
+<tr>
+<td>Metro</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">130</td>
+<td style="text-align: right;">R5,200,000</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">102</td>
+<td style="text-align: right;">R4,250,000</td>
+</tr>
+<tr>
+<td>Local</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">R450,000</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>38</strong></td>
+<td style="text-align: right;"><strong>311</strong></td>
+<td style="text-align: right;"><strong>R12,900,000</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>The arithmetic check that matters.</strong> In the source, <code>zone_roy</code> is <em>not</em> an annual figure, whatever the column name suggests. For cluster GT01: 3% × R7,833,913 target monthly sales = <strong>R235,017</strong> — the stored value, to the rand. Across all 38 clusters the 3% column sums to <strong>R5,377,861</strong> and the 2% column to <strong>R3,585,234</strong>, against R179,261,734 of target monthly sales. A build that labels that column "annual" overstates the zone's income twelvefold. <strong>The unit is a required field, not an inference.</strong></p>
+<blockquote>
+<p>Three schemes cannot be reconciled by choosing one. The 96-zone paper and the 38-cluster plan disagree about the size of a territory (2.8 stores vs 8.2), and the 135-zone set disagrees with both. The product's job is to hold all three as <strong>versions</strong>, let Ricardo compare them, and mark exactly one live per brand.</p>
+</blockquote>
+<h3 id="22-the-local-farmer--a-radius-and-a-two-class-zone">2.2 The Local Farmer — a radius, and a two-class zone</h3>
+<p>From <code>TLF-2024-Prospectus</code> (pages 6–10) and Annexure "E" of the draft franchise agreement:</p>
+<ul>
+<li><strong>Territory = 7 km radius from the premises.</strong> Marketing is permitted only inside it (clause 14.3).</li>
+<li><strong>Two zone classes.</strong> Franchise fee: class <strong>A/AA R25,000</strong>, class <strong>B/BA R20,000</strong>. The fee "secures the area of purchase".</li>
+<li><strong>25 zones are offered</strong> — Gauteng 11, Western Cape 9, KwaZulu-Natal 5 — of which 13 are AA and 12 are BA. Fees total <strong>R565,000</strong>.</li>
+<li><strong>Royalty 7% + marketing 3%</strong> of turnover. Setup <strong>R144,420</strong> per unit (Mighty Grow Machine R25,000, tent R15,000 optional, equipment R25,000, software R10,000, registrations R3,420, working capital R57,000).</li>
+<li>At the brief's R50,000 monthly revenue per grow room, one unit pays <strong>R3,500 royalty + R1,500 marketing</strong> a month.</li>
+</ul>
+<p>Twenty-five units at R144,420 is <strong>R3,610,500</strong> of franchisee setup — a number no one can see in the app today, because there is nowhere to put it.</p>
+<h3 id="23-acdc-express--countries-phases-and-a-six-million-rand-box">2.3 ACDC Express — countries, phases and a six-million-rand box</h3>
+<table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Value</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open South African stores in the app</td>
+<td>34</td>
+<td>official store locator, 26 Oct 2026</td>
+</tr>
+<tr>
+<td>Franchise investment</td>
+<td>R6,000,000</td>
+<td>Mozambique franchise opportunity, investment structure</td>
+</tr>
+<tr>
+<td>— commitment fee</td>
+<td>R200,000</td>
+<td>secures the exclusive territory</td>
+</tr>
+<tr>
+<td>— opening stock</td>
+<td>R2,000,000 (R1m deferred 12 months)</td>
+<td></td>
+</tr>
+<tr>
+<td>— store setup and fit-out</td>
+<td>R3,200,000 (managed by ACDC, balance refunded)</td>
+<td></td>
+</tr>
+<tr>
+<td>— working capital</td>
+<td>R600,000</td>
+<td></td>
+</tr>
+<tr>
+<td>Footprint</td>
+<td>350–700 m²</td>
+<td></td>
+</tr>
+<tr>
+<td>Range</td>
+<td>95,000+ SKUs</td>
+<td></td>
+</tr>
+<tr>
+<td>Territory exclusivity</td>
+<td><strong>12 months</strong></td>
+<td>Mozambique franchise agreement terms</td>
+</tr>
+</tbody>
+</table>
+<p>The Namibian entry is a four-phase sequence with probabilities attached, from <code>ACDC-Dynamics-Namibia-Expansion-Strategy v2</code> (April 2026):</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Location</th>
+<th>Success probability</th>
+<th>Gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Oshakati / Ongwediva (recommended) or Windhoek (conditional)</td>
+<td>70–85% · 65–80%</td>
+<td>Windhoek needs a signed DC collaboration framework; Oshakati needs nothing</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Walvis Bay (+ Windhoek if deferred)</td>
+<td>60–75%</td>
+<td>Phase 1 trading above break-even for six consecutive months</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Rundu</td>
+<td>55–70%</td>
+<td>Phase 2 sites at or approaching target</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Katima Mulilo</td>
+<td>65–80%</td>
+<td>Mall development milestone; anchor tenant rights</td>
+</tr>
+</tbody>
+</table>
+<p>And the site studies that already hold the site-level answer — Springbok (three scored sites, 303 m² recommended at R35–42/m² on a 3+2 lease), Polokwane (two sites, 10/20/30 km drive-distance rings), Brits (536,110 catchment population), George with Knysna and Mossel Bay expansion pages, plus Mozambique and two Namibian franchisee files.</p>
+<p><strong>Seventeen candidate locations are in this PRD's data pack</strong> — 10 South African, 5 Namibian, 1 Mozambican, 1 Eswatini — every one with the document and page it came from.</p>
+<hr />
+<h2 id="3-the-product-decision">3. The product decision</h2>
+<p><strong>Network is a new top-level branch with three surfaces, one shared spine.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Question it answers</th>
+<th>Sits on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Territories</strong></td>
+<td>Who owns which ground, on what terms?</td>
+<td><code>zone_set</code> → <code>zone</code></td>
+</tr>
+<tr>
+<td><strong>Pipeline</strong></td>
+<td>Which sites are we chasing, and how far along?</td>
+<td><code>candidate_site</code> + study documents</td>
+</tr>
+<tr>
+<td><strong>Plan</strong></td>
+<td>How many stores, in what order, for how much?</td>
+<td>new <code>network_plan</code></td>
+</tr>
+</tbody>
+</table>
+<p>Why a branch and not a tab inside Research: Research is organised by <em>evidence and workspaces</em> (one analyst's saved view, a snapshot, a brief). Network is organised by <em>commitments</em> — a territory sold, a site approved, a phase gated. They have different objects, different permissions (fees are money) and different verbs (approve, supersede, sequence). Burying the second inside the first makes both harder to explain.</p>
+<p>Why not a fourth product: every screen reads the same <code>location</code>, <code>brand</code> and <code>zone</code> rows. The map stays the map.</p>
+<hr />
+<h2 id="4-domain-model">4. Domain model</h2>
+<p>Additive only. No live table is dropped or re-typed; <code>zone</code> gains nullable columns and one generated default, so the 135 existing rows keep working.</p>
+<h3 id="41-territory-sets-and-territories">4.1 Territory sets and territories</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- A set is one brand&#39;s territory scheme at one version.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">TABLE</span> zone_set</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> brand_id     uuid <span class="kw">REFERENCES</span> brand(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> kind         text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;polygon&#39;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                          <span class="kw">CHECK</span> (kind <span class="kw">IN</span> (<span class="st">&#39;polygon&#39;</span>,<span class="st">&#39;radius&#39;</span>,<span class="st">&#39;named_area&#39;</span>)),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> effective_from <span class="dt">date</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> superseded_at  timestamptz,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> source_document_id uuid <span class="kw">REFERENCES</span> study_document(<span class="kw">id</span>);</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- Backfill: Papa Pasta&#39;s 135-zone set belongs to the Papa Pasta brand.</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">UPDATE</span> zone_set s <span class="kw">SET</span> brand_id <span class="op">=</span> b.<span class="kw">id</span> <span class="kw">FROM</span> brand b, tenant t</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a> <span class="kw">WHERE</span> s.tenant_id <span class="op">=</span> t.<span class="kw">id</span> <span class="kw">AND</span> b.slug <span class="op">=</span> t.slug <span class="kw">AND</span> s.brand_id <span class="kw">IS</span> <span class="kw">NULL</span>;</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">TABLE</span> zone_set <span class="kw">ALTER</span> <span class="kw">COLUMN</span> brand_id <span class="kw">SET</span> <span class="kw">NOT</span> <span class="kw">NULL</span>;</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">UNIQUE</span> <span class="kw">INDEX</span> zone_set_brand_version_idx</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ON</span> zone_set(brand_id, slug) <span class="kw">WHERE</span> superseded_at <span class="kw">IS</span> <span class="kw">NULL</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">TABLE</span> <span class="dt">zone</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> territory_kind text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;polygon&#39;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>      <span class="kw">CHECK</span> (territory_kind <span class="kw">IN</span> (<span class="st">&#39;polygon&#39;</span>,<span class="st">&#39;radius&#39;</span>,<span class="st">&#39;named_area&#39;</span>)),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> radius_km      <span class="dt">numeric</span> <span class="kw">CHECK</span> (radius_km <span class="op">&gt;</span> <span class="dv">0</span> <span class="kw">AND</span> radius_km <span class="op">&lt;=</span> <span class="dv">50</span>),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> fee_zar        <span class="dt">numeric</span> <span class="kw">CHECK</span> (fee_zar <span class="op">&gt;=</span> <span class="dv">0</span>),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> fee_basis      text <span class="kw">CHECK</span> (fee_basis <span class="kw">IN</span> (<span class="st">&#39;territory&#39;</span>,<span class="st">&#39;store&#39;</span>,<span class="st">&#39;annual&#39;</span>)),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> exclusivity_months <span class="dt">int</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> phase_no       <span class="dt">int</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> target_stores  <span class="dt">int</span> <span class="kw">CHECK</span> (target_stores <span class="op">&gt;=</span> <span class="dv">0</span>),</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> economics      jsonb <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;{}&#39;</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ALTER</span> <span class="kw">COLUMN</span> geom <span class="kw">DROP</span> <span class="kw">NOT</span> <span class="kw">NULL</span>;</span></code></pre></div>
+<p>A radius territory stores its centre in <code>label_point</code>, its radius in <code>radius_km</code>, and a derived polygon in <code>geom</code>. <strong>The radius is the source of truth; the polygon is a cache.</strong> A trigger (or the repository function, where the tests can see it) redraws <code>geom</code> whenever <code>radius_km</code> or <code>label_point</code> changes:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">UPDATE</span> <span class="dt">zone</span> <span class="kw">SET</span> geom <span class="op">=</span> ST_Buffer(label_point:<span class="ch">:geography</span>, radius_km <span class="op">*</span> <span class="dv">1000</span>):<span class="ch">:geometry</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="kw">WHERE</span> territory_kind <span class="op">=</span> <span class="st">&#39;radius&#39;</span>;</span></code></pre></div>
+<h3 id="42-study-documents--the-evidence-a-candidate-stands-on">4.2 Study documents — the evidence a candidate stands on</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> study_document (</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>            uuid <span class="kw">PRIMARY</span> <span class="kw">KEY</span> <span class="kw">DEFAULT</span> gen_random_uuid(),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  tenant_id     uuid <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">REFERENCES</span> tenant(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  brand_id      uuid <span class="kw">REFERENCES</span> brand(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">SET</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  title         text <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  kind          text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">CHECK</span> (kind <span class="kw">IN</span> (<span class="st">&#39;market_study&#39;</span>,<span class="st">&#39;site_study&#39;</span>,<span class="st">&#39;feasibility&#39;</span>,<span class="st">&#39;terms_of_reference&#39;</span>,<span class="st">&#39;strategy&#39;</span>,<span class="st">&#39;financial_model&#39;</span>)),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  author        text,                       <span class="co">-- Fernridge Solutions, Galaxy Retail Solutions, ACDC Franchise Development</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  published_on  <span class="dt">date</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  source_url    text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;&#39;</span>,   <span class="co">-- web page, when one exists</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  workdrive_id  text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;&#39;</span>,   <span class="co">-- folder or file id, for our own documents</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  pages         <span class="dt">int</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  confidence    text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;secondary&#39;</span> <span class="kw">CHECK</span> (confidence <span class="kw">IN</span> (<span class="st">&#39;primary&#39;</span>,<span class="st">&#39;secondary&#39;</span>,<span class="st">&#39;unverified&#39;</span>)),</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  notes         text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;&#39;</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  created_at    timestamptz <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> now()</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>);</span></code></pre></div>
+<p>A study is a <em>record of a document</em>, never a copy of it. The PDF stays in WorkDrive; the row carries the id, the page and the confidence. <code>confidence = 'unverified'</code> is how the Durbanville report enters the system today: it exists in Cliq, not in WorkDrive.</p>
+<h3 id="43-candidates-gain-a-brand-a-territory-and-a-source">4.3 Candidates gain a brand, a territory and a source</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">TABLE</span> candidate_site</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> brand_id          uuid <span class="kw">REFERENCES</span> brand(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> zone_id           uuid <span class="kw">REFERENCES</span> <span class="dt">zone</span>(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">SET</span> <span class="kw">NULL</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> study_document_id uuid <span class="kw">REFERENCES</span> study_document(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">SET</span> <span class="kw">NULL</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> study_page        text,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> score             jsonb <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;{}&#39;</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">ADD</span> <span class="kw">COLUMN</span> evidence_exempt   text;   <span class="co">-- required when a candidate is approved with no study</span></span></code></pre></div>
+<h3 id="44-the-plan">4.4 The plan</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> network_plan (</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">id</span>             uuid <span class="kw">PRIMARY</span> <span class="kw">KEY</span> <span class="kw">DEFAULT</span> gen_random_uuid(),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  tenant_id      uuid <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">REFERENCES</span> tenant(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  brand_id       uuid <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">REFERENCES</span> brand(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  zone_set_id    uuid <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">REFERENCES</span> zone_set(<span class="kw">id</span>) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  name           text <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  version        text <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  status         text <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> <span class="st">&#39;draft&#39;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                 <span class="kw">CHECK</span> (status <span class="kw">IN</span> (<span class="st">&#39;draft&#39;</span>,<span class="st">&#39;active&#39;</span>,<span class="st">&#39;superseded&#39;</span>)),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  assumptions    jsonb <span class="kw">NOT</span> <span class="kw">NULL</span>,   <span class="co">-- every rate, with its unit</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  created_by     uuid <span class="kw">REFERENCES</span> app_user(<span class="kw">id</span>),</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  created_at     timestamptz <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> now()</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">UNIQUE</span> <span class="kw">INDEX</span> network_plan_one_active <span class="kw">ON</span> network_plan(brand_id) <span class="kw">WHERE</span> status <span class="op">=</span> <span class="st">&#39;active&#39;</span>;</span></code></pre></div>
+<p><code>assumptions</code> is not free text. It is a typed object and the API rejects anything else:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;royalty_pct&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span> <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;percent_of_turnover&quot;</span><span class="fu">,</span> <span class="dt">&quot;period&quot;</span><span class="fu">:</span> <span class="st">&quot;month&quot;</span><span class="fu">},</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;zone_share_pct&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span> <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;percent_of_turnover&quot;</span><span class="fu">,</span> <span class="dt">&quot;period&quot;</span><span class="fu">:</span> <span class="st">&quot;month&quot;</span><span class="fu">},</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;marketing_pct&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span> <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;percent_of_turnover&quot;</span><span class="fu">,</span> <span class="dt">&quot;period&quot;</span><span class="fu">:</span> <span class="st">&quot;month&quot;</span><span class="fu">},</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;technology_fee&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">5000</span><span class="fu">,</span> <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;zar&quot;</span><span class="fu">,</span> <span class="dt">&quot;period&quot;</span><span class="fu">:</span> <span class="st">&quot;month_per_store&quot;</span><span class="fu">},</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;store_sales&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">600000</span><span class="fu">,</span> <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;zar&quot;</span><span class="fu">,</span> <span class="dt">&quot;period&quot;</span><span class="fu">:</span> <span class="st">&quot;month&quot;</span><span class="fu">,</span> <span class="dt">&quot;vat&quot;</span><span class="fu">:</span> <span class="st">&quot;excluded&quot;</span><span class="fu">},</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;setup_cost&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">144420</span><span class="fu">,</span> <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;zar&quot;</span><span class="fu">,</span> <span class="dt">&quot;period&quot;</span><span class="fu">:</span> <span class="st">&quot;once&quot;</span><span class="fu">},</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;currency&quot;</span><span class="fu">:</span> <span class="st">&quot;ZAR&quot;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<blockquote>
+<p>That shape is the fix for the <code>zone_roy</code> ambiguity in §2.1. A number in this product travels with its unit or it does not travel.</p>
+</blockquote>
+<h3 id="45-invariants--the-part-a-future-feature-cannot-quietly-break">4.5 Invariants — the part a future feature cannot quietly break</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Invariant</th>
+<th>Enforced in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I1</td>
+<td>A territory set belongs to exactly one brand; a territory belongs to exactly one set.</td>
+<td><code>NOT NULL</code> + unique index</td>
+</tr>
+<tr>
+<td>I2</td>
+<td>A plan references one territory set <em>version</em>; superseding a plan never mutates a superseded one.</td>
+<td><code>network_plan</code> + <code>superseded_at</code></td>
+</tr>
+<tr>
+<td>I3</td>
+<td>Fees, plan revenue, candidate scores and study notes are never serialised without <code>pricing:read</code>.</td>
+<td><code>src/lib/visibility.ts</code></td>
+</tr>
+<tr>
+<td>I4</td>
+<td>For a radius territory the radius is authoritative; <code>geom</code> is recomputed, never hand-edited.</td>
+<td>repository function + trigger</td>
+</tr>
+<tr>
+<td>I5</td>
+<td>A candidate cannot reach <code>approved</code> without a <code>study_document_id</code> or a written <code>evidence_exempt</code>.</td>
+<td>repository, not the UI</td>
+</tr>
+<tr>
+<td>I6</td>
+<td>Overlap inside a set is computed and surfaced; it never blocks an import.</td>
+<td><code>network-overlap</code> check</td>
+</tr>
+<tr>
+<td>I7</td>
+<td>Every total on a plan is recomputed from its territories and assumptions on read; a stored total is a cache with a 0.5% tolerance.</td>
+<td>pure function <code>planTotals()</code></td>
+</tr>
+<tr>
+<td>I8</td>
+<td><code>closed</code> locations never count toward a territory; <code>coming_soon</code> counts only as committed, never as trading.</td>
+<td>summary SQL</td>
+</tr>
+<tr>
+<td>I9</td>
+<td>Every candidate stage change writes a <code>research_event</code> with before/after.</td>
+<td>existing pattern</td>
+</tr>
+<tr>
+<td>I10</td>
+<td>A share link never shows a fee, a plan total, a study or a note.</td>
+<td>field allow-list</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-the-arithmetic-worked">5. The arithmetic, worked</h2>
+<p>One pure function, <code>planTotals(plan, territories, assumptions)</code>, and three worked cases that become acceptance tests.</p>
+<h3 id="51-papa-pasta-the-38-cluster-plan">5.1 Papa Pasta, the 38-cluster plan</h3>
+<ul>
+<li>Territories: 38. Target stores: 311. Territory fees: R12,900,000.</li>
+<li>Target monthly network sales: <strong>R179,261,734</strong> (sum of per-cluster targets, average R576,404 a store).</li>
+<li>Royalty at 5%: <strong>R8,963,087</strong> a month.</li>
+<li>Zone share at 3%: <strong>R5,377,852</strong>. Head office at 2%: <strong>R3,585,235</strong>.</li>
+<li>Reference stores already mapped: 115 (i.e. 37% of the target network already exists as a pin).</li>
+</ul>
+<h3 id="52-papa-pasta-the-135-zone-set-read-the-same-way">5.2 Papa Pasta, the 135-zone set read the same way</h3>
+<p>Same function, different version: 135 territories, 234–357 target stores, R102,700,000 of fees. The plan screen's job is to put those two rows next to each other and say, in one sentence, that the cluster plan sells <em>fewer, larger</em> territories at a <em>third</em> of the fee income but a <em>higher</em> store target.</p>
+<h3 id="53-the-local-farmer">5.3 The Local Farmer</h3>
+<ul>
+<li>25 territories, 13 AA at R25,000 and 12 BA at R20,000 = <strong>R565,000</strong> of fees.</li>
+<li>Setup at R144,420 a unit: <strong>R3,610,500</strong> across the network.</li>
+<li>At R50,000 monthly revenue a unit: <strong>R3,500</strong> royalty (7%) + <strong>R1,500</strong> marketing (3%) = R5,000 a month per unit; <strong>R125,000</strong> a month across 25 units at full build.</li>
+</ul>
+<h3 id="54-acdc-express">5.4 ACDC Express</h3>
+<p>Candidates are not a plan yet, and the product must say so rather than invent one. What it <em>can</em> compute from the pack: 17 candidates, 1 approved (Maputo, R6,000,000 investment, 12-month exclusivity), 3 shortlisted, 3 needing a visit, 9 under research, 1 on hold — and, per approved store, R200,000 of commitment fee received against R3,200,000 of fit-out managed.</p>
+<hr />
+<h2 id="6-api-surface">6. API surface</h2>
+<p>Every endpoint follows the house conventions already in the repo: cursor pagination, <code>revision</code> checks on write, and authorisation decided in the repository layer.</p>
+<table>
+<thead>
+<tr>
+<th>Method and path</th>
+<th>Who</th>
+<th>Returns / does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /api/network/territories?brand=&amp;set=</code></td>
+<td>member</td>
+<td>territories with geometry, kind, radius, phase, target stores; fees only with <code>pricing:read</code></td>
+</tr>
+<tr>
+<td><code>GET /api/network/territories/:id</code></td>
+<td>member</td>
+<td>one territory + its stores + its candidates</td>
+</tr>
+<tr>
+<td><code>GET /api/network/overlap?set=</code></td>
+<td>member</td>
+<td>intersecting pairs inside one set, with the overlap area in km²</td>
+</tr>
+<tr>
+<td><code>GET /api/network/candidates?brand=&amp;stage=</code></td>
+<td>member</td>
+<td>candidates with study reference and score; notes/scores gated</td>
+</tr>
+<tr>
+<td><code>PATCH /api/network/candidates/:id</code></td>
+<td>member</td>
+<td>stage, zone, score, study link; writes <code>research_event</code>; <code>revision</code> required</td>
+</tr>
+<tr>
+<td><code>GET /api/network/plans?brand=</code></td>
+<td>member</td>
+<td>plans with status and version</td>
+</tr>
+<tr>
+<td><code>POST /api/network/plans</code></td>
+<td>owner, manager</td>
+<td>create a draft from a territory set</td>
+</tr>
+<tr>
+<td><code>POST /api/network/plans/:id/activate</code></td>
+<td>owner, manager</td>
+<td>exactly one active per brand; supersedes the previous</td>
+</tr>
+<tr>
+<td><code>GET /api/network/plans/:id/totals</code></td>
+<td>member with <code>pricing:read</code></td>
+<td>recomputed totals + the arithmetic breakdown per territory</td>
+</tr>
+<tr>
+<td><code>POST /api/network/studies</code></td>
+<td>owner, manager, analyst</td>
+<td>register a study document (no file upload in v1)</td>
+</tr>
+</tbody>
+</table>
+<p><code>GET /api/network/plans/:id/totals</code> returns the derivation, not just the answer:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span> <span class="dt">&quot;totals&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;territories&quot;</span><span class="fu">:</span> <span class="dv">38</span><span class="fu">,</span> <span class="dt">&quot;target_stores&quot;</span><span class="fu">:</span> <span class="dv">311</span><span class="fu">,</span> <span class="dt">&quot;fees&quot;</span><span class="fu">:</span> <span class="dv">12900000</span><span class="fu">,</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>              <span class="dt">&quot;target_monthly_sales&quot;</span><span class="fu">:</span> <span class="dv">179261734</span><span class="fu">,</span> <span class="dt">&quot;royalty_month&quot;</span><span class="fu">:</span> <span class="dv">8963087</span> <span class="fu">},</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;per_territory&quot;</span><span class="fu">:</span> <span class="ot">[</span> <span class="fu">{</span> <span class="dt">&quot;code&quot;</span><span class="fu">:</span> <span class="st">&quot;GT01&quot;</span><span class="fu">,</span> <span class="dt">&quot;target_stores&quot;</span><span class="fu">:</span> <span class="dv">14</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                       <span class="dt">&quot;target_monthly_sales&quot;</span><span class="fu">:</span> <span class="dv">7833913</span><span class="fu">,</span> <span class="dt">&quot;royalty_month&quot;</span><span class="fu">:</span> <span class="dv">235017</span> <span class="fu">}</span> <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;assumptions&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;royalty_pct&quot;</span><span class="fu">:</span> <span class="fu">{</span><span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span> <span class="dt">&quot;unit&quot;</span><span class="fu">:</span> <span class="st">&quot;percent_of_turnover&quot;</span><span class="fu">,</span> <span class="dt">&quot;period&quot;</span><span class="fu">:</span> <span class="st">&quot;month&quot;</span><span class="fu">}</span> <span class="fu">},</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;computed_at&quot;</span><span class="fu">:</span> <span class="st">&quot;2026-10-28T09:00:00Z&quot;</span> <span class="fu">}</span></span></code></pre></div>
+<hr />
+<h2 id="7-the-screens">7. The screens</h2>
+<h3 id="71-network--the-plan-board">7.1 <code>/network</code> — the plan board</h3>
+<p>One card per brand: active plan name and version, territories, target stores against stores already trading, fee income, and the phase the network is in. A second column lists the <em>other</em> plans with a one-click "compare". Nothing here is an input.</p>
+<h3 id="72-networkterritories--the-ground">7.2 <code>/network/territories</code> — the ground</h3>
+<p>The Explore map, scoped to one brand and one set, with three additions:</p>
+<ul>
+<li><strong>Territory kind is visible.</strong> A radius territory renders as a circle with the radius labelled (<code>7.0 km</code>); a polygon renders as it does today.</li>
+<li><strong>Target vs trading.</strong> Each territory shows <code>target 14 · trading 4 · shortlisted 2</code>, so the map answers "where is the network thin" without opening a panel.</li>
+<li><strong>Overlap is a warning, not a colour.</strong> Clicking an overlap pair lists both territories and the overlapping area; it never silently repaints either.</li>
+</ul>
+<h3 id="73-networkpipeline--the-sites">7.3 <code>/network/pipeline</code> — the sites</h3>
+<p>The existing shortlist pattern, with three columns added: <strong>brand</strong>, <strong>territory</strong> and <strong>study</strong> (title and page). Approving a candidate with no study opens the <code>evidence_exempt</code> field and refuses to save it empty. Stage chips are the existing six; nothing new is invented.</p>
+<h3 id="74-networkplansid--the-plan">7.4 <code>/network/plans/:id</code> — the plan</h3>
+<p>Header: brand, version, status, and the one sentence that describes the scheme. Body: a table of territories (code, name, tier, phase, target stores, fee, monthly royalty) and a totals row that is <em>derived</em>, with a footnote naming the assumptions and their units. Right rail: the assumptions, editable only in a draft; activating a draft supersedes the previous active plan after a confirmation that names what will stop being live.</p>
+<h3 id="75-what-is-deliberately-absent">7.5 What is deliberately absent</h3>
+<p>No scenario sliders in v1. A slider that changes a royalty rate in the browser and shows a number no one can defend is worse than a table with a derivation. Scenario comparison comes after the derivation is trusted.</p>
+<hr />
+<h2 id="8-the-data-pack-this-prd-ships-with">8. The data pack this PRD ships with</h2>
+<p>Three files, in the repo, each carrying its provenance. They are the seed for the first import and the evidence for every number in §2.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+<th>Counts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/seed/tlf-territories-2026-10-28.json</code></td>
+<td>25 TLF territories, geocoded centres, radius 7 km, AA/BA class, fee, royalty terms</td>
+<td>13 AA · 12 BA · R565,000 fees</td>
+</tr>
+<tr>
+<td><code>data/imports/papa-pasta-clusters-luke-2026-10-28.json</code></td>
+<td>38 clusters with tier, fee, target stores, mapped reference stores, target sales, royalty</td>
+<td>311 stores · R12,900,000 · R179,261,734/month</td>
+</tr>
+<tr>
+<td><code>data/imports/acdc-network-candidates-2026-10-28.json</code></td>
+<td>17 ACDC candidates with stage, phase, facts, study and page</td>
+<td>10 SA · 5 NA · 1 MZ · 1 SZ</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Known limitations, stated in the files themselves:</strong> the three Springbok sites share one street-level geocode (the study gives street addresses, not pins), the Polokwane pair share a city centroid, <code>Durbanville</code> is <code>confidence: unverified</code> because the report lives in Cliq and not yet in WorkDrive, and the Eswatini study folder is empty — an evidence gap, not a decision.</p>
+<hr />
+<h2 id="9-acceptance-tests">9. Acceptance tests</h2>
+<p>Each P0 test names the expected value, so "it works" is checkable.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>Papa Pasta's existing 135 zones survive the migration with brand and geometry intact</td>
+<td>135 rows, all <code>territory_kind = 'polygon'</code>, <code>brand_id</code> = Papa Pasta</td>
+</tr>
+<tr>
+<td>F2</td>
+<td>Import the 25 TLF territories</td>
+<td>25 rows, 13 <code>AA</code>, 12 <code>BA</code>, every <code>radius_km = 7</code>, fees sum <strong>565000</strong></td>
+</tr>
+<tr>
+<td>F3</td>
+<td>A TLF territory's geometry equals a 7 km buffer of its centre</td>
+<td><code>ST_Area</code> within 1% of πr² (π × 49 km² ≈ 153.9 km²)</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>Change one TLF radius to 10 km</td>
+<td>only that row's <code>geom</code> changes; area ≈ 314.2 km²</td>
+</tr>
+<tr>
+<td>F5</td>
+<td>Import Luke's 38 clusters as a second Papa Pasta set</td>
+<td>311 target stores, fees <strong>12900000</strong>, <code>network_plan</code> activation leaves v7.2 untouched</td>
+</tr>
+<tr>
+<td>F6</td>
+<td><code>GET /plans/:id/totals</code> for the cluster plan</td>
+<td><code>royalty_month</code> = <strong>8963087</strong> ± 0.5%; per-territory GT01 royalty = <strong>235017</strong></td>
+</tr>
+<tr>
+<td>F7</td>
+<td>A viewer without <code>pricing:read</code> calls the same endpoint</td>
+<td>no <code>fees</code>, no <code>royalty</code>, no <code>assumptions.royalty_pct</code> key at all</td>
+</tr>
+<tr>
+<td>F8</td>
+<td>Approve a candidate with no study and no exemption</td>
+<td>422, nothing written</td>
+</tr>
+<tr>
+<td>F9</td>
+<td>Approve with <code>evidence_exempt</code></td>
+<td>200, <code>research_event</code> row with before/after</td>
+</tr>
+<tr>
+<td>F10</td>
+<td>Two overlapping territories in one set</td>
+<td><code>GET /overlap</code> returns the pair with area &gt; 0; import still succeeds</td>
+</tr>
+<tr>
+<td>F11</td>
+<td>Activate a second plan for the same brand</td>
+<td>first plan becomes <code>superseded</code>; unique index proves one active</td>
+</tr>
+<tr>
+<td>F12</td>
+<td>Share link for a plan's brand</td>
+<td>0 fee fields, 0 study titles, 0 candidate notes in the payload</td>
+</tr>
+<tr>
+<td>F13</td>
+<td>Import the 17 ACDC candidates</td>
+<td>17 rows; stages 9 researching · 3 visit_needed · 3 shortlisted · 1 on_hold · 1 approved; 0 missing coordinates</td>
+</tr>
+<tr>
+<td>F14</td>
+<td>Map a radius territory at 390 px</td>
+<td>circle, label and target/trading counts legible; no horizontal scroll</td>
+</tr>
+<tr>
+<td>F15</td>
+<td>Recompute totals twice</td>
+<td>identical to the cent (pure function, no clock or random input)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-build-order--stages-by-dependency-no-dates">10. Build order — stages by dependency, no dates</h2>
+<p><strong>Stage A — foundations.</strong> Migration for <code>zone_set.brand_id</code>, <code>zone</code> territory columns, <code>study_document</code>, <code>candidate_site</code> additions, <code>network_plan</code>. Backfill Papa Pasta. Exit: F1 passes and the app still renders 5,073 locations and 135 zones.</p>
+<p><strong>Stage B — territories.</strong> Radius support (store, recompute, render), overlap endpoint, territory detail with target vs trading. Import TLF. Exit: F2–F5.</p>
+<p><strong>Stage C — plan arithmetic.</strong> <code>planTotals()</code> as a pure, tested function; <code>network_plan</code> CRUD; activation and supersession; totals endpoint with derivation. Exit: F6, F7, F11, F15.</p>
+<p><strong>Stage D — pipeline.</strong> Study registration, candidate brand/territory/study fields, approval guard, stage audit. Import ACDC. Exit: F8, F9, F13.</p>
+<p><strong>Stage E — surfaces.</strong> <code>/network</code>, <code>/network/territories</code>, <code>/network/pipeline</code>, <code>/network/plans/:id</code>; the map additions; mobile pass at 390 px. Exit: F10, F12, F14 and a browser walk of all four surfaces.</p>
+<p>Stages A–E are sequential; inside a stage the work is parallel. The incumbent (Zoho Projects briefs, the spreadsheets) keeps running until Stage E ships — the plan is read-only evidence until then.</p>
+<hr />
+<h2 id="11-risks-and-failure-modes">11. Risks and failure modes</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Control</th>
+<th>Who checks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A second zone scheme is mistaken for the live one</td>
+<td>one active plan per brand, unique index, supersession written to the audit trail</td>
+<td>Stage C exit test F11</td>
+</tr>
+<tr>
+<td>A royalty figure is quoted in the wrong unit</td>
+<td>every number carries <code>{value, unit, period}</code>; the API rejects an untyped assumption</td>
+<td>schema + F6</td>
+</tr>
+<tr>
+<td>Fees leak to a prospect through a share link</td>
+<td>field allow-list at creation <em>and</em> serialisation (existing D3 pattern, extended)</td>
+<td>F12</td>
+</tr>
+<tr>
+<td>A candidate is approved on a hunch</td>
+<td><code>study_document_id</code> or <code>evidence_exempt</code></td>
+<td>F8, F9</td>
+</tr>
+<tr>
+<td>A radius territory drifts from its radius</td>
+<td>radius authoritative, geometry derived, one repository function</td>
+<td>F3, F4</td>
+</tr>
+<tr>
+<td>The 17 candidates are read as 17 stores</td>
+<td>the plan screen shows <em>approved</em> separately from <em>researched</em></td>
+<td>§5.4</td>
+</tr>
+<tr>
+<td>Geocoding is mistaken for a site</td>
+<td>street-level geocodes flagged in the pack; <code>visit_needed</code> is the stage, not a guess</td>
+<td>§8</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-decisions-register">12. Decisions register</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Recommendation</th>
+<th>Cost of the alternative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D1</strong></td>
+<td>Which Papa Pasta scheme becomes the <strong>active</strong> plan — the 135-zone set, the 96-zone paper, or Luke's 38 clusters?</td>
+<td><strong>Luke's 38 clusters active; v7.2 kept as a superseded version; the 96-zone paper archived as a working paper.</strong> The clusters are the only scheme with fees, targets and reference stores in one document, and they are the most recent.</td>
+<td>Activating 135 zones keeps a scheme with 2.8 stores a territory live, which the zone-owner paper's own arithmetic says cannot pay a zone manager.</td>
+</tr>
+<tr>
+<td><strong>D2</strong></td>
+<td>Does the TLF territory stay at 7 km, or move to a named suburb boundary?</td>
+<td><strong>Keep the 7 km radius.</strong> It is what the signed agreement annexure says; changing it is a legal act, not a product one.</td>
+<td>A polygon looks tidier on a map and contradicts the contract.</td>
+</tr>
+<tr>
+<td><strong>D3</strong></td>
+<td>Do we import the 17 ACDC candidates before the studies are re-verified?</td>
+<td><strong>Import now, marked by confidence.</strong> A candidate row with a document and a page is more honest than an empty pipeline.</td>
+<td>Waiting means the five Namibian cities stay in a PDF.</td>
+</tr>
+<tr>
+<td><strong>D4</strong></td>
+<td>Does the Network branch ship fees to anyone below owner/manager?</td>
+<td><strong>No — fees follow the existing <code>pricing:read</code> capability.</strong> No new role, no new flag.</td>
+<td>A second permission system to keep in sync.</td>
+</tr>
+<tr>
+<td><strong>D5</strong></td>
+<td>Is <code>network_plan</code> allowed to hold a plan with zero territories?</td>
+<td><strong>No.</strong> A draft may be empty for the first save, but activation requires at least one territory.</td>
+<td>An "active" plan that computes to zero reads as a bug to every user who sees it.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-evidence">13. Evidence</h2>
+<p>Documents, with the folder they live in. WorkDrive links are to the folder that holds the file named beside them.</p>
+<p><strong>Papa Pasta</strong></p>
+<ul>
+<li>Luke Harrison, <em>Papa Pasta — Managing Director &amp; Investor Review</em>, 27 October 2026 (local copy: <code>AI-Drive/Agent-Output/batman/papa-pasta-zone-model/input/Papa_Pasta_MD_Investor_Review.pdf</code>) — 38 clusters, 311 stores, R12.9m fees, 5/3/2 royalty split, R5,000 technology fee.</li>
+<li>Vault, <em>Papa Pasta · Zone Owner</em> (2026-10-27) — 96 zones, six-store rule, 3% override break-even.</li>
+<li><code>data/seed/papa-pasta-zones-v7.2.geojson</code> — 135 polygons, R102.7m fees.</li>
+<li><a href="https://workdrive.zoho.com/folder/hw8ip5f744f12d7884a6dabd299545c0783b7">Papa Pasta franchisor folder</a> — its <strong>Roll Out Plan</strong> folder holds <code>Papa_Pasta_Rollout_V3</code> and <code>Papa Pasta Site Rental Estimates</code>, neither yet imported: the next data pack, and the only source that prices a specific site rather than a territory.</li>
+<li><em>Papa Pasta Franchise Zone Reservation Landing Page</em>, shared by Rhona Ferreira Nortje in Cliq on 25 March 2026 — the franchisee-facing reservation page; in Cliq, not yet filed to WorkDrive.</li>
+</ul>
+<p><strong>The Local Farmer</strong></p>
+<ul>
+<li><a href="https://workdrive.zoho.com/folder/um3v938715ec2257b4a5ca5658f72b48c443f">The Local Farmer — franchisor folder</a> — its <strong>TLF Sales</strong> folder holds the 2026 pitch deck and the application form; <a href="https://workdrive.zoho.com/folder/ddhk43beafcb5fac94b2cad5f1b5c856b13d8">TLF Reg docs</a> holds the 2024 prospectus (pp. 6–10), the company profile, and the draft franchise agreement (Annexure "E", 7 km; clause 14.3).</li>
+<li><a href="https://thelocalfarmer.co.za/buy-a-franchise">The Local Farmer — buy a franchise</a> — public description of the urban-growing business unit.</li>
+</ul>
+<p><strong>ACDC Express</strong></p>
+<ul>
+<li><a href="https://acdcexpress.com/store-locator">ACDC Express store locator</a> — 34 South African branches, 26 October 2026.</li>
+<li><a href="https://workdrive.zoho.com/folder/syth1a91694085eaa4629bdb3c9503d2b4533">ACDC Exp: Site Specific Studies</a> — <a href="https://workdrive.zoho.com/folder/nbkv114eca5cd5b1f44a097fd4c57f9cc3a62">Springbok</a>, <a href="https://workdrive.zoho.com/folder/3bfoqae31f5c60cb94ff2b92bb7e98f57f2fd">Polokwane</a>, <a href="https://workdrive.zoho.com/folder/gvlt8cc120a38e5cd4d0391d44338c119ed90">George with Knysna and Mossel Bay</a>, <a href="https://workdrive.zoho.com/folder/syth1a674e632734b4d5495800fbf4649827f">Brits</a>, <a href="https://workdrive.zoho.com/folder/3bfoq53603be04002422f82d77f30904027ae">Mozambique</a>.</li>
+<li><a href="https://workdrive.zoho.com/folder/r5bi8ab43a13511484d88a40f909e52fcea02">Fernridge Analysis</a> — <em>FERNRIDGE ToR RT.01, ACDC Express, Namibia country-level market overview</em>, November 2025; <a href="https://fernridge.co.za">Fernridge Solutions</a>.</li>
+<li><a href="https://workdrive.zoho.com/folder/ab1763a4eb682f5fc4f96823dc763fc9874b8">Namibia franchisee files</a> — <em>ACDC Namibia Expansion Strategy v2</em> (April 2026), <em>ACDC Express Namibia Site Evaluation Report</em>.</li>
+</ul>
+<p><strong>Product</strong></p>
+<ul>
+<li><code>docs/PRD-VERIFICATION-2026-10-28.md</code> — the 0.4.0 baseline this PRD extends (5,073 locations, 61 brands, 135 zones, 115 passing tests).</li>
+<li><code>docs/DECISIONS.md</code> — D2 (pins), D3 (pricing capability), D5 (what "closed" means).</li>
+<li><code>docs/COMPANY-RESEARCH.md</code> — brand relationships and territory provenance rules.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
