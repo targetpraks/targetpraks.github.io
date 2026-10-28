@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Bench — Papa Pasta internal kitchen system (PP-KIT-001)</title>
+<meta name="description" content="Build PRD for a local-first kitchen tablet system: recipes a cook can run offline, a batch log that proves what was made, and stock flags that reach the next shift.">
+<style>
+:root{
+  --paper:#fdfaf3; --ink:#12203a; --ink2:#3d4a63; --mute:#6b7689;
+  --line:#e4dfd2; --card:#ffffff; --lime:#c6f24e; --coral:#e8543a;
+  --gold:#d9a13b; --teal:#1b6e69; --shadow:0 2px 0 rgba(18,32,58,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:17px/1.62 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;}
+.wrap{max-width:1000px;margin:0 auto;padding:0 26px}
+h1,h2,h3,h4,.eyebrow,.bl,.bv,.chip,.pill,.mono{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
+a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--lime);padding-bottom:1px}
+a:hover{border-bottom-color:var(--ink)}
+header.hero{background:var(--ink);color:#f7f4ea;padding:54px 0 44px;border-bottom:5px solid var(--lime)}
+header.hero .wrap{padding-top:0}
+.eyebrow{font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--lime);font-weight:700;margin:0 0 16px}
+header.hero h1{font-size:clamp(30px,4.6vw,50px);line-height:1.06;letter-spacing:-.02em;margin:0 0 18px;font-weight:800;max-width:20ch}
+header.hero p.stand{font-size:clamp(16px,1.7vw,19.5px);line-height:1.5;color:#d8d2c2;margin:0;max-width:64ch}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0}
+.chip{display:inline-flex;flex-direction:column;gap:2px;background:#1c2c48;border:1px solid #2f4260;
+  border-radius:10px;padding:10px 14px;font-size:12.5px;line-height:1.35;min-width:180px}
+.chip b{color:var(--lime);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+.chip span{color:#f2eee1;font-size:14px}
+nav.toc{background:#fff;border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;padding:12px 26px;font-size:13px}
+nav.toc a{border:0;color:var(--ink2);padding:4px 0;font-weight:600}
+nav.toc a b{display:inline-block;min-width:16px;color:var(--mute);font-weight:700;margin-right:4px}
+nav.toc a:hover{color:var(--ink);box-shadow:inset 0 -2px 0 var(--lime)}
+main{padding:6px 0 0}
+section.part{padding:40px 0 16px;border-top:1px solid var(--line)}
+section.part:first-of-type{border-top:0}
+.pnum{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);font-weight:800;margin:0 0 8px}
+h2{font-size:clamp(24px,3vw,33px);line-height:1.14;letter-spacing:-.02em;margin:0 0 12px;font-weight:800;max-width:26ch}
+h3{font-size:18px;margin:26px 0 8px;font-weight:800;letter-spacing:-.01em}
+p{margin:0 0 14px;max-width:72ch}
+p.lead{font-size:19px;line-height:1.55;color:var(--ink2)}
+.verdict{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:22px 24px;margin:8px 0 20px;box-shadow:var(--shadow)}
+.verdict h3{margin:0 0 8px;font-size:20px}
+.verdict p{margin:0 0 10px}
+.verdict p:last-child{margin:0}
+.verdict .k{background:linear-gradient(transparent 58%, var(--lime) 58%);padding:0 2px;font-weight:700}
+ul.tight{margin:0 0 16px;padding-left:20px;max-width:72ch}
+ul.tight li{margin:0 0 8px}
+ol.tight{margin:0 0 16px;padding-left:22px;max-width:72ch}
+ol.tight li{margin:0 0 8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:18px 0 8px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0 0 8px;font-size:15.5px;line-height:1.55;color:var(--ink2)}
+.card .tag{display:inline-block;margin-top:6px;background:var(--ink);color:var(--lime);font:700 10.5px/1 "Helvetica Neue",Arial,sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;padding:6px 9px;border-radius:5px}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0 10px;border-radius:12px}
+table{border-collapse:collapse;width:100%;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;background:#fff}
+table.score{min-width:860px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--ink);color:#f7f4ea;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;border-bottom:0}
+tbody tr:nth-child(even){background:#fbf9f4}
+td.s{text-align:center;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink2);width:74px}
+td.s.best{color:var(--ink)}
+td.s.best::after{content:"";display:block;height:3px;background:var(--lime);margin:5px auto 0;width:22px;border-radius:2px}
+td.dl b{display:block;font-size:14px;color:var(--ink)}
+td.dl span{display:block;font-size:12.5px;color:var(--mute);line-height:1.4;margin-top:3px}
+tfoot td{background:#f2eee1;font-weight:800}
+tfoot td.tot{text-align:center;font-size:16px}
+tfoot td.tot.best{background:var(--ink);color:var(--lime)}
+figure{margin:18px 0 8px}
+figcaption{font-size:13px;color:var(--mute);margin-top:8px;line-height:1.45;max-width:78ch}
+text.bl{font-size:13.5px;fill:#12203a;font-weight:700}
+text.bv{font-size:15px;fill:#12203a;font-weight:800}
+text.bv.win{fill:#12203a}
+text.bvs{font-size:11px;fill:#6b7689;font-weight:600}
+.callout{border-left:5px solid var(--lime);background:#f4f8e4;padding:14px 18px;margin:18px 0;border-radius:0 10px 10px 0}
+.callout p{margin:0;font-size:15.5px;color:var(--ink2)}
+.pill{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;
+  padding:3px 8px;border-radius:999px;background:var(--ink);color:#f7f4ea}
+.pill.lime{background:var(--lime);color:#12203a}
+.band{background:var(--ink);color:#f7f4ea;border-radius:16px;padding:28px 26px;margin:34px 0 10px}
+.band h3{color:#fff;margin:0 0 12px;font-size:21px}
+.band ol{margin:0;padding-left:22px;max-width:74ch}
+.band li{margin:0 0 10px;color:#dcd6c6;line-height:1.55}
+.band li b{color:var(--lime)}
+footer{padding:26px 0 60px;border-top:1px solid var(--line);margin-top:26px}
+footer p{font-size:12.8px;color:var(--mute);line-height:1.55;max-width:82ch;margin:0 0 8px}
+footer b{color:var(--ink2)}
+@media (max-width:720px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  nav.toc .wrap{padding:10px 16px;font-size:12px;gap:4px 12px}
+  .chips{gap:8px}
+  .chip{min-width:0;flex:1 1 42%}
+  table.score{min-width:0}
+  main table:not(.score){min-width:640px}
+  table.score,table.score thead,table.score tbody,table.score tfoot,table.score tr,table.score td,table.score th{display:block;width:100%}
+  table.score thead{display:none}
+  table.score tr{border:2px solid var(--line);border-radius:10px;margin:0 0 10px;padding:10px 12px;background:#fff}
+  table.score td{border:0;padding:5px 0;display:flex;justify-content:space-between;gap:14px;text-align:right}
+  table.score td.dl{display:block;text-align:left;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:6px}
+  table.score td.s::before{content:attr(data-o);font-weight:600;color:var(--mute);font-size:12px;text-align:left}
+  table.score td.s, table.score td.tot{width:auto}
+  table.score td.tot::before{content:attr(data-o);font-weight:600;color:#6b7689;font-size:12px;text-align:left}
+  table.score td.s.best::after{display:none}
+  table.score tfoot td{font-size:14px}
+}
+@media print{
+  body{background:#fff}
+  header.hero{background:#12203a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  nav.toc{display:none}
+  section.part{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Papa Pasta · internal kitchen · build PRD · PP-KIT-001</p>
+    <h1>The Bench</h1>
+    <p class="stand">One tablet in the kitchen that tells a cook exactly what to make, how, and what is running out —
+      working with the network down. Your four verified formulas stop being a PDF and start being live data.
+      This is the product, the model behind it, what it costs against buying, and the six things only you can decide.</p>
+    <div class="chips">
+      <div class="chip"><b>The verdict</b><span>Build it. Small, local-first, ours.</span></div>
+      <div class="chip"><b>The constraint that shapes it</b><span>It must work with no signal, gloves on</span></div>
+      <div class="chip"><b>What is already real</b><span>4 costed recipes, 20 method steps, QC checks</span></div>
+      <div class="chip"><b>What I need from you</b><span>Six decisions, Part eight</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc"><div class="wrap">
+  <a href="#p1"><b>1</b>The ask, and what it is</a>
+  <a href="#p2"><b>2</b>Two laws</a>
+  <a href="#p3"><b>3</b>What already exists</a>
+  <a href="#p4"><b>4</b>The model</a>
+  <a href="#p5"><b>5</b>The six surfaces</a>
+  <a href="#p6"><b>6</b>Build or buy</a>
+  <a href="#p7"><b>7</b>Build order</a>
+  <a href="#p8"><b>8</b>Decisions</a>
+  <a href="#p9"><b>9</b>Sources</a>
+</div></nav>
+
+<main class="wrap">
+
+<section class="part" id="p1">
+  <p class="pnum">Part one</p>
+  <h2>The ask, and what it actually is</h2>
+  <p class="lead">You sent a reel of a café owner running four little tools on one tablet, and said we need something
+    for the internal kitchen that does our recipes. Here is the build, and here is what I am deliberately leaving out of it.</p>
+
+  <div class="verdict">
+    <h3>It is one small system, not a platform. The recipe manual becomes the database; the tablet is the front door.</h3>
+    <p><span class="k">Three jobs, in this order.</span> First, tell the cook what to make right now and how to make it,
+      at the bench, with the machine running and the wifi off. Second, prove what was actually made — who, when, how much,
+      and whether it passed the cook test. Third, surface what is about to run out before service finds out for us.</p>
+    <p><span class="k">Why those three.</span> The reel's four tools are the right shape and the wrong spec. Its prep
+      recipes and its prep inventory are the two that earn their keep in a pasta kitchen; the hourly tidy nag and the
+      "email the owner" alert are the two its own comment section argued against, and I agree with the commenters.</p>
+    <p><span class="k">What it is not.</span> It is not the SOP and training record — you decided on 26 October that
+      Zoho Learn holds that, with a name and a timestamp per version, and that decision stands. It is not a POS, a payroll
+      system, or an invoice scanner. It does not replace the costed model, which keeps the master percentages.</p>
+  </div>
+
+  <p><b>The one-line product.</b> A kitchen that can open one screen and answer: what do I make now, how, and what is
+    short — without asking a person who is not there.</p>
+
+  <div class="callout"><p><b>Why a real system and not a shared folder of PDFs.</b> The manual already says
+    "record all results in the batch production log; flag any deviation to the franchise QC lead". That instruction has
+    no system behind it today. A folder cannot hold a batch log. It cannot hold a flag raised at 07:20 by a cook who has
+    since gone home. It cannot tell you that the sorghum bin was empty on Tuesday and nobody noticed until service.</p></div>
+</section>
+
+<section class="part" id="p2">
+  <p class="pnum">Part two</p>
+  <h2>Two laws that decide the whole build</h2>
+  <p class="lead">Everything in Part four onward follows from these two sentences. If we get them wrong, the software is
+    either a leak or a toy.</p>
+
+  <h3>Law one — percentages stay in the costed model; the bench gets weights for one batch</h3>
+  <p>The formula is the thing an ex-employee could copy. On 26 October you set the rule: method in the manual, arithmetic
+    in the model, NDA over both. A tablet that can show a baker's-percentage column, or export a full recipe, undoes that
+    rule in one screenshot. So the bench screen shows <b>only the weighed amounts for the batch size being made</b> —
+    no percentage column, no export, no share button, every printed batch card stamped with the batch id and the person.</p>
+  <p>That is a real constraint on the software, and it has a cost: the scale engine has to be exact, because nobody at the
+    bench can check it against the percentages. It gets a reconciliation line instead — the weights must sum to the batch
+    total, and the screen shows that sum.</p>
+
+  <div class="card">
+    <h3>The worked example the engine must pass</h3>
+    <p class="mono">Bokgat Base · 10 kg standard batch · scaled to 30 kg</p>
+    <div class="tscroll"><table>
+<thead><tr><th>Ingredient</th><th>10 kg batch</th><th>30 kg batch (3×)</th><th>Rule applied</th></tr></thead>
+<tbody>
+<tr><td>SA stone-milled whole wheat</td><td>6.00 kg</td><td><b>18.00 kg</b></td><td>60% of total dry</td></tr>
+<tr><td>SA white sorghum flour</td><td>2.50 kg</td><td><b>7.50 kg</b></td><td>25% of total dry</td></tr>
+<tr><td>SA baobab fruit powder</td><td>1.00 kg</td><td><b>3.00 kg</b></td><td>10% of total dry</td></tr>
+<tr><td>SA golden flaxseed, cold-milled</td><td>0.50 kg</td><td><b>1.50 kg</b></td><td>5% of total dry</td></tr>
+<tr><td>Purified water, 38–40&nbsp;°C</td><td>3.2–3.4 L</td><td><b>9.6–10.2 L</b></td><td>32–34% of dry weight, stays a range</td></tr>
+<tr><td>Salt</td><td>100–150 g</td><td><b>300–450 g</b></td><td>1–1.5% of dry weight, stays a range</td></tr>
+<tr><td><b>Total dry</b></td><td><b>10.00 kg</b></td><td><b>30.00 kg</b></td><td>must reconcile, on screen</td></tr>
+<tr><td>Yield</td><td>~70 × 140 g</td><td><b>~210 × 140 g</b></td><td>13–14 kg cooked per 10 kg</td></tr>
+</tbody>
+</table></div>
+    <p>Two ranges appear in this one recipe — water and salt. The app must not pick a number silently. It asks, at batch
+      start, and records the reason ("tender noodle, top of range"), because the manual says the top of the water range is
+      what makes a tender fresh noodle and the barrel must never exceed 55&nbsp;°C.</p>
+  </div>
+
+  <h3>Law two — offline is the normal state, not an error state</h3>
+  <p>Flour on the screen, gloves on, a cold room with no signal, and a store whose line is the only thing between a batch
+    and a lost day. Any design that needs a round trip to a cloud to tell a cook the salt weight is the wrong design.</p>
+  <p>So: the app is installed on the tablet, its data lives on the tablet, and it writes to the tablet first. When it sees
+    the network it pushes up. Every bench action carries a client-generated id, so a queued write that gets replayed twice
+    is still one batch — not two, and not a doubled stock decrement.</p>
+</section>
+
+<section class="part" id="p3">
+  <p class="pnum">Part three</p>
+  <h2>What already exists, and the four gaps</h2>
+  <p class="lead">This is not a greenfield guess. Four formulas are already verified, costed and written as a method — in a
+    document a cook cannot use at a machine.</p>
+
+  <h3>The four recipes, as real numbers</h3>
+  <div class="tscroll"><table>
+<thead><tr><th>Recipe</th><th>Prep / batch</th><th>Surface dry</th><th>Store cook</th><th>Yield / batch</th><th>Raw cost / 140 g</th><th>COGS / serving</th><th>Skill</th></tr></thead>
+<tbody>
+<tr><td><b>1 · Bokgat Base</b><br><span class="mono">everyday, 100% SA</span></td><td>45–60 min</td><td>4–12 h</td><td>3–5 min</td><td>~70 × 140 g</td><td>R2.20–3.40</td><td>R4.50–6.70</td><td>Basic</td></tr>
+<tr><td><b>2 · Protein+ Pro</b><br><span class="mono">flagship</span></td><td>50–65 min</td><td>5–14 h</td><td>4–6 min</td><td>~70 × 140 g</td><td>R5.70–7.40</td><td>R8.00–10.80</td><td>Advanced</td></tr>
+<tr><td><b>3 · Farmhouse</b><br><span class="mono">TLF powders</span></td><td>45–60 min</td><td>4–12 h</td><td>3–5 min</td><td>~70 × 140 g</td><td>R2.80–4.20</td><td>R5.00–7.60</td><td>Intermediate</td></tr>
+<tr><td><b>4 · Chickpea Power Pro</b><br><span class="mono">low-GI plant driver</span></td><td>45–60 min</td><td>5–14 h</td><td>3–5 min</td><td>~70 × 140 g</td><td>R3.50–4.90</td><td>—</td><td>Basic</td></tr>
+</tbody>
+</table></div>
+  <p>All four run on the same machine: Gustotek GT Line GUSGT108, 16–20 kg/h, so a 10 kg batch extrudes in roughly
+    30–40 minutes. Surface-dry moisture spec is 28–32% — the fresh spec, not the 12.5% dry spec. The cook test is al dente
+    in 3–5 minutes with no mushy exterior.</p>
+
+  <h3>The method is already written, per recipe</h3>
+  <p>Each one has a real sequence we can read straight into the app: dry blend 10–15 minutes with a three-point sample check;
+    knead in the extruder with the barrel at 40–55&nbsp;°C, never above 55; extrude at maximum pressure on a bronze die with
+    active cooling and cut immediately; surface-dry on covered mesh racks with fan-assisted airflow; store-cook at 1 L water
+    per 100 g and 10 g salt per litre, reserve 100 ml pasta water, serve immediately.</p>
+
+  <h3>The four gaps this system closes</h3>
+  <div class="grid2">
+    <div class="card"><h3>1 · Nobody opens a document at a machine</h3><p>A 54 KB HTML manual is a thing you read once.
+      At 06:40, at the extruder, with the water already measured, a cook needs one number per line and a next step.
+      Nothing today does that.</p></div>
+    <div class="card"><h3>2 · The batch log is a sentence, not a system</h3><p>The manual requires a production log and a
+      deviation flag. There is no log. So there is no yield history, no variance, and no defence on the day someone asks
+      who ran the batch that came out wrong.</p></div>
+    <div class="card"><h3>3 · Empty bins are discovered by service</h3><p>Baobab, flax, lupin, inulin, the TLF powders —
+      each one is a stop-work item. A cook notices, tells someone verbally, goes home, and the next person starts the batch
+      and finds out.</p></div>
+    <div class="card"><h3>4 · Scaling is mental arithmetic</h3><p>A store that needs two batches does 2× in its head,
+      including water ranges and salt. That is where a formula drifts — not in the percentages, in the multiplication.</p></div>
+  </div>
+</section>
+
+<section class="part" id="p4">
+  <p class="pnum">Part four</p>
+  <h2>The model, and the ten rules that make it a kitchen system</h2>
+  <p class="lead">Twenty small tables, no cleverness. The rules are the product — a system that breaks one of these is a
+    notes app with extra steps.</p>
+
+  <h3>The entities</h3>
+  <div class="tscroll"><table>
+<thead><tr><th>Group</th><th>Tables</th><th>What it holds</th></tr></thead>
+<tbody>
+<tr><td>Truth</td><td class="mono">recipe · recipe_version · version_ingredient · version_step · version_qc</td><td>The formula and method as an immutable version, plus its QC checks, allergens and nutrition</td></tr>
+<tr><td>Supply</td><td class="mono">ingredient · supplier · price_history · stock_receipt · stock_count · stock_flag</td><td>What we buy, from whom, at what price, and what the kitchen believes it has</td></tr>
+<tr><td>Work</td><td class="mono">batch · batch_ingredient_lot · prep_template · prep_run · checklist_template · checklist_run</td><td>What was made today, what needs making, what needs cleaning</td></tr>
+<tr><td>People</td><td class="mono">person · station · shift · alert · event_log</td><td>Who is on, where, who was told what, and the append-only record of everything</td></tr>
+</tbody>
+</table></div>
+
+  <h3>The ten rules</h3>
+  <div class="tscroll"><table>
+<thead><tr><th>#</th><th>Rule</th><th>Why it is a rule and not a preference</th></tr></thead>
+<tbody>
+<tr><td class="mono">I1</td><td><b>A published version never changes.</b> Editing a live recipe creates a new version; every batch pins the version id it ran.</td><td>Six months from now, "what did we actually make in March" must have one answer.</td></tr>
+<tr><td class="mono">I2</td><td><b>Weights are computed, never stored.</b> Weight = baker's % of total dry × scale, rounded to unit precision, and the sum is displayed and must reconcile.</td><td>The bench card has no percentage column, so the sum line is the only check a cook has.</td></tr>
+<tr><td class="mono">I3</td><td><b>Ranges stay ranges.</b> Water 32–34% and salt 1–1.5% are bench decisions; the batch records the point chosen and a reason.</td><td>A silent midpoint is how two stores end up making two different pastas.</td></tr>
+<tr><td class="mono">I4</td><td><b>A batch cannot close without its QC checks</b> — cook test result, and a deviation note when anything was substituted.</td><td>This is the paper instruction from the manual, made into a gate instead of a wish.</td></tr>
+<tr><td class="mono">I5</td><td><b>Stock is derived, never hand-decremented.</b> Receipts minus closed batches plus counted corrections. A flag is a claim with a name and a time.</td><td>The reel's inventory tool asks staff to decrement by hand; the first person in a hurry makes the number a lie.</td></tr>
+<tr><td class="mono">I6</td><td><b>Nothing is deleted.</b> Recipes retire, versions archive, corrections are new events.</td><td>A batch log that can be edited is not a batch log — it is a story.</td></tr>
+<tr><td class="mono">I7</td><td><b>Offline is the default.</b> Bench writes land locally with a client id; replay is idempotent.</td><td>See Law two. A doubled batch on a retry is a stock error you will chase for a week.</td></tr>
+<tr><td class="mono">I8</td><td><b>No version goes live without allergens and nutrition attached.</b></td><td>Chickpea already carries a note: declare it, and add "may contain traces of peanut" where co-processing happens.</td></tr>
+<tr><td class="mono">I9</td><td><b>Nudging is bounded</b> — a per-station interval, a quiet window, and one escalation. Never a loop.</td><td>The most-liked comment on the source reel was "please remove that tidy check, it's going to drive your staff crazy". It was right.</td></tr>
+<tr><td class="mono">I10</td><td><b>Agents may draft; humans publish.</b> Anything AI-drafted is labelled and cannot be set live by an agent.</td><td>The kitchen's word is the legal record. A model does not sign a food-safety document.</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section class="part" id="p5">
+  <p class="pnum">Part five</p>
+  <h2>The six surfaces a cook and a manager actually touch</h2>
+  <p class="lead">Six screens, nothing more, in the order the day meets them. Each one answers a question in under ten
+    seconds or it is off the build.</p>
+
+  <div class="grid2">
+    <div class="card"><h3>1 · Bench — make it now</h3>
+      <p>Today's production plan, biggest tap targets on the tablet. Tap a recipe and you get the batch card: the scaled
+      weights for the batch size chosen, the method steps one at a time, a timer per step, the QC check at the end, and a
+      close button that will not work until the check is answered.</p>
+      <p class="mono">Question: what do I weigh and what do I do next?</p></div>
+    <div class="card"><h3>2 · Prep board — what is short</h3>
+      <p>Every open flag: what ran out, who said so, when, at which station. A cook claims it, makes it, and the flag closes
+      itself. No flag is a question for the owner — it is a task for the next person on shift.</p>
+      <p class="mono">Question: what needs making before the next batch?</p></div>
+    <div class="card"><h3>3 · Batch log — prove it</h3>
+      <p>One row per batch: recipe, version, scale, operator, start and end, weights used, cook test result, deviations.
+      This is the screen an inspector or a franchisee reads, and the screen that makes yield variance visible.</p>
+      <p class="mono">Question: what did we make, and did it pass?</p></div>
+    <div class="card"><h3>4 · Checks — cleaning and opening</h3>
+      <p>Opening, hourly or two-hourly station checks and closing, each stamped with a person and a time. Bounded nudging
+      (I9): a due check appears once, waits out its interval, and escalates once — it never chases a human in a loop.</p>
+      <p class="mono">Question: what is due, and who did it?</p></div>
+    <div class="card"><h3>5 · Alerts — broken, low, help</h3>
+      <p>A one-tap raise from any station. It goes to the manager on shift, on their phone, and escalates after a set time if
+      unclaimed. Not an email to an owner's inbox at 19:00 — the reel's version of this sends mail and calls it an alert.</p>
+      <p class="mono">Question: who needs to know, right now?</p></div>
+    <div class="card"><h3>6 · Manager — cost and truth</h3>
+      <p>Cost per portion from live ingredient prices against the version's weights, yield variance per batch, flags raised
+      versus closed, and the week's production against plan. Reads the same tables, no second calculation.</p>
+      <p class="mono">Question: are we making money on this plate?</p></div>
+  </div>
+
+  <h3>What we take from the reel, and what we change</h3>
+  <div class="tscroll"><table>
+<thead><tr><th>The reel's tool</th><th>Keep</th><th>Change, and why</th></tr></thead>
+<tbody>
+<tr><td>Prep recipes, step by step</td><td>Everything. This is the spine.</td><td>Add the batch scale and the QC gate. A step list without a scale is a poster.</td></tr>
+<tr><td>Prep inventory, marked low or empty</td><td>The one-tap flag, visible to the next person.</td><td>Flags become tasks with an owner (I5). No manual decrementing — stock falls only when a batch closes.</td></tr>
+<tr><td>Hourly tidy reminder</td><td>The intent: stations stay clean without a manager chasing.</td><td>Bounded interval, quiet window, one escalation (I9). Hourly nags train people to dismiss notifications, not to clean.</td></tr>
+<tr><td>Staff alerts by email</td><td>One tap to raise from the floor.</td><td>Route to the manager on shift with escalation, not to a mailbox. An alert nobody reads in five minutes is a diary entry.</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section class="part" id="p6">
+  <p class="pnum">Part six</p>
+  <h2>Build or buy, with the real prices</h2>
+  <p class="lead">Three credible products already do recipe management for restaurants. All three are cloud-first, priced
+    per location or per user, and none of them is shaped like a bench card for one pasta line.</p>
+
+  <div class="tscroll"><table>
+<thead><tr><th>Option</th><th>Published price</th><th>In rand, per month</th><th>Why it does not fit</th></tr></thead>
+<tbody>
+<tr><td><b><a href="https://www.marketman.com/pricing-for-restaurant-inventory-management-system">MarketMan</a></b></td>
+      <td>Starter $249 · Growth $299 · Enterprise from $449 per month, per location. Commissary standalone $499/mo</td>
+      <td>R4,145 · R4,978 · from R7,475 · R8,308<br><span class="mono">at 16.6487 ZAR/USD, 27 Oct 2026</span></td>
+      <td>Cloud inventory and costing built around invoices and POS actual-vs-theoretical. The bench card is a digital cookbook, not a production screen, and it needs a connection.</td></tr>
+<tr><td><b><a href="https://get.apicbase.com/pricing-plans/">Apicbase</a></b></td>
+      <td>No price on its plans page — quote-gated. A third-party listing shows "from $330 per user, per month"; treat that as unverified.</td>
+      <td>—</td>
+      <td>Genuinely strong recipe and allergen engine, multi-outlet by design, priced and scoped above one kitchen's need.</td></tr>
+<tr><td><b><a href="https://www.galleysolutions.com/">Galley</a></b></td>
+      <td>No public price — sales-gated</td><td>—</td><td>Commissary-grade culinary resource planning. We would be buying a system to manage suppliers we have not signed yet.</td></tr>
+<tr><td><b>Our own build</b></td><td>No licence. A small codebase, one server per store, one tablet.</td>
+      <td>Running cost target near R0 — the store's own hardware</td>
+      <td>The only option where the bench screen, the offline rule and the formula law are design requirements rather than a feature request.</td></tr>
+</tbody>
+</table></div>
+
+  <p><b>The honest arithmetic.</b> One location on MarketMan Starter for three years is $8,964 — <b>R149,239</b>. The
+    commissary plan, which is the closest match to a central kitchen feeding stores, is $499/mo: three years at
+    <b>R299,077</b>. That is the number our build is measured against, and it is not the reason to build. The reason is
+    Law two and Law one: no cloud on the bench, and no percentage column on a screen staff can photograph.</p>
+
+  <div class="callout"><p><b>Where buying still wins, and we should say so.</b> If the requirement were purchasing, invoice
+    scanning, supplier EDI and POS actual-vs-theoretical variance across six stores, MarketMan at R4,145/month would be
+    cheaper than anything we build. This PRD is deliberately not that product. If v1 lands well and the stores multiply,
+    the honest question returns — and the answer will be evaluated on the invoice side, not the recipe side.</p></div>
+</section>
+
+<section class="part" id="p7">
+  <p class="pnum">Part seven</p>
+  <h2>The build order, by dependency</h2>
+  <p class="lead">Stages, not a calendar. Each stage is small enough to demo in a day and has an exit test that can fail in
+    front of you.</p>
+
+  <div class="tscroll"><table>
+<thead><tr><th>Stage</th><th>What ships</th><th>Exit test — the thing that must be true</th></tr></thead>
+<tbody>
+<tr><td><b>0 · Recipe truth</b></td><td>The four verified recipes loaded as versions: ingredients, method steps, QC checks, allergens, nutrition, timings and costs from the Fresh-Daily manual.</td>
+      <td>A script renders every recipe's 10 kg and 40 kg batch card, and the weights match the manual to the gram — including the water and salt ranges.</td></tr>
+<tr><td><b>1 · Bench card + scale</b></td><td>The tablet screen, installed, working offline. Batch size picker, weights, one-step-at-a-time method, timers.</td>
+      <td>Airplane mode on. A cook who has never seen the app makes one batch of Bokgat from the screen, and the 30 kg card reconciles to 30.00 kg.</td></tr>
+<tr><td><b>2 · Batch close + stock</b></td><td>The QC gate, the batch log, and derived stock. Closing a batch is the only thing that moves a bin.</td>
+      <td>Close a batch, kill the tablet mid-sync, bring it back: one batch, one decrement. Not two.</td></tr>
+<tr><td><b>3 · Prep board + flags</b></td><td>Raise, claim, complete. The manager sees a flag on their phone inside two seconds on the store network, and it survives a sync.</td>
+      <td>Raise flax as low at 07:20, close the tablet, open it at 13:00 — the flag is there, still owned, still timed.</td></tr>
+<tr><td><b>4 · Checks + alerts</b></td><td>Opening, interval station checks, closing. One escalation path, quiet window, no nag loop.</td>
+      <td>Leave a check unanswered for a full shift: it appears exactly twice — once due, once escalated — never more.</td></tr>
+<tr><td><b>5 · Manager costing</b></td><td>Cost per portion from live ingredient prices, yield variance per batch, flags raised versus closed, production versus plan.</td>
+      <td>Change the baobab price and the cost per 140 g serving of Bokgat moves by exactly the expected amount, with the old costing still readable.</td></tr>
+<tr><td><b>6 · Multi-store</b></td><td>One instance per store, a central roll-up for production and stock, formula percentages never leaving the central model.</td>
+      <td>Pull a store instance off the network for a day: it keeps producing batches, and the central view backfills without duplicates.</td></tr>
+</tbody>
+</table></div>
+
+  <p><b>Where the store-opening date bites.</b> Store one opens on 13 November 2026. Stages 0 to 2 are the ones that make
+    the first week survivable — the recipes in the cook's hand and a log that exists — and they do not depend on anything
+    after them. Stages 3 to 6 can land behind live production. I would not hold the opening for this software; I would
+    make sure the tablet in the kitchen is not showing a PDF on day one.</p>
+</section>
+
+<section class="part" id="p8">
+  <p class="pnum">Part eight</p>
+  <h2>What only you can decide</h2>
+  <p class="lead">Six questions. Five of them change what gets built; one of them is money and is therefore yours by rule.</p>
+
+  <div class="tscroll"><table>
+<thead><tr><th>#</th><th>Decision</th><th>My recommendation</th></tr></thead>
+<tbody>
+<tr><td class="mono">D1</td><td><b>Does v1 serve the central kitchen only, or store one as well?</b></td><td>Both, in the same build: the central kitchen is the test bench, store one is the proof. Same code, one extra instance.</td></tr>
+<tr><td class="mono">D2</td><td><b>Does the bench card show gram weights only, or grams plus baker's percentages?</b></td><td>Grams only. Percentages stay in the costed model — that is the 26 October rule, and it is what makes the tablet safe to lose.</td></tr>
+<tr><td class="mono">D3</td><td><b>Which tablet, and who signs for it?</b> <span class="mono">money</span></td><td>A 10-inch Android tablet in a splash-proof wall case, one per kitchen. Your call and your card — I will bring you two options with prices.</td></tr>
+<tr><td class="mono">D4</td><td><b>Who may publish a recipe version?</b></td><td>You, plus one named operations person. Everyone else proposes; two names go live.</td></tr>
+<tr><td class="mono">D5</td><td><b>Is the cleaning check hourly, two-hourly, or per station at set times?</b></td><td>Per station at set times, with closing as the hard check. Hourly nagging is the one thing the reel's own audience rejected.</td></tr>
+<tr><td class="mono">D6</td><td><b>Do ingredient prices come from supplier invoices in v1, or are they typed in?</b></td><td>Typed in, with a price history. Invoice capture is a different product and it is the one worth buying later, not building now.</td></tr>
+</tbody>
+</table></div>
+
+  <div class="verdict">
+    <h3>If you only answer two: D2 and D4.</h3>
+    <p>Those two decide how much of the formula leaves the safe and who can put a version in a cook's hand. Everything
+      else in this document I can move on without you, and will.</p>
+  </div>
+</section>
+
+<section class="part" id="p9">
+  <p class="pnum">Part nine</p>
+  <h2>Sources and how to check me</h2>
+  <p class="lead">Every number in this document came from one of two places: our own verified manual, or a page you can
+    open. Nothing here is remembered.</p>
+
+  <div class="tscroll"><table>
+<thead><tr><th>Claim</th><th>Where it comes from</th></tr></thead>
+<tbody>
+<tr><td>Recipe weights, timings, yields, costs, QC checks</td><td>Papa Pasta Top 4 Franchise Recipes — Fresh-Daily Edition, Nutrition &amp; Science (v2). Local file <span class="mono">DevMini/papa-pasta-formula-v2/top4_kitchen_manual_fresh_v2.html</span>, sourced from the Golden Balance Formula V2, August 2026. 20 tables read directly.</td></tr>
+<tr><td>Machine throughput 16–20 kg/h, GUSGT108</td><td>Same manual, cover and per-recipe batch tables.</td></tr>
+<tr><td>Moisture 28–32% fresh spec, cook test 3–5 min</td><td>Same manual, QC sections for all four recipes.</td></tr>
+<tr><td>Zoho Learn owns the SOP and training record</td><td><b>Where Papa Pasta's work lives</b>, decision brief, 26 October 2026 (Zoho Learn scored 83/100 against four alternatives).</td></tr>
+<tr><td>MarketMan prices</td><td><a href="https://www.marketman.com/pricing-for-restaurant-inventory-management-system">marketman.com pricing page</a>, read 28 October 2026.</td></tr>
+<tr><td>Apicbase — quote-gated, third-party "from $330/user"</td><td><a href="https://get.apicbase.com/pricing-plans/">get.apicbase.com/pricing-plans</a> (no figures published) and <a href="https://www.capterra.com/p/171584/Apicbase-Restaurant-Management/">Capterra listing</a>.</td></tr>
+<tr><td>Galley — no public price</td><td><a href="https://www.galleysolutions.com/">galleysolutions.com</a>.</td></tr>
+<tr><td>USD/ZAR 16.6487, dated 27 Oct 2026</td><td><a href="https://api.frankfurter.dev/v1/latest?base=USD&amp;symbols=ZAR">Frankfurter (ECB reference rates)</a>.</td></tr>
+<tr><td>Staff reaction to hourly nudges</td><td>The reel in the request: <a href="https://www.instagram.com/reel/De_EKJSiGqM/">"Someone asked if we could put multiple tools on one tablet"</a> — comment "please remove that tidy check, gonna drive your staff crazy".</td></tr>
+</tbody>
+</table></div>
+
+  <p><b>Known limits of this document.</b> Nobody has stood at the GT Line with this tablet yet — the bench-card layout is a
+    design, not a tested screen. The offline sync cost is a design target, not a measured number. And the four recipes cover
+    pasta only: sauces, fillings and any prep sub-recipes still have to be entered, which is why Stage 0 is a recipe-loading
+    exercise and not a data-entry marathon we pretend is free.</p>
+
+  <p class="mono" style="color:var(--mute)">PP-KIT-001 · The Bench · Papa Pasta internal kitchen system · prepared 28 October 2026 ·
+    Bruce Wayne, Chief of Staff · next action: six decisions in Part eight, then Stage 0 to the CTO.</p>
+</section>
+
+</main>
+
+<footer style="background:#12203a;color:#d8d2c2;padding:30px 0;margin-top:30px">
+  <div class="wrap" style="font-size:13px">
+    <p style="margin:0"><b style="color:#c6f24e">PP-KIT-001</b> · Papa Pasta · build PRD v1.0 · 28 October 2026</p>
+  </div>
+</footer>
+
+</body>
+</html>
