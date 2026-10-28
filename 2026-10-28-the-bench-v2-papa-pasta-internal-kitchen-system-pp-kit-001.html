@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Bench v2 — Papa Pasta internal kitchen system (PP-KIT-001)</title>
+<meta name="description" content="PP-KIT-001 v2.0 — the full function set for Papa Pasta's internal kitchen system, developed by the six-seat council and red-teamed: nine surfaces, twelve invariants, five verified defects, the revised build order, and the decisions that unblock opening day.">
+<meta name="author" content="Bruce Wayne, for Ricardo Maio · Papa Pasta">
+<style>
+
+:root{
+  --paper:#fdfaf3; --ink:#12203a; --ink2:#3d4a63; --mute:#6b7689;
+  --line:#e4dfd2; --card:#ffffff; --lime:#c6f24e; --coral:#e8543a;
+  --gold:#d9a13b; --teal:#1b6e69; --shadow:0 2px 0 rgba(18,32,58,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:17px/1.62 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;}
+.wrap{max-width:1000px;margin:0 auto;padding:0 26px}
+h1,h2,h3,h4,.eyebrow,.bl,.bv,.chip,.pill,.mono{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif}
+a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--lime);padding-bottom:1px}
+a:hover{border-bottom-color:var(--ink)}
+header.hero{background:var(--ink);color:#f7f4ea;padding:54px 0 44px;border-bottom:5px solid var(--lime)}
+header.hero .wrap{padding-top:0}
+.eyebrow{font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--lime);font-weight:700;margin:0 0 16px}
+header.hero h1{font-size:clamp(30px,4.6vw,50px);line-height:1.06;letter-spacing:-.02em;margin:0 0 18px;font-weight:800;max-width:20ch}
+header.hero p.stand{font-size:clamp(16px,1.7vw,19.5px);line-height:1.5;color:#d8d2c2;margin:0;max-width:64ch}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0}
+.chip{display:inline-flex;flex-direction:column;gap:2px;background:#1c2c48;border:1px solid #2f4260;
+  border-radius:10px;padding:10px 14px;font-size:12.5px;line-height:1.35;min-width:180px}
+.chip b{color:var(--lime);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+.chip span{color:#f2eee1;font-size:14px}
+nav.toc{background:#fff;border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;padding:12px 26px;font-size:13px}
+nav.toc a{border:0;color:var(--ink2);padding:4px 0;font-weight:600}
+nav.toc a b{display:inline-block;min-width:16px;color:var(--mute);font-weight:700;margin-right:4px}
+nav.toc a:hover{color:var(--ink);box-shadow:inset 0 -2px 0 var(--lime)}
+main{padding:6px 0 0}
+section.part{padding:40px 0 16px;border-top:1px solid var(--line)}
+section.part:first-of-type{border-top:0}
+.pnum{font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--coral);font-weight:800;margin:0 0 8px}
+h2{font-size:clamp(24px,3vw,33px);line-height:1.14;letter-spacing:-.02em;margin:0 0 12px;font-weight:800;max-width:26ch}
+h3{font-size:18px;margin:26px 0 8px;font-weight:800;letter-spacing:-.01em}
+p{margin:0 0 14px;max-width:72ch}
+p.lead{font-size:19px;line-height:1.55;color:var(--ink2)}
+.verdict{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:22px 24px;margin:8px 0 20px;box-shadow:var(--shadow)}
+.verdict h3{margin:0 0 8px;font-size:20px}
+.verdict p{margin:0 0 10px}
+.verdict p:last-child{margin:0}
+.verdict .k{background:linear-gradient(transparent 58%, var(--lime) 58%);padding:0 2px;font-weight:700}
+ul.tight{margin:0 0 16px;padding-left:20px;max-width:72ch}
+ul.tight li{margin:0 0 8px}
+ol.tight{margin:0 0 16px;padding-left:22px;max-width:72ch}
+ol.tight li{margin:0 0 8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:18px 0 8px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0 0 8px;font-size:15.5px;line-height:1.55;color:var(--ink2)}
+.card .tag{display:inline-block;margin-top:6px;background:var(--ink);color:var(--lime);font:700 10.5px/1 "Helvetica Neue",Arial,sans-serif;
+  letter-spacing:.14em;text-transform:uppercase;padding:6px 9px;border-radius:5px}
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:16px 0 10px;border-radius:12px}
+table{border-collapse:collapse;width:100%;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-size:14px;background:#fff}
+table.score{min-width:860px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--ink);color:#f7f4ea;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;border-bottom:0}
+tbody tr:nth-child(even){background:#fbf9f4}
+td.s{text-align:center;font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink2);width:74px}
+td.s.best{color:var(--ink)}
+td.s.best::after{content:"";display:block;height:3px;background:var(--lime);margin:5px auto 0;width:22px;border-radius:2px}
+td.dl b{display:block;font-size:14px;color:var(--ink)}
+td.dl span{display:block;font-size:12.5px;color:var(--mute);line-height:1.4;margin-top:3px}
+tfoot td{background:#f2eee1;font-weight:800}
+tfoot td.tot{text-align:center;font-size:16px}
+tfoot td.tot.best{background:var(--ink);color:var(--lime)}
+figure{margin:18px 0 8px}
+figcaption{font-size:13px;color:var(--mute);margin-top:8px;line-height:1.45;max-width:78ch}
+text.bl{font-size:13.5px;fill:#12203a;font-weight:700}
+text.bv{font-size:15px;fill:#12203a;font-weight:800}
+text.bv.win{fill:#12203a}
+text.bvs{font-size:11px;fill:#6b7689;font-weight:600}
+.callout{border-left:5px solid var(--lime);background:#f4f8e4;padding:14px 18px;margin:18px 0;border-radius:0 10px 10px 0}
+.callout p{margin:0;font-size:15.5px;color:var(--ink2)}
+.pill{display:inline-block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;
+  padding:3px 8px;border-radius:999px;background:var(--ink);color:#f7f4ea}
+.pill.lime{background:var(--lime);color:#12203a}
+.band{background:var(--ink);color:#f7f4ea;border-radius:16px;padding:28px 26px;margin:34px 0 10px}
+.band h3{color:#fff;margin:0 0 12px;font-size:21px}
+.band ol{margin:0;padding-left:22px;max-width:74ch}
+.band li{margin:0 0 10px;color:#dcd6c6;line-height:1.55}
+.band li b{color:var(--lime)}
+footer{padding:26px 0 60px;border-top:1px solid var(--line);margin-top:26px}
+footer p{font-size:12.8px;color:var(--mute);line-height:1.55;max-width:82ch;margin:0 0 8px}
+footer b{color:var(--ink2)}
+@media (max-width:720px){
+  body{font-size:16px}
+  .wrap{padding:0 16px}
+  nav.toc .wrap{padding:10px 16px;font-size:12px;gap:4px 12px}
+  .chips{gap:8px}
+  .chip{min-width:0;flex:1 1 42%}
+  table.score{min-width:0}
+  main table:not(.score){min-width:640px}
+  table.score,table.score thead,table.score tbody,table.score tfoot,table.score tr,table.score td,table.score th{display:block;width:100%}
+  table.score thead{display:none}
+  table.score tr{border:2px solid var(--line);border-radius:10px;margin:0 0 10px;padding:10px 12px;background:#fff}
+  table.score td{border:0;padding:5px 0;display:flex;justify-content:space-between;gap:14px;text-align:right}
+  table.score td.dl{display:block;text-align:left;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:6px}
+  table.score td.s::before{content:attr(data-o);font-weight:600;color:var(--mute);font-size:12px;text-align:left}
+  table.score td.s, table.score td.tot{width:auto}
+  table.score td.tot::before{content:attr(data-o);font-weight:600;color:#6b7689;font-size:12px;text-align:left}
+  table.score td.s.best::after{display:none}
+  table.score tfoot td{font-size:14px}
+}
+@media print{
+  body{background:#fff}
+  header.hero{background:#12203a !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  nav.toc{display:none}
+  section.part{page-break-inside:avoid}
+}
+
+
+/* v2 supplements — same palette as the house sheet */
+p.note{font-size:.86rem;color:var(--muted,#6b7280);line-height:1.55;margin:.6rem 0 1.4rem;border-left:2px solid var(--line,#e5e7eb);padding-left:.8rem}
+section.part h3{margin-top:2.1rem}
+.tscroll table td:first-child{white-space:normal;font-weight:600;width:12rem}
+.tscroll table.al{width:100%}
+.mono{font-variant-ligatures:none}
+header.hero .wrap{padding-top:3.2rem;padding-bottom:3.2rem}
+.grid2 .card h3{font-size:1.02rem;margin:.1rem 0 .5rem}
+.grid2 .card ul{margin:.2rem 0 0;padding-left:1.1rem}
+.grid2 .card li{margin:.28rem 0;font-size:.93rem;line-height:1.5}
+nav.toc a{font-size:.8rem}
+@media(max-width:720px){.tscroll table td:first-child{width:auto}}
+
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Papa Pasta · internal kitchen · build PRD v2.0 · PP-KIT-001</p>
+    <h1>The Bench, fully developed</h1>
+    <p class="stand">Nine surfaces, six seats, one red team that went looking for blood. This version specifies the whole
+      function set at buildable depth — every screen state, every rule, every failure — and it starts by admitting what
+      the first build actually got wrong. Five real defects, found in the code, quoted with their line numbers.</p>
+    <div class="chips">
+      <div class="chip"><b>What is built</b><span>Stages 0–1, 128 checks passing</span></div>
+      <div class="chip"><b>What the red team broke</b><span>5 defects, 1 of them a lying record</span></div>
+      <div class="chip"><b>What this version adds</b><span>3 surfaces nobody had specified</span></div>
+      <div class="chip"><b>What it cuts</b><span>Day one is smaller than v1 promised</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="toc"><div class="wrap">
+  <a href="#p1"><b>1</b>Where we actually are</a>
+  <a href="#p2"><b>2</b>The laws, amended</a>
+  <a href="#p3"><b>3</b>The nine surfaces</a>
+  <a href="#p4"><b>4</b>People and authority</a>
+  <a href="#p5"><b>5</b>Money</a>
+  <a href="#p6"><b>6</b>Architecture</a>
+  <a href="#p7"><b>7</b>Design and words</a>
+  <a href="#p8"><b>8</b>Build order, revised</a>
+  <a href="#p9"><b>9</b>The grill</a>
+  <a href="#p10"><b>10</b>Sources</a>
+</div></nav>
+
+<main class="wrap">
+
+<section class="part" id="p1">
+  <p class="pnum">Part one</p>
+  <h2>Where we actually are, and the five defects</h2>
+  <p class="lead">Built, tested, and not as finished as the last brief implied. Everything below is quoted from the repo
+    at <span class="mono">DevMini/papa-pasta-bench</span>, checked again this morning.</p>
+
+  <div class="tscroll"><table><thead><tr><th>Stage</th><th>State</th><th>Evidence</th></tr></thead><tbody>
+    
+    <tr><td>0 · Recipe truth</td><td><b>Built.</b> Four versions locked, SHA-256 each</td><td><span class="mono">./verify.sh</span> → Stage 0 PASS, 102 checks, 0 failures</td></tr>
+    <tr><td>1 · Bench card, offline</td><td><b>Built.</b> Real Chrome, 1280×800, network cut</td><td>Stage 1 PASS, 26 checks; online and offline cards agree at 30.00 kg</td></tr>
+    <tr><td>0b · Publish authority</td><td><b>Built, on a branch</b> — not merged</td><td><span class="mono">stage-0b-publish-authority</span>, commit 8006430</td></tr>
+    <tr><td>2 · Batch close + stock</td><td><b>Incomplete.</b> Server suite green, browser test red</td><td><span class="mono">stage-2-batch-close</span> WIP: 21/0 server, e2e failing 1/1</td></tr>
+    <tr><td>3–6</td><td>Paper only</td><td>No branches</td></tr>
+  </tbody></table></div>
+
+  <h3>The five defects the red team found in shipped code</h3>
+  <p>Each one is a claim from v1 that the code does not keep. Each has a line of evidence and a fix that is a rule, not a resolution.</p>
+
+  <div class="tscroll"><table><thead><tr><th>#</th><th>Defect</th><th>Evidence, quoted</th><th>Fix</th></tr></thead><tbody>
+    
+    <tr><td class="mono">D-1</td><td><b>The QC gate already leaked.</b> A batch closed with the cook test unanswered.</td>
+      <td><span class="mono">var/events.jsonl</span> holds <span class="mono">batch_close</span> for B-1 with <span class="mono">"cook_test": {"answered": false}</span>, and <span class="mono">moisture: "28"</span> with no unit.</td>
+      <td>Replay validates and rejects an unqualified close (I4). The close UI takes a number, not a tick. A closed-without-test record is a lie with a timestamp on it — worse than paper, because a blank draws a question and a green tick draws none.</td></tr>
+    <tr><td class="mono">D-2</td><td><b>The connectivity pill lies.</b> It reports the tablet's network, not the kitchen's ledger.</td>
+      <td><span class="mono">app/app.js:42</span> — <span class="mono">if (navigator.onLine) … 'online · sync idle'</span>. Server asleep, wifi up: the screen says online and nothing syncs.</td>
+      <td>Poll the ledger's last <span class="mono">seq</span> (I11). Three states, not two: <i>synced to 14:32</i>, <i>queued, N waiting</i>, <i>no server</i>.</td></tr>
+    <tr><td class="mono">D-3</td><td><b>The real close path has never run.</b></td>
+      <td><span class="mono">var/ledger.jsonl</span> is <b>0 lines</b>. The batch close exists only as a scripted event, not as a proven server run.</td>
+      <td>Stage 2 is not done until the kill-mid-sync drill passes on the ledger, not on a fixture.</td></tr>
+    <tr><td class="mono">D-4</td><td><b>Two cards are the formula.</b> Law one defeats one screenshot, not two.</td>
+      <td>The 10 kg and 40 kg cards side by side divide back to every baker's percentage. The engine is exact, so the leak is arithmetic, not carelessness.</td>
+      <td>Be honest: gram cards <i>delay</i> a leak. The controls are the NDA, no export, one size rendered at a time (I12), and a batch id plus operator watermark on every view. Budget the defence legally, not visually.</td></tr>
+    <tr><td class="mono">D-5</td><td><b>The draft banner permits production.</b></td>
+      <td><span class="mono">app/app.js:28</span> — "The bench may use them for the pilot; the record says so."</td>
+      <td>Delete the sentence. All four versions stay draft until published; from Stage 2 the bench refuses to build a card from an unpublished version at all (I10).</td></tr>
+  </tbody></table></div>
+
+  <div class="verdict">
+    <h3>The uncomfortable headline</h3>
+    <p>Stage 1 is real and impressive: a cook can build a correct Bokgat card with the network cut. Stage 2 is <i>nearly</i>
+      real, and the one thing it exists to prevent — a batch closing without its cook test — has already happened in the
+      test data. That is what a red team is for. It is cheaper to find this today than on 14 November.</p>
+  </div>
+</section>
+
+<section class="part" id="p2">
+  <p class="pnum">Part two</p>
+  <h2>The two laws, amended — and twelve invariants</h2>
+  <p class="lead">The laws survived. Two of them needed a correction clause, and the list grew from ten rules to twelve
+    because the defects above were not covered by the original ten.</p>
+
+  <div class="grid2">
+    <div class="card"><h3>Law one — amended</h3>
+      <p>Percentages stay in the costed model. The bench shows weighed amounts for one batch size, one size at a time, no
+      percentage column, no export, no share, every view stamped with batch id and operator.</p>
+      <p><b>The amendment:</b> this is a legal and procedural control, not an information-theoretic one. Any two batch
+      sizes, divided, give the blend. We keep the cards because they make the leak slow, attributable and a breach of a
+      signed NDA — not because they make it impossible.</p></div>
+    <div class="card"><h3>Law two — amended</h3>
+      <p>Offline is the normal state. Every bench action works with the network cut and replays idempotently.</p>
+      <p><b>The amendment:</b> the app must know the difference between <i>the tablet has wifi</i> and <i>my work reached
+      the ledger</i>. Every writing screen shows the last confirmed sync, in words, and never claims a state it has not
+      verified.</p></div>
+  </div>
+
+  <h3>The twelve invariants</h3>
+  <div class="tscroll"><table><thead><tr><th>#</th><th>Rule</th><th>What broke without it</th></tr></thead><tbody>
+    
+    <tr><td class="mono">I1</td><td>A published version never changes; batches pin the version they ran</td><td>—</td></tr>
+    <tr><td class="mono">I2</td><td>Weights are computed, never stored; the sum is shown and must reconcile</td><td>—</td></tr>
+    <tr><td class="mono">I3</td><td>Ranges stay ranges; the point chosen and the reason are recorded</td><td>—</td></tr>
+    <tr><td class="mono">I4</td><td>A batch cannot close without its measured QC — cook test and, where taken, moisture</td><td><b>D-1</b>: a close with no cook test exists in the log</td></tr>
+    <tr><td class="mono">I5</td><td>Stock is derived from closed batches; a flag is a claim with a name and a time</td><td>—</td></tr>
+    <tr><td class="mono">I6</td><td>Nothing is deleted; corrections are new events</td><td>—</td></tr>
+    <tr><td class="mono">I7</td><td>Offline default; every write carries a client id and replays idempotently</td><td>—</td></tr>
+    <tr><td class="mono">I8</td><td>No version goes live without allergens and nutrition attached</td><td>—</td></tr>
+    <tr><td class="mono">I9</td><td>Nudging is bounded: interval, quiet window, one escalation</td><td>—</td></tr>
+    <tr><td class="mono">I10</td><td>Agents draft, humans publish; unpublished versions cannot make food</td><td><b>D-5</b>: the banner allowed exactly that</td></tr>
+    <tr><td class="mono">I11</td><td><b>State is proved, not assumed.</b> A screen may only claim what it has verified: sync by ledger <span class="mono">seq</span>, stock by derivation, freshness by timestamp</td><td><b>D-2</b>, <b>D-3</b></td></tr>
+    <tr><td class="mono">I12</td><td><b>One card, one size.</b> Two batch sizes never render in one view, one print, or one session's exports</td><td><b>D-4</b></td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="part" id="p3">
+  <p class="pnum">Part three</p>
+  <h2>The nine surfaces</h2>
+  <p class="lead">Six were in v1. The council added three: handover, publish, and health — the three places where a kitchen
+    system rots quietly and nobody notices until the numbers are worthless.</p>
+
+  <h3>1 · Bench — the working batch card</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>One immutable version becomes one weighed card, run with the machine on and the network off.</td></tr>
+    <tr><th>Flow</th><td>Recipe → How much? (10 / 20 / 40 kg) → Decide the ranges → Card → Method → Checks. One yellow primary action, one grey Back, nothing else.</td></tr>
+    <tr><th>States</th><td><i>Empty:</i> "No batches started today. Tap a recipe to begin." · <i>Loading:</i> "Loading the kitchen…" · <i>Offline:</i> "offline · working local" · <i>Error:</i> "The recipe did not load. Tell the shift lead. Nothing was recorded."</td></tr>
+    <tr><th>Rules</th><td>I1, I2, I3, I10, I11, I12, both laws</td></tr>
+    <tr><th>Edges</th><td>Double-tap Build. Range skipped. Sum fails (Farmhouse). Version published mid-shift — the pinned version holds. Extrude past 40 min — the timer reddens, the screen stays open; time is evidence, not a lock.</td></tr>
+    <tr><th>Test</th><td>Airplane mode, hard reload, a first-time cook builds Bokgat 30 kg and reconciles to 30.00 kg with ≤ 2 min of help.</td></tr>
+  </tbody></table></div>
+
+  <h3>2 · Prep board — today's plan</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>Which batches are planned, in the mixer, drying, done — and what needs making next.</td></tr>
+    <tr><th>States</th><td><i>Empty:</i> "Nothing planned yet. Tap Add a batch." · <i>Offline:</i> "N changes waiting to send" · <i>Error:</i> "The plan did not load. The bench still works — batches record locally."</td></tr>
+    <tr><th>Rules</th><td>I5 (status derived from events, never typed), I6 (done rows stay), I7</td></tr>
+    <tr><th>Edges</th><td>Two leads add the same batch → merge by batch id. Abandoned batch shows elapsed clock. Midnight → carry-overs pinned to the top. A status is always a word plus a colour, never colour alone.</td></tr>
+    <tr><th>Test</th><td>Add offline → one row, one sync, no duplicate. Tap a Done row → read-only, "This batch is closed."</td></tr>
+  </tbody></table></div>
+
+  <h3>3 · Batch log — the record</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>Immutable history: every batch, its choices, its reasons, its checks, the version it ran.</td></tr>
+    <tr><th>States</th><td><i>Empty:</i> "No batches recorded yet." · <i>Offline:</i> full local history, labelled "Records on this tablet only" · <i>Error:</i> "This record would not open. It is not lost — tell the manager."</td></tr>
+    <tr><th>Rules</th><td>I1, I6, I7, I11</td></tr>
+    <tr><th>Edges</th><td>500+ batches → virtualised, filters before scroll. Unnamed operator renders as "—", never blank. Both device and server timestamps shown. Unsynced rows say "waiting to send".</td></tr>
+    <tr><th>Test</th><td>Open yesterday's batch: reason and QC visible, nothing editable. Search a batch id → one row.</td></tr>
+  </tbody></table></div>
+
+  <h3>4 · Checks — the QC gate</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>No batch closes without measured answers. This is the surface D-1 disgraced, so it is specified hardest.</td></tr>
+    <tr><th>States</th><td><i>Offline:</i> identical, closes locally, queues · <i>Save error:</i> "The checks did not save. Tap Try again." · <i>Success:</i> "Batch closed. Recorded."</td></tr>
+    <tr><th>Rules</th><td>I4 (numbers, not ticks), I8, I11</td></tr>
+    <tr><th>Edges</th><td>Failing cook test → allowed and recorded in red, never blocked, never hidden. Temp typed 550 → "That reads 550. Check the number." Answers answered by two cooks → both stored. App killed mid-checks → answers survive. Allergen row skipped → close blocked with the reason named.</td></tr>
+    <tr><th>Test</th><td>Replay an event with <span class="mono">cook_test.answered=false</span> → rejected, logged, batch shows <i>needs review</i>. That is the regression test for D-1.</td></tr>
+  </tbody></table></div>
+
+  <h3>5 · Alerts — the quiet banner system</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>Tell the truth without shouting. Three levels only: info, heads-up, stop-now.</td></tr>
+    <tr><th>Voice</th><td>Red opens with the instruction, never the feeling: "The barrel is over 55 °C. Stop the mixer." Red never auto-dismisses. Sounds only for the method timer and red.</td></tr>
+    <tr><th>Rules</th><td>I9 (one nudge per unresolved item per shift), I10</td></tr>
+    <tr><th>Edges</th><td>Red while the slot is occupied → red wins. Dismissals are logged with a name. Nobody at the tablet → red persists on wake and pushes to the manager's phone. Four alerts → top severity plus "3 more".</td></tr>
+    <tr><th>Test</th><td>An unanswered check left all shift appears exactly twice — due, then escalated. Not three times.</td></tr>
+  </tbody></table></div>
+
+  <h3>6 · Manager — the phone view</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>Five answers in ten seconds, on a phone: today's batches, exceptions, stock that is short, drafts awaiting publish, and the week's yield variance.</td></tr>
+    <tr><th>States</th><td><i>Empty:</i> "Nothing needs you right now." · <i>Offline:</i> "No connection. Last seen at 14:32." · <i>Publish:</i> "Published v3. The bench shows it at the next sync."</td></tr>
+    <tr><th>Rules</th><td>I1, I5, I9, I10, I11</td></tr>
+    <tr><th>Edges</th><td>Stale stock age printed beside the number. Publishing mid-batch leaves the bench on its pinned version. Two publishers at once → "v3 was just published — review before publishing v4." No batch editing, ever.</td></tr>
+    <tr><th>Test</th><td>Counts on the phone equal the log. A closed batch opens read-only. A data age over six hours is labelled, never hidden.</td></tr>
+  </tbody></table></div>
+
+  <h3>7 · Handover — new surface</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>Move the floor without a phone call: open batches, unclaimed flags, unfinished checks, escalations.</td></tr>
+    <tr><th>Who and when</th><td>Outgoing and incoming shift leads, at changeover. Both sign, on the tablet, in person.</td></tr>
+    <tr><th>Rules</th><td>I4 (a mid-QC batch cannot hand over as done), I5 (a flag carries its owner and time), I6, I9</td></tr>
+    <tr><th>Edges</th><td>Lead leaves unsigned → stays flagged for the manager, never auto-clears. A surface-drying batch spans three shifts and appears in all three until closed. A flag claimed by someone who went home → re-claim or re-open. Disputed cleanliness → reopens, dispute recorded. Handover takes more than two minutes → it will be skipped.</td></tr>
+    <tr><th>Test</th><td>After handover, every flag has exactly one living claimant. An open-QC batch reads "not closable". Fully signable with the network cut.</td></tr>
+  </tbody></table></div>
+
+  <h3>8 · Publish — where a draft becomes food</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>Make I10 a mechanism. A version is drafted, proposed, published by two named humans, retired — and the bench can only make food from LIVE.</td></tr>
+    <tr><th>Screens</th><td>Version badge and a plain-word diff. "Publish as vN" sits behind typing the recipe name. Provenance survives publication: agent-drafted, human-edited, human-authored.</td></tr>
+    <tr><th>Rules</th><td>I10 (no agent path to LIVE), I1 (typo post-publish = vN+1), I8 (allergens and nutrition required), I6</td></tr>
+    <tr><th>Edges</th><td>A publisher on leave → the named deputy. One name, or the same name twice → rejected. Urgent allergen fix → same path, no fast lane. "Live just for today" → refused; drafts print stamped DRAFT, and drafts make no food.</td></tr>
+    <tr><th>Test</th><td>An agent event can never set LIVE. Publish is disabled without allergens and nutrition. Post-publish edit yields vN+1 while vN stays byte-identical.</td></tr>
+  </tbody></table></div>
+
+  <h3>9 · Health — the surface nobody asks for and every store needs</h3>
+  <div class="tscroll"><table><tbody>
+    <tr><th>Purpose</th><td>One place that answers: is the ledger healthy, is the backup real, is the store syncing, is a device revoked.</td></tr>
+    <tr><th>Who and when</th><td>Ricardo weekly; a remote engineer when something is red. The manager sees one dot.</td></tr>
+    <tr><th>Rules</th><td>I6, I11</td></tr>
+    <tr><th>Edges</th><td>Hash-chain break at boot → writes refused, banner, restore only. Silent store > 36 h → red and an alert. Backup failed twice → the only true loss case, disclosed. Disk full → writes refuse cleanly, tablet spools.</td></tr>
+    <tr><th>Test</th><td>Restore drill on a spare: chain verifies, stock matches the pre-kill numbers. Kill a store's server, keep wifi up → the pill reads "no server" within a minute.</td></tr>
+  </tbody></table></div>
+</section>
+<section class="part" id="p4">
+  <p class="pnum">Part four</p>
+  <h2>People, authority, and the reasons staff stop using a system</h2>
+  <p class="lead">Six roles, one publish rule, and three adoption risks that no feature list fixes.</p>
+
+  <h3>The permission matrix</h3>
+  <div class="tscroll"><table><thead><tr><th>Role</th><th>Bench card</th><th>Close a batch</th><th>Flags</th><th>Stock view</th><th>Log read</th><th>Draft</th><th>Publish</th><th>Prices</th><th>Health</th><th>Users</th></tr></thead><tbody>
+    
+    <tr><td>Prep assistant</td><td>run</td><td>—</td><td>raise</td><td>—</td><td>today</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Cook</td><td>run</td><td>with QC</td><td>raise</td><td>short list</td><td>today</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Shift lead</td><td>run</td><td>with QC</td><td>claim, close</td><td>full</td><td>30 days</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td>Kitchen manager</td><td>run</td><td>supervise</td><td>all</td><td>full</td><td>all</td><td>propose</td><td>with a second name</td><td>enter</td><td>read</td><td>—</td></tr>
+    <tr><td>GM</td><td>run</td><td>—</td><td>all</td><td>full</td><td>all</td><td>propose</td><td>—</td><td>approve</td><td>read</td><td>—</td></tr>
+    <tr><td>Ricardo</td><td>run</td><td>—</td><td>all</td><td>full</td><td>all</td><td>—</td><td>final</td><td>final</td><td>full</td><td>full</td></tr>
+  </tbody></table></div>
+  <p class="note">Two roles are deliberately absent: an agent never holds a row, and there is no "owner" superuser that skips the QC gate. Shared devices are named tablets; a personal login is used when more than two people close batches in a shift. Names on records come from the device session, and every record shows which device made it.</p>
+
+  <h3>Publish authority — D4, the decision that unblocks opening</h3>
+  <div class="card">
+    <p>The bench cannot make food from an unpublished recipe. All four versions are currently DRAFT. That is one
+      decision away from being an opening-day standstill.</p>
+    <p><b>Recommended shape:</b> two named humans. Ricardo holds final publish; a named operations person holds the
+      second key so a Friday-night fix does not need a phone call to him. One name cannot publish twice. Publishing is
+      irreversible in the sense that matters — vN is frozen, changes become vN+1.</p>
+    <p><b>Why not one key:</b> the manager becomes the only path to a fix and every typo waits for him. <b>Why not three:</b>
+      a committee has no owner. <b>Why not the agent:</b> I10 exists because a machine cannot carry the liability for food.</p>
+  </div>
+
+  <h3>Zoho Learn keeps the SOP. The Bench does not replace it.</h3>
+  <div class="tscroll"><table><thead><tr><th>Zoho Learn</th><th>The Bench</th></tr></thead><tbody>
+    
+    <tr><td>The written SOP and the training record. Who was trained, when, by whom, on which version.</td><td>The action on the floor. Which card was run, by whom, with which choices and results.</td></tr>
+    <tr><td>One link out of each bench screen: "How this recipe is taught."</td><td>Never hosts a certificate, never records a training completion.</td></tr>
+  </tbody></table></div>
+
+  <h3>Three adoption risks, stated plainly</h3>
+  <ul>
+    <li><b>Flags get punished.</b> If a shortage is debriefed by reading the flag's name aloud, staff stop flagging within a month and the dashboard reads perfect. The manager closes every flag in person at shift end for the first fortnight, and flag-to-close latency is published weekly.</li>
+    <li><b>Green ticks without tests.</b> A tick is cheaper than a measurement. The close now demands numbers — and the manager spot-checks one batch a week against the physical pasta.</li>
+    <li><b>The tablet becomes "the thing we tried".</b> One bad morning without a paper fallback ends it. Hence the printed pad in Part eight.</li>
+  </ul>
+</section>
+
+<section class="part" id="p5">
+  <p class="pnum">Part five</p>
+  <h2>Money — costing, yield, and the number that changes behaviour</h2>
+  <p class="lead">Everything here runs on the costed model, never on the tablet. The manager sees answers; the manager does
+    not see formulas.</p>
+
+  <h3>What the engine keeps</h3>
+  <div class="tscroll"><table><thead><tr><th>Object</th><th>Holds</th><th>Rule</th></tr></thead><tbody>
+    
+    <tr><td>Ingredient</td><td>Supplier, pack, pack price, unit basis, allergen flags</td><td>Price is a point in time; buying at a cheaper pack starts a new price record, never an edit</td></tr>
+    <tr><td>Price history</td><td>Every change, dated, with who entered it</td><td>No price is overwritten, so "what did this cost in March" is answerable</td></tr>
+    <tr><td>Recipe version</td><td>Ingredient lines, bands, yield in portions, allergens, nutrition</td><td>Costed on the point chosen, with the band retained (I3)</td></tr>
+    <tr><td>Batch</td><td>Pinned version, actual weights, operator, QC</td><td>Yield variance = planned portions against recorded output</td></tr>
+    <tr><td>Plate</td><td>Portion grams, menu price, VAT treatment</td><td>Margin is computed, never typed</td></tr>
+  </tbody></table></div>
+
+  <h3>The Farmhouse defect, priced</h3>
+  <p>The total row says 10.00 kg; the lines sum to 10.20 kg. Two honest readings, and the money differs:</p>
+  <div class="tscroll"><table><thead><tr><th></th><th>Reading A — 10.20 kg is right</th><th>Reading B — 10.00 kg is right</th></tr></thead><tbody>
+    
+    <tr><td>Portions at 140 g</td><td>72.9 per batch</td><td>71.4 per batch</td></tr>
+    <tr><td>Card at 40 kg</td><td>40.80 kg mixed, 8% over sheet</td><td>lines scaled to total 39.22 kg, every line 2% light</td></tr>
+    <tr><td>Cost per 140 g portion</td><td>R2.91–4.37 across the manual's bands</td><td>R2.85–4.29</td></tr>
+    <tr><td>Cost per portion at plan</td><td>+R0.11 to +R0.17 against sheet</td><td>as planned</td></tr>
+    <tr><td>Menu margin impact</td><td>1.4–1.8 points quietly lost</td><td>none</td></tr>
+    <tr><td>Yield</td><td>1.5 extra portions per batch, unplanned</td><td>as planned</td></tr>
+  </tbody></table></div>
+  <p class="note">Computed from the manual's own ranges, not from supplier quotes. The point: the defect is small per
+    plate and permanent per week — and either reading is defensible, which is exactly why it is a decision, not a bug fix.</p>
+
+  <h3>What the manager screen earns its place by showing</h3>
+  <div class="grid2">
+    <div class="card"><h3>Keep</h3>
+      <p><b>Yield variance.</b> Planned portions against recorded output, per recipe, per week. This is the only number
+      that changes what a cook does tomorrow, and it costs one subtraction.</p>
+      <p><b>Cost drift, weekly, one line.</b> The biggest mover of the week and its rand impact per portion. Silent when
+      nothing material moved.</p></div>
+    <div class="card"><h3>Defer</h3>
+      <p><b>The live-margin dashboard.</b> The menu is printed before opening and nobody re-prices a plate because baobab
+      moved 8%. The red team's test: "if a portion went from R8.00 to R10.80, what would you do?" If the answer is
+      "nothing until the next print", the dashboard is decoration and the build time belongs to sync hardening.</p></div>
+  </div>
+</section>
+
+<section class="part" id="p6">
+  <p class="pnum">Part six</p>
+  <h2>Architecture — where the truth lives and how it survives</h2>
+  <div class="tscroll"><table><thead><tr><th>Concern</th><th>Design</th><th>Test that proves it</th></tr></thead><tbody>
+    
+    <tr><td>Local truth</td><td>The tablet holds the working copy in a durable local store, not memory. Every write is
+      appended locally first, then queued.</td><td>Kill the app mid-write; the event survives.</td></tr>
+    <tr><td>Sync</td><td>Server holds a total order, each store its own sequence. Clients pull by watermark, push with
+      client ids. Server dedupes on <span class="mono">(device, client_id)</span>.</td><td>Same batch pushed three times → one row.</td></tr>
+    <tr><td>Ledger integrity</td><td>Append-only JSONL, fsync per event, hash chain. A break refuses further writes.</td>
+      <td>Flip one byte; the chain flags at boot and writes stop.</td></tr>
+    <tr><td>Connectivity truth</td><td>Heartbeat against the ledger's last <span class="mono">seq</span>, not the network
+      interface (I11).</td><td>Server down, wifi up → "no server" inside a minute.</td></tr>
+    <tr><td>Multi-store</td><td>Per-store sequences, one global ledger, <span class="mono">store_id</span> on every event.
+      Clock skew is recorded, not corrected.</td><td>Two stores, same day, no interleaving errors; both counts add up.</td></tr>
+    <tr><td>Formula at rest</td><td>Zones A (percentages, server only), B (costed model, manager scope), C (weights on
+      device for the pinned version).</td><td>Deleting zone C leaves cards unbuildable, not wrong.</td></tr>
+    <tr><td>Backup</td><td>Nightly ledger copy to a second disk, verified by restore drill monthly.</td><td>Restore on a
+      spare machine reproduces stock to the batch.</td></tr>
+    <tr><td>Hardware</td><td>Kiosk mode, wall power, no personal accounts, one named tablet per station.</td><td>Reimage a
+      tablet in under 30 minutes.</td></tr>
+    <tr><td>Security</td><td>Local network only, no inbound from the internet, device revocation on the server.</td>
+      <td>Revoke a tablet; its tokens stop working on next sync.</td></tr>
+  </tbody></table></div>
+  <p class="note">Three things this deliberately does not do: no cloud dependency, no per-seat licensing, no AI in the write
+    path. Stage 10+ can add an assistant that reads; it never writes a version or closes a batch.</p>
+</section>
+
+<section class="part" id="p7">
+  <p class="pnum">Part seven</p>
+  <h2>Design and words — the part that decides whether it gets used</h2>
+  <div class="grid2">
+    <div class="card"><h3>Ergonomics</h3>
+      <ul>
+        <li>Flour hands, gloves, wet surfaces. Targets at least 64 px, gaps at least 12 px.</li>
+        <li>Weights at 32 px bold, tabular figures, right-aligned. A cook reads grams from arm's length.</li>
+        <li>Landscape, 1280×800, no scrolling on the bench card. If it scrolls, the batch size is wrong.</li>
+        <li>One primary action per screen, yellow. Everything else is grey.</li>
+        <li>Contrast 4.5:1 minimum; the kitchen is bright and the tablet is dim.</li>
+      </ul></div>
+    <div class="card"><h3>The words</h3>
+      <ul>
+        <li>No error codes, no stack traces, no tool names on a kitchen screen.</li>
+        <li>Every offline message says what still works: "offline · working local".</li>
+        <li>Every red says what to do first: "Stop the mixer." then the reason.</li>
+        <li>Every failure says what was and was not recorded. "Nothing was recorded" is a complete sentence.</li>
+        <li>Status is a word plus a colour, never colour alone.</li>
+      </ul></div>
+  </div>
+  <h3>Language</h3>
+  <p>The staff surface must be in the language the shift actually speaks, and that is a decision only Papa Pasta can make
+    (question 6). Whatever is chosen, strings are externalised now so a second language is a file, not a rebuild.</p>
+</section>
+
+<section class="part" id="p8">
+  <p class="pnum">Part eight</p>
+  <h2>Build order, revised by the red team</h2>
+  <p class="lead">v1 promised stages 0–2 by 13 November. The red team's objection is not about speed — it is that Stage 2
+    has never survived a real kill, and opening day cannot be the test.</p>
+
+  <div class="tscroll"><table><thead><tr><th>Slot</th><th>Ships</th><th>Because</th></tr></thead><tbody>
+    
+    <tr><td><b>Day one · 13 Nov</b></td><td>Stages 0–1 as built, published recipes (needs D4), the five defect fixes, and a
+      <b>printed batch-log pad</b></td><td>A kitchen can run a card and write a line. It cannot absorb an untested sync
+      story on opening day. The pad is the fallback that keeps the habit when the tablet dies.</td></tr>
+    <tr><td><b>Week two</b></td><td>Stage 2: batch close, QC numbers (I4 as a rule, not a tick), derived stock, ledger
+      proven by the kill drill</td><td>The drill is the gate. It passes, it ships; it does not, it waits.</td></tr>
+    <tr><td><b>Weeks three to six</b></td><td>Stage 3 flags and alerts, Stage 4 bounded checks, handover</td><td>Flags earn
+      trust before features. The manager closes every flag in person for a fortnight first.</td></tr>
+    <tr><td><b>After a month of yield data</b></td><td>Stage 5 money — yield variance first, cost drift second, the live
+      dashboard only if question 5 gives it a job</td><td>No dashboard before there is data worth reading.</td></tr>
+    <tr><td><b>Store two</b></td><td>Stage 6 multi-store and the health surface</td><td>One store teaches the model; two
+      stores demand it.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section class="part" id="p9">
+  <p class="pnum">Part nine</p>
+  <h2>The grill — round one</h2>
+  <p class="lead">Six questions whose answers nothing else depends on. Answer these and round two opens: hardware, backup
+    custody, second store. Each carries a recommendation, so a single word per number is enough.</p>
+
+  <div class="tscroll"><table><thead><tr><th>#</th><th>Question</th><th>Recommendation</th></tr></thead><tbody>
+    
+    <tr><td><b>1</b></td><td><b>Who publishes a recipe version (D4)?</b> The bench cannot make food from a draft, and all four are draft.</td><td>Two keys: you final, plus one named operations person as deputy. One name cannot sign twice.</td></tr>
+    <tr><td><b>2</b></td><td><b>Is a Farmhouse batch 10.00 kg or 10.20 kg?</b> Yield and cost per plate hang off it.</td><td>Reading B — 10.00 kg is the batch, lines scale 2% down. The sheet is the promise to the shop, the total is the truth.</td></tr>
+    <tr><td><b>3</b></td><td><b>What ships on 13 November?</b> v1 said stages 0–2.</td><td>Stages 0–1, published recipes, the five fixes, and a printed pad. Stage 2 lands week two on a passed drill.</td></tr>
+    <tr><td><b>4</b></td><td><b>Is the cook test a number or a tick?</b> A closed batch with no cook test already exists in the log.</td><td>A number — minutes to al dente, plus moisture where taken. The close is rejected without it.</td></tr>
+    <tr><td><b>5</b></td><td><b>What would you actually change off a cost screen in November?</b> If nothing, Stage 5 shrinks to yield variance.</td><td>Cut the live-margin dashboard now. Keep yield variance and a weekly one-line cost drift.</td></tr>
+    <tr><td><b>6</b></td><td><b>What language does the shift read?</b> Every screen is written once, in the language chosen.</td><td>English on the manager and money surfaces; the bench in the floor's first language. Decide which and I will externalise every string.</td></tr>
+  </tbody></table></div>
+
+  <h3>Round two, held back on purpose</h3>
+  <p>These wait because their answers depend on the six above: tablet and kiosk hardware with prices (money, your click),
+    who holds the backup key, whether store two runs the same server or its own, and whether the bench ever gets a
+    read-only assistant.</p>
+</section>
+
+<section class="part" id="p10">
+  <p class="pnum">Part ten</p>
+  <h2>Sources and changelog</h2>
+  <div class="tscroll"><table><thead><tr><th>What</th><th>Where</th></tr></thead><tbody>
+    
+    <tr><td>Recipe source of truth</td><td><span class="mono">DevMini/papa-pasta-formula-v2/top4_kitchen_manual_fresh_v2.html</span> — 4 recipes, 20 tables, method and QC</td></tr>
+    <tr><td>Built code and evidence</td><td><span class="mono">InfinityBrandsOrg/papa-pasta-bench</span> — private, <span class="mono">main</span> at 48afb9b, <span class="mono">./verify.sh</span></td></tr>
+    <tr><td>Defect quotes</td><td><span class="mono">app/app.js:28</span>, <span class="mono">app/app.js:42</span>, <span class="mono">var/events.jsonl</span>, <span class="mono">var/ledger.jsonl</span></td></tr>
+    <tr><td>Market comparison</td><td>MarketMan R4,145–R8,308 per site per month at USD 16.6487; Galley and Apicbase cloud-first. <a href="https://www.marketman.com/pricing-for-restaurant-inventory-management-system">MarketMan pricing</a>, <a href="https://www.apicbase.com/pricing/">Apicbase pricing</a>, <a href="https://www.frankfurter.app/">frankfurter.app FX</a></td></tr>
+    <tr><td>Decision brief</td><td>Where Papa Pasta's work lives — 26 October 2026. Zoho Learn holds SOP and training; the Bench links to it.</td></tr>
+    <tr><td>v2 changelog</td><td>Five verified defects with fixes · three new surfaces (handover, publish, health) · I11 and I12 added · day-one scope cut · the grill round one</td></tr>
+  </tbody></table></div>
+  <p class="note">Council seats that produced this: COO (bench, cards, handover, flags), CFO (costing, yield, the Farmhouse
+    price), CTO (sync, ledger, multi-store, hardware), CPO (permissions, publish, adoption), CMO as product designer
+    (all nine surfaces, states, words), and a red team briefed to break the other five. Its five findings are in Part one
+    and every one of them has a rule now.</p>
+</section>
+
+</main>
+<footer><div class="wrap"><p>The Bench · PP-KIT-001 v2.0 · Papa Pasta internal kitchen · 28 October 2026 · prepared for Ricardo Maio. Store one opens 13 November 2026.</p></div></footer>
+
+</body>
+</html>
