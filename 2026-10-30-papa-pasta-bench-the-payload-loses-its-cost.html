@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Papa Pasta Bench — the tablet payload carries weights only, prose money included</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<blockquote>
+<p>[!summary] The short version Law one now holds on the bench payload at both levels. PR #20 took the cost fields out of the file the tablet downloads; commit <code>197c9e3</code> took the margin out of the prose that was hiding beside them. Four payloads regenerated, four hashes re-pinned, <code>./verify.sh</code> green at 20 sections and 653 checks.</p>
+</blockquote>
+<h2 id="summary">Summary</h2>
+<p>The first version of this record ended on an open finding. The cost fields were gone, but the same money still travelled inside <code>scaling_note</code> — "raw cost ~R4–5.50/serving at 60–70% margin", "retail R69–79/500 g", "the franchise margin floor". Both guards look for key names, and a sentence has no key. A cook with devtools could still read the margin off the file their own tablet had downloaded.</p>
+<p>That finding is closed. Commit <code>197c9e3</code>, pushed on 30 October at 00:10 on <code>fix/payload-hygiene</code>, stops the payload build from carrying <code>scaling_note</code>. Nothing filters it out by pattern: the payload is assembled as a list of keys, one line each, in <code>scripts/lock_versions.py</code>, and the line that put the note in is gone. Bringing it back would take a change you can see in a diff.</p>
+<p>The four payloads were regenerated, one line lighter each, and their <code>payload_sha256</code> pins were refreshed in <code>data/registry.json</code>. I recomputed all four hashes from the bytes on disk: they match. <code>content_sha256</code> did not move for any recipe, because the recipe did not change — the note is still in <code>data/source/recipes_source.json</code> and in each <code>data/recipes/*.draft.json</code>. That is correct: it is production guidance, not something a tablet shows.</p>
+<p><code>app/sw.js</code> moved <code>BUILD</code> to <code>bench-v2-2026-10-29-20</code>. The four payloads are precached, so a tablet that already holds the old copy would keep serving the margin until its cache name changed. That bump was not in the ask, and I made it anyway — the reasoning is below.</p>
+<p>The full-run artefact yesterday's record said was missing now exists: <code>verify-last.log</code>, 1,078 lines, 20 sections, 653 checks, 0 failures. PR #20 stays open with both commits on it, so it is one review, not two. Merge stays Geoff's call and publish authority stays Ricardo's.</p>
+<h2 id="what-this-is">What this is</h2>
+<p>The kitchen bench is the tablet app that scales a recipe, builds the batch card and closes the batch. A tablet is not always online, so it precaches its recipes: the four files under <code>data/bench/</code> are what a cook's device holds on disk and re-reads offline. Law one says no money and no formula percentage reach the glass. The payload sits behind the glass, so the payload is the edge that matters.</p>
+<p>This note keeps the file name it was filed under yesterday. The link already handed out points here, and a corrected edition belongs at the same address, not beside it.</p>
+<h2 id="what-closed-it">What closed it</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S</span>[<span class="st">&quot;source recipe and truth bodies — the note stays&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;lock_versions.py — payload keys, one field per line&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;data/bench — four payloads: weights, timings, steps, quality gate&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">D</span>{<span class="st">&quot;build guard: quoted keys, ZAR, baker&quot;</span>}</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">E</span>{<span class="st">&quot;Stage 0: money scan, percentage scan&quot;</span>}</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--</span> <span class="vs">pass </span><span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;tablet precache, BUILD bench-v2-2026-10-29-20&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--</span> <span class="vs">pass </span><span class="pp">--&gt;</span> <span class="dt">F</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">N</span>[<span class="st">&quot;scaling_note — raw cost, margin, retail price&quot;</span>] <span class="pp">--</span> <span class="st">&quot;reaches the builder, is not copied&quot;</span> <span class="pp">--&gt;</span> <span class="dt">B</span></span></code></pre></div>
+<p>The payload is not a copy with fields removed. It is written out key by key, and <code>scaling_note</code> was one of those keys — <code>"scaling_note": r["scaling_note"],</code> sat inside the payload dict. The fix deletes that one line and adds a comment above the dict (lines 66–70) saying why. A regression now needs a person to type the key back into that dict.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Where</th>
+<th>What it did</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The note left the payload</td>
+<td><code>scripts/lock_versions.py</code> lines 72–81</td>
+<td>The payload dict no longer lists <code>scaling_note</code>; the diff removes exactly that line</td>
+</tr>
+<tr>
+<td>The reason is in the code</td>
+<td>same file, lines 66–70</td>
+<td>A comment says the note is exposure in prose, that a key-name guard cannot see it, and that no screen renders it</td>
+</tr>
+<tr>
+<td>Four payloads rebuilt</td>
+<td><code>data/bench/</code> (4 files)</td>
+<td>One line lighter each: 224→223, 248→247, 251→250, 251→250</td>
+</tr>
+<tr>
+<td>Hashes re-pinned</td>
+<td><code>data/registry.json</code></td>
+<td><code>registry_updated: 2026-10-29T22:04:39Z</code>; all four <code>payload_sha256</code> recomputed and matching</td>
+</tr>
+<tr>
+<td>Tablets drop the old copy</td>
+<td><code>app/sw.js</code> line 4</td>
+<td><code>BUILD = 'bench-v2-2026-10-29-20'</code>; line 42 deletes every cache key that is not the current build</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-changed-across-the-two-commits">What changed across the two commits</h2>
+<table>
+<thead>
+<tr>
+<th>Commit</th>
+<th>What it closed</th>
+<th>Where the proof sits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>249915f</code> — <em>Serve the tablet weights only: no money, no nutrition, no hydration percentage</em></td>
+<td><code>cost</code>, <code>nutrition</code>, <code>machine.hydration_pct</code> — the structured fields</td>
+<td><code>lock_versions.py</code> payload dict; two new checks at <code>reconcile.mjs</code> lines 107 and 110</td>
+</tr>
+<tr>
+<td><code>197c9e3</code> — <em>The margin stops shipping as prose</em></td>
+<td><code>scaling_note</code> — the same money written as sentences</td>
+<td><code>lock_versions.py</code> lines 66–70 and a one-line removal inside the payload dict; four regenerated payloads; four re-pinned hashes; <code>BUILD</code> at -20</td>
+</tr>
+</tbody>
+</table>
+<p>Both sit on <code>fix/payload-hygiene</code>, fast-forwarded onto PR #20's head. The registry entry for each recipe changed in one field only: <code>payload_sha256</code>. Everything else in it, including <code>content_sha256</code>, is byte-identical to the previous commit.</p>
+<h2 id="two-calls-i-made-and-one-i-did-not">Two calls I made, and one I did not</h2>
+<p><strong>1. The cache version bump was mine.</strong> The card asked for the payload change, the regenerated files and the re-pinned hashes. It did not ask for <code>app/sw.js</code>. Without the bump the fix would not reach a tablet that already cached the old payload: the file a cook's device serves comes from the cache, and the cache is keyed by <code>BUILD</code>. Served bytes changed, so the key had to change.</p>
+<p><strong>2. Farmhouse's ingredient spec still says "oven-dry ≤ 70 °C for cost".</strong> That line is real and it does render — <code>app/app.js</code> line 1358 prints an ingredient's <code>spec</code> on the card, and <code>scripts/pad.mjs</code> line 51 prints it on the sheet. I left it. It carries no number, it is a process instruction the cook needs to read, and cutting it would edit the manual's truth (I2) to fix a word. Flagged here rather than changed.</p>
+<p><strong>3. I did not add a value scan.</strong> A regex over payload values would catch this class of leak, and it would also fire on the quality gate, which legitimately says things like "protein ≥ 13%" and "moisture 28–32%". The structural guard — a payload whose keys are written one per line — is smaller and cannot rot into false confidence.</p>
+<h2 id="where-the-work-stands">Where the work stands</h2>
+<ul>
+<li>Both leaks are closed on the branch. A tablet collects the fix on its next cache refresh, because the cache name changed.</li>
+<li>PR #20 is open, not draft, head <code>197c9e3</code>, carrying both commits. The repo has no CI configured, so there are no checks to wait on.</li>
+<li>Merge is Geoff's. <strong>D4, publish authority</strong>, is still Ricardo's call and no agent's.</li>
+<li>The Farmhouse total row is still a manual defect, not a code one: its 10 kg ingredient rows sum to 10.20 kg under a 10.00 kg total. The card and the sheet print the disagreement rather than hiding it; the recipe owner corrects the manual.</li>
+<li>Percentages still appear in the payload, and that is fine: they are the quality gate's own numbers (protein ≥ 13%, moisture 28–32%, a 5% sensory ceiling). What is gone is the baker's percentage — flour-relative formula — which is what I12 keeps off the card. <code>R638</code> in a drying step is a food-safety regulation number, not rand.</li>
+</ul>
+<h2 id="evidence">Evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>How I checked it</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scaling_note</code> is in none of the four payloads</td>
+<td><code>grep -c scaling_note data/bench/*.json</code> → 0, 0, 0, 0</td>
+<td>True</td>
+</tr>
+<tr>
+<td>The note survives in the source and the truth bodies</td>
+<td><code>grep -c</code> → 4 in <code>data/source/recipes_source.json</code>; 1 in each <code>data/recipes/*.draft.json</code></td>
+<td>True</td>
+</tr>
+<tr>
+<td>Nothing under <code>app/</code> ever read it</td>
+<td><code>grep -rn scaling_note app/</code> → 0 lines; <code>padRecipe()</code> in <code>pad.mjs</code> has no field for it</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Four payload hashes match the registry</td>
+<td><code>shasum -a 256 data/bench/*.json</code> against <code>data/registry.json</code></td>
+<td>MATCH ×4</td>
+</tr>
+<tr>
+<td>The recipes themselves did not change</td>
+<td><code>content_sha256</code> at <code>249915f</code> vs HEAD, read with <code>git show</code></td>
+<td>Identical ×4</td>
+</tr>
+<tr>
+<td>Each payload is one line lighter</td>
+<td><code>wc -l</code> now vs <code>git show 249915f:data/bench/&lt;slug&gt;.json</code></td>
+<td>224→223, 248→247, 251→250, 251→250</td>
+</tr>
+<tr>
+<td>The tablet cache name changed</td>
+<td><code>app/sw.js</code> line 4</td>
+<td><code>bench-v2-2026-10-29-20</code></td>
+</tr>
+<tr>
+<td>Stage 0's two law-one checks pass on the new files</td>
+<td><code>verify-last.log</code> lines 224–225</td>
+<td>"4 payloads clean", twice</td>
+</tr>
+<tr>
+<td>The full run is 20 sections, 653 checks, 0 failures</td>
+<td><code>verify-last.log</code>: 20 <code>PASS</code> lines, their checks summed, no failure line</td>
+<td>653 — I read the log, I did not re-run the suite</td>
+</tr>
+<tr>
+<td>The branch is pushed and level with its upstream</td>
+<td><code>git rev-list --left-right --count origin/fix/payload-hygiene...HEAD</code></td>
+<td>0 behind, 0 ahead</td>
+</tr>
+<tr>
+<td>PR #20 is open, not draft, with both commits</td>
+<td><code>gh pr view 20 --json</code></td>
+<td>OPEN, head <code>197c9e3</code>, <code>statusCheckRollup: []</code></td>
+</tr>
+</tbody>
+</table>
+<p>The hash check, run from the repo root:</p>
+<pre class="text"><code>05c2feedb205129124b477c82dd382830e106d961379fc753c5523f075c4e995  data/bench/bokgat-base.json
+75237f0b7aa2feef85f906fd0dd72e505c90befe8635bf570d5b419c1b5d5fa9  data/bench/chickpea-power-pro.json
+d844a94d60d8c0a0092ed37c3c179776846b438f5e1aef263526edb3f226c4cb  data/bench/farmhouse.json
+623a0828bcf910bd72c8dc4c8088e78ea383c2da229393497bba5745268bc3f3  data/bench/protein-pro.json</code></pre>
+<p>All four match the pins recorded in <code>data/registry.json</code> at <code>2026-10-29T22:04:39Z</code>.</p>
+<p>Sources: <a href="https://github.com/InfinityBrandsOrg/papa-pasta-bench/pull/20">PR #20</a> · <a href="https://github.com/InfinityBrandsOrg/papa-pasta-bench/commit/197c9e3a72f9e5ceef05734ceb94875780a0498f">commit 197c9e3</a> · <a href="https://github.com/InfinityBrandsOrg/papa-pasta-bench/compare/249915f...197c9e3">the branch against PR #20's head</a>.</p>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="./2026-10-29-papa-pasta-bench-the-printed-pad-ships.md">Papa Pasta Bench — the printed pad ships</a> — the previous record, which first flagged this prose leak and named this fix's branch</li>
+<li><a href="./Papa-Pasta-Overview.md">Papa Pasta — Overview</a> — the project this sits inside</li>
+<li><a href="./PRD.md">Papa Pasta — PRD</a></li>
+<li><a href="../../../../ReadME_MasterIndex.md">ReadME_MasterIndex</a> — the vault's folder rules</li>
+<li><a href="../../../../Soul.md">Soul</a> — agent identity and rules</li>
+<li><a href="../../../../User.md">User</a> — who Ricardo is</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
