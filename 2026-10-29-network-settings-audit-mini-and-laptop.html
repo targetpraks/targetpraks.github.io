@@ -149,23 +149,27 @@
     is router work.
   </div>
 
-  <h2>What is left, in order</h2>
+  <h2>Where it stands — closed out 16:10 SAST</h2>
   <table>
-    <tr><th>Item</th><th>Detail</th><th>Who</th></tr>
-    <tr><td>Address reservation</td><td>Pin <code>192.168.0.157</code> to <code>d0:11:e5:10:18:46</code> in the Tenda app. Seven-day leases mean it will drift otherwise — .84, .154, .158 and .157 have all been this machine at some point.</td><td><span class="pill p-you">you</span></td></tr>
-    <tr><td>Plex cleanup</td><td>Plex opened a fresh NAT-PMP mapping for <code>.157:32400</code>, so remote access followed the wire by itself. The old <code>.84:32400</code> rule is now stale — harmless, but it will confuse you in the router UI.</td><td><span class="pill p-ok">self-healed</span></td></tr>
-    <tr><td>Air sleep + firewall</td><td>It sleeps after a minute on AC and its firewall is off.</td><td><span class="pill p-you">you</span></td></tr>
-    <tr><td>File mount</td><td>One-time keychain entry, then it mounts by itself.</td><td><span class="pill p-you">you</span></td></tr>
-    <tr><td>Recovery story</td><td>FileVault on, no auto-login. My recommendation stands: a UPS, not disabling FileVault.</td><td><span class="pill p-you">your call</span></td></tr>
+    <tr><th>Item</th><th>Detail</th><th>State</th></tr>
+    <tr><td>Address reservation</td><td>Pinned <code>192.168.0.157</code> → <code>d0:11:e5:10:18:46</code> in the Tenda app. The address no longer drifts, which is what broke the mount rail four times.</td><td><span class="pill p-ok">done</span></td></tr>
+    <tr><td>Air firewall</td><td>Enabled, nine apps allow-listed, <code>sshd</code> first so remote access survived.</td><td><span class="pill p-ok">done</span></td></tr>
+    <tr><td>Air power</td><td>AC system sleep <code>1 → 0</code> min, display sleep <code>→ 15</code>.</td><td><span class="pill p-ok">done</span></td></tr>
+    <tr><td>DevMini mount</td><td>Mounted over the wire, 25 repos, writable, keychain entry stored — the 10-minute rail now keeps it up unattended.</td><td><span class="pill p-ok">done</span></td></tr>
+    <tr><td>Plex</td><td>Opened its own NAT-PMP mapping for <code>.157:32400</code>. The old <code>.84:32400</code> rule is stale but harmless.</td><td><span class="pill p-ok">self-healed</span></td></tr>
+    <tr><td>Recovery story</td><td>Ricardo's call: left as-is. FileVault stays on, no auto-login, so a power cut still needs a hand at the keyboard.</td><td><span class="pill p-ok">decided</span></td></tr>
   </table>
 
-  <pre><span class="c"># on the Air — three lines, one password prompt each</span>
-sudo pmset -c sleep 0
-sudo pmset -c displaysleep 15
-sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate on
+  <div class="note fix">
+    <span class="t">the mount failure — worth remembering</span>
+    The rail took the <b>first</b> address mDNS returned. The mini advertises four:
+    <code>169.254.80.182</code> (Thunderbolt bridge), <code>192.168.64.1</code> (Colima's VM bridge),
+    <code>192.168.0.157</code> and <code>192.168.0.84</code>. The dead link-local came first, so the Finder
+    auth went to an address that could never answer. Fixed by filtering <code>169.254.*</code>,
+    <code>127.*</code> and the VM bridge, then proving port 445 before choosing — and by switching the
+    Thunderbolt Bridge service off, since nothing is plugged into it.
+  </div>
 
-<span class="c"># on the Air — file mount, tick "remember in keychain"</span>
-~/.config/maio-stack/air-mount-devmini.sh --connect</pre>
 
   <h2>Already right — leave alone</h2>
   <table>
