@@ -104,6 +104,22 @@ td.neg{color:var(--rust)}
   .hero h1{color:#111}.hero .lede{color:#333}.hero:after{display:none}
   section{page-break-inside:avoid}h2{page-break-after:avoid}
 }
+
+.tabs{display:flex;gap:8px;margin:16px 0 14px;flex-wrap:wrap}
+.tab{font:inherit;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--paper);border:1px solid var(--rule);color:var(--muted);padding:8px 16px;cursor:pointer}
+.tab:hover{border-color:var(--gold);color:var(--ink)}
+.tab.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.calc{background:var(--paper);border:1px solid var(--rule);padding:20px 22px;margin:16px 0 22px}
+.ctl{margin:14px 0 18px}
+.ctl label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-weight:800;margin-bottom:8px}
+.ctl label b{color:var(--ink);letter-spacing:0;text-transform:none;font-size:15px}
+.ctl input[type=range]{width:100%;accent-color:#0f1c2b;height:22px}
+.out{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;border-top:1px solid var(--rule);padding-top:16px}
+@media(max-width:720px){.out{grid-template-columns:1fr 1fr}}
+.out .k{display:block;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:4px}
+.out .v{font-family:Georgia,serif;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -363,6 +379,33 @@ td.neg{color:var(--rust)}
   <p class="small">Overhead: a 400 m² warehouse at R26,000 a month, van and fuel R9,500, one sales salary
   R30,000, admin and accounting R4,500, marketing R10,000, insurance R3,500, samples and travel R6,000 —
   R89,500 a month.</p>
+
+  <h3>Move the numbers yourself</h3>
+  <div class="calc">
+    <p class="small" style="margin-top:0">Three levers decide whether this works: what the trade pays, what retail pays,
+    and how much of the volume goes to each. Drag them.</p>
+    <div class="ctl">
+      <label for="trade">Trade price <b id="v-trade">R170</b></label>
+      <input id="trade" type="range" min="130" max="240" step="5" value="170">
+    </div>
+    <div class="ctl">
+      <label for="retail">Retail price <b id="v-retail">R300</b></label>
+      <input id="retail" type="range" min="250" max="400" step="10" value="300">
+    </div>
+    <div class="ctl">
+      <label for="share">Share sold at trade price <b id="v-share">60%</b></label>
+      <input id="share" type="range" min="0" max="100" step="5" value="60">
+    </div>
+    <div class="out">
+      <div><span class="k">Blended price</span><span class="v" id="o-blend">R222</span></div>
+      <div><span class="k">Margin per m²</span><span class="v" id="o-margin">R103</span></div>
+      <div><span class="k">Gross margin</span><span class="v" id="o-pct">46%</span></div>
+      <div><span class="k">Break-even</span><span class="v" id="o-be">10,400 m²</span></div>
+      <div><span class="k">Containers a year</span><span class="v" id="o-cont">3.6</span></div>
+      <div><span class="k">Year-3 EBITDA at 35,000 m²</span><span class="v" id="o-y3">R2.06m</span></div>
+    </div>
+  </div>
+
 </section>
 
 <section id="plan">
@@ -377,48 +420,52 @@ td.neg{color:var(--rust)}
     <div class="step"><div><b>Fit-out firms, then chains</b><span>Shopfitting wet walls give repeat orders; the chains come after the proof, never before.</span></div></div>
   </div>
 
-  <h3>Three years, base case, ex VAT</h3>
+  <h3>Three years, ex VAT</h3>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" data-scn="cons" type="button">Conservative</button>
+    <button class="tab on" data-scn="base" type="button">Base</button>
+    <button class="tab" data-scn="up" type="button">Upside</button>
+  </div>
+
   <table>
     <tr><th></th><th class="n">Year 1</th><th class="n">Year 2</th><th class="n">Year 3</th></tr>
-    <tr><td>Square metres sold</td><td class="n">8,000</td><td class="n">20,000</td><td class="n">35,000</td></tr>
-    <tr><td>Containers bought</td><td class="n">3</td><td class="n">7</td><td class="n">12</td></tr>
-    <tr><td>Revenue at R222 blended</td><td class="n">1,776,000</td><td class="n">4,440,000</td><td class="n">7,770,000</td></tr>
-    <tr><td>Cost of goods at R119</td><td class="n">952,000</td><td class="n">2,380,000</td><td class="n">4,165,000</td></tr>
-    <tr><td>Gross profit</td><td class="n">824,000</td><td class="n">2,060,000</td><td class="n">3,605,000</td></tr>
-    <tr><td>Overhead</td><td class="n">1,074,000</td><td class="n">1,250,000</td><td class="n">1,550,000</td></tr>
-    <tr class="tot"><td>EBITDA</td><td class="n neg">(250,000)</td><td class="n">810,000</td><td class="n">2,055,000</td></tr>
+    <tr><td>Square metres sold</td><td class="n" id="t-m1">8,000</td><td class="n" id="t-m2">20,000</td><td class="n" id="t-m3">35,000</td></tr>
+    <tr><td>Containers bought</td><td class="n" id="t-c1">3</td><td class="n" id="t-c2">7</td><td class="n" id="t-c3">12</td></tr>
+    <tr><td>Revenue at R222 blended</td><td class="n" id="t-r1">1,776,000</td><td class="n" id="t-r2">4,440,000</td><td class="n" id="t-r3">7,770,000</td></tr>
+    <tr><td>Cost of goods at R119</td><td class="n" id="t-g1">952,000</td><td class="n" id="t-g2">2,380,000</td><td class="n" id="t-g3">4,165,000</td></tr>
+    <tr><td>Gross profit</td><td class="n" id="t-p1">824,000</td><td class="n" id="t-p2">2,060,000</td><td class="n" id="t-p3">3,605,000</td></tr>
+    <tr><td>Overhead</td><td class="n" id="t-o1">1,074,000</td><td class="n" id="t-o2">1,250,000</td><td class="n" id="t-o3">1,550,000</td></tr>
+    <tr class="tot"><td>EBITDA</td><td class="n" id="t-e1">(250,000)</td><td class="n" id="t-e2">810,000</td><td class="n" id="t-e3">2,055,000</td></tr>
   </table>
 
   <div class="chart">
     <h4>EBITDA, base case</h4>
-    <svg viewBox="0 0 720 240" role="img" aria-label="EBITDA by year">
-      <line x1="70" y1="170" x2="690" y2="170" stroke="#d8cdb6" stroke-width="1.5"/>
+    <svg viewBox="0 0 720 260" role="img" aria-label="EBITDA by year" id="ebitdaChart">
+      <line x1="70" y1="200" x2="690" y2="200" stroke="#d8cdb6" stroke-width="1.5"/>
       <g font-family="Helvetica,Arial" font-size="12" fill="#5d6a79">
-        <line x1="70" y1="110" x2="690" y2="110" stroke="#efe7d5"/>
-        <text x="16" y="114">R1.0m</text>
-        <line x1="70" y1="50" x2="690" y2="50" stroke="#efe7d5"/>
-        <text x="16" y="54">R2.0m</text>
-        <text x="16" y="174">0</text>
+        <line x1="70" y1="160" x2="690" y2="160" stroke="#efe7d5"/>
+        <text x="14" y="164">R1.0m</text>
+        <line x1="70" y1="120" x2="690" y2="120" stroke="#efe7d5"/>
+        <text x="14" y="124">R2.0m</text>
+        <line x1="70" y1="80" x2="690" y2="80" stroke="#efe7d5"/>
+        <text x="14" y="84">R3.0m</text>
+        <text x="14" y="204">0</text>
       </g>
-      <rect x="130" y="170" width="130" height="15" fill="#a8482f"/>
-      <rect x="330" y="121" width="130" height="49" fill="#2b6b4a"/>
-      <rect x="530" y="46" width="130" height="124" fill="#2b6b4a"/>
+      <rect id="b1" x="130" y="185" width="130" height="15" fill="#a8482f"/>
+      <rect id="b2" x="330" y="167" width="130" height="33" fill="#2b6b4a"/>
+      <rect id="b3" x="530" y="118" width="130" height="82" fill="#2b6b4a"/>
       <g font-family="Helvetica,Arial" font-size="14" font-weight="700" fill="#16202b">
-        <text x="172" y="203">-R250k</text><text x="378" y="203">R810k</text><text x="570" y="203">R2.06m</text>
+        <text id="l1" x="172" y="222">-R250k</text><text id="l2" x="378" y="222">R810k</text><text id="l3" x="570" y="222">R2.06m</text>
       </g>
       <g font-family="Helvetica,Arial" font-size="11" fill="#5d6a79" letter-spacing="1.4">
-        <text x="172" y="224">YEAR 1</text><text x="378" y="224">YEAR 2</text><text x="570" y="224">YEAR 3</text>
+        <text x="172" y="242">YEAR 1</text><text x="378" y="242">YEAR 2</text><text x="570" y="242">YEAR 3</text>
       </g>
     </svg>
     <div class="legend"><span><i style="background:#2b6b4a"></i>profit</span><span><i style="background:#a8482f"></i>investment year</span></div>
   </div>
 
-  <table>
-    <tr><th>Scenario</th><th class="n">Year 1 m²</th><th class="n">Year 2 m²</th><th class="n">Year 3 m²</th><th class="n">Year 3 EBITDA</th></tr>
-    <tr><td>Conservative</td><td class="n">6,000</td><td class="n">12,000</td><td class="n">20,000</td><td class="n">510,000</td></tr>
-    <tr><td>Base</td><td class="n">8,000</td><td class="n">20,000</td><td class="n">35,000</td><td class="n">2,055,000</td></tr>
-    <tr><td>Upside</td><td class="n">12,000</td><td class="n">28,000</td><td class="n">45,000</td><td class="n">3,090,000</td></tr>
-  </table>
+
 
   <p>Payback on R3.0m: about year four in the base case, year three in the upside, beyond year five if the
   conservative case is what happens. The plan is built so that the conservative case is survivable rather
@@ -526,6 +573,73 @@ td.neg{color:var(--rust)}
     links.forEach(function(a,i){ a.style.color = i===idx ? '#c9a227' : ''; });
   }
   window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+})();
+</script>
+
+<script>
+(function(){
+  var SCN={
+    cons:{m:[6000,12000,20000],oh:[1074000,1250000,1550000]},
+    base:{m:[8000,20000,35000],oh:[1074000,1250000,1550000]},
+    up:{m:[12000,28000,45000],oh:[1074000,1250000,1550000]}
+  };
+  var LANDED=119, BLEND=222, CONT=2870, nf=new Intl.NumberFormat('en-ZA');
+  var money=function(n){return (n<0?'(':'')+nf.format(Math.round(Math.abs(n)))+(n<0?')':'');};
+  var short=function(n){
+    var a=Math.abs(n);
+    if(a>=1e6) return (n<0?'-':'')+'R'+(a/1e6).toFixed(2)+'m';
+    return (n<0?'-':'')+'R'+Math.round(a/1000)+'k';
+  };
+  function draw(scn){
+    var d=SCN[scn];
+    for(var i=0;i<3;i++){
+      var y=i+1, m=d.m[i], oh=d.oh[i];
+      var rev=m*BLEND, cogs=m*LANDED, gp=rev-cogs, eb=gp-oh, cont=Math.round(m/CONT);
+      document.getElementById('t-m'+y).textContent=nf.format(m);
+      document.getElementById('t-c'+y).textContent=cont;
+      document.getElementById('t-r'+y).textContent=nf.format(rev);
+      document.getElementById('t-g'+y).textContent=nf.format(cogs);
+      document.getElementById('t-p'+y).textContent=nf.format(gp);
+      document.getElementById('t-o'+y).textContent=nf.format(oh);
+      var cell=document.getElementById('t-e'+y); cell.textContent=money(eb);
+      cell.className = 'n' + (eb<0?' neg':'');
+      var bar=document.getElementById('b'+y), lab=document.getElementById('l'+y);
+      var h=Math.abs(eb)/1e6*40; if(h>140) h=140;
+      bar.setAttribute('height', Math.max(h,2));
+      bar.setAttribute('y', eb>=0 ? 200-h : 200);
+      bar.setAttribute('fill', eb>=0 ? '#2b6b4a' : '#a8482f');
+      lab.textContent=short(eb);
+    }
+  }
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  tabs.forEach(function(t){
+    t.addEventListener('click',function(){
+      tabs.forEach(function(x){x.classList.remove('on');});
+      t.classList.add('on'); draw(t.getAttribute('data-scn'));
+    });
+  });
+
+  var el=function(id){return document.getElementById(id);};
+  function calc(){
+    var trade=+el('trade').value, retail=+el('retail').value, share=+el('share').value/100;
+    el('v-trade').textContent='R'+trade;
+    el('v-retail').textContent='R'+retail;
+    el('v-share').textContent=Math.round(share*100)+'%';
+    var blend=Math.round(trade*share+retail*(1-share));
+    var margin=blend-LANDED;
+    var pct= blend>0 ? Math.round(margin/blend*100) : 0;
+    el('o-blend').textContent='R'+blend;
+    el('o-margin').textContent='R'+margin;
+    el('o-pct').textContent=pct+'%';
+    if(margin<=0){ el('o-be').textContent='never'; el('o-cont').textContent='—'; }
+    else { el('o-be').textContent=nf.format(Math.round(1074000/margin))+' m²';
+           el('o-cont').textContent=(1074000/margin/CONT).toFixed(1); }
+    var y3=35000*margin-1550000;
+    el('o-y3').textContent=short(y3);
+  }
+  ['trade','retail','share'].forEach(function(id){ el(id).addEventListener('input',calc); });
+  draw('base');
+  calc();
 })();
 </script>
 </body>
