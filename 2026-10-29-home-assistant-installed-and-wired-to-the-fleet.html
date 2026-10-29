@@ -67,8 +67,9 @@
   <div class="kicker">Splinter · home infrastructure · 29 October 2026, second pass</div>
   <h1>Home Assistant is live — and it now holds eight devices</h1>
   <p class="sub">Installed and configured this afternoon, opened to the fleet through a 77-tool MCP server,
-  and now carrying the speakers, the printer, the media server and an internet-health probe. Seven Ajax
-  cameras and a Synology sit on the network, one credential away from joining them.</p>
+  and now carrying the speakers, the printer, the media server and an internet-health probe. Three Midea
+  aircons, seven Ajax cameras, a Synology and two Apple TVs are identified on the network — each waiting on
+  one credential or one PIN.</p>
   <div class="strip">
     <div class="stat"><b>8</b><span>devices integrated</span></div>
     <div class="stat"><b>33</b><span>entities live</span></div>
@@ -151,22 +152,26 @@ Home Assistant 2026.10.4 · 242 services · MCP server ha-mcp, 77 tools</pre>
   </div>
   <div class="card">
     <span class="tag limit">Needs a PIN on screen</span>
-    <h3>8 Apple TVs</h3>
-    <p>Kids, Bedroom, RM, Office, Kitchen and three more. Pairing displays a four-digit code on the TV, so
-    this waits until you are in front of a screen.</p>
+    <h3>2 Apple TVs</h3>
+    <p><strong>Kids Maio</strong> (Apple TV HD, 192.168.0.189) and <strong>RM Apple TV</strong> (Apple TV 4K,
+    192.168.0.130). Pairing displays a four-digit code on the TV, so this waits until you are in front of a
+    screen — the other AirPlay entries on the network are Macs and an iPad, not TVs.</p>
     <p><a href="https://www.home-assistant.io/integrations/apple_tv/">Apple TV integration</a></p>
+  </div>
+  <div class="card">
+    <span class="tag wait">Needs your SmartHome login</span>
+    <h3>3 Midea air conditioners</h3>
+    <p>192.168.0.117, .183 and .196 — Midea LAN protocol on port 6444. The <code>midea_ac_lan</code>
+    integration is installed and patched to run on HA 2026.10, and discovery already identifies the unit at
+    .117 as an <strong>Air Conditioner</strong>, device 151732607848537.</p>
+    <p>The last step asks for the Midea cloud account to mint each unit's token and key. MSmartHome email
+    and password, and all three arrive with full climate control.</p>
   </div>
   <div class="card">
     <span class="tag limit">No integration exists</span>
     <h3>Tenda router</h3>
     <p>192.168.0.1, Tenda Wi-Fi. Home Assistant has no Tenda integration, so the router stays outside.
     Speedtest already covers internet health; per-device presence can be added with ping trackers.</p>
-  </div>
-  <div class="card">
-    <span class="tag limit">Nothing on the network</span>
-    <h3>Air conditioners</h3>
-    <p>No Daikin, Mitsubishi, Sensibo, Broadlink or ESPHome device answered. If the aircons are app-only or
-    IR-controlled, the make has to be named before anything can be reached.</p>
   </div>
 </div>
 
@@ -188,8 +193,10 @@ read-only, by your instruction. The brake is human.</p>
     <tr><td>Ajax cameras</td><td>An ONVIF username and password from the Ajax app. Seven cameras in one
       pass, with snapshots and motion hooks.</td></tr>
     <tr><td>Synology</td><td>A DSM account — read-only is enough. Storage health, backups, surveillance.</td></tr>
-    <tr><td>Aircons</td><td>The make, and whether there is an app. Local API preferred; an IR blaster is the
-      fallback.</td></tr>
+    <tr><td>Aircons (Midea)</td><td>The MSmartHome email and password, put into
+      <code>~/.config/maio-stack/secrets.env</code> as <code>MIDEA_ACCOUNT</code> and
+      <code>MIDEA_PASSWORD</code>. That mints the token and key for all three units; then they become
+      climate entities with mode, temperature and fan.</td></tr>
   </tbody>
 </table>
 <p>The Apple TVs need you in front of each screen once — say when, and I will walk the pairing.</p>
@@ -206,8 +213,18 @@ read-only, by your instruction. The brake is human.</p>
         <td>8123 and 9584 registered, with the reason 8123 is open to the LAN</td></tr>
     <tr><td><code>AI-Drive/Agent-Output/splinter/home-devices-inventory-2026-10-29.md</code></td>
         <td>the full LAN census — every host, port, vendor and what blocks it</td></tr>
+    <tr><td><code>AI-Drive/backups/home-assistant/</code></td>
+        <td>nightly config snapshot, 03:20, 14 kept — see the durability note below</td></tr>
   </tbody>
 </table>
+
+<div class="note"><p><strong>Where the config actually lives.</strong> Home Assistant's config sits on the
+Colima VM disk, not on a host folder: every Colima mount is read-only, so a bind mount of a host directory
+cannot work — Docker silently created the folder inside the VM instead. That survives reboots, but it would
+die with <code>colima delete</code>. A launchd job
+(<code>com.maio.home-assistant-backup</code>) now snapshots it to
+<code>AI-Drive/backups/home-assistant/</code> every night at 03:20 and keeps fourteen days — first snapshot
+verified at 680 KB, 300 files.</p></div>
 
 <footer>
   Sources:
