@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PRD — Migrate the fleet's memory from Hindsight to Mnemosyne</title>
+<title>PRD v2 — Migrate the fleet's memory from Hindsight to Mnemosyne</title>
 <style>
   :root{
     --cream:#fdfaf3; --ink:#12203a; --tomato:#c8342b; --olive:#5f6f36;
@@ -14,21 +14,21 @@
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--cream);color:var(--ink);font:16.5px/1.68 var(--sans);padding:56px 22px 96px}
-  .wrap{max-width:920px;margin:0 auto}
+  .wrap{max-width:940px;margin:0 auto}
   .kicker{font:600 11.5px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--tomato)}
-  h1{font:700 40px/1.14 var(--serif);letter-spacing:-.015em;margin:16px 0 12px}
+  h1{font:700 39px/1.14 var(--serif);letter-spacing:-.015em;margin:16px 0 12px}
   .lede{font:400 19px/1.55 var(--serif);color:#2b3a55;margin:0 0 22px}
   .meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
   .chip{font:500 11.5px/1 var(--mono);color:var(--muted);border:1px solid var(--rule);background:var(--wash);border-radius:999px;padding:6px 11px}
   .chip.status{color:var(--tomato);border-color:#e9c9c4;background:#fdf0ee;font-weight:700}
+  .chip.v2{color:var(--olive);border-color:#cfd9b6;background:#f3f6ea;font-weight:700}
   hr.rule{border:0;border-top:2px solid var(--ink);margin:26px 0 0}
   .statband{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:30px 0 8px}
   .stat{background:var(--wash);padding:16px 16px 14px}
-  .stat b{display:block;font:700 25px/1.1 var(--serif);letter-spacing:-.01em}
-  .stat span{display:block;font:500 11px/1.3 var(--mono);color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.06em}
+  .stat b{display:block;font:700 24px/1.1 var(--serif);letter-spacing:-.01em}
+  .stat span{display:block;font:500 10.5px/1.3 var(--mono);color:var(--muted);margin-top:6px;text-transform:uppercase;letter-spacing:.06em}
   h2{font:700 23px/1.25 var(--serif);margin:44px 0 4px}
   h2 .num{font:600 12px/1 var(--mono);color:var(--gold);margin-right:10px;vertical-align:2px}
-  h3{font:700 16px/1.3 var(--sans);margin:26px 0 6px}
   p{margin:12px 0;color:#2b3a55}
   table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14.5px;background:#fffdf7}
   th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
@@ -37,8 +37,11 @@
   .callout{border-left:4px solid var(--gold);background:#fff8e6;padding:16px 20px;margin:22px 0;border-radius:0 8px 8px 0}
   .callout .label{font:700 10.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#9a6f13;display:block;margin-bottom:8px}
   .callout p{margin:0;color:#4a3a12}
+  .callout.crit{border-left-color:var(--tomato);background:#fdf0ee}
+  .callout.crit .label{color:#9d2b22}
+  .callout.crit p{color:#5c1a15}
   .ev{background:var(--wash);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;margin:14px 0;font:13px/1.6 var(--mono);color:#25324a}
-  .ev b{color:var(--tomato);font-family:var(--mono)}
+  .ev b{color:var(--tomato)}
   ul{margin:10px 0 10px 22px;padding:0}
   li{margin:7px 0;color:#2b3a55}
   .check li{list-style:none;margin:12px 0;padding-left:26px;position:relative}
@@ -48,6 +51,8 @@
   .flow{background:#fffdf7;border:1px solid var(--rule);border-radius:10px;padding:18px;margin:20px 0}
   footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);color:var(--muted);font-size:13px}
   code{font-family:var(--mono);font-size:.88em;background:var(--wash);border:1px solid var(--rule);border-radius:4px;padding:1px 5px}
+  .fix{color:var(--olive);font-weight:600}
+  .bad{color:var(--tomato);font-weight:600}
 </style>
 </head>
 <body>
@@ -55,9 +60,10 @@
 
 <div class="kicker">Maio OS · Product requirement · Memory stack</div>
 <h1>Migrate the fleet's memory from Hindsight to Mnemosyne</h1>
-<p class="lede">Twenty-nine profiles write their memory into a 3.58 GB container whose extractor lives at ollama.com. This is the plan to move them to a local engine that costs nothing, keeps what has already been learned, and can be reversed at every step.</p>
+<p class="lede">Twenty-nine configs write their memory into a 3.58 GB container whose extractor lives at ollama.com. This is the plan to move them to a local engine that costs nothing. Version 2 — audited line by line, with nine corrections.</p>
 <div class="meta">
   <span class="chip status">PROPOSED — nothing executed</span>
+  <span class="chip v2">v2 · audited</span>
   <span class="chip">2026-10-30</span>
   <span class="chip">owner: Adrianna A</span>
   <span class="chip">pairs with the bake-off report</span>
@@ -65,25 +71,30 @@
 <hr class="rule">
 
 <div class="statband">
-  <div class="stat"><b>29</b><span>profiles on hindsight</span></div>
-  <div class="stat"><b>166,294</b><span>facts held today</span></div>
+  <div class="stat"><b>29</b><span>configs on hindsight</span></div>
+  <div class="stat"><b>166,333</b><span>facts at 09:00 today</span></div>
   <div class="stat"><b>7.6 GB</b><span>image + volume</span></div>
-  <div class="stat"><b>0</b><span>tokens to write with mnemosyne</span></div>
+  <div class="stat"><b>false</b><span>profile_isolation default</span></div>
   <div class="stat"><b>17/22</b><span>top-1 vs 20/22</span></div>
 </div>
 
+<div class="callout crit">
+  <span class="label">The finding that reshapes the plan</span>
+  <p>Mnemosyne ships with <code>profile_isolation</code> set to <b>false</b>. Left alone, all 29 configs would write into one shared memory database — every profile seeing every other profile's facts. Isolation has to be switched on <i>before</i> the first memory is stored, because un-mixing imported facts afterwards is not a clean operation.</p>
+</div>
+
 <h2><span class="num">01</span>Summary</h2>
-<p>Twenty-nine Hermes configs point their memory at Hindsight. The <a href="https://targetpraks.github.io/jump.html?vault=Maio%20Hub&amp;file=AI-Space%2F4.Research%2F2026-10-30-hermes-memory-providers-free-only-bake-off-2026-10-30&amp;doc=AI-Space%2F4.Research%2F2026-10-30-hermes-memory-providers-free-only-bake-off-2026-10-30&amp;t=bake-off">free-only bake-off</a> measured what that arrangement actually delivers: 20 of 22 questions answered at rank one, against 17 of 22 for <a href="https://github.com/mnemosyne-oss/mnemosyne">Mnemosyne</a>, which spent no tokens and sent nothing off the machine.</p>
-<p>This PRD moves the fleet across, carries the 166,294 learned facts with it, and switches Hindsight off only after one profile has run clean for a week and the export has been verified twice. The trade is stated rather than hidden: recall gets slightly worse on multi-hop questions, and the stack gets much cheaper, much lighter and fully local.</p>
+<p>Twenty-nine configs point their memory at Hindsight. The <a href="https://targetpraks.github.io/jump.html?vault=Maio%20Hub&amp;file=AI-Space%2F4.Research%2F2026-10-30-hermes-memory-providers-free-only-bake-off-2026-10-30&amp;doc=AI-Space%2F4.Research%2F2026-10-30-hermes-memory-providers-free-only-bake-off-2026-10-30&amp;t=bake-off">free-only bake-off</a> measured what that arrangement delivers: 20 of 22 questions answered at rank one, against 17 of 22 for <a href="https://github.com/mnemosyne-oss/mnemosyne">Mnemosyne</a>, which spent no tokens and sent nothing off the machine.</p>
+<p>This PRD moves the fleet across, carries the learned facts with it, and switches Hindsight off only after one profile has run clean for a week and the export has been verified twice.</p>
 
 <h2><span class="num">02</span>Why it is worth doing</h2>
 <table>
   <thead><tr><th>Claim</th><th>Measurement</th><th>Evidence</th></tr></thead>
   <tbody>
-    <tr><td>The fleet is on Hindsight everywhere</td><td>29 configs set <code>memory.provider: hindsight</code></td><td class="n">E2</td></tr>
-    <tr><td>The service is heavy</td><td>3.58 GB image, 4.0 GB data volume, colima VM in the path</td><td class="n">E5</td></tr>
+    <tr><td>Hindsight is everywhere</td><td>29 configs; <code>dexter</code>, <code>lois</code>, <code>shadow</code> have none</td><td class="n">E2</td></tr>
+    <tr><td>The service is heavy</td><td>3.58 GB image, 4.0 GB volume, colima VM in the path</td><td class="n">E5</td></tr>
     <tr><td>Memory writes leave the Mac</td><td><code>gpt-oss:20b</code> at <code>https://ollama.com/v1</code></td><td class="n">E5</td></tr>
-    <tr><td>Ingest is expensive</td><td>144,015 tokens and 177 LLM calls for 26 notes</td><td class="n">E7</td></tr>
+    <tr><td>Ingest is expensive</td><td>144,015 tokens, 177 LLM calls for 26 notes</td><td class="n">E7</td></tr>
     <tr><td>Mnemosyne is cheap and local</td><td>0 tokens, 0.44 s ingest, 2.1 MB, 0.006 s per query</td><td class="n">E7</td></tr>
     <tr><td>The recall gap is small</td><td>20/22 vs 17/22 at rank one; identical on all 13 single-fact lookups</td><td class="n">E7</td></tr>
     <tr><td>It abstains when it should</td><td>empty result on both unanswerable controls; Hindsight answered both wrongly</td><td class="n">E8</td></tr>
@@ -94,74 +105,75 @@
 
 <div class="callout">
   <span class="label">What this PRD does not claim</span>
-  <p>It does not claim Mnemosyne is the better memory engine. <a href="https://github.com/vectorize-io/hindsight">Hindsight</a> measured better on multi-hop and rephrased questions, and it is the only one of the two with entity resolution. The argument is operational: for a fleet writing memory on every turn, 29 times over, an engine that is nearly as good at a thousandth of the cost should be the default, and Hindsight becomes the tool we reach for when a bank genuinely needs graph reasoning.</p>
+  <p><a href="https://github.com/vectorize-io/hindsight">Hindsight</a> measured better on multi-hop and rephrased questions and is the only one of the two with entity resolution. The argument is operational: for a fleet writing memory on every turn, 29 times over, an engine that is nearly as good at a thousandth of the cost should be the default.</p>
 </div>
 
-<h2><span class="num">03</span>The move, in five phases</h2>
+<h2><span class="num">03</span>Six phases, reversible until the last</h2>
 <div class="flow">
-<svg viewBox="0 0 860 300" width="100%" role="img" aria-label="Migration flow: export, canary, import, rollout, decommission, plus nightly consolidation">
-  <defs>
-    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0,0 L10,5 L0,10 z" fill="#8a7a52"/>
-    </marker>
-  </defs>
+<svg viewBox="0 0 900 300" width="100%" role="img" aria-label="Migration flow: export, isolate profiles, canary, import, rollout, decommission, nightly consolidation">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a7a52"/></marker></defs>
   <style>
-    .bx{fill:#fffdf7;stroke:#d9cfa9;stroke-width:1.4;rx:10}
-    .t{font:600 13px -apple-system,sans-serif;fill:#12203a}
-    .s{font:11px ui-monospace,monospace;fill:#5b6478}
+    .bx{fill:#fffdf7;stroke:#d9cfa9;stroke-width:1.4}
+    .t{font:600 12.5px -apple-system,sans-serif;fill:#12203a}
+    .s{font:10.5px ui-monospace,monospace;fill:#5b6478}
     .ln{stroke:#8a7a52;stroke-width:1.6;fill:none;marker-end:url(#ar)}
-    .warn{fill:#fdf0ee;stroke:#e9c9c4}
+    .crit{fill:#fdf0ee;stroke:#e0a49d}
+    .warn{fill:#fff8e6;stroke:#e6cf95}
   </style>
-  <rect class="bx" x="10" y="20" width="185" height="66" rx="10"/>
-  <text class="t" x="24" y="46">0 · Export</text><text class="s" x="24" y="66">all 3 banks → JSONL</text>
-  <rect class="bx" x="225" y="20" width="185" height="66" rx="10"/>
-  <text class="t" x="239" y="46">1 · Canary</text><text class="s" x="239" y="66">one profile, one week</text>
-  <rect class="bx" x="440" y="20" width="185" height="66" rx="10"/>
-  <text class="t" x="454" y="46">2 · Import</text><text class="s" x="454" y="66">facts per bank, batched</text>
-  <rect class="bx" x="655" y="20" width="195" height="66" rx="10"/>
-  <text class="t" x="669" y="46">3 · Rollout</text><text class="s" x="669" y="66">28 profiles in waves</text>
-  <path class="ln" d="M195 53 H223"/><path class="ln" d="M410 53 H438"/><path class="ln" d="M625 53 H653"/>
-  <rect class="bx" x="440" y="130" width="185" height="66" rx="10"/>
-  <text class="t" x="454" y="156">4 · Decommission</text><text class="s" x="454" y="176">stop, hold 14 days</text>
-  <rect class="bx" x="655" y="130" width="195" height="66" rx="10"/>
-  <text class="t" x="669" y="156">5 · Dreaming</text><text class="s" x="669" y="176">nightly consolidation</text>
-  <path class="ln" d="M747 86 V128"/>
-  <path class="ln" d="M625 163 H653"/>
-  <rect class="bx warn" x="225" y="230" width="185" height="60" rx="10"/>
-  <text class="t" x="239" y="256">Rollback</text><text class="s" x="239" y="274">flip provider back</text>
-  <path class="ln" d="M318 86 V228"/>
+  <rect class="bx" x="8" y="18" width="150" height="62" rx="9"/>
+  <text class="t" x="20" y="42">0 · Export</text><text class="s" x="20" y="62">3 banks → JSONL</text>
+  <rect class="crit" x="176" y="18" width="150" height="62" rx="9"/>
+  <text class="t" x="188" y="42">1 · Isolate</text><text class="s" x="188" y="62">profile_isolation: true</text>
+  <rect class="bx" x="344" y="18" width="150" height="62" rx="9"/>
+  <text class="t" x="356" y="42">2 · Canary</text><text class="s" x="356" y="62">one profile, one week</text>
+  <rect class="bx" x="512" y="18" width="150" height="62" rx="9"/>
+  <text class="t" x="524" y="42">3 · Import</text><text class="s" x="524" y="62">facts, 500 at a time</text>
+  <rect class="bx" x="680" y="18" width="180" height="62" rx="9"/>
+  <text class="t" x="692" y="42">4 · Rollout</text><text class="s" x="692" y="62">28 profiles in waves</text>
+  <path class="ln" d="M158 49 H174"/><path class="ln" d="M326 49 H342"/><path class="ln" d="M494 49 H510"/><path class="ln" d="M662 49 H678"/>
+  <rect class="bx" x="512" y="128" width="150" height="62" rx="9"/>
+  <text class="t" x="524" y="152">5 · Decommission</text><text class="s" x="524" y="172">stop, hold 14 days</text>
+  <rect class="bx" x="680" y="128" width="180" height="62" rx="9"/>
+  <text class="t" x="692" y="152">6 · Dreaming</text><text class="s" x="692" y="172">nightly consolidation</text>
+  <path class="ln" d="M770 80 V126"/><path class="ln" d="M662 159 H678"/>
+  <rect class="warn" x="176" y="232" width="150" height="56" rx="9"/>
+  <text class="t" x="188" y="256">Rollback</text><text class="s" x="188" y="274">flip provider back</text>
+  <path class="ln" d="M251 80 V230"/>
 </svg>
 </div>
 <ul>
-  <li><b>Phase 0 — Export.</b> Page every fact and every document's original text out of the three banks into JSONL under AI-Drive. Counts and a sha256 per file. Nothing stopped, nothing deleted.</li>
-  <li><b>Phase 1 — Canary.</b> Enable the plugin, switch this profile only, restart the gateway, run the probe set against a throwaway bank.</li>
-  <li><b>Phase 2 — Import.</b> Replay exported facts into Mnemosyne in batches of 500, keeping each fact's original timestamp, and compare imported against exported per bank.</li>
-  <li><b>Phase 3 — Rollout.</b> Two config lines per profile, in waves: scribe and beast first, then the executive seats, then the rest. Each wave runs the probe set before the next starts.</li>
-  <li><b>Phase 4 — Decommission.</b> Stop the container and colima only after the fleet is clean. Hold the volume 14 days, then remove it on an explicit go-ahead.</li>
-  <li><b>Phase 5 — Freshness.</b> Add <code>hermes-dreaming</code> for nightly supersession. Both engines failed that test, so it is a real gap, not decoration.</li>
+  <li><b>Phase 0 — Export.</b> Page every fact and every document's original text out of the three banks into JSONL under AI-Drive, with counts and a sha256 per file. Nothing stopped, nothing deleted.</li>
+  <li><b>Phase 1 — Isolate.</b> Set <code>memory.mnemosyne.profile_isolation: true</code> and a per-profile bank name <i>before</i> the plugin stores anything. Skipping this merges 29 configs into one database.</li>
+  <li><b>Phase 2 — Canary.</b> Enable the plugin, switch this profile only, restart the gateway, run the probe set against this profile's own bank.</li>
+  <li><b>Phase 3 — Import.</b> Replay facts in batches of 500, keeping each fact's original timestamp, and compare imported against exported per bank.</li>
+  <li><b>Phase 4 — Rollout.</b> Same two lines per profile, in waves: scribe and beast first, then the executive seats, then the rest.</li>
+  <li><b>Phase 5 — Decommission.</b> Stop the container, then colima, only after the fleet is clean. Hold the volume 14 days, then remove it on an explicit go-ahead.</li>
+  <li><b>Phase 6 — Freshness.</b> Add <code>hermes-dreaming</code> for nightly supersession. Both engines failed that test, so it is a real gap.</li>
 </ul>
 
 <h2><span class="num">04</span>Acceptance criteria</h2>
 <ul class="check">
-  <li><b>A1 — Export is complete.</b> <code>sum(1 for _ in open(&lt;bank&gt;.jsonl))</code> equals the bank's <code>total</code> from <code>/memories/list</code>. Pass: exact match, all three banks.</li>
-  <li><b>A2 — The provider is switched.</b> <code>hermes memory status</code> prints <code>Provider: mnemosyne</code>. Pass: exit 0 and that literal line.</li>
-  <li><b>A3 — The canary retrieves.</b> Ten single-fact questions from the bake-off, answered 10/10 at rank one. Pass: <code>scorer.py</code> reports <code>hit@1=10/10</code>.</li>
-  <li><b>A4 — Nothing leaves the machine.</b> No established connection to <code>ollama.com</code> while memory is being written. Pass: <code>lsof | grep -c ollama.com</code> returns <code>0</code>.</li>
-  <li><b>A5 — Import is complete.</b> Facts in Mnemosyne equal facts exported within 0.5%. Pass: printed counts inside tolerance.</li>
-  <li><b>A6 — Prompt growth is measured.</b> Record the tool-block token count before and after on one session template. Pass: recorded, and no more than +2,000 tokens.</li>
-  <li><b>A7 — Rollback was proved.</b> Flipping the provider back returns a real memory id from <code>maio-ops</code>. Pass: one successful recall.</li>
-  <li><b>A8 — Reclaim is measured.</b> After removal, the image and volume commands print nothing. Pass: both empty.</li>
+  <li><b>A1 — Export complete.</b> <code>wc -l &lt;bank&gt;.jsonl</code> equals the bank's <code>total</code> read at the same minute. Pass: exact match on all three.</li>
+  <li><b>A2 — Provider switched.</b> <code>hermes memory status | grep -qE "^  Provider: +mnemosyne$"</code>. Pass: exit 0. The real line uses two spaces, so a substring match would fail.</li>
+  <li><b>A3 — Canary retrieves.</b> Ten single-fact questions, 10/10 at rank one. Pass: <code>scorer.py</code> reports <code>hit@1=10/10</code>.</li>
+  <li><b>A4 — No cloud egress on a write.</b> Resolve <code>dig +short ollama.com | head -1</code>, run <code>nettop -P -l 1 -p &lt;hermes pid&gt;</code>, trigger one retain and one recall. Pass: no connection to that address. <code>lsof</code> is not enough — it prints IPs, never hostnames.</li>
+  <li><b>A5 — Import complete.</b> Facts in the profile's bank equal facts exported for it within 0.5%. Pass: printed counts inside tolerance.</li>
+  <li><b>A6 — Prompt growth measured.</b> Record loaded memory-tool count and first-turn prompt tokens for one fixed session template. Pass: both numbers recorded; flag above +2,000 tokens. No plugin-level allowlist exists, so the fallback is a smaller engine, not trimming.</li>
+  <li><b>A7 — Rollback proved.</b> Flipping the provider back returns a recall with a real memory id from <code>maio-ops</code>. Pass: one successful recall, before any deletion.</li>
+  <li><b>A8 — Reclaim measured.</b> After removal, the image and volume listings print nothing. Pass: both empty.</li>
+  <li><b>A9 — Isolation holds.</b> With two profiles enabled, a fact written by one is not recalled by the other. Pass: the second profile's recall returns nothing.</li>
 </ul>
 
 <h2><span class="num">05</span>Risks</h2>
 <table>
   <thead><tr><th>Risk</th><th>Likelihood</th><th>Mitigation</th></tr></thead>
   <tbody>
-    <tr><td>Multi-hop answers get worse in daily use</td><td>Medium</td><td>Wave rollout with the same 22-question probe; volume held until Phase 4</td></tr>
-    <tr><td>41 tools inflate every prompt</td><td>Medium</td><td>A6 before the fleet wave; trim unused tools per profile if the cost is real</td></tr>
+    <tr><td>Profiles share one database because isolation stayed off</td><td>High if unmanaged</td><td>Phase 1 is a prerequisite; A9 proves it before imports</td></tr>
+    <tr><td>Multi-hop answers get worse in daily use</td><td>Medium</td><td>Wave rollout with the same 22-question probe; volume held until Phase 5</td></tr>
+    <tr><td>39–41 tools inflate every prompt and cannot be trimmed</td><td>Medium</td><td>A6 measures it on the canary; fallback decided before the fleet wave</td></tr>
     <tr><td>Import quietly truncates a bank</td><td>Medium</td><td>A1 and A5 counted per bank before any profile switches</td></tr>
-    <tr><td>First-run embedding download stalls a cold start</td><td>Low</td><td>Pre-warm the model once, then verify an offline start</td></tr>
-    <tr><td>Mnemosyne's LLM features never engage</td><td>Medium</td><td>Fact memory is the delivered scope; extraction is a follow-up, not a promise</td></tr>
+    <tr><td>First-run embedding download stalls a cold start</td><td>Low</td><td>Pre-warm once, then verify an offline start</td></tr>
+    <tr><td>Mnemosyne's LLM features never engage</td><td>Medium</td><td>Fact memory is the delivered scope; extraction is a follow-up</td></tr>
     <tr><td>Decommission deletes something wanted</td><td>Low</td><td>14-day hold plus a verified archive before any delete</td></tr>
   </tbody>
 </table>
@@ -170,28 +182,47 @@
 <table>
   <thead><tr><th>#</th><th>Question</th><th>My recommendation</th></tr></thead>
   <tbody>
-    <tr><td class="n">1</td><td>Migrate all 166,294 facts, or start fresh and keep the archive read-only?</td><td>Migrate <code>maio-ops</code> and <code>maio-personal</code>; start <code>maio</code> fresh — it is oldest and most redundant</td></tr>
-    <tr><td class="n">2</td><td>Delete the Hindsight volume at the end, or keep it as a read-only archive?</td><td>Delete after the 14-day hold; it reclaims 7.6 GB</td></tr>
-    <tr><td class="n">3</td><td>Which profile is the canary?</td><td>This one — a failure shows up in this thread first</td></tr>
-    <tr><td class="n">4</td><td>Is Mnemosyne's consolidation work in scope now, or a follow-up PRD?</td><td>Follow-up. The SDK path left <code>consolidated: 0</code>; it needs investigation before it can be promised</td></tr>
+    <tr><td class="n">1</td><td>Migrate the facts, or start fresh and keep the archive read-only?</td><td>Migrate <code>maio-ops</code> and <code>maio-personal</code>; start <code>maio</code> fresh</td></tr>
+    <tr><td class="n">2</td><td>Delete the Hindsight volume at the end, or keep it as an archive?</td><td>Delete after the hold — reclaims 7.6 GB</td></tr>
+    <tr><td class="n">3</td><td>Which profile is the canary?</td><td>This one, so a failure lands in this thread first</td></tr>
+    <tr><td class="n">4</td><td>Consolidation work now, or a follow-up PRD?</td><td>Follow-up: the SDK path left <code>consolidated: 0</code></td></tr>
+    <tr><td class="n">5</td><td>Retire the misfiled v1 copy in <code>4.Research</code>?</td><td>Yes — PRDs belong in <code>3.PRD/Active</code>, and v2 is filed there</td></tr>
   </tbody>
 </table>
 
-<h2><span class="num">07</span>Evidence</h2>
-<div class="ev"><b>E1</b> <code>hermes --version</code> → Hermes Agent v0.22.5 (2026.9.24) · stable · local bf0203a794a0; plugin.yaml → <code>requires_hermes: "&gt;=0.21.4"</code></div>
-<div class="ev"><b>E2</b> Config sweep over ~/.hermes/config.yaml and 31 profile configs → 29 read <code>memory.provider: hindsight</code></div>
-<div class="ev"><b>E3</b> GET /v1/default/banks → maio-ops 63,721 facts · maio 56,281 · maio-personal 46,292; documents total 2,294 / 983 / 874</div>
-<div class="ev"><b>E4</b> GET …/memories/list?limit=2 → items carry <code>text</code>, total 63721; GET …/documents/{id} → <code>original_text</code> 7,733 chars</div>
-<div class="ev"><b>E5</b> docker inspect → ghcr.io/vectorize-io/hindsight, LLM gpt-oss:20b at https://ollama.com/v1, embeddings local; image 3.58 GB; volume 4.0 GB</div>
-<div class="ev"><b>E6</b> hermes plugins list → mnemosyne 0.7.3, not enabled; mnemosyne-memory 4.0.0 installed for the test harness</div>
-<div class="ev"><b>E7</b> Bake-off, 22 queries: Hindsight 20/22 @1 · 22/22 @5 · MRR 0.97 · 0.351 s; Mnemosyne 17/22 @1 · 20/22 @5 · MRR 0.89 · 0.006 s · 0.44 s ingest · 2.1 MB; FTS5 floor 16/22 @1 · MRR 0.83</div>
-<div class="ev"><b>E8</b> Unanswerable controls: Mnemosyne returned zero results; Hindsight and FTS5 returned unrelated memories at rank one</div>
+<h2><span class="num">07</span>Audit trail — the nine corrections in v2</h2>
+<table>
+  <thead><tr><th>#</th><th>v1 said</th><th>What is actually true</th></tr></thead>
+  <tbody>
+    <tr><td class="n">1</td><td>166,294 facts</td><td class="bad">Stale on arrival: 166,333 forty minutes later, and <code>maio-ops</code> alone moved 63,721 → 63,760. Counts are now timestamped and re-read at execution.</td></tr>
+    <tr><td class="n">2</td><td>"29 profiles"</td><td class="bad">28 profiles <i>plus</i> the main config; <code>dexter</code>, <code>lois</code>, <code>shadow</code> have no provider at all.</td></tr>
+    <tr><td class="n">3</td><td>— (silent)</td><td class="bad">Missed entirely: <code>profile_isolation</code> defaults to false. <span class="fix">Phase 1 and A9 added.</span></td></tr>
+    <tr><td class="n">4</td><td>A2 matches <code>Provider: mnemosyne</code></td><td class="bad">The line is <code>Provider:&nbsp;&nbsp;mnemosyne</code> — two spaces. <span class="fix">Rewritten as a regex.</span></td></tr>
+    <tr><td class="n">5</td><td>A4 runs <code>lsof | grep ollama.com</code></td><td class="bad"><code>lsof</code> prints IPs, never hostnames — that test could never match. <span class="fix">Replaced with dig + nettop.</span></td></tr>
+    <tr><td class="n">6</td><td>A6 records a "tool-block token count"</td><td class="bad">No command produces that number. <span class="fix">Replaced with tool count + runtime prompt tokens.</span></td></tr>
+    <tr><td class="n">7</td><td>"41 tools"</td><td class="bad">41 declared, 39 referenced in code, runtime count unmeasured — and no plugin allowlist exists. <span class="fix">Stated precisely; real fallback named.</span></td></tr>
+    <tr><td class="n">8</td><td>Filed under <code>4.Research</code></td><td class="bad">PRDs live in <code>3.PRD/Active</code>. <span class="fix">v2 filed correctly; old copy flagged.</span></td></tr>
+    <tr><td class="n">9</td><td>"Mnemosyne 0.7.3"</td><td class="bad">0.7.3 is the shim; the implementation <code>mnemosyne-hermes</code> resolves to 0.7.7. <span class="fix">Version line corrected.</span></td></tr>
+  </tbody>
+</table>
+
+<h2><span class="num">08</span>Evidence</h2>
+<div class="ev"><b>E1</b> hermes --version → v0.22.5 (2026.9.24) · local bf0203a794a0; plugin.yaml → requires_hermes "&gt;=0.21.4"</div>
+<div class="ev"><b>E2</b> config sweep → 29 files contain "provider: hindsight"; the three without are dexter, lois, shadow</div>
+<div class="ev"><b>E3</b> GET /v1/default/banks at 09:00 → maio-ops 63,760 · maio 56,281 · maio-personal 46,292 = 166,333; documents 2,294 / 983 / 874</div>
+<div class="ev"><b>E4</b> GET …/memories/list?limit=2 → items carry <code>text</code>, total 63760; GET …/documents/{id} → original_text 7,733 chars</div>
+<div class="ev"><b>E5</b> docker inspect → ghcr.io/vectorize-io/hindsight · LLM gpt-oss:20b @ https://ollama.com/v1 · embeddings local; image 3.58 GB; volume 4.0 GB</div>
+<div class="ev"><b>E6</b> hermes plugins list → mnemosyne 0.7.3, not enabled</div>
+<div class="ev"><b>E7</b> bake-off, 22 queries: Hindsight 20/22 @1 · 22/22 @5 · MRR 0.97 · 0.351 s; Mnemosyne 17/22 @1 · 20/22 @5 · MRR 0.89 · 0.006 s · 0.44 s ingest · 2.1 MB; FTS5 floor 16/22 @1 · MRR 0.83</div>
+<div class="ev"><b>E8</b> unanswerable controls: Mnemosyne returned zero results; Hindsight and FTS5 returned unrelated memories at rank one</div>
 <div class="ev"><b>E9</b> run_mnemosyne_llm.py with MNEMOSYNE_LLM_ENABLED=1 → 0.6 s ingest, consolidated: 0, identical scores</div>
 <div class="ev"><b>E10</b> get_stats('bakeoff') → ~/.hermes/mnemosyne/data/banks/bakeoff/mnemosyne.db</div>
-<div class="ev"><b>E11</b> plugin.yaml exposes 41 mnemosyne_* tools; Hindsight registers 3</div>
-<div class="ev"><b>E12</b> grep for "hindsight" across SOUL.md files in the fleet → 0 files</div>
+<div class="ev"><b>E11</b> manifest declares 41 mnemosyne_* tools; 39 distinct names referenced in mnemosyne_hermes/__init__.py; Hindsight registers exactly 3</div>
+<div class="ev"><b>E12</b> grep -rIl hindsight across SOUL.md files in the fleet → 0 files</div>
+<div class="ev"><b>E13</b> mnemosyne_hermes config schema → profile_isolation default False, "Each Hermes profile gets its own SQLite database under mnemosyne/data/banks/&lt;profile&gt;/"; precedence memory.mnemosyne.&lt;key&gt; → Mnemosyne config → env → default</div>
+<div class="ev"><b>E14</b> uv pip install mnemosyne-hermes → 0.7.7; the catalog wrapper __init__.py is 17 lines re-exporting register / register_memory_provider</div>
 
-<h2><span class="num">08</span>Related</h2>
+<h2><span class="num">09</span>Related</h2>
 <ul>
   <li><a href="https://targetpraks.github.io/jump.html?vault=Maio%20Hub&amp;file=AI-Space%2F4.Research%2F2026-10-30-hermes-memory-providers-free-only-bake-off-2026-10-30&amp;doc=AI-Space%2F4.Research%2F2026-10-30-hermes-memory-providers-free-only-bake-off-2026-10-30&amp;t=bake-off">Hermes Memory Providers — Free-Only Bake-Off (2026-10-30)</a></li>
   <li><a href="https://github.com/mnemosyne-oss/mnemosyne">Mnemosyne on GitHub</a> · <a href="https://github.com/vectorize-io/hindsight">Hindsight on GitHub</a></li>
@@ -200,7 +231,7 @@
 </ul>
 
 <footer>
-  Proposed 2026-10-30 by Adrianna A on the Mac mini (macOS 27.2, arm64). Every figure above comes from a command run on this machine; the identifiers E1–E12 point at those runs. Nothing in this plan has been executed — Phase 1 needs a go-ahead.
+  v2 · 2026-10-30 · Adrianna A on the Mac mini (macOS 27.2, arm64). Every figure traces to a command run on this machine; E1–E14 name them. Nothing in this plan has been executed — Phase 1 needs a go-ahead.
 </footer>
 
 </div>
