@@ -80,8 +80,9 @@ code{font-family:var(--mono);font-size:.9em;background:#f1ece1;padding:1px 5px;b
 .stage-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#9fb1cd}
 .stage-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:1px}
 .stage-legend .dim{color:#6d7f9b}
-.stage-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;align-items:stretch}
-.stage{position:relative;border-radius:12px;overflow:hidden;background:#0b1220;height:480px}
+.stage-grid{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
+.stage{position:relative;border-radius:12px;overflow:hidden;background:#0b1220;aspect-ratio:2/1;width:100%;min-height:420px}
+.stage-below{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}
 .stage canvas{display:block;width:100%;height:100%}
 .stage-side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .hud{display:grid;grid-template-columns:1fr 1fr;gap:7px;pointer-events:none}
@@ -111,7 +112,7 @@ code{font-family:var(--mono);font-size:.9em;background:#f1ece1;padding:1px 5px;b
 @media (max-width:860px){
   .chips,.grid3,.grid2{grid-template-columns:1fr 1fr}
   .stage-grid{grid-template-columns:1fr}
-  .stage{height:min(92vw,420px)}
+  .stage{aspect-ratio:3/2;min-height:320px}
   .hud{grid-template-columns:repeat(4,1fr)}
   .grid2{gap:20px}
   footer .cols{grid-template-columns:1fr}
@@ -120,7 +121,7 @@ code{font-family:var(--mono);font-size:.9em;background:#f1ece1;padding:1px 5px;b
 @media (max-width:560px){
   .chips,.grid3{grid-template-columns:1fr}
   .hud{grid-template-columns:1fr 1fr}
-  .stage{height:78vw}
+  .stage{aspect-ratio:1/1}
 }
 </style>
 <script type="importmap">
@@ -151,7 +152,7 @@ code{font-family:var(--mono);font-size:.9em;background:#f1ece1;padding:1px 5px;b
     <span class="pnum">01</span>
     <h2>The room, running</h2>
     <p class="lede">This is not a video. It is the same engine that produced every number on this page, running in your browser.
-      Each capsule is a guest who has eaten here in the last four weeks. Turn the dials and the room answers.</p>
+      Every little figure is a guest who has eaten here in the last four weeks, sat at one of the tables. Turn the dials and the room answers.</p>
   </div>
 
   <div class="stage-card">
@@ -161,14 +162,14 @@ code{font-family:var(--mono);font-size:.9em;background:#f1ece1;padding:1px 5px;b
         <span><i style="background:#3ecfa5"></i>first visit</span>
         <span><i style="background:#ff6b5e"></i>came back</span>
         <span><i style="background:#ffc24b"></i>habitual</span>
-        <span class="dim">floor holds up to 760 guests</span>
+        <span class="dim">one figure = one guest who ate here in the past four weeks</span>
       </div>
     </div>
 
     <div class="stage-grid">
       <div class="stage" id="stage"><canvas id="gl"></canvas></div>
 
-      <aside class="stage-side">
+      <aside class="stage-side" hidden>
         <div class="hud" id="hud">
           <div class="tile"><b id="h-week">0</b><span>week</span></div>
           <div class="tile"><b id="h-covers">0</b><span>covers this week</span></div>
@@ -186,6 +187,11 @@ code{font-family:var(--mono);font-size:.9em;background:#f1ece1;padding:1px 5px;b
             Dashed line: what the room can serve.</div>
         </div>
       </aside>
+    </div>
+    <div class="stage-below">
+      <div class="hud" id="hud-move"></div>
+      <p class="note">Move the dials below and the room rebuilds itself: more new guests a week, a better second-visit rate, a bigger floor.
+        The book holds anyone who ate here in the last four weeks, so an empty seat means a guest who has stopped coming.</p>
     </div>
 
     <div class="controls">
@@ -520,6 +526,8 @@ code{font-family:var(--mono);font-size:.9em;background:#f1ece1;padding:1px 5px;b
     </div>
     <p class="callout">The animation was never the hard part. <em>The hard part is the guest book</em> — and that is
       the piece we can build better than they did.</p>
+    <p class="callout">Next on the shelf: <a href="https://targetpraks.github.io/jump.html?vault=Maio%20Hub&amp;file=AI-Space%2F2.Automations-Skills%2FReports%2F2026-10-30-the-restaurant-lab-four-instruments-and-six-blueprints-from&amp;doc=AI-Space%2F2.Automations-Skills%2FReports%2F2026-10-30-the-restaurant-lab-four-instruments-and-six-blueprints-from&amp;t=The%20restaurant%20lab%20%E2%80%94%20four%20instruments%20and%20six%20blueprints&amp;h=https%3A%2F%2Ftargetpraks.github.io%2F2026-10-30-the-restaurant-lab-four-instruments-and-six-blueprints-from.html">The restaurant lab</a>
+      — the other thirteen questions from the same channel, four of them already running.</p>
   </div>
 </section>
 
@@ -741,26 +749,62 @@ window.__errs = window.__errs || [];
 window.addEventListener('error', (e) => window.__errs.push(String(e.message)));
 
 const $ = (id) => document.getElementById(id);
-const MAXV = 760;
+const MAXV = 900;                 // hard cap on seats drawn on the floor
 const PALETTE = { fresh: '#3ecfa5', back: '#ff6b5e', habit: '#ffc24b' };
 let COL = null;   // palette as THREE.Colors, built with the scene
-const CAM = { fov: 26, y: 24, z: 26.5 };   // frames the whole floor in a squarish stage
+const CAM = { fov: 40, y: 14.5, z: 23 };   // a close three-quarter view: you see figures, not just dots
 
 const live = newSim({ horizon: 1e9 });
 let playing = true, weeksPerSec = 8, carry = 0, lastTick = performance.now();
 let pendingWeeks = 0;   // "jump 2 years" runs in slices so the page never freezes
 
-/* ---- slot map: a sunflower spiral, so a full room looks like a full room --- */
-const SLOTS = (() => {
-  const out = [], N = MAXV, R = 8.35;
-  for (let i = 0; i < N; i++) {
-    const a = i * 2.399963229728653, r = R * Math.sqrt((i + 0.5) / N);
-    out.push([r * Math.cos(a), r * Math.sin(a)]);
+/* ---- the floor plan: round tables on a spiral, six seats each --------------
+   Guests sit at tables rather than on a scatter of points, so the room reads
+   as a restaurant and individual figures stay countable. Rebuilt whenever the
+   capacity dial moves. */
+let SLOTS = [];        // [x, z] per seat
+let TABLE_POS = [];    // [x, z] per table
+function layoutRoom(capacity) {
+  const perTable = 6;
+  const nT = Math.max(6, Math.ceil(capacity / perTable));
+  const R = 7.55, step = 1.36;
+  // candidate tables on a staggered grid, kept inside the disc, filled from the middle out
+  const cand = [];
+  let row = 0;
+  for (let z = -R; z <= R + 0.001; z += step, row++) {
+    const off = (row % 2) ? step / 2 : 0;
+    for (let x = -R; x <= R + 0.001; x += step) {
+      const px = x + off, pz = z;
+      const rr = Math.hypot(px, pz);
+      if (rr > R) continue;
+      if (row % 5 === 2) continue;            // every fifth row is an aisle
+      cand.push([px, pz, rr + 0.12 * Math.sin(px * 3.1 + pz * 2.7)]);
+    }
   }
-  return out;
-})();
-const freeSlots = SLOTS.map((_, i) => i);
-const slotOf = new Map();   // guest id -> slot
+  cand.sort((a, b) => a[2] - b[2]);
+  SLOTS = []; TABLE_POS = [];
+  const n = Math.min(nT, cand.length);
+  for (let i = 0; i < n; i++) {
+    const [tx, tz] = cand[i];
+    TABLE_POS.push([tx, tz]);
+    const base = (i * 1.7) % (Math.PI * 2);
+    for (let k = 0; k < perTable; k++) {
+      if (SLOTS.length >= capacity) break;
+      const ang = base + k * (Math.PI / 3) + 0.18 * (((i * 7 + k * 13) % 5) / 5 - 0.5);
+      const rr = 0.60 + 0.05 * (((i * 11 + k * 5) % 7) / 7);
+      SLOTS.push([tx + Math.cos(ang) * rr, tz + Math.sin(ang) * rr]);
+    }
+  }
+}
+layoutRoom(500);
+let freeSlots = [];
+const slotOf = new Map();   // guest id -> seat
+const bornAt = new Map();   // guest id -> when this figure appeared (for the grow-in)
+function resetSeats() {
+  slotOf.clear(); freeSlots = [];
+  for (let i = SLOTS.length - 1; i >= 0; i--) freeSlots.push(i);
+}
+resetSeats();
 
 function takeSlot(id) {
   if (slotOf.has(id)) return slotOf.get(id);
@@ -771,8 +815,18 @@ function takeSlot(id) {
 }
 function releaseSlots(visibleIds) {
   for (const [id, s] of slotOf) {
-    if (!visibleIds.has(id)) { slotOf.delete(id); freeSlots.push(s); }
+    if (!visibleIds.has(id)) { slotOf.delete(id); bornAt.delete(id); freeSlots.push(s); }
   }
+}
+
+/* the capacity dial rebuilds the floor plan, so the room is always the size you dialled */
+function setCapacity(v) {
+  live.p.capacity = v;
+  layoutRoom(v);
+  buildFurniture();
+  resetSeats();
+  bornAt.clear();
+  updateHUD(); drawChart();
 }
 
 /* ---- live view of the book: anyone who ate here in the last four weeks ---- */
@@ -794,6 +848,7 @@ catch (err) { window.__errs.push('three:' + (err && err.message ? err.message : 
 const stage = $('stage');
 const canvas = $('gl');
 let renderer = null, scene = null, camera = null, inst = null, dummy = null;
+let heads = null, tableMesh = null, plateMesh = null;
 let ctx2d = null, view = { w: 0, h: 0 };
 
 function sizeOf() {
@@ -803,65 +858,126 @@ function sizeOf() {
 
 function build3D() {
   view = sizeOf();
-  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(view.w, view.h, false);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.02;
+  renderer.toneMappingExposure = 1.12;
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color('#0b1220');
-  scene.fog = new THREE.Fog('#0b1220', 26, 44);
+  scene.background = new THREE.Color('#101a2b');
+  // no fog: at this camera distance it swallowed the far half of the room
 
   camera = new THREE.PerspectiveCamera(CAM.fov, view.w / view.h, 0.1, 140);
   fitCamera();
 
-  scene.add(new THREE.HemisphereLight(0xc6dcff, 0x0a1220, 0.85));
-  const key = new THREE.DirectionalLight(0xffffff, 2.6);
-  key.position.set(7, 16, 9);
+  scene.add(new THREE.HemisphereLight(0xe8f0ff, 0x2a2d38, 1.25));
+  const key = new THREE.DirectionalLight(0xffe8cc, 2.5);
+  key.position.set(6, 17, 9);
   key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
-  key.shadow.camera.left = -12; key.shadow.camera.right = 12;
-  key.shadow.camera.top = 12; key.shadow.camera.bottom = -12;
+  key.shadow.camera.left = -11; key.shadow.camera.right = 11;
+  key.shadow.camera.top = 11; key.shadow.camera.bottom = -11;
   key.shadow.camera.near = 1; key.shadow.camera.far = 45;
-  key.shadow.radius = 4; key.shadow.bias = -0.0006;
+  key.shadow.radius = 5; key.shadow.bias = -0.0006;
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x77a7ff, 1.1);
-  rim.position.set(-9, 7, -8);
+  const rim = new THREE.DirectionalLight(0x86b0ff, 1.15);
+  rim.position.set(-10, 9, -9);
   scene.add(rim);
 
+  // a warm, pale floor: dark figures on a light floor read at any size
   const floor = new THREE.Mesh(
-    new THREE.CylinderGeometry(9.25, 8.9, 0.5, 120),
-    new THREE.MeshStandardMaterial({ color: '#e8edf6', roughness: 0.92, metalness: 0.0 })
+    new THREE.CylinderGeometry(8.9, 8.55, 0.44, 128),
+    new THREE.MeshStandardMaterial({ color: '#f2f0ea', roughness: 0.95, metalness: 0.0 })
   );
-  floor.position.y = -0.27;
+  floor.position.y = -0.24;
   floor.receiveShadow = true;
   scene.add(floor);
 
   const rimRing = new THREE.Mesh(
-    new THREE.TorusGeometry(9.26, 0.035, 8, 160),
-    new THREE.MeshStandardMaterial({ color: '#7f97c0', roughness: 0.5, metalness: 0.4 })
+    new THREE.TorusGeometry(8.92, 0.045, 8, 180),
+    new THREE.MeshStandardMaterial({ color: '#c8b49a', roughness: 0.5, metalness: 0.25 })
   );
   rimRing.rotation.x = Math.PI / 2;
-  rimRing.position.y = 0.0;
+  rimRing.position.y = 0.01;
   scene.add(rimRing);
 
-  const geo = new THREE.CapsuleGeometry(0.17, 0.33, 4, 10);
-  const mat = new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.06 });
-  inst = new THREE.InstancedMesh(geo, mat, MAXV);
+  // tables and plates — what makes the floor a restaurant and not a dot map
+  tableMesh = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.46, 0.44, 0.09, 22),
+    new THREE.MeshStandardMaterial({ color: '#b9773f', roughness: 0.55, metalness: 0.05 }),
+    200
+  );
+  tableMesh.castShadow = true; tableMesh.receiveShadow = true;
+  scene.add(tableMesh);
+
+  plateMesh = new THREE.InstancedMesh(
+    new THREE.CylinderGeometry(0.17, 0.17, 0.02, 18),
+    new THREE.MeshStandardMaterial({ color: '#fff6e8', roughness: 0.62 }),
+    200
+  );
+  scene.add(plateMesh);
+
+  // guests: a body capsule plus a head, so each one is a little person
+  const bodyGeo = new THREE.CapsuleGeometry(0.163, 0.28, 4, 12);
+  inst = new THREE.InstancedMesh(
+    bodyGeo,
+    new THREE.MeshStandardMaterial({ roughness: 0.46, metalness: 0.04 }),
+    MAXV
+  );
   inst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  inst.castShadow = true;
-  inst.receiveShadow = true;
+  inst.castShadow = true; inst.receiveShadow = true;
   inst.count = 0;
   scene.add(inst);
+
+  heads = new THREE.InstancedMesh(
+    new THREE.SphereGeometry(0.132, 16, 14),
+    new THREE.MeshStandardMaterial({ roughness: 0.58, metalness: 0.0 }),
+    MAXV
+  );
+  heads.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  heads.castShadow = true;
+  heads.count = 0;
+  scene.add(heads);
+
   dummy = new THREE.Object3D();
   COL = {
     fresh: new THREE.Color(PALETTE.fresh),
     back: new THREE.Color(PALETTE.back),
     habit: new THREE.Color(PALETTE.habit)
   };
+  const cream = new THREE.Color('#f8eedd');
+  COL.head = {
+    fresh: cream.clone().lerp(COL.fresh, 0.42),
+    back: cream.clone().lerp(COL.back, 0.42),
+    habit: cream.clone().lerp(COL.habit, 0.42)
+  };
+  buildFurniture();
+  // a handle for inspection from the console and for headless checks
+  window.__3d = {
+    renderer, scene, camera,
+    get guests() { return inst; }, get heads() { return heads; },
+    get tables() { return tableMesh; }, get plates() { return plateMesh; }
+  };
+}
+
+/* tables + plates laid out for the current capacity */
+function buildFurniture() {
+  if (!tableMesh) return;
+  const d = new THREE.Object3D();
+  const n = Math.min(200, TABLE_POS.length);
+  for (let i = 0; i < n; i++) {
+    const [x, z] = TABLE_POS[i];
+    d.position.set(x, 0.045, z); d.rotation.set(0, i * 0.7, 0); d.scale.setScalar(1);
+    d.updateMatrix(); tableMesh.setMatrixAt(i, d.matrix);
+    d.position.set(x, 0.118, z); d.scale.setScalar(1);
+    d.updateMatrix(); plateMesh.setMatrixAt(i, d.matrix);
+  }
+  tableMesh.count = n; plateMesh.count = n;
+  tableMesh.instanceMatrix.needsUpdate = true;
+  plateMesh.instanceMatrix.needsUpdate = true;
 }
 
 // Frame the whole floor at whatever aspect the stage happens to be: project the rim,
@@ -878,11 +994,11 @@ function fitCamera() {
     let maxN = 0;
     for (let i = 0; i < 32; i++) {
       const a = (i / 32) * Math.PI * 2;
-      point.set(Math.cos(a) * 9.35, 0, Math.sin(a) * 9.35).project(camera);
+      point.set(Math.cos(a) * 9.0, 0, Math.sin(a) * 9.0).project(camera);
       maxN = Math.max(maxN, Math.abs(point.x), Math.abs(point.y));
     }
-    if (Math.abs(maxN - 0.86) < 0.005) break;
-    d *= maxN / 0.86;
+    if (Math.abs(maxN - 0.93) < 0.004) break;
+    d *= maxN / 0.93;
   }
   CAM.dist = d;
   CAM.elev = elev;
@@ -920,20 +1036,37 @@ function draw(t) {
     const s = takeSlot(g.id);
     if (s < 0) continue;
     const [x, z] = SLOTS[s];
-    const target = g.visits >= 4 ? COL.habit : g.visits >= 2 ? COL.back : COL.fresh;
-    dummy.position.set(x, 0.19 + 0.02 * Math.sin(t * 1.6 + g.id * 0.7), z);
-    const age = Math.min(1, (live.week - g.lastWeek + 1) * 0.5);
-    const pulse = g.lastWeek === live.week ? 1 + 0.12 * Math.max(0, 1 - ((t * 1.4 + g.id) % 1)) : 1;
-    dummy.scale.setScalar(pulse);
-    dummy.rotation.y = g.id * 0.9;
+    const isHabit = g.visits >= 4, isBack = g.visits >= 2 && g.visits < 4;
+    const body = isHabit ? COL.habit : isBack ? COL.back : COL.fresh;
+    const headCol = isHabit ? COL.head.habit : isBack ? COL.head.back : COL.head.fresh;
+
+    if (!bornAt.has(g.id)) bornAt.set(g.id, t);
+    const grow = Math.min(1, (t - bornAt.get(g.id)) / 0.5);
+    // a guest who ate here this week gives a small hop — the eye catches it as "something happened"
+    const fresh = g.lastWeek === live.week;
+    const hop = fresh ? Math.max(0, Math.sin((t * 2.2 + g.id) * Math.PI * 2) * 0.05 + 0.05) : 0;
+    const bob = 0.012 * Math.sin(t * 1.5 + g.id * 0.7);
+    const hsh = ((Math.sin(g.id * 12.9898) * 43758.5453) % 1 + 1) % 1;
+    const sc = (0.55 + 0.45 * grow) * (fresh ? 1.06 : 1) * (0.86 + 0.28 * hsh);
+
+    dummy.rotation.set(0, hsh * 6.283, 0);
+    dummy.scale.setScalar(sc);
+    dummy.position.set(x, 0.303 * sc + bob + hop, z);
     dummy.updateMatrix();
     inst.setMatrixAt(n, dummy.matrix);
-    inst.setColorAt(n, target);
+    inst.setColorAt(n, body);
+
+    dummy.position.set(x, 0.596 * sc + bob + hop, z);
+    dummy.updateMatrix();
+    heads.setMatrixAt(n, dummy.matrix);
+    heads.setColorAt(n, headCol);
     n++;
   }
-  inst.count = n;
+  inst.count = n; heads.count = n;
   inst.instanceMatrix.needsUpdate = true;
+  heads.instanceMatrix.needsUpdate = true;
   if (inst.instanceColor) inst.instanceColor.needsUpdate = true;
+  if (heads.instanceColor) heads.instanceColor.needsUpdate = true;
 
   const azi = Math.sin(t * 0.07) * 0.16;
   const d = CAM.dist, e = CAM.elev;
@@ -955,7 +1088,7 @@ function draw2D(t) {
     const [x, z] = SLOTS[s];
     const col = g.visits >= 4 ? PALETTE.habit : g.visits >= 2 ? PALETTE.back : PALETTE.fresh;
     c.beginPath();
-    c.arc(cx + (x / 9.25) * rx, cy + (z / 9.25) * ry, 2.4, 0, Math.PI * 2);
+    c.arc(cx + (x / 9.0) * rx, cy + (z / 9.25) * ry, 2.4, 0, Math.PI * 2);
     c.fillStyle = col; c.fill();
   }
   for (const g of book) { const s = slotOf.get(g.id); if (s == null) takeSlot(g.id); }
@@ -1036,7 +1169,7 @@ function bindDials() {
     ['s-arr', 'v-arr', (v) => { live.p.arrivals = v; return v; }],
     ['s-r2', 'v-r2', (v) => { live.p.r2 = v / 100; return v + '%'; }],
     ['s-r3', 'v-r3', (v) => { live.p.r3 = v / 100; return v + '%'; }],
-    ['s-cap', 'v-cap', (v) => { live.p.capacity = v; return v; }],
+    ['s-cap', 'v-cap', (v) => { setCapacity(v); return v; }],
     ['s-spend', 'v-spend', (v) => { live.p.spend = v; return 'R' + v; }]
   ];
   for (const [slider, out, apply] of pairs) {
@@ -1055,7 +1188,8 @@ function bindButtons() {
     const p = Object.assign({}, live.p, { horizon: 1e9 });
     Object.assign(live, newSim(p));
     pendingWeeks = 0;
-    slotOf.clear(); freeSlots.length = 0; SLOTS.forEach((_, i) => freeSlots.push(i));
+    slotOf.clear(); resetSeats(); bornAt.clear();
+    layoutRoom(live.p.capacity); buildFurniture();
     updateHUD(); drawChart();
   });
   document.querySelectorAll('.spd').forEach((b) => {
