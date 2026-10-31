@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Orca Runbook — App Planning &amp; Build Workflows</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="orca-runbook--app-planning--build-workflows">Orca Runbook — App Planning &amp; Build Workflows</h1>
+<p>All <code>orca orchestration</code> verbs must run <strong>from the coordinator's live Orca terminal</strong> (the Claude pane), or pass <code>--from &lt;handle&gt;</code>. Without a bound terminal they fail <code>no_active_sender_terminal</code>.</p>
+<h2 id="0-one-time-discovery-any-shell">0. One-time discovery (any shell)</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> status <span class="at">--json</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> skills get orca-cli</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> skills get orchestration</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> account list</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> repo list <span class="at">--json</span>          <span class="co"># note the repo id for --repo id:&lt;id&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> worktree ps</span></code></pre></div>
+<h2 id="1-planning-idea--prd">1. Planning (idea → PRD)</h2>
+<p>Create the planning worktree with Claude as the coordinator seat:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> worktree create <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--name</span> plan-<span class="op">&lt;</span>app<span class="op">&gt;</span> <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--repo</span> id:<span class="op">&lt;</span>repoId<span class="op">&gt;</span> <span class="dt">\</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--base-branch</span> main <span class="dt">\</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--no-parent</span> <span class="dt">\</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--agent</span> claude <span class="dt">\</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--surface</span> chat <span class="dt">\</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">--prompt</span> <span class="st">&quot;Load the app-planning-workflow skill and run it for: &lt;app idea&gt;. You are the coordinator. Cap clarification at 2 rounds / 7 questions. Use orca orchestration gate-create for every bounded decision; council for deliberative ones. Produce a full PRD (features, structure, UX/UI, NFRs) and publish it.&quot;</span> <span class="dt">\</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">--activate</span> <span class="at">--json</span></span></code></pre></div>
+<p>Bounded decisions from the coordinator terminal:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration gate-create <span class="at">--task</span> <span class="op">&lt;</span>task_id<span class="op">&gt;</span> --question <span class="st">&quot;UI direction?&quot;</span> <span class="at">--options</span> <span class="st">&#39;[&quot;editorial&quot;,&quot;brutalist&quot;,&quot;minimal&quot;]&#39;</span> <span class="at">--json</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration gate-resolve <span class="at">--id</span> <span class="op">&lt;</span>gate_id<span class="op">&gt;</span> --resolution <span class="st">&quot;minimal&quot;</span> <span class="at">--json</span></span></code></pre></div>
+<h2 id="2-build-prd--shipped">2. Build (PRD → shipped)</h2>
+<h3 id="21-preflight">2.1 Preflight</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gh</span> auth status                                  <span class="co"># GitHub 403 blocker check</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> account list</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> repo list <span class="at">--json</span>                           <span class="co"># &lt;repoId&gt;</span></span></code></pre></div>
+<h3 id="22-create-the-run-binds-to-this-terminal">2.2 Create the run (binds to this terminal)</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration run-create <span class="at">--objective</span> <span class="st">&quot;Build &lt;app&gt; from PRD: &lt;abs path&gt;&quot;</span> <span class="at">--json</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># → run.id</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration run-current <span class="at">--json</span></span></code></pre></div>
+<h3 id="23-one-task-per-ticket-from-to-tickets-deps--blocker-task-ids">2.3 One task per ticket (from to-tickets; deps = blocker task ids)</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration task-create <span class="at">--run</span> <span class="op">&lt;</span>run_id<span class="op">&gt;</span> --task-title <span class="st">&quot;T01 upload API&quot;</span> <span class="at">--spec</span> <span class="st">&quot;&lt;abs brief&gt;&quot;</span> <span class="at">--deps</span> <span class="st">&#39;[]&#39;</span> <span class="at">--json</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration task-create <span class="at">--run</span> <span class="op">&lt;</span>run_id<span class="op">&gt;</span> --task-title <span class="st">&quot;T02 upload UI&quot;</span> <span class="at">--spec</span> <span class="st">&quot;&lt;abs brief&gt;&quot;</span> <span class="at">--deps</span> <span class="st">&#39;[&quot;&lt;T01_id&gt;&quot;]&#39;</span> <span class="at">--json</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration task-list <span class="at">--run</span> <span class="op">&lt;</span>run_id<span class="op">&gt;</span> --ready <span class="at">--json</span></span></code></pre></div>
+<h3 id="24-one-supervised-worker-per-ready-task-own-worktree">2.4 One supervised worker per ready task (own worktree)</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration worker-start <span class="dt">\</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--run</span> <span class="op">&lt;</span>run_id<span class="op">&gt;</span> --task <span class="op">&lt;</span>T01_id<span class="op">&gt;</span> <span class="dt">\</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--worktree</span> new-top-level <span class="dt">\</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--repo</span> id:<span class="op">&lt;</span>repoId<span class="op">&gt;</span> --name t01-upload-api <span class="at">--base-branch</span> main <span class="dt">\</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--agent</span> claude <span class="at">--model</span> <span class="op">&lt;</span>model<span class="op">&gt;</span> --effort high <span class="dt">\</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--json</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># → dispatch.id</span></span></code></pre></div>
+<p>Per-lane agent by strength: <code>claude</code> (UI/TS), <code>codex</code> (Go/infra), <code>omp</code>/<code>opencode</code> (bulk), <code>hermes</code> only with a pinned <code>--in</code> + <code>--yolo</code>.</p>
+<h3 id="25-watch-liveness-authority">2.5 Watch (liveness authority)</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration worker-list <span class="at">--run</span> <span class="op">&lt;</span>run_id<span class="op">&gt;</span> --include-remote <span class="at">--json</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration worker-read <span class="at">--dispatch</span> <span class="op">&lt;</span>dispatch_id<span class="op">&gt;</span> --limit 80</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration worker-show <span class="at">--dispatch</span> <span class="op">&lt;</span>dispatch_id<span class="op">&gt;</span> --json</span></code></pre></div>
+<h3 id="26-decisions--messaging">2.6 Decisions + messaging</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bounded decision: blocks the task until resolved</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration gate-create <span class="at">--task</span> <span class="op">&lt;</span>T01_id<span class="op">&gt;</span> --question <span class="st">&quot;Postgres or SQLite for v1?&quot;</span> <span class="at">--options</span> <span class="st">&#39;[&quot;postgres&quot;,&quot;sqlite&quot;]&#39;</span> <span class="at">--json</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration gate-resolve <span class="at">--id</span> <span class="op">&lt;</span>gate_id<span class="op">&gt;</span> --resolution <span class="st">&quot;postgres&quot;</span> <span class="at">--json</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># steer a worker / answer a worker&#39;s ask</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration send <span class="at">--to</span> dispatch:<span class="op">&lt;</span>dispatch_id<span class="op">&gt;</span> --subject <span class="st">&quot;steer&quot;</span> <span class="at">--body</span> <span class="st">&quot;use the pnpm workspace&quot;</span> <span class="at">--json</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration reply <span class="at">--id</span> <span class="op">&lt;</span>msg_id<span class="op">&gt;</span> --body <span class="st">&quot;yes, ship the migration&quot;</span> <span class="at">--json</span></span></code></pre></div>
+<h3 id="27-settle-tasks">2.7 Settle tasks</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> orchestration task-update <span class="at">--id</span> <span class="op">&lt;</span>T01_id<span class="op">&gt;</span> --status completed <span class="at">--result</span> <span class="st">&quot;gate green, &lt;sha&gt;&quot;</span> <span class="at">--json</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># statuses: pending | ready | dispatched | completed | failed | blocked</span></span></code></pre></div>
+<h3 id="28-integration-coordinators-own-worktree">2.8 Integration (coordinator's own worktree)</h3>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ex">orca</span> worktree create <span class="at">--name</span> <span class="op">&lt;</span>app<span class="op">&gt;</span>-integration <span class="at">--repo</span> id:<span class="op">&lt;</span>repoId<span class="op">&gt;</span> --base-branch main <span class="at">--no-parent</span> <span class="at">--activate</span> <span class="at">--json</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># merge in dependency order; run the independent acceptance suite; report; never push/merge to main without Ricardo</span></span></code></pre></div>
+<h2 id="kickoff-prompts-what-to-paste-into-claude">Kickoff prompts (what to paste into Claude)</h2>
+<p><strong>Planning</strong></p>
+<pre><code>Load the app-planning-workflow skill and run it for: &lt;app idea&gt;.
+You are the coordinator in Orca. Run orca orchestration from this terminal.
+Cap clarification at 2 rounds / ≤7 questions. Bounded decisions → orca orchestration gate-create; deliberative → council.
+Output a full PRD (features + P0 criteria, structure, UX/UI, NFRs, test seams) and publish it.</code></pre>
+<p><strong>Build</strong></p>
+<pre><code>Load the app-build-workflow skill and run it for the PRD at &lt;path&gt;.
+You are the coordinator in Orca. run-create, task-create per ticket, worker-start per ready task (new-top-level worktree, --agent claude/codex by lane).
+Watch with worker-list --run --include-remote. Independent acceptance suite before merge. Never push/merge to main without my word.</code></pre>
+<h2 id="field-notes">Field notes</h2>
+<ul>
+<li>Liveness = <code>worker-list --run --include-remote</code>, not <code>worktree ps</code>.</li>
+<li><code>--on</code> = saved environment name (never ssh id); remote needs <code>project setup-clone</code> first.</li>
+<li>Pin Orca's Claude entry or pass <code>--model</code> (a bare claude can die "Prompt is too long").</li>
+<li><code>--surface chat</code> exists on <code>worktree create</code>, not on <code>worker-start</code>.</li>
+<li><code>task-create --spec</code> takes the spec text or a brief path; <code>--deps</code> is a JSON array of task ids.</li>
+<li>GitHub push 403 on 28/29 repos — preflight and fall back to a local bundle.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
