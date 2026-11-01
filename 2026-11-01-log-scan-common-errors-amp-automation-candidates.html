@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log Scan — Common Errors &amp; Automation Candidates</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #0b0c10; color: #c5c6c7; margin: 0; padding: 32px; line-height: 1.6; }
+  .max { max-width: 900px; margin: 0 auto; }
+  header { border-bottom: 2px solid #1f2833; padding-bottom: 16px; margin-bottom: 28px; }
+  h1 { color: #66fcf1; margin: 0 0 6px 0; font-size: 26px; }
+  .sub { color: #888; font-size: 14px; }
+  h2 { color: #66fcf1; font-size: 18px; margin-top: 30px; border-left: 4px solid #45a29e; padding-left: 12px; }
+  h3 { color: #c5c6c7; font-size: 15px; margin: 18px 0 6px 0; }
+  p { margin: 8px 0; }
+  .evidence { background: #111318; border: 1px solid #232833; border-radius: 8px; padding: 12px 16px; margin: 10px 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; white-space: pre-wrap; word-break: break-all; color: #a4b1be; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+  .tag-persist { background: #45a29e22; color: #66fcf1; border: 1px solid #45a29e55; }
+  .tag-transient { background: #ffb70344; color: #ffb703; border: 1px solid #ffb70355; }
+  .tag-domain { background: #66fcf122; color: #66fcf1; border: 1px solid #66fcf155; }
+  .tag-beast { background: #fb850044; color: #fb8500; border: 1px solid #fb850055; }
+  .tag-ricardo { background: #ef233c44; color: #ef233c; border: 1px solid #ef233c55; }
+  ul { margin: 8px 0 8px 20px; padding: 0; }
+  li { margin: 6px 0; }
+  .candidate { background: #111318; border: 1px solid #232833; border-radius: 10px; padding: 16px 20px; margin: 16px 0; }
+  .candidate h3 { color: #66fcf1; margin-top: 0; }
+  .candidate p { margin: 6px 0; }
+  .candidate .evidence { margin-top: 10px; }
+  .note { color: #888; font-size: 13px; font-style: italic; }
+  .ok { color: #4ade80; font-weight: 700; }
+  .red { color: #ff6b6b; font-weight: 700; }
+  .amber { color: #ffb703; font-weight: 700; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 12.5px; }
+  th, td { border: 1px solid #232833; padding: 6px 10px; text-align: left; }
+  th { background: #161b22; color: #66fcf1; }
+</style>
+</head>
+<body>
+<div class="max">
+<header>
+  <h1>Log Scan — Common Errors &amp; Automation Candidates</h1>
+  <div class="sub">Adrianna A &bull; AI-stack owner (Courage + Beast) &bull; Scan run Sun 2026-11-01, 10:55 SAST &bull; English only</div>
+</header>
+
+<h2>1. What I checked</h2>
+<ul>
+<li>Courage night-check logs (2026-10-26 through 2026-11-01): <span class="evidence">/Users/ricardomaio/Library/Logs/com.maio.courage-nightcheck.log</span></li>
+<li>Courage health + backup logs: <span class="evidence">com.maio.courage-health.log, com.maio.courage-backups.log</span></li>
+<li>MCP error logs: browser-use, composio, copilot, cloudflare (<span class="evidence">*.err.log</span>)</li>
+<li>Agent desktop guard: <span class="evidence">com.maio.agent-desktop-guard.log</span></li>
+<li>Air-to-NAS copy: <span class="evidence">/Users/ricardomaio/Library/Logs/air-to-nas-copy.log</span></li>
+<li>Live verification: DNS resolution for every failing host, Hiksemi drive read+write, launchd state of all com.maio jobs</li>
+</ul>
+
+<figure>
+  <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-height:240px;display:block;margin:16px auto;border:1px solid #232833;border-radius:10px;background:#111318;">
+    <defs>
+      <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#66fcf1"/><stop offset="100%" stop-color="#45a29e"/></linearGradient>
+      <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ffb703"/><stop offset="100%" stop-color="#fb8500"/></linearGradient>
+      <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#ef233c"/><stop offset="100%" stop-color="#d62828"/></linearGradient>
+    </defs>
+    <text x="350" y="30" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="16" font-weight="700">Log-scan findings by severity and domain</text>
+    <!-- Persistent column -->
+    <rect x="40" y="60" width="190" height="150" rx="8" fill="url(#g1)" opacity="0.12" stroke="#66fcf1" stroke-width="2"/>
+    <text x="135" y="90" text-anchor="middle" fill="#66fcf1" font-family="ui-sans-serif,system-ui" font-size="15" font-weight="700">PERSISTENT</text>
+    <text x="135" y="118" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">Hiksemi drive RED every night</text>
+    <text x="135" y="142" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">(false read_ok — watcher says healthy)</text>
+    <text x="135" y="170" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">ok-vault-server keeps dying</text>
+    <text x="135" y="194" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">Constellation empty backups</text>
+    <!-- Transient column -->
+    <rect x="255" y="60" width="190" height="150" rx="8" fill="url(#g2)" opacity="0.12" stroke="#ffb703" stroke-width="2"/>
+    <text x="350" y="90" text-anchor="middle" fill="#ffb703" font-family="ui-sans-serif,system-ui" font-size="15" font-weight="700">TRANSIENT</text>
+    <text x="350" y="118" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">DNS ENOTFOUND burst 10-28→10-29</text>
+    <text x="350" y="142" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">(browser-use, composio, copilot, cloudflare)</text>
+    <text x="350" y="170" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">BrowserUse port 8801 conflict</text>
+    <text x="350" y="194" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">Desktop guard notify + JSON</text>
+    <!-- Beast/Ricardo column -->
+    <rect x="470" y="60" width="190" height="150" rx="8" fill="url(#g3)" opacity="0.12" stroke="#ef233c" stroke-width="2"/>
+    <text x="565" y="90" text-anchor="middle" fill="#ef233c" font-family="ui-sans-serif,system-ui" font-size="15" font-weight="700">NEEDS RICARDO</text>
+    <text x="565" y="118" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">Paperclip seats error (INFX)</text>
+    <text x="565" y="142" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">Automation build order &amp; go/no-go</text>
+    <text x="565" y="170" text-anchor="middle" fill="#c5c6c7" font-family="ui-sans-serif,system-ui" font-size="13">Hiksemi physical replug decision</text>
+    <circle cx="565" cy="215" r="14" fill="#ef233c"/>
+    <text x="565" y="220" text-anchor="middle" fill="#ffffff" font-family="ui-sans-serif,system-ui" font-size="12" font-weight="700">!</text>
+  </svg>
+  <figcaption style="color:#888;font-size:12px;text-align:center;margin-top:6px;">Evidence from live command output — no fabricated data.</figcaption>
+</figure>
+
+<h2>2. Recurring errors found</h2>
+
+<h3>2.1 Hiksemi 1TB drive — night check reports false RED every night <span class="tag tag-persist">PERSISTENT</span> <span class="tag tag-domain">COURAGE</span></h3>
+<p>Every Courage night check from 2026-10-26 through 2026-11-01 reports:</p>
+<div class="evidence">hiksemi_drive RED   I/O BLOCKED — read_ok=False write_ok=True read_err=False (signature of the 2026-10-06 overnight wedge)</div>
+<p>But the dedicated Hiksemi watcher (real byte read + write, every 30 min) reports <span class="ok">healthy</span> continuously, and my live read+write test just now passed. The night check's read method appears to use stat/df, which lies during a wedge — only a real byte read is trustworthy. Result: a week of false RED alarms.</p>
+<div class="candidate">
+  <h3>Automation candidate: align the night check to the watcher's real read+write test</h3>
+  <p>Replace the night check's Hiksemi read probe with the same real byte read+write used by <span class="evidence">recover-hiksemi-wedge.sh</span> (runs every 30 min via <span class="evidence">com.maio.hiksemi-recover</span>). This kills the false alarms and gives one consistent signal. The watcher state file currently reads "healthy".</p>
+  <p class="note">Root cause of the original wedge (19 Oct): the Hiksemi enclosure falls back from SuperSpeed to a 480 Mbps USB 2.1 link. The watcher logs this as a leading indicator, never as an outage.</p>
+</div>
+
+<h3>2.2 DNS resolution outage burst — 2026-10-28 to 2026-10-29 <span class="tag tag-transient">TRANSIENT</span></h3>
+<p>A tight burst of <span class="evidence">getaddrinfo ENOTFOUND</span> errors hit four MCP services at once, all around 2026-10-28T05:08 to 2026-10-29T01:36. All four hosts resolve fine now, so this was a transient DNS resolution failure (likely Tailscale/local resolver).</p>
+<div class="evidence">2026-10-29T01:35:21.781Z upstream error: getaddrinfo ENOTFOUND api.browser-use.com</div>
+<div class="evidence">2026-10-29T01:35:21.591Z upstream error: getaddrinfo ENOTFOUND backend.composio.dev</div>
+<div class="evidence">2026-10-29T01:35:21.751Z upstream error: getaddrinfo ENOTFOUND api.githubcopilot.com</div>
+<div class="evidence">2026-10-29T01:35:21.775Z upstream error: getaddrinfo ENOTFOUND mcp.cloudflare.com</div>
+<div class="candidate">
+  <h3>Automation candidate: DNS health check with auto-resolver reset</h3>
+  <p>Add a DNS probe to the night check (or a separate 15-min watcher) that resolves a shortlist of stack-critical hosts. On failure, attempt a resolver refresh (e.g. <span class="evidence">networksetup -setdnsservers</span> cycle or scutil kick) and notify only on confirmed failure.</p>
+</div>
+
+<h3>2.3 BrowserUse MCP port conflict <span class="tag tag-transient">TRANSIENT</span></h3>
+<p>The BrowserUse MCP server crashes on startup because port 8801 is already held:</p>
+<div class="evidence">Error: listen EADDRINUSE: address already in use 127.0.0.1:8801</div>
+<div class="candidate">
+  <h3>Automation candidate: port-conflict pre-check on MCP start</h3>
+  <p>Before launching the BrowserUse MCP, check whether 127.0.0.1:8801 is held by a stale process and free it (or pick a free port). This prevents repeated crash loops.</p>
+</div>
+
+<h3>2.4 Agent desktop guard — notification + JSON parse failures <span class="tag tag-domain">COURAGE</span></h3>
+<p>The desktop guard runs every 30 s but two things break it:</p>
+<div class="evidence">notify failed: [Errno 2] No such file or directory: 'hermes'  (hermes CLI not on PATH in the cron environment)</div>
+<div class="evidence">get_desktop_state failed: Expecting value: line 1 column 1 (char 0)  (empty/invalid JSON from desktop state)</div>
+<div class="candidate">
+  <h3>Automation candidate: fix guard environment + harden JSON parse</h3>
+  <p>Set a full PATH in the guard's launchd plist/cron env so <span class="evidence">hermes</span> resolves, and guard the desktop-state JSON parse so an empty response doesn't fail the run.</p>
+</div>
+
+<h3>2.5 ok-vault-server keeps dying <span class="tag tag-persist">PERSISTENT</span> <span class="tag tag-beast">BEAST</span></h3>
+<p>The launchd sweep reports <span class="evidence">STILL DEAD: com.maio.ok-vault-server</span> on 2026-10-29 and 2026-10-31. Current state: "spawn scheduled, active count = 0" — it is registered but not running. This is the vault server (Beast's domain, OpenKnowledge on :64200). Prior repair notes exist from 2026-10-07.</p>
+<div class="evidence">gui/501/com.maio.ok-vault-server = { active count = 0, state = spawn scheduled }</div>
+<div class="candidate">
+  <h3>Automation candidate: ok-vault-server watchdog restart</h3>
+  <p>Add the vault server to the launchd sweep's restart list (it's currently missing) so it auto-recovers when it dies, with a notification to Ricardo when it stays dead across sweeps.</p>
+</div>
+
+<h3>2.6 Constellation backup produces empty dumps <span class="tag tag-domain">COURAGE</span></h3>
+<p>The Constellation nightly backup repeatedly writes a 20-byte (empty) <span class="evidence">.sql.gz</span>, flagged as a likely failure in multiple backup-check reports.</p>
+<div class="candidate">
+  <h3>Automation candidate: fail-fast on empty backup + retry</h3>
+  <p>Make the backup script validate dump size before writing (reject 20-byte/empty output), retry once, and alert on confirmed failure instead of silently writing an empty file.</p>
+</div>
+
+<h3>2.7 Paperclip seats error <span class="tag tag-transient">TRANSIENT</span></h3>
+<p>Google Workspace health is fully OK, but Paperclip reports:</p>
+<div class="evidence">Paperclip is down or partially failing – seats are in error. (seats_error: Inspector INFX)</div>
+<p class="note">Not in my core domain (Courage/Beast). Mentioned for completeness; belongs to the Paperclip seat owner.</p>
+
+<h3>Not an error — by design</h3>
+<ul>
+<li><span class="evidence">com.maio.d3-gate</span> is "deliberately disabled, skipped" in the launchd sweep (d3-gate :8110 is dead; replaced by maio-gate :8792 MCP).</li>
+<li>Coolify is intentionally not installed on this host (2026-10-03/04 stack decision).</li>
+<li>Home Assistant is intentionally not deployed.</li>
+</ul>
+
+<h2>3. Recommended build order</h2>
+<ol>
+<li><strong>Hiksemi night-check alignment</strong> — stops a week of false RED alarms; pure Courage work, low risk.</li>
+<li><strong>DNS health check + resolver reset</strong> — catches the transient ENOTFOUND burst before it affects MCP services.</li>
+<li><strong>ok-vault-server watchdog</strong> — Beast domain; keeps the vault server alive.</li>
+<li><strong>BrowserUse port-conflict pre-check</strong> — prevents MCP crash loops.</li>
+<li><strong>Desktop guard PATH + JSON hardening</strong> — restores reliable guard notifications.</li>
+<li><strong>Constellation empty-backup guard</strong> — stops silent empty dumps.</li>
+</ol>
+
+<h2>4. What needs Ricardo's decision</h2>
+<ul>
+<li>Which of the above automations to build, and in what order (stack decisions go to Ricardo on my bot).</li>
+<li>Whether the Hiksemi drive should be physically replugged/swapped now, or whether the watcher + aligned night check is sufficient (the drive is healthy right now; the wedge is intermittent).</li>
+<li>Nothing here involves money, legal, payments, or e-signatures — all safe for me to prepare and execute on your go.</li>
+</ul>
+
+<p class="note">Evidence: every claim above is backed by real command output read from this machine (log files, launchctl list, dig resolution, live mount read/write tests). No fabricated data.</p>
+</div>
+</body>
+</html>
