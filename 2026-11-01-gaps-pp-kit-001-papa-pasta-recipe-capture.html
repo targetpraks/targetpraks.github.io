@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>GAPS — PP-KIT-001 Papa Pasta recipe capture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="gaps--pp-kit-001--pap-12-the-bench-recipe-capture">GAPS — PP-KIT-001 / PAP-12 "The Bench" recipe capture</h1>
+<p>Fields the capture could not find (marked <code>"not found"</code> in recipes.json; none were guessed), source discrepancies, and the two settled questions.</p>
+<h2 id="fields-marked-not-found">Fields marked "not found"</h2>
+<ol type="1">
+<li><strong>storage</strong> — no dedicated storage field exists in any source. Storage conditions appear only inside method step 6 of each recipe (e.g. "1–4 °C, 5–7 days (10 vacuum…)"). Captured as-is inside <code>steps[]</code>; no standalone storage field.</li>
+<li><strong>shelf_life</strong> — no dedicated shelf-life field exists. Shelf life appears only inside step 6 text ("5–7 days (up to 10 vacuum-sealed)"). Captured as-is inside <code>steps[]</code>; no standalone shelf-life field.</li>
+<li><strong>water / salt single gram weight at 10 kg</strong> — no source gives a single gram figure; both are ranges (water in litres, salt in grams). Captured verbatim as <code>weight_10kg_g: [lo, hi]</code> (range_g from bench-*.json) with the manual's L/g range string in <code>weight_10kg_manual</code> / <code>weight_40kg</code>. Not converted.</li>
+</ol>
+<h2 id="per-recipe-qc-coverage-not-a-gap-recorded-so-nothing-is-assumed-uniform">Per-recipe QC coverage (not a gap; recorded so nothing is assumed uniform)</h2>
+<table>
+<thead>
+<tr>
+<th>Recipe</th>
+<th>QC checks</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bokgat Base</td>
+<td>colour, moisture, fridge, cooktest, deviation(note)</td>
+<td>no lot-traceability check</td>
+</tr>
+<tr>
+<td>Protein+ Pro</td>
+<td>colour, bite(cook_test), beany, moisture, fridge, allergen_label</td>
+<td></td>
+</tr>
+<tr>
+<td>Chickpea Power Pro</td>
+<td>colour, beany, bite(cook_test), moisture, fridge, lot(text)</td>
+<td></td>
+</tr>
+<tr>
+<td>Farmhouse</td>
+<td>colour, powder, sensory, moisture, fridge, farmlot(text)</td>
+<td>no cook-test check</td>
+</tr>
+</tbody>
+</table>
+<h2 id="source-discrepancies">Source discrepancies</h2>
+<ul>
+<li><strong>Chickpea Power Pro skill level</strong> — public spec page table lists "Basic"; recipes_source.json, drafts and bench all say "Intermediate". Source of record: recipes_source.json (Intermediate).</li>
+<li><strong>Cost figures differ across editions</strong> — v1 PDFs (e.g. Bokgat raw R1.60–2.40/serving) vs v2 manual (R2.20–3.40). v2 Fresh-Daily · August 2026 is the capture basis; v1 figures are superseded and were not merged.</li>
+<li><strong>manual_total pct does not always equal the summed ingredient pct</strong> — Farmhouse rows sum to 102% while its printed total row says 100%; see settled question 1 below.</li>
+</ul>
+<h2 id="settled-question-1--farmhouse-is-the-batch-1000-kg-or-1020-kg">Settled question 1 — Farmhouse: is the batch 10.00 kg or 10.20 kg?</h2>
+<p><strong>Answer: 10.20 kg is the batch.</strong> Ricardo's ruling D2 (2026-10-30): "the rows are the recipe; the total is the typo." The ingredient rows (60/18/8/6/5/3/2 % = 102 %) sum to 10.20 kg at the 10 kg basis and 40.80 kg at 40 kg. The 10.00 kg / 40.00 kg figures are the <em>printed total row</em> (a typo) and appear only there.</p>
+<p>Every source that states a Farmhouse batch figure, with the exact figure each source gives:</p>
+<table>
+<thead>
+<tr>
+<th>Source (path + line)</th>
+<th>Figure stated</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>top4_kitchen_manual_fresh_v2.html, line 334 (<code>&lt;tr&gt;&lt;td&gt;&lt;b&gt;Total dry&lt;/b&gt;…&lt;b&gt;10.00 kg&lt;/b&gt;…&lt;b&gt;40.00 kg&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;</code>)</td>
+<td>10.00 kg / 40.00 kg</td>
+<td>Printed "Total dry" row (the typo)</td>
+</tr>
+<tr>
+<td>top4_kitchen_manual_fresh_v2.html, lines 325-333</td>
+<td>6.00 + 1.80 + 0.80 + 0.60 + 0.50 + 0.30 + 0.20 kg = <strong>10.20 kg</strong></td>
+<td>Ingredient rows at 10 kg basis (the recipe)</td>
+</tr>
+<tr>
+<td>recipes_source.json, line 720</td>
+<td>standard_batch_kg: 10</td>
+<td>Declared standard batch (10 kg basis)</td>
+</tr>
+<tr>
+<td>recipes_source.json, line 854</td>
+<td>manual_total kg_10: 10.0, kg_40: 40.0</td>
+<td>Printed total row value (transcribed)</td>
+</tr>
+<tr>
+<td>recipes_source.json, lines 858-865</td>
+<td>erratum kg_10: 10.2, kg_40: 40.8; decision "D2 — 10.20 kg is the batch", decided_by Ricardo, decided_at 2026-10-30</td>
+<td>The erratum + ruling</td>
+</tr>
+<tr>
+<td>registry.json, lines 48-57</td>
+<td>manual_total_kg: 10.2; manual_printed_total_kg: 10.0; erratum decision "D2 — 10.20 kg is the batch"</td>
+<td>Printed vs rows + erratum</td>
+</tr>
+<tr>
+<td>data/bench/farmhouse.json</td>
+<td>ingredients sum to 10,200 g (6000+1800+800+600+500+300+200) with basis_kg 10 / basis_g 10000</td>
+<td>Locked payload reconciles to the rows (10.20 kg)</td>
+</tr>
+<tr>
+<td>design/DESIGN.md, line 148</td>
+<td>"10.20 kg is the Farmhouse batch"</td>
+<td>Ricardo's ruling</td>
+</tr>
+<tr>
+<td>design/SYSTEM-SHEET.md, line 31</td>
+<td>"ingredient rows sum to 10.20 kg against a 10.00 kg sheet"</td>
+<td>Discrepancy noted</td>
+</tr>
+<tr>
+<td>out/reconciliation-table.md, lines 7-8</td>
+<td>Farmhouse | 10 kg | 10.20 kg | 10.20 kg (and 40 kg → 40.80 kg)</td>
+<td>Reconciliation output</td>
+</tr>
+<tr>
+<td>vault answer book (Work/3.PRD/Active/Papa-Pasta-Brand-GM/2026-10-17-papa-pasta-the-answer-book.md), lines 22 / 88 / 257 / 313</td>
+<td>"CONFLICT: Farmhouse total dry blend is 10.20 kg in this model but 10.00 kg in the spec sheet — …the model uses the actual line quantities (10.20 kg)"</td>
+<td>Model uses 10.20 kg; spec sheet prints 10.00 kg</td>
+</tr>
+<tr>
+<td>vault answer book, line 92</td>
+<td>Farmhouse composition: 60 % durum, 18 % sorghum, 8 % baobab, 6 % oyster, 5 % lion's mane (ceiling 5 %), 3 % microgreen (ceiling 3 %), 2 % flax</td>
+<td>Confirms rows sum to 102 % = 10.20 kg</td>
+</tr>
+<tr>
+<td>vault build record 2026-10-29-papa-pasta-bench-the-printed-pad-ships.md</td>
+<td>Farmhouse rows sum to 10.20 kg under the 10.00 kg total</td>
+<td>Printed-pad build record</td>
+</tr>
+<tr>
+<td>vault build record 2026-10-30-papa-pasta-bench-the-payload-loses-its-cost-fields.md</td>
+<td>same</td>
+<td>Payload build record</td>
+</tr>
+</tbody>
+</table>
+<h2 id="settled-question-2--are-there-more-than-four-recipes-in-the-full-system">Settled question 2 — Are there more than four recipes in the full system?</h2>
+<p><strong>Answer: No. Exactly four recipes exist in PP-KIT-001, and every source enumerates the same four:</strong></p>
+<ol type="1">
+<li>1 · Bokgat Base — The Everyday Standard (Basic)</li>
+<li>2 · Protein+ Pro — The Signature Flagship (Advanced)</li>
+<li>3 · Farmhouse — Recommended Addition #1 (Intermediate)</li>
+<li>4 · Chickpea Power Pro — Recommended Addition #2 (Intermediate)</li>
+</ol>
+<p>Evidence of the closed set:</p>
+<ul>
+<li>top4_kitchen_manual_fresh_v2.html: cover chips 1-4; "Four recipes, four distinct jobs."</li>
+<li>recipes_source.json: exactly four recipe objects (slugs bokgat-base, protein-pro, farmhouse, chickpea-power-pro).</li>
+<li>data/registry.json: exactly four locked @v1 versions.</li>
+<li>data/bench/*.json: exactly four bench payloads.</li>
+<li>public spec page (…/2026-10-28-the-bench-papa-pasta-internal-kitchen-system-pp-kit-001.html): "Four formulas are already verified, costed and written as a method" — table lists the same four, no others.</li>
+</ul>
+<p><strong>Searched but found no fifth recipe:</strong> seasonal, trial, retired or otherwise. Papa_Pasta_Golden_Balance_Formula_V2.pdf describes eight historical build options (flagship, SA-local, high-protein, max-prebiotic, super-green, chickpea, farmhouse, value) — research-stage concepts from which the four Fresh-Daily recipes were consolidated; none of them ships as a fifth locked PP-KIT-001 recipe, and none has a complete recipe card in any source.</p>
+<h2 id="what-was-deliberately-not-computed">What was deliberately not computed</h2>
+<p>Cost margins. Cost fields exist in the source (raw_per_serving, cogs_per_serving, currency ZAR, per recipe) and were recorded verbatim; no margin or derived cost was computed.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
