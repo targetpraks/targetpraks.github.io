@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoWind in Cape Town — wind energy vs solar, honestly</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#121821; --panel2:#0f151d; --line:#1f2a36;
+    --ink:#e8eef5; --dim:#8fa0b3; --dim2:#65788d;
+    --teal:#3ddad7; --amber:#f5a524; --red:#f2555a; --green:#4ade80; --violet:#a78bfa;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:
+      radial-gradient(1200px 600px at 80% -10%, #16222f 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, #17222b 0%, transparent 55%),
+      var(--bg);
+      color:var(--ink);font-family:"Helvetica Neue",Inter,system-ui,-apple-system,sans-serif;
+      -webkit-font-smoothing:antialiased;line-height:1.6}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 26px 120px}
+  a{color:var(--teal);text-decoration:none}
+  h1,h2,h3{line-height:1.15;letter-spacing:-.02em;margin:0}
+  h1{font-size:clamp(30px,5vw,52px);font-weight:800}
+  h2{font-size:clamp(21px,2.6vw,29px);font-weight:750;margin:0 0 6px}
+  h3{font-size:16px;font-weight:700;letter-spacing:0;margin:0 0 8px}
+  p{margin:10px 0}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim2)}
+  header{padding:64px 0 34px;border-bottom:1px solid var(--line)}
+  .lede{color:var(--dim);font-size:clamp(15px,1.7vw,18px);max-width:70ch;margin-top:16px}
+  section{padding:44px 0;border-bottom:1px solid var(--line)}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px}
+  .big{font-family:var(--mono);font-size:clamp(26px,3.4vw,38px);font-weight:700;letter-spacing:-.03em;line-height:1.05}
+  .unit{font-size:14px;color:var(--dim);font-family:inherit;font-weight:500}
+  .lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim2);margin-bottom:6px}
+  .sub{color:var(--dim);font-size:13px;margin-top:6px}
+  .verdict{border-left:3px solid var(--amber);background:rgba(245,165,36,.06);padding:16px 18px;border-radius:0 12px 12px 0}
+  .flag{border-left:3px solid var(--red);background:rgba(242,85,90,.07);padding:14px 16px;border-radius:0 12px 12px 0}
+  .ok{border-left:3px solid var(--green);background:rgba(74,222,128,.06);padding:14px 16px;border-radius:0 12px 12px 0}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
+  th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2);font-weight:600;border-bottom:1px solid #2a3947}
+  tbody tr:hover{background:rgba(61,218,215,.05)}
+  .mono{font-family:var(--mono)}
+  .pos{color:var(--green)} .neg{color:var(--red)} .warn{color:var(--amber)}
+  .chart{width:100%;height:auto;display:block;overflow:visible}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-top:12px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .slider-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:6px 0 18px}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:3px;background:#233040;outline:none;width:240px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;border-radius:50%;background:var(--teal);cursor:pointer;border:2px solid #0b0f14;box-shadow:0 0 0 3px rgba(61,218,215,.18)}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{background:transparent;color:var(--dim);border:0;padding:7px 14px;font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;cursor:pointer;border-right:1px solid var(--line)}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:rgba(61,218,215,.14);color:var(--teal)}
+  details{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:12px 16px;margin-top:10px}
+  summary{cursor:pointer;font-weight:650;font-size:14px;color:var(--ink)}
+  summary::marker{color:var(--teal)}
+  details p,details li{color:var(--dim);font-size:13.5px}
+  ul{margin:8px 0;padding-left:20px}
+  li{margin:5px 0}
+  .src{font-size:12.5px;color:var(--dim2)}
+  .src code{font-family:var(--mono);color:var(--dim);background:#101720;padding:1px 5px;border-radius:4px;font-size:11.5px}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
+  nav.toc{position:sticky;top:0;z-index:20;background:rgba(11,15,20,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:9px 0}
+  nav.toc .wrap{padding-bottom:0}
+  nav.toc a{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim);margin-right:16px;text-transform:uppercase}
+  nav.toc a:hover{color:var(--teal)}
+  .hr{height:1px;background:var(--line);margin:20px 0}
+</style>
+</head>
+<body>
+
+<nav class="toc"><div class="wrap">
+  <a href="#verdict">Verdict</a><a href="#wind">Cape Town wind</a><a href="#energy">Energy</a>
+  <a href="#generator">Generator</a><a href="#storm">Too fast wind</a><a href="#vs">vs Solar</a><a href="#method">Method</a>
+</div></nav>
+
+<div class="wrap">
+<header>
+  <div class="kicker">GeoWind GW-series · Cape Town feasibility</div>
+  <h1>The icosahedron turbine,<br>measured against real Cape Town wind.</h1>
+  <p class="lede">The reel is <strong>GeoWind</strong> — a Korean icosahedron-frame vertical-axis turbine, CES 2026 Innovation Award, patented, with a geodesic sail frame that catches wind from any direction from about 4 m/s. It is a real design. The question is what it actually yields in this city, what generator turns it, what happens on a 100 km/h Cape Doctor day, and whether it beats a solar panel on the same patch of roof. All three are answerable with numbers.</p>
+</header>
+
+<section id="verdict">
+  <h2>The short answer</h2>
+  <div class="verdict" style="margin-top:16px">
+    <p style="margin:0"><strong>On an exposed site it is roughly solar-equivalent per square metre. On an actual Cape Town roof it loses badly to solar.</strong> The wind resource is real — this city runs a 5.4 m/s annual mean — but a rooftop is the worst place to harvest it, because a vertical-axis turbine cannot turn away from a storm.</p>
+  </div>
+  <div class="grid g4" style="margin-top:22px">
+    <div class="card"><div class="lbl">GW1200, exposed</div><div class="big">2 025<span class="unit"> kWh/yr</span></div><div class="sub">19% capacity factor</div></div>
+    <div class="card"><div class="lbl">GW1200, typical roof</div><div class="big">871<span class="unit"> kWh/yr</span></div><div class="sub">8% capacity factor</div></div>
+    <div class="card"><div class="lbl">Same footprint in PV</div><div class="big">2 464<span class="unit"> kWh/yr</span></div><div class="sub">1.6 kWp, optimal tilt</div></div>
+    <div class="card"><div class="lbl">Rated wind needed</div><div class="big">≈11.5<span class="unit"> m/s</span></div><div class="sub">for a 1.2 kW nameplate at this size</div></div>
+  </div>
+  <p style="margin-top:18px" class="src">The maker publishes edge lengths, a 4 m/s cut-in and ≤45 dB — but <strong>no power curve, no rated wind speed and no cut-out speed</strong>. Those three numbers are exactly what decides whether one of these belongs on your roof.</p>
+</section>
+
+<section id="wind">
+  <h2>What Cape Town's wind actually does</h2>
+  <p class="src">8760 hourly observations, 2025, Cape Town International (WMO 68816), Meteostat bulk archive. Hourly mean wind, m/s.</p>
+  <div class="grid g4" style="margin-top:16px">
+    <div class="card"><div class="lbl">Annual mean</div><div class="big">5.43<span class="unit"> m/s</span></div><div class="sub">19.6 km/h</div></div>
+    <div class="card"><div class="lbl">90th percentile</div><div class="big">9.72<span class="unit"> m/s</span></div><div class="sub">35 km/h</div></div>
+    <div class="card"><div class="lbl">Hours above 12 m/s</div><div class="big">170<span class="unit"> h</span></div><div class="sub">2% of the year</div></div>
+    <div class="card"><div class="lbl">Strongest hourly mean</div><div class="big">15.8<span class="unit"> m/s</span></div><div class="sub">57 km/h — gusts far higher</div></div>
+  </div>
+  <h3 style="margin-top:30px">Monthly mean wind speed</h3>
+  <div id="windchart"></div>
+  <div class="legend"><span><i class="dot" style="background:var(--teal)"></i>Hourly mean wind, m/s</span><span><i class="dot" style="background:var(--amber)"></i>4 m/s cut-in line</span></div>
+  <p style="margin-top:14px">This is the shape that matters. Cape Town is a <strong>summer-wind city</strong> — the south-easter ("Cape Doctor") peaks in November–February at 7.1–7.4 m/s and dies to 4.0–4.3 m/s in the winter months. Solar peaks in the same window, which is why the two do not complement each other here as neatly as people assume.</p>
+</section>
+
+<section id="energy">
+  <h2>How much energy it recovers in Cape Town</h2>
+  <p>Drag the exposure to match your site. "Exposure" is the fraction of open-airport wind that actually reaches the rotor face — 100% for a mast on a beach or a bare hill, 60–70% for a suburban garden behind walls and trees.</p>
+  <div class="slider-row">
+    <span class="lbl" style="margin:0">Site exposure</span>
+    <input id="expo" type="range" min="40" max="100" step="5" value="100">
+    <span class="mono" id="expolbl" style="color:var(--teal);min-width:52px">100%</span>
+    <span class="seg" id="sizeSeg">
+      <button data-a="1.2" data-pr="600">GW600 · 1.2 m</button>
+      <button data-a="2.4" data-pr="1200" class="on">GW1200 · 2.4 m</button>
+      <button data-a="3.5" data-pr="1800">GW1800 · 3.5 m</button>
+    </span>
+  </div>
+  <div class="grid g3">
+    <div class="card"><div class="lbl">Annual yield</div><div class="big" id="yield">2 025<span class="unit"> kWh</span></div><div class="sub" id="yieldsub">5.5 kWh/day average</div></div>
+    <div class="card"><div class="lbl">Capacity factor</div><div class="big" id="cf">19.3<span class="unit"> %</span></div><div class="sub">of nameplate, all hours</div></div>
+    <div class="card"><div class="lbl">Rated wind speed</div><div class="big" id="vrated">11.5<span class="unit"> m/s</span></div><div class="sub" id="arealbl">4.99 m² effective swept area</div></div>
+  </div>
+  <h3 style="margin-top:30px">All three sizes, three site classes</h3>
+  <table id="sizeTable">
+    <thead><tr><th>Model</th><th>Edge</th><th>Effective area</th><th>Exposed site</th><th>Good roof</th><th>Sheltered garden</th></tr></thead>
+    <tbody>
+      <tr><td>GW600</td><td>1.2 m</td><td>1.25 m²</td><td class="pos">531 kWh</td><td class="warn">218 kWh</td><td class="neg">103 kWh</td></tr>
+      <tr><td>GW1200</td><td>2.4 m</td><td>4.99 m²</td><td class="pos">2 025 kWh</td><td class="warn">871 kWh</td><td class="neg">411 kWh</td></tr>
+      <tr><td>GW1800</td><td>3.5 m</td><td>10.6 m²</td><td class="pos">3 989 kWh</td><td class="warn">1 841 kWh</td><td class="neg">873 kWh</td></tr>
+    </tbody>
+  </table>
+  <p class="src">Site classes = 100% / 75% / 60% of the measured airport wind. Model names are geometric — the number is edge length in mm × 500, not a wattage — so the nameplate above is an inference from size, not a published figure.</p>
+
+  <h3 style="margin-top:30px">Monthly yield, GW1200 at an exposed Cape Town site</h3>
+  <div id="monthchart"></div>
+  <div class="legend"><span><i class="dot" style="background:var(--teal)"></i>Wind, kWh</span><span><i class="dot" style="background:var(--amber)"></i>1.6 kWp PV on the same footprint, kWh</span></div>
+</section>
+
+<section id="generator">
+  <h2>What converts it — generator, not motor</h2>
+  <p>You asked about the motor. Strictly, the machine on the shaft is a <strong>generator</strong> — the wind spins it and it makes electricity. For a turbine this shape it has to be a <strong>direct-drive, low-speed, high-torque permanent-magnet synchronous generator (PMSG)</strong>. A cheap 1500 rpm alternator is useless here: at 1.2 m blade radius the rotor only turns at 30–135 rpm.</p>
+  <table>
+    <thead><tr><th>Wind</th><th>Rotor speed</th><th>Shaft power</th><th>Torque</th><th>What the generator is doing</th></tr></thead>
+    <tbody>
+      <tr><td>4 m/s</td><td class="mono">30 rpm</td><td class="mono">50 W</td><td class="mono">16 Nm</td><td>just above cut-in</td></tr>
+      <tr><td>6 m/s</td><td class="mono">45 rpm</td><td class="mono">168 W</td><td class="mono">36 Nm</td><td>most of the annual hours</td></tr>
+      <tr><td>8 m/s</td><td class="mono">60 rpm</td><td class="mono">399 W</td><td class="mono">63 Nm</td><td>doing real work</td></tr>
+      <tr><td>10 m/s</td><td class="mono">75 rpm</td><td class="mono">779 W</td><td class="mono">99 Nm</td><td>peak of a normal day</td></tr>
+      <tr><td>11.5 m/s</td><td class="mono">87 rpm</td><td class="mono">1 185 W</td><td class="mono">131 Nm</td><td>at nameplate, MPPT at max</td></tr>
+      <tr><td>18 m/s</td><td class="mono">136 rpm</td><td class="mono">1 200 W</td><td class="mono">84 Nm</td><td>capped — torque falls as speed rises</td></tr>
+    </tbody>
+  </table>
+  <div class="grid g2" style="margin-top:22px">
+    <div class="card">
+      <h3>The machine to buy</h3>
+      <ul>
+        <li><strong>Type:</strong> axial-flux PMSG, 3-phase, direct drive (no gearbox, no brushes)</li>
+        <li><strong>Rating:</strong> 1.5 kW continuous, 2 kW peak — headroom for gusts</li>
+        <li><strong>Speed:</strong> 30–150 rpm operating; ~135 Nm continuous torque</li>
+        <li><strong>Poles:</strong> 24–36 poles (12–18 pole pairs) so it makes usable frequency at 90 rpm: ≈17–27 Hz</li>
+        <li><strong>Output:</strong> ≈40–60 V AC line-to-line at rated speed</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>The electronics after it</h3>
+      <ul>
+        <li><strong>3-phase bridge rectifier</strong> → raw DC</li>
+        <li><strong>MPPT boost converter</strong>, 20–60 V in, charging 48 V (51.2 V LFP) at up to 25 A</li>
+        <li><strong>Dump load</strong> — a 1.5 kW resistor bank that burns surplus once the battery is full, so the rotor never runs unloaded</li>
+        <li><strong>Contactor short-circuit brake</strong> — shorting all three phases is the emergency stop</li>
+      </ul>
+    </div>
+  </div>
+  <div class="flag" style="margin-top:18px"><p style="margin:0"><strong>Never run it open-circuit.</strong> An unloaded turbine has almost no braking torque and over-speeds in minutes. The dump load is not an accessory — it is the speed control.</p></div>
+</section>
+
+<section id="storm">
+  <h2>Too-fast wind — the problem this design cannot dodge</h2>
+  <p>A horizontal-axis turbine yaws sideways and furls. <strong>An omnidirectional icosahedron has nowhere to hide.</strong> It is fully exposed to whatever Cape Town throws at it, and the maker publishes no cut-out and no survival speed. That is the single biggest engineering risk in putting one on a roof.</p>
+  <h3 style="margin-top:24px">Static load on the structure, GW1200 (16.3 m² silhouette)</h3>
+  <table>
+    <thead><tr><th>Wind</th><th>Dynamic pressure</th><th>Force on the frame</th><th>Overturning moment at the base</th></tr></thead>
+    <tbody>
+      <tr><td>20 m/s · 72 km/h</td><td class="mono">245 Pa</td><td class="mono">4.8 kN · 0.5 t</td><td class="mono">9.1 kNm</td></tr>
+      <tr><td>30 m/s · 108 km/h</td><td class="mono">551 Pa</td><td class="mono">10.8 kN · 1.1 t</td><td class="mono">20.5 kNm</td></tr>
+      <tr><td>40 m/s · 144 km/h</td><td class="mono">980 Pa</td><td class="mono">19.2 kN · 2.0 t</td><td class="mono">36.4 kNm</td></tr>
+      <tr><td>50 m/s · 180 km/h</td><td class="mono">1 531 Pa</td><td class="mono">30.0 kN · 3.1 t</td><td class="mono">56.9 kNm</td></tr>
+    </tbody>
+  </table>
+  <p class="src">Cd = 1.2, ρ = 1.225 kg/m³, moment arm 1.9 m. At 50 m/s this unit puts three tonnes of sideways force into its mount. A timber-truss roof is not taking that — it needs a designed steel base with the load path into a structural wall or a ballasted frame.</p>
+  <h3 style="margin-top:26px">What protection has to be there</h3>
+  <div class="grid g2">
+    <div class="card"><h3>1 · Electromagnetic brake</h3><p class="sub">Short the three generator phases through a contactor — a PMSG becomes a very effective brake. Automatic above ~18 m/s, and the first stage of any emergency stop.</p></div>
+    <div class="card"><h3>2 · Dump load</h3><p class="sub">A resistive bank sized to the generator, so kinetic energy has somewhere to go once the battery is full. This is also how you hold rotor speed down on a windy-but-not-stormy day.</p></div>
+    <div class="card"><h3>3 · Aerodynamic spill</h3><p class="sub">A genuinely fixed-axis VAWT needs hinged sail panels or passive pitch that spills lift above ~15 m/s. If the design has none, its survival wind is its structural limit, not its aerodynamic one.</p></div>
+    <div class="card"><h3>4 · Mechanical brake</h3><p class="sub">A disc and caliper for maintenance lockout, plus a centrifugal overspeed brake as the last passive line of defence if the electronics fail.</p></div>
+  </div>
+  <div class="verdict" style="margin-top:20px"><p style="margin:0"><strong>What Cape Town asks of it:</strong> 170 hours a year above 12 m/s, six hours above 15 m/s, and winter cold fronts that gust past 100 km/h. Ask the maker for the survival speed and the cut-out strategy in writing before anyone bolts one to a roof. If the answer is "it just spins faster", that is the answer.</p></div>
+</section>
+
+<section id="vs">
+  <h2>Head to head with solar on the same roof patch</h2>
+  <p>A GW1200 needs a clear circle 4.6 m across — about <strong>16.3 m²</strong> of plan area, plus set-back. Put tilted PV modules on the same patch and you get roughly <strong>1.6 kWp</strong> once you allow for row spacing.</p>
+  <div class="grid g2" style="margin-top:18px">
+    <div class="card">
+      <div class="lbl">GeoWind GW1200 · exposed mast</div>
+      <div class="big pos">2 025<span class="unit"> kWh/yr</span></div>
+      <div class="sub">Equivalent to 1.3 kWp of PV. Only on a genuinely open site.</div>
+    </div>
+    <div class="card">
+      <div class="lbl">PV, 1.6 kWp, same footprint</div>
+      <div class="big pos">2 464<span class="unit"> kWh/yr</span></div>
+      <div class="sub">PVGIS, Cape Town, optimal tilt, 14% system losses.</div>
+    </div>
+  </div>
+  <table style="margin-top:18px">
+    <thead><tr><th>&nbsp;</th><th>Wind · exposed</th><th>Wind · typical roof</th><th>Solar 1.6 kWp</th></tr></thead>
+    <tbody>
+      <tr><td>Annual yield</td><td class="mono">2 025 kWh</td><td class="mono">871 kWh</td><td class="mono">2 464 kWh</td></tr>
+      <tr><td>Worst month</td><td class="mono">82 kWh</td><td class="mono">35 kWh</td><td class="mono">88 kWh</td></tr>
+      <tr><td>Best month</td><td class="mono">315 kWh</td><td class="mono">135 kWh</td><td class="mono">323 kWh</td></tr>
+      <tr><td>Moving parts</td><td class="neg">rotor, bearing set</td><td class="neg">rotor, bearing set</td><td class="pos">none</td></tr>
+      <tr><td>Noise / vibration</td><td class="warn">≤45 dB claimed, unverified</td><td class="warn">structure-borne risk</td><td class="pos">silent</td></tr>
+      <tr><td>Survives Cape storms</td><td class="neg">if engineered for 50 m/s</td><td class="neg">same, on a worse mount</td><td class="pos">rated for it by default</td></tr>
+      <tr><td>Output when it matters</td><td class="warn">peaks on windy nights too</td><td class="warn">little of anything</td><td class="neg">nothing after sunset</td></tr>
+      <tr><td>Maintenance</td><td class="neg">bearings, brake, sails</td><td class="neg">same</td><td class="pos">rinse twice a year</td></tr>
+    </tbody>
+  </table>
+  <div class="ok" style="margin-top:22px">
+    <p style="margin:0"><strong>The one thing wind genuinely does better:</strong> it makes power at night and in winter storms. Solar in Cape Town gives you almost nothing from 18:00 to 06:00, and that is exactly when a house is drawing. A turbine that lands 300 kWh in a windy November evening is filling a gap a panel physically cannot. That is a real argument — it just is not a big enough one to beat four times the yield per rand of hardware in a sheltered suburb.</p>
+  </div>
+</section>
+
+<section id="method">
+  <h2>Method and sources</h2>
+  <details open>
+    <summary>Wind data</summary>
+    <p>8760 hourly observations for calendar 2025 from Cape Town International (WMO 68816), pulled from the Meteostat v2 hourly bulk archive. Two impossible hourly means (47.9 and 41.1 m/s — next highest 15.8) are METAR reporting errors and were capped. ERA5 reanalysis via Open-Meteo was run as a cross-check: 3.73 m/s at 10 m for the CBD grid cell, 6.36 m/s at Cape Point — reanalysis smooths terrain, so the station measurement (5.43 m/s) is the honest rooftop-city number.</p>
+  </details>
+  <details>
+    <summary>Turbine model</summary>
+    <p>P = ½ ρ A Cp η v³, capped at nameplate, cut-in 3.5 m/s, cut-out 20 m/s. ρ = 1.225 kg/m³, Cp = 0.30 (realistic peak for a small VAWT; Betz ceiling is 0.593), drivetrain and electronics η = 0.85. Effective swept area = 0.40 solidity factor × the icosahedron's mean projected silhouette (2.165·a²): 1.25 m² at 1.2 m edge, 4.99 m² at 2.4 m, 10.6 m² at 3.5 m. Rated wind speed is then solved from the nameplate, giving 14.6 / 11.5 / 10.3 m/s. Torque figures use tip-speed ratio 1.8, typical for a drag-lift hybrid VAWT of this shape.</p>
+  </details>
+  <details>
+    <summary>Solar benchmark</summary>
+    <p>PVGIS 5.3, PVGIS-ERA5 database, Cape Town (−33.9249, 18.4241), 1 kWp, optimal tilt, 14% system losses: <strong>1 540 kWh/kWp/yr</strong>. Independent check from Open-Meteo 2025 shortwave radiation: 1 975 kWh/m² global horizontal, 5.41 kWh/m²/day — consistent with published Cape Town figures. Monthly PV shape and totals taken from the PVGIS run, scaled to 1.6 kWp.</p>
+  </details>
+  <details>
+    <summary>What the manufacturer does and does not publish</summary>
+    <p>geowind.kr states edge lengths (1.2 / 2.4 / 3.5 / 7.0 m), cut-in ≈4 m/s, ≤45 dB noise, an icosahedron patent (PCT/KR2023/019844), CES 2026 and iF Design 2026 awards, and a $1M SAFE raise at $10M valuation. It publishes <strong>no power curve, no rated wind speed, no cut-out speed, no survival wind speed and no price</strong>. Note also that the model numbers track geometry, not watts — 1.2 m → 600, 2.4 m → 1200, 3.5 m → 1800, 7.0 m → 3600, i.e. edge in mm × 500. Treat "1.2 kW" as an inference from size.</p>
+  </details>
+  <details>
+    <summary>Honest limits of this analysis</summary>
+    <p>The Cp, solidity factor and tip-speed ratio are engineering estimates for this class of rotor — the maker's real numbers are unpublished, which is precisely the gap that needs closing before a purchase. Rooftop turbulence intensity in Cape Town is not modelled beyond the exposure factors. No cost comparison is offered because no retail price exists yet.</p>
+  </details>
+</section>
+
+<p class="src" style="margin-top:34px">Prepared for Ricardo · 1 November 2026 · all figures computed from the sources above, no manufacturer claims taken on trust.</p>
+</div>
+
+<script>
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const WSPD=[6.14,6.92,5.27,4.77,4.06,4.31,4.17,4.33,5.10,5.79,7.37,7.13];
+const WKWH=[212.4,261.0,142.1,108.9,88.3,87.1,81.9,101.3,143.4,182.7,315.1,300.9];
+const PVKWH=[320,263,230,165,112,88,104,137,183,253,286,323];
+const HOURLY_W=[6.14,6.92,5.27,4.77,4.06,4.31,4.17,4.33,5.10,5.79,7.37,7.13];
+
+// ---------- helpers ----------
+function barChart(el,series,opts){
+  const W=980,H=opts.h||250,pad={l:46,r:14,t:14,b:34};
+  const n=series[0].data.length, iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
+  const max=Math.max(...series.flatMap(s=>s.data))*1.12;
+  const bw=iw/n;
+  let out=`<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">`;
+  for(let g=0;g<=4;g++){
+    const y=pad.t+ih-(ih*g/4), v=max*g/4;
+    out+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="#1f2a36" stroke-width="1"/>`;
+    out+=`<text x="${pad.l-9}" y="${y+4}" fill="#65788d" font-size="10.5" text-anchor="end" font-family="ui-monospace,monospace">${Math.round(v)}</text>`;
+  }
+  series.forEach((s,si)=>{
+    const w=single=>bw*0.62/series.length;
+    s.data.forEach((v,i)=>{
+      const x=pad.l+i*bw+bw*0.19+si*w(s);
+      const h=(v/max)*ih;
+      out+=`<rect x="${x}" y="${pad.t+ih-h}" width="${w(s)-2}" height="${Math.max(h,1)}" fill="${s.color}" rx="2.5"><title>${MONTHS[i]}: ${v}</title></rect>`;
+    });
+  });
+  MONTHS.forEach((m,i)=>{
+    out+=`<text x="${pad.l+i*bw+bw/2}" y="${H-12}" fill="#8fa0b3" font-size="11" text-anchor="middle">${m}</text>`;
+  });
+  if(opts.line!==undefined){
+    const y=pad.t+ih-(opts.line/max)*ih;
+    out+=`<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="#f5a524" stroke-width="1.4" stroke-dasharray="5 5"/>`;
+    out+=`<text x="${W-pad.r-4}" y="${y-6}" fill="#f5a524" font-size="10.5" text-anchor="end" font-family="ui-monospace,monospace">${opts.line} m/s</text>`;
+  }
+  out+=`</svg>`;
+  el.innerHTML=out;
+}
+barChart(document.getElementById('windchart'),[{data:WSPD,color:'#3ddad7'}],{h:230,line:4});
+barChart(document.getElementById('monthchart'),[{data:WKWH,color:'#3ddad7'},{data:PVKWH,color:'#f5a524'}],{h:270});
+
+// ---------- interactive yield ----------
+// Exact yields computed in Python from the 8760 measured 2025 hours,
+// for exposure 40%..100% in 5% steps, per model.
+const rho=1.225,Cp=0.30,eta=0.85;
+const TABLE={
+  "600":[21,35,54,76,103,136,175,218,267,322,384,452,531],
+  "1200":[86,142,215,303,411,541,699,871,1063,1280,1513,1756,2025],
+  "1800":[182,301,456,643,873,1149,1483,1841,2229,2657,3091,3515,3989]
+};
+function Aeff(edge){return 0.40*2.165*edge*edge;}
+function power(v,A,Pr){
+  if(v<3.5||v>20) return 0;
+  return Math.min(0.5*rho*A*Cp*eta*v*v*v,Pr);
+}
+let edge=2.4, Pr=1200;
+const elYield=document.getElementById('yield'),elCf=document.getElementById('cf'),
+      elVr=document.getElementById('vrated'),elAr=document.getElementById('arealbl'),
+      elSub=document.getElementById('yieldsub'),slider=document.getElementById('expo'),
+      elLbl=document.getElementById('expolbl');
+function fmt(n){return n.toLocaleString('en-US').replace(/,/g,' ');}
+function update(){
+  const expo=+slider.value/100;
+  elLbl.textContent=slider.value+'%';
+  const A=Aeff(edge);
+  const coef=0.5*rho*A*Cp*eta;
+  const vr=Math.cbrt(Pr/coef);
+  const idx=(+slider.value-40)/5;
+  const e=TABLE[String(Pr)][idx];
+  elYield.innerHTML=fmt(Math.round(e))+'<span class="unit"> kWh</span>';
+  elCf.innerHTML=(e/(Pr*8760/1000)*100).toFixed(1)+'<span class="unit"> %</span>';
+  elVr.innerHTML=vr.toFixed(1)+'<span class="unit"> m/s</span>';
+  elAr.textContent=A.toFixed(2)+' m² effective swept area';
+  elSub.textContent=(e/365).toFixed(1)+' kWh/day average';
+}
+slider.addEventListener('input',update);
+document.querySelectorAll('#sizeSeg button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#sizeSeg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); edge=+b.dataset.a; Pr=+b.dataset.pr; update();
+  });
+});
+update();
+</script>
+</body>
+</html>
