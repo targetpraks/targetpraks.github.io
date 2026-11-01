@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>The vault backfill cards were measuring the wrong thing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="the-vault-backfill-cards-were-measuring-the-wrong-thing">The vault backfill cards were measuring the wrong thing</h1>
+<p><strong>Date:</strong> 2026-11-01 · <strong>Author:</strong> CTO · <strong>Card:</strong> <code>t_54d86d18</code> · <strong>Generator:</strong> <code>~/.config/maio-stack/bin/vault-ensure</code></p>
+<p>Nine batches of "Vault backfill — file N published documents that never reached the vault" cards ran between 2026-10-25 and 2026-11-01. Beast audited <strong>180 documents across batches 1/9–9/9 and filed zero</strong>: every one was already seated in the vault. That is 180 audits and nine cards spent looking for something that was never lost. This is the fix.</p>
+<h2 id="what-was-wrong">What was wrong</h2>
+<p><code>vault-ensure</code> answered "is this document in the vault?" from the <strong>published destination string</strong>, not from the vault. For published rows it looked for a note at exactly the path recorded in <code>published.csv</code>; for never-published markdown it looked for the file stem at the vault <strong>root</strong> only.</p>
+<p>Both tests fail on the house filing rules working exactly as designed:</p>
+<ul>
+<li>a later export of the same stem was the one filed (<code>-3.md</code> staged, vault filed from <code>-5.md</code>);</li>
+<li>the note went to a project folder (<code>Work/3.PRD/Active/INFX-Solutions/</code>) or to <code>4.Research/</code> because it is research, not a report;</li>
+<li>frontmatter was re-stamped at publish time (<code>space: AI-Space</code> for THE STANDARD RULES v2);</li>
+<li>the publish step added a collision suffix to the <em>filename</em> (<code>…-five-2.html</code>), which is a name clash, not a new revision.</li>
+</ul>
+<p>Every one of those documents looked unpublished forever, and came back as a card on the next run.</p>
+<h2 id="the-fix--five-checks-cheapest-first">The fix — five checks, cheapest first</h2>
+<p>Each document is now resolved against a live index of all 2,482 notes in the three spaces (<code>AI-Space</code>, <code>Work</code>, <code>Personal</code>). The run stops at the first hit, and records which check fired:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Check</th>
+<th>Catches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>destination path, then a stem sweep of the three spaces (<code>.md</code> and <code>.html</code> twin)</td>
+<td>filed as published</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>source:</code> pointer on each seated note</td>
+<td>the later-export case</td>
+</tr>
+<tr>
+<td>3</td>
+<td>revision family — same stem, different <code>-N</code></td>
+<td>a later export, or a publish-time collision suffix</td>
+</tr>
+<tr>
+<td>4</td>
+<td>title sweep (<code>title:</code> in frontmatter)</td>
+<td>renamed on filing</td>
+</tr>
+<tr>
+<td>5</td>
+<td>confirmation against the candidate's <code>created:</code> / <code>author:</code></td>
+<td>a lookalike with the same name</td>
+</tr>
+</tbody>
+</table>
+<p>Two outcomes are now distinguished that used to be one:</p>
+<ul>
+<li><strong>missing</strong> — all five miss. Only this raises a card.</li>
+<li><strong>revision drift</strong> — the vault holds this document, but the staged export is a later revision of it. Not a backfill; writing the staged copy over the seated note would push the vault <em>backwards</em>. Named in the run output and the ledger, never carded.</li>
+</ul>
+<p>A seated <code>.html</code> twin with no frontmatter is accepted on its stem alone, and the candidate's <code>created:</code>/<code>author:</code> cannot be compared in that case — that is a "cannot confirm", not a "no".</p>
+<p>Cards now carry <code>## EVIDENCE — why each one is here</code>: the five-check trail, per document, so a reviewer can see the reasoning instead of trusting it.</p>
+<h2 id="measured-before-and-after">Measured, before and after</h2>
+<p>Same corpus, same machine, one run apart (<code>ledger.csv</code>, 04:10 and 04:39 today):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>before the fix (04:10)</th>
+<th>after the fix (04:39)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>published rows</td>
+<td>657</td>
+<td>657</td>
+</tr>
+<tr>
+<td>in the vault</td>
+<td>611</td>
+<td><strong>646</strong></td>
+</tr>
+<tr>
+<td>missing</td>
+<td>41</td>
+<td><strong>1</strong></td>
+</tr>
+<tr>
+<td>never filed</td>
+<td>141</td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>revision drift</td>
+<td>not measured</td>
+<td>7</td>
+</tr>
+<tr>
+<td>deliberate probes</td>
+<td>not measured</td>
+<td>7</td>
+</tr>
+<tr>
+<td>cards raised</td>
+<td>9</td>
+<td><strong>0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>A <code>--check --file --dry-run</code> off the corrected list plans <strong>0 cards</strong> and 0 gaps.</p>
+<p>Re-resolving the ten historical backfill cards (<code>t_695da446</code>, <code>t_0d3624da</code>, <code>t_688255cc</code>, <code>t_bc8fcff0</code>, <code>t_16060c7f</code>, <code>t_4361a74a</code>, <code>t_ee78dba6</code>, <code>t_29f2fa3b</code>, <code>t_a4e7a8c1</code>, <code>t_0b1dcd88</code>) gives <strong>339 document slots: 321 present, 18 revision drift, 0 missing</strong>. Not one carded document was actually absent from the vault.</p>
+<h2 id="the-one-genuinely-missing-document">The one genuinely missing document</h2>
+<p><code>AI-Space/3.PRD/Active/2026-10-21-stoep-cape-town-life-guide-plan.html</code> — published 2026-10-21, and its AI-Drive source is <strong>gone</strong> (<code>…/Agent-Output/adrianna/2026-10-21-stoep-cape-town-life-guide-plan.html</code> no longer exists), so it cannot be re-filed mechanically. All five checks miss, including the title sweep for <em>"Stoep — Cape Town Life Guide: Build Plan"</em>. That is a re-publish decision, not filing work: either the document is regenerated, or the published row is retired as superseded. It is the only item that will keep the nightly line non-zero.</p>
+<h2 id="what-this-means-for-the-open-cards">What this means for the open cards</h2>
+<ul>
+<li><strong>Batches 5/9–9/9 are all closed</strong> by Beast with zero filings, so there is nothing left to cancel; they are the evidence of the defect, not outstanding work.</li>
+<li><strong>The six blocked cards of the earlier 7/7 series</strong> (<code>t_16060c7f</code>, <code>t_d476813f</code>, <code>t_fc8f941c</code>, <code>t_177c8859</code>, <code>t_5722b665</code>, <code>t_93e013d1</code>) are superseded; each carries a comment saying so. They should not be unblocked — their documents all resolve as present. Whether to archive them is Ricardo's call; I do not delete records.</li>
+</ul>
+<h2 id="for-ricardo--three-items-that-are-yours-not-a-code-fix">For Ricardo — three items that are yours, not a code fix</h2>
+<ol type="1">
+<li><strong>The stoep dead link</strong> (above): regenerate, or retire the published row.</li>
+<li><strong>201 vault leaves hold raw HTML inside a <code>.md</code> name</strong> (including the 3.7 MB three-cities note). A real defect in the vault, unrelated to this generator; a 20+ note fix needs your approval.</li>
+<li><strong><code>the-standard-rules-v2</code></strong> is seated at <code>AI-Space/3.PRD</code> with <code>space: AI-Space</code> while its staged sibling says <code>space: Work</code> — a deliberate re-filing. The generator now treats it as present; I did not reverse the decision.</li>
+</ol>
+<h2 id="guarded-against-regression">Guarded against regression</h2>
+<p><code>~/.config/maio-stack/bin/vault-ensure-selftest</code> — a hermetic suite that builds a throwaway vault and a throwaway AI-Drive in a temp dir (<code>VAULT_ENSURE_ROOT</code>, <code>VAULT_ENSURE_DRIVE</code>) and can never read or write the real vault. It seats one fixture per route (destination, stem, <code>source:</code> pointer, collision suffix, title), plus one revision drift, one deliberate probe and one true miss, and asserts the counts, the drift label and that the true miss carries all five checks. Exit 0 pass, 1 failure, 2 could-not-run. Runs in about a second; run it after any change to <code>vault-ensure</code>.</p>
+<h2 id="files-touched">Files touched</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>~/.config/maio-stack/bin/vault-ensure</code></td>
+<td>the fix (presence test, drift class, card evidence, ledger columns <code>drift</code>/<code>deliberate</code>, <code>write_ledger</code> dirname bug)</td>
+</tr>
+<tr>
+<td><code>~/.config/maio-stack/bin/vault-ensure.bak-20261101-pre-t_54d86d18</code></td>
+<td>rollback copy, byte-for-byte as found</td>
+</tr>
+<tr>
+<td><code>~/.config/maio-stack/bin/vault-ensure-selftest</code></td>
+<td>new hermetic regression suite</td>
+</tr>
+<tr>
+<td><code>…/AI-Drive/Agent-Output/adrianna/vault-ensure/ledger.csv</code></td>
+<td>header migrated to add <code>drift</code>,<code>deliberate</code>; 19 old rows preserved, 1 new row</td>
+</tr>
+</tbody>
+</table>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>Run ledger, all runs before and after: <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/adrianna/vault-ensure/ledger.csv</code></li>
+<li>Beast's batch 4/9 reconciliation, the report that raised this card: <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/beast/2026-11-01-backfill-4of9-reconciliation.md</code></li>
+<li>Beast's audits of batches 5/9–9/9 (180 documents, 0 filed): run summaries on cards <code>t_acc14105</code>, <code>t_0d3c69ff</code>, <code>t_735e236a</code>, <code>t_5e9aea5c</code>, <code>t_57f497a2</code></li>
+<li>Vault filing rules: <code>Maio Hub/CLAUDE.md</code>, <code>Maio Hub/ReadME_MasterIndex.md</code></li>
+<li>Post-fix inventory JSON and the ten-card re-resolution: workspace of <code>t_54d86d18</code></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
