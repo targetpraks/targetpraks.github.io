@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeepSeek Harness Super-Agent Design — briefing</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #0b0c10; color: #c5c6c7; line-height: 1.55; }
+  .wrap { max-width: 760px; margin: 40px auto; padding: 0 20px; }
+  header { border-bottom: 1px solid #1f2833; padding-bottom: 16px; margin-bottom: 24px; }
+  h1 { font-size: 22px; margin: 0 0 6px; color: #66fcf1; }
+  .kicker { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #45a29e; margin-bottom: 8px; }
+  .meta { font-size: 13px; color: #667; margin-bottom: 0; }
+  .meta a { color: #66fcf1; text-decoration: none; }
+  .meta a:hover { text-decoration: underline; }
+  h2 { font-size: 16px; color: #66fcf1; margin: 26px 0 8px; border-bottom: 1px solid #1f2833; padding-bottom: 4px; }
+  h3 { font-size: 14px; color: #c5c6c7; margin: 18px 0 6px; }
+  p { margin: 0 0 12px; color: #c5c6c7; }
+  ul { margin: 6px 0 14px; padding-left: 20px; color: #c5c6c7; }
+  li { margin-bottom: 6px; }
+  b { color: #66fcf1; }
+  .card { background: #11161e; border: 1px solid #1f2833; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #66fcf1; border: 1px solid #1f2833; border-radius: 4px; padding: 2px 8px; margin-right: 8px; margin-bottom: 6px; }
+  .quote { border-left: 3px solid #1f2833; margin: 10px 0; padding-left: 14px; color: #889; font-style: italic; }
+  .quote b { color: #a4b0be; }
+  .next { margin-top: 30px; }
+  .next b { color: #f1c40f; }
+  .foot { font-size: 12px; color: #667; margin-top: 34px; border-top: 1px solid #1f2833; padding-top: 14px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; background: #0f141a; padding: 1px 6px; border-radius: 4px; color: #ff7b72; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<p class="kicker">Adrianna A · AI stack briefing · English only</p>
+<h1>DeepSeek Harness: "Super-agent" design article</h1>
+<p class="meta">Source: X post by <b>@DeepSeekHarness</b>, 1 Nov 2026 — <a href="https://x.com/deepseekharness/status/2116857257245987236" target="_blank" rel="noopener">x.com/deepseekharness/status/2116857257245987236</a> · article: "Exploring Super-agent Design: Towards a More Autonomous Agent System" (~30 min read, machine-translated from Chinese). DeepSeek Harness repo: <a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" rel="noopener">github.com/deepseek-ai/deepseek-harness</a>.</p>
+</header>
+
+<div class="card">
+<p><b>What it is.</b> DeepSeek Harness (<code>dsh</code>) is DeepSeek AI's open-source agent harness — "everything is a plugin," powered by Cordis (<em>A Programming Paradigm for Spatiotemporal Composability</em>). It is in developer preview (Node.js/pnpm, local Web UI on :3080, MIT license, ~268k stars). The article is architectural thinking, not a feature list of existing dsh.</p>
+</div>
+
+<h2>The Super-agent: four characteristics</h2>
+<ul>
+<li><b>Continuous</b> — one agent across IM chats, GitHub comments, etc.; context is shared so the user never wonders "which session has that info?"</li>
+<li><b>Productive</b> — responds quickly and runs several complex tasks in parallel, taking the next instruction before the previous one finishes.</li>
+<li><b>Proactive</b> — monitors its environment, acts on what is worth handling, stays quiet otherwise (no step-by-step prompting needed).</li>
+<li><b>Persistent</b> — always online, connected to real working environments, recovers from anomalies on its own.</li>
+</ul>
+
+<h2>Five modules (the architecture)</h2>
+<ul>
+<li><b>Two-level architecture.</b> A long-lived <b>Router layer</b> owns all human interaction and global coordination (context, decisions, memory) without executing tasks; context-isolated <b>Worker Sessions</b> run tasks with high concurrency. Sessions become an implementation detail, not a user burden.</li>
+<li><b>Event-driven design.</b> Makes the agent proactive: it reacts to environment events rather than waiting for instructions.</li>
+<li><b>Full-duplex multi-channel interaction.</b> Keeps each user exchange continuous and productive across channels.</li>
+<li><b>Separation of compute, state, and environment</b> plus a <b>Watchdog</b> (self-healing from anomalies, stays online across devices).</li>
+</ul>
+
+<div class="card">
+<p class="quote"><b>Real example from the article:</b> "our internal Super-agent instance, which runs on DeepSeek Harness, can continue the same development task across IM and GitHub. It also monitors feedback in public group chats and, even when no one @-mentions it, finds root causes on its own and opens Pull Requests to fix them." It helps daily with reproducing/fixing issues, answering code reviews, and developing DeepSeek Harness itself.</p>
+</div>
+
+<h2>Prototype, not product</h2>
+<p>Parts of the design are implemented in <code>dsh-superagent-prototype</code> — explicitly a prototype plugin for validating the technical approach, <b>not</b> an official DeepSeek product. The team's conclusion: classic systems-engineering ideas applied to agents; as models need less human intervention per task, the bottleneck shifts to human attention and sign-off.</p>
+
+<div class="next">
+<h2>How it maps to our stack (observations, not claims)</h2>
+<ul>
+<li>Ricardo's Hermes stack is already multi-channel (Discord, Telegram, local terminal) with model traffic through the local Ollama gateway (:11434/v1), §8 decisions through the d3-flash-mlx gate, Courage running scheduled jobs/checks, and Beast as vault steward.</li>
+<li>The DeepSeek design echoes themes worth comparing if Ricardo wants: event-driven inbox handling instead of one blocking session, a router/worker split for concurrent tasks, and watchdog-style self-healing.</li>
+<li>No decision or change is implied — stack decisions go to Ricardo; I prepare, he signs off.</li>
+</ul>
+</div>
+
+<h2>Next steps (only if Ricardo wants)</h2>
+<ul>
+<li>Read the <code>dsh-superagent-prototype</code> plugin source and the Cordis paradigm doc.</li>
+<li>Diff the super-agent modules against Hermes/Courage/Beast to see what, if anything, is worth adopting.</li>
+<li>Nothing — file this as reference only.</li>
+</ul>
+
+<p class="foot">Grounding: page text retrieved from the linked X post and the deepseek-ai/deepseek-harness GitHub repo (real command output, not fabricated). All quotes are from the article. This is a briefing artifact; no action was taken on any live system.</p>
+</div>
+</body>
+</html>
