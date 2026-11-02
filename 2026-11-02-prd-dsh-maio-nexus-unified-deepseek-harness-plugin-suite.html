@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite + Ecosystem Adoption (v3, Mnemosyne-aligned)</title>
+<title>PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite + Ecosystem Adoption (v4, super-agent Router/Worker)</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #0b0c10; color: #c5c6c7; line-height: 1.6; }
-  .wrap { max-width: 860px; margin: 40px auto; padding: 0 20px; }
+  .wrap { max-width: 880px; margin: 40px auto; padding: 0 20px; }
   header { border-bottom: 1px solid #1f2833; padding-bottom: 16px; margin-bottom: 24px; }
   h1 { font-size: 23px; margin: 0 0 6px; color: #66fcf1; }
   .kicker { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #45a29e; margin-bottom: 8px; }
@@ -23,6 +23,9 @@
   .card.highlight { border-color: #1f6b4a; background: #0a1c14; }
   .card.warn { border-color: #6b4a00; background: #1c140a; }
   .tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #66fcf1; border: 1px solid #1f2833; border-radius: 4px; padding: 1px 7px; margin-right: 6px; margin-bottom: 6px; }
+  .tag.router { color: #60a5fa; border-color: #1d4ed8; }
+  .tag.worker { color: #c084fc; border-color: #7e22ce; }
+  .tag.both { color: #4ade80; border-color: #15803d; }
   .tag.adopt { color: #4ade80; border-color: #15803d; }
   .tag.eval { color: #fbbf24; border-color: #b45309; }
   .tag.reject { color: #f87171; border-color: #7f1d1d; }
@@ -38,92 +41,136 @@
 <body>
 <div class="wrap">
 <header>
-<p class="kicker">Adrianna A · Product Requirement Document · App Plan · v3 (Mnemosyne-aligned, supersedes v2)</p>
+<p class="kicker">Adrianna A · Product Requirement Document · App Plan · v4 (super-agent Router/Worker, supersedes v3)</p>
 <h1>PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite + Ecosystem Adoption</h1>
-<p class="meta">Targets: Web profile (<span class="code">dsh web</span>) <b>and</b> official DSH Desktop app · <b>Memory source: Mnemosyne</b> (active Hermes provider, local SQLite, per-profile isolation ON) · Vault: Beast / OpenKnowledge (AI-Space, read-only) · Model path: local Ollama gateway :11434/v1 · Staged by Adrianna A, reviewed and manually installed by Ricardo.</p>
+<p class="meta">Targets: Web profile (<span class="code">dsh web</span>), official DSH Desktop app, <b>and the super-agent bundle</b> (<span class="code">dsh-superagent-prototype</span>, MIT, research code) · <b>Memory: Mnemosyne</b> (active Hermes provider, per-profile SQLite, isolation ON) · Vault: Beast / OpenKnowledge (AI-Space, read-only) · Model path: local Ollama gateway :11434/v1 · Staged by Adrianna A, reviewed and manually installed by Ricardo.</p>
 </header>
 
 <div class="card highlight">
-<p><b>Executive summary.</b> Two deliberate workstreams, one plan. <b>(A) Build</b> a custom suite — <span class="code">dsh-maio-nexus</span> — that gives DSH shared memory with Hermes and read-only recall over the Maio Hub vault. <b>(B) Adopt</b> a curated, verified subset of the community plugin ecosystem alongside it — each with an explicit adopt / evaluate / reject decision, a security review gate, and a manual install step owned by Ricardo.</p>
-<p><b>What changed in v3.</b> Hermes has switched its main memory provider fleet-wide to <b>Mnemosyne</b> (verified: <span class="code">hermes memory status</span> → <span class="code">Provider: mnemosyne</span>; all 31 configs on Mnemosyne, 0 failures, per the migration run). The memory bridge no longer targets Hindsight or generic memory files — it reads Mnemosyne's per-profile SQLite store. Hindsight remains installed but inactive. This is the single most important correction to v2: building against the old provider would have created a second, fragmented memory.</p>
+<p><b>Executive summary.</b> Two deliberate workstreams, one plan. <b>(A) Build</b> a custom suite — <span class="code">dsh-maio-nexus</span> — that gives DSH shared memory with Hermes and read-only recall over the Maio Hub vault, designed to run <em>inside</em> the super-agent's Router/Worker split rather than as a plain session plugin. <b>(B) Adopt</b> a curated, verified subset of the community plugin ecosystem alongside it — each with an explicit adopt / evaluate / reject decision and a manual install step owned by Ricardo.</p>
+<p><b>What changed in v4.</b> The super-agent design is now a first-class constraint: a long-lived <b>Router</b> that talks to people and dispatches work, plus context-isolated <b>Worker</b> sessions that execute in parallel. The memory bridge and vault recall are split across those layers — Router gets the shared context and the dispatch decision, Workers get a scoped slice and a per-task tool — instead of pretending DSH is one flat session. v3 still stands on memory (Mnemosyne) and governance.</p>
 </div>
 
 <h2>1. Vision &amp; Problem</h2>
-<p><b>Problem.</b> DeepSeek Harness sessions are isolated from the rest of Ricardo's Mac stack. A DSH session cannot see Hermes memory (user preferences, standing rules, cross-session facts), cannot query the Obsidian vault (<span class="code">Maio Hub</span>) for PRDs, research or guidelines, and has no curated, risk-assessed path to the community plugin ecosystem — the <span class="code">dsh-plugin</span> topic alone carries 25,115 tagged repos, many of them tag-squatters.</p>
-<p><b>Solution.</b> <span class="code">dsh-maio-nexus</span> registers Cordis plugin handlers that inject <b>Mnemosyne</b> memory into DSH session context and expose a read-only <span class="code">vault_recall</span> tool over AI-Space via Beast/OK. The adoption workstream gives each community plugin an explicit decision and a reviewable install path — no blind installs, no third-party code run by me.</p>
+<p><b>Problem.</b> DeepSeek Harness sessions are isolated from the rest of Ricardo's Mac stack. A DSH session cannot see Hermes memory (user preferences, standing rules, cross-session facts), cannot query the Obsidian vault (<span class="code">Maio Hub</span>) for PRDs, research or guidelines, and has no curated, risk-assessed path to the community plugin ecosystem. With the super-agent, the problem gets sharper: work is spread across a Router and many Workers, so context must be <em>deliberately</em> placed — shared where it must be shared, isolated where it must be isolated.</p>
+<p><b>Solution.</b> <span class="code">dsh-maio-nexus</span> registers Cordis handlers that (a) feed the Router a compact shared memory + vault context, (b) let the Router package a scoped context slice for each Worker dispatch, (c) give Workers a read-only <span class="code">vault_recall</span> tool and a scoped Mnemosyne query, and (d) return durable facts from Workers to the Router, which is the only writer through Hermes' memory tools. No second memory store; no cross-worker leakage.</p>
 
 <div class="card">
-<p><b>Memory source of truth (verified on this Mac, 2026-11-02).</b> Provider <span class="code">mnemosyne</span>; <span class="code">profile_isolation: true</span>; store <span class="code">~/.hermes/mnemosyne/data/mnemosyne.db</span> (227 MB, WAL 88 MB at check time); schema includes <span class="code">working_memory</span> (10,004 rows), <span class="code">episodic_memory</span> (0), <span class="code">facts</span>, <span class="code">fts_working</span> family, <span class="code">graph_edges</span>, <span class="code">triples</span>, <span class="code">memory_embeddings</span>; embeddings are local (nomic-embed-text, 768-dim, via <span class="code">127.0.0.1:11434/v1</span>). A <span class="code">mnemosyne_stats</span> call returned <em>database is locked</em> during the check — the file was under an active writer, so the plugin must read with a busy timeout and retry, not assume a quiet DB.</p>
+<p><b>Memory source of truth (verified on this Mac, 2026-11-02).</b> Provider <span class="code">mnemosyne</span>; <span class="code">profile_isolation: true</span>; store <span class="code">~/.hermes/mnemosyne/data/mnemosyne.db</span> (227 MB, WAL 88 MB at check time); schema includes <span class="code">working_memory</span> (10,004 rows), <span class="code">episodic_memory</span> (0), <span class="code">facts</span>, <span class="code">fts_working</span> family, <span class="code">graph_edges</span>, <span class="code">triples</span>, <span class="code">memory_embeddings</span>; embeddings are local (nomic-embed-text, 768-dim, via <span class="code">127.0.0.1:11434/v1</span>). A <span class="code">mnemosyne_stats</span> call returned <em>database is locked</em> during the check — the file was under an active writer, so the read path needs a busy timeout and retry.</p>
 </div>
 
-<h2>2. Workstream A — Custom suite <span class="code">dsh-maio-nexus</span></h2>
+<h2>2. Super-agent fit — how nexus works with the Router/Worker</h2>
+<p>The prototype's architecture, from its README and the DeepSeek design article: a long-lived <b>Router</b> handles people and dispatches; context-isolated <b>Workers</b> do one work item each in their own session and directory; events (chat, GitHub, CI) arrive as triggers; a <b>Watchdog</b> checks progress; state lives in a database while compute and machine are separated. The Router "cannot do the work" — it only decides which Worker gets which request.</p>
+
+<h3>2.1 Where each nexus module lives</h3>
+<table>
+<thead><tr><th>Module</th><th>Layer</th><th>What it does in the super-agent</th></tr></thead>
+<tbody>
+<tr><td><b>nexus-memory-bridge</b></td><td><span class="tag router">Router</span><span class="tag both">+ Worker</span></td><td>Router side: builds the compact shared memory block injected into the Router's context (standing rules, user preferences, active plans) so a plan agreed in Discord is understood when the same thread continues in DSH Web or Desktop. Worker side: answers a scoped query — only the facts relevant to that Worker's work item — never the whole store.</td></tr>
+<tr><td><b>nexus-profile-resolver</b></td><td><span class="tag router">Router</span></td><td>Resolves which Hermes profile owns the conversation before any DB is opened. Isolation is enforced per profile <em>and</em> per Worker: a Worker cannot open a sibling's store.</td></tr>
+<tr><td><b>nexus-vault-recall</b></td><td><span class="tag both">Router + Worker</span></td><td>Router uses it to answer "what did we decide?" and to cite PRDs/guidelines when dispatching. Each Worker gets the same read-only tool bound to its task (AI-Space scope), so it can pull the exact note it needs without a shared mutable cache.</td></tr>
+<tr><td><b>nexus-context-packet</b> <em>(new in v4)</em></td><td><span class="tag router">Router</span></td><td>The dispatch contract: Router hands each Worker a packet of {request, scoped memory facts, vault references, acceptance criteria, channel + thread id}. This is the Router's decision output — what the article calls "which Worker gets which request" — not a task breakdown.</td></tr>
+<tr><td><b>nexus-memory-return</b> <em>(new in v4)</em></td><td><span class="tag worker">Worker</span> → <span class="tag router">Router</span></td><td>Workers do not write memory. They return <em>memory candidates</em> (fact, confidence, source) to the Router; the Router writes through Hermes' Mnemosyne tools, preserving one source of truth, consolidation and audit.</td></tr>
+<tr><td><b>nexus-index-cron</b></td><td><span class="tag router">Router/ops</span></td><td>Courage job refreshes the vault index and warms the memory read path; the Watchdog consumes its freshness timestamp.</td></tr>
+<tr><td><b>nexus-watchdog</b> <em>(new in v4)</em></td><td><span class="tag router">Router/ops</span></td><td>Separate timer session: checks every Worker is making real progress, checks Mnemosyne is readable (the lock I observed), checks vault index freshness. On failure it reports in plain language and marks the recall path degraded — fail-closed, never blocks the harness.</td></tr>
+</tbody>
+</table>
+
+<h3>2.2 The Router's dispatch decision (the "vote" step)</h3>
+<p>The prototype has <b>no formal voting mechanism</b>. The Router's dispatch is a rules-first, model-judged decision: deterministic filters run in code, and the model judges only what passes. nexus models that step explicitly in <span class="code">nexus-context-packet</span>: the Router picks the Worker type, assembles the scoped memory + vault slice, and records why. If "router vote" meant a literal multi-agent vote, say so and I will add a scoring variant — otherwise this is the decision step the PRD implements.</p>
+
+<h3>2.3 Event-driven recall (proactive, but gated)</h3>
+<ul>
+<li><b>Triggers:</b> new or changed vault note, a Mnemosyne write, a chat message, a GitHub comment, a CI result. Code filters first — a note that fails the AI-Space scope filter never reaches a model.</li>
+<li><b>Observe mode:</b> unrequested proactive work is <em>recorded only</em> until Ricardo approves the rule that allows it — matching the prototype's "acts only when asked, or when a written rule allows it."</li>
+<li><b>Freshness:</b> a vault write invalidates the recall cache and schedules a reindex; the Router never answers from a stale index without saying so.</li>
+</ul>
+
+<h3>2.4 Continuity across channels</h3>
+<p>Discord, Telegram, DSH Web and DSH Desktop all terminate at the Router, so the same memory slice and vault scope apply everywhere. A Worker subscribes to its own thread, so follow-ups skip the Router — exactly the prototype's behavior — while the Router keeps the cross-channel record.</p>
+
+<h2>3. Workstream A — Custom suite <span class="code">dsh-maio-nexus</span></h2>
 <table>
 <thead><tr><th>Module</th><th>Component ID</th><th>Function</th><th>Integration point</th></tr></thead>
 <tbody>
-<tr><td><b>Memory Sync Bridge</b></td><td><span class="code">nexus-memory-bridge</span></td><td>Reads the active <b>Mnemosyne</b> SQLite store and injects relevant facts/preferences into DSH session context: FTS over <span class="code">working_memory</span>, semantic over <span class="code">memory_embeddings</span>, graph traversal over <span class="code">graph_edges</span>/<span class="code">triples</span>. Read-only; never writes Hermes config or the DB directly.</td><td><span class="code">~/.hermes/mnemosyne/data/mnemosyne.db</span> (per-profile, read-only · WAL busy-timeout)</td></tr>
-<tr><td><b>Profile Resolver</b></td><td><span class="code">nexus-profile-resolver</span></td><td><span class="code">profile_isolation: true</span> means every Hermes profile has its own DB. The bridge resolves the calling profile first and opens only that store — no cross-profile recall.</td><td><span class="code">~/.hermes/profiles/&lt;name&gt;/mnemosyne/data/mnemosyne.db</span></td></tr>
-<tr><td><b>Vault Recall Engine</b></td><td><span class="code">nexus-vault-recall</span></td><td>Registers a <span class="code">vault_recall</span> tool doing FTS5 + semantic search over <span class="code">AI-Space/</span> markdown, read-only, via Beast/OpenKnowledge.</td><td>OK MCP <span class="code">:64200/mcp</span> · <span class="code">/Users/Shared/Maio-Hub/</span></td></tr>
-<tr><td><b>Dual Runtime Manifest</b></td><td><span class="code">dsh.bundle</span> + <span class="code">cordis.patch.yml</span></td><td>One bundle that installs cleanly into the Web profile and the official DSH Desktop app.</td><td>DSH plugin lifecycle / settings UI</td></tr>
-<tr><td><b>Nightly Index</b></td><td><span class="code">nexus-index-cron</span></td><td>Courage cron job refreshes the vault index and warms the memory read path; no UI interruption.</td><td>Courage scheduled jobs</td></tr>
+<tr><td><b>Memory Sync Bridge</b></td><td><span class="code">nexus-memory-bridge</span></td><td>Reads the active <b>Mnemosyne</b> SQLite store: FTS over <span class="code">working_memory</span>, semantic over <span class="code">memory_embeddings</span>, graph over <span class="code">graph_edges</span>/<span class="code">triples</span>. Read-only; never writes the DB or Hermes config.</td><td><span class="code">~/.hermes/mnemosyne/data/mnemosyne.db</span> (per-profile, read-only · WAL busy-timeout)</td></tr>
+<tr><td><b>Profile Resolver</b></td><td><span class="code">nexus-profile-resolver</span></td><td>Resolves the calling profile first; opens only that store. <span class="code">profile_isolation: true</span> is a hard boundary, per profile and per Worker.</td><td><span class="code">~/.hermes/profiles/&lt;name&gt;/mnemosyne/data/mnemosyne.db</span></td></tr>
+<tr><td><b>Vault Recall Engine</b></td><td><span class="code">nexus-vault-recall</span></td><td><span class="code">vault_recall</span> tool: FTS5 + semantic search over <span class="code">AI-Space/</span> markdown, read-only, via Beast/OpenKnowledge.</td><td>OK MCP <span class="code">:64200/mcp</span> · <span class="code">/Users/Shared/Maio-Hub/</span></td></tr>
+<tr><td><b>Context Packet</b></td><td><span class="code">nexus-context-packet</span></td><td>Router→Worker dispatch contract: scoped facts, vault refs, acceptance criteria, channel/thread. Records the dispatch reason.</td><td>Super-agent Router dispatch hook</td></tr>
+<tr><td><b>Memory Return</b></td><td><span class="code">nexus-memory-return</span></td><td>Worker→Router memory candidates; Router writes via Hermes memory tools. No Worker writes.</td><td>Worker completion hook → Hermes memory tool</td></tr>
+<tr><td><b>Watchdog</b></td><td><span class="code">nexus-watchdog</span></td><td>Timer session: Worker progress, Mnemosyne readability, index freshness; plain-language failure report.</td><td>Courage timer + DSH panel</td></tr>
+<tr><td><b>Nightly Index</b></td><td><span class="code">nexus-index-cron</span></td><td>Refreshes the vault index and warms the memory read path; no UI interruption.</td><td>Courage scheduled jobs</td></tr>
+<tr><td><b>Dual Runtime Manifest</b></td><td><span class="code">dsh.bundle</span> + <span class="code">cordis.patch.yml</span></td><td>One bundle for Web, Desktop and the super-agent prototype bundle format.</td><td>DSH plugin lifecycle / settings UI</td></tr>
 </tbody>
 </table>
-<p><b>Acceptance criteria.</b> <b>F1 (memory):</b> a canary fact written through Hermes' Mnemosyne memory tool is recalled by a DSH session unprompted; a fact written by a different Hermes profile is <em>not</em> recalled (isolation test). <b>F2 (vault):</b> <span class="code">vault_recall</span> returns exact vault snippets and vault file hashes are unchanged. <b>F3 (bundle):</b> one bundle installs on both targets without root or core breakage. <b>F4 (index):</b> nightly job completes silently and idempotently. <b>Fail-closed:</b> if Mnemosyne is locked/unreachable, DSH proceeds with built-in MEMORY.md/USER.md context and logs a warning — no fatal errors.</p>
+<p><b>Acceptance criteria.</b>
+<b>F1 (memory):</b> a canary fact written through Hermes' Mnemosyne tool is recalled by a DSH session unprompted.
+<b>F2 (vault):</b> <span class="code">vault_recall</span> returns exact vault snippets and vault file hashes are unchanged.
+<b>F3 (bundle):</b> one bundle installs on Web, Desktop and the prototype without root or core breakage.
+<b>F4 (index):</b> nightly job completes silently and idempotently.
+<b>S1 (Router):</b> the Router injects shared memory + vault context and produces a context packet for every dispatch.
+<b>S2 (Worker isolation):</b> Worker A cannot recall Worker B's scratch facts or open a sibling profile's store.
+<b>S3 (follow-up):</b> a follow-up in the same thread reaches its Worker without a Router re-decision; the Router still records it.
+<b>S4 (event freshness):</b> a vault write is visible to recall within the configured SLA (default 5 min) or the answer says "stale index".
+<b>S5 (watchdog):</b> a forced Mnemosyne lock is detected, reported in plain language, and the recall path degrades fail-closed.
+<b>S6 (cross-channel):</b> a plan agreed in Discord is recalled in a DSH Web session for the same profile.
+<b>Fail-closed:</b> if Mnemosyne is locked/unreachable, DSH proceeds with built-in MEMORY.md/USER.md context and logs a warning — no fatal errors.</p>
 
-<h2>3. Workstream B — Ecosystem adoption matrix</h2>
-<p>All ten re-verified plugins from the top-10 study, each with a decision. <b>Adopt</b> = stage, review, install after Ricardo's sign-off. <b>Evaluate</b> = read-only study first (manifest, permissions, network calls), install only if it earns its place. <b>Reject</b> = do not install. The memory decision is now constrained: <b>Hermes memory is Mnemosyne</b>, so a plugin that brings its own store must interoperate with it or be rejected — a second memory store fragments recall, which is exactly what we are avoiding.</p>
+<h2>4. Workstream B — Ecosystem adoption matrix</h2>
+<p>All ten re-verified plugins, each with a decision. <b>Adopt</b> = stage, review, install after Ricardo's sign-off. <b>Evaluate</b> = read-only study first. <b>Reject</b> = do not install. Memory constraint: <b>Hermes memory is Mnemosyne</b>, so a plugin that brings its own store must interoperate with it or be rejected.</p>
 <table>
 <thead><tr><th style="width:22%">Plugin</th><th style="width:8%">Stars</th><th style="width:9%">License</th><th style="width:9%">Decision</th><th>Rationale</th></tr></thead>
 <tbody>
-<tr><td><b>MemTensor/MemOS</b></td><td class="stars">12.2k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate (interop only)</span></td><td>v2 called this the strongest fit because of its Hermes memory plugin. That rationale is now stale: Hermes' active provider is Mnemosyne. MemOS is worth studying only if it can read/write the same Mnemosyne store or run alongside it without a second source of truth; otherwise reject. Its LoCoMo/LongMemEval numbers are not a reason to fragment memory.</td></tr>
-<tr><td><b>yjh051108/dsh-routing-suite</b></td><td class="stars">7.0k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Measured, task-aware reasoning-mode routing (P1-P23). Useful as observability reference beside the local Ollama gateway; read-only study, then decide.</td></tr>
-<tr><td><b>Fei2411/DS-Bot</b></td><td class="stars">3.9k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate</span></td><td>Long-lived bots inside DSH, local data under <span class="code">~/.dsh</span>. Reference design for the Discord/Telegram bot pattern; not required for the suite.</td></tr>
-<tr><td><b>zhu1090093659/dsh-web</b></td><td class="stars">9.9k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate</span></td><td>Task board with cron, multi-agent cascade, GitHub Issue-to-PR loop, token bank. Overlaps Courage; study for ideas, do not adopt wholesale.</td></tr>
-<tr><td><b>Ebony-Vinyl/dsh-our-free-model</b></td><td class="stars">54.9k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Free frontier models with no key/signup. Potential fallback beside the Ollama gateway. ⚠️ Never install the bare-named npm package (fake); never send sensitive content to the free pool.</td></tr>
-<tr><td><b>MeteorNOX/DeepSeek-Balance-Whale-Widget</b></td><td class="stars">6.1k</td><td>MIT (code)</td><td><span class="tag eval">Evaluate</span></td><td>Balance/cost visibility with 34 vendor templates incl. Ollama/LM Studio. Low risk, low value unless direct DeepSeek API use grows.</td></tr>
-<tr><td><b>anywhere-labs/dsh-desktop</b></td><td class="stars">34.3k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Community desktop client. Target is the official DSH Desktop app, so this is a comparison point only.</td></tr>
-<tr><td><b>dataelement/dsh-desktop</b></td><td class="stars">17.0k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Same — but its Safe Mode (isolated profile, third-party plugins blocked) is a useful reference for our install gate.</td></tr>
-<tr><td><b>Devin-AXIS/iPolloWork</b></td><td class="stars">7.3k</td><td>Source Available 1.0</td><td><span class="tag eval">Evaluate</span></td><td>Unified Codex/DSH/OpenCode workspace. <b>Not OSI</b>: free only for individual use &lt;3 users; written authorization for more. Legal sign-off required before any use.</td></tr>
-<tr><td><b>YuJunZhiXue/dsh-purge</b></td><td class="stars">14.1k</td><td>Apache-2.0</td><td><span class="tag reject">Reject</span></td><td>Prompt-swap/jailbreak red-team tool; patches local @deepseek-ai packages; supports 0.2.1-rc.2 only; author posts legal warnings. Out of scope for this stack.</td></tr>
+<tr><td><b>MemTensor/MemOS</b></td><td class="stars">12.2k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate (interop only)</span></td><td>Its Hermes memory plugin is no longer the draw — Hermes runs Mnemosyne. Worth studying only if it reads/writes the same store without becoming a second source of truth; otherwise reject.</td></tr>
+<tr><td><b>yjh051108/dsh-routing-suite</b></td><td class="stars">7.0k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Task-aware model routing. Directly relevant to the Router layer: could inform how the Router picks a Worker's model. Read-only study; no install until proven.</td></tr>
+<tr><td><b>Fei2411/DS-Bot</b></td><td class="stars">3.9k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate</span></td><td>Long-lived bots inside DSH, local data. Reference design for the Router's channel handling; not required.</td></tr>
+<tr><td><b>zhu1090093659/dsh-web</b></td><td class="stars">9.9k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate</span></td><td>Task board with cron and multi-agent cascade — an alternative coordination pattern to the Router. Study for ideas; do not adopt wholesale.</td></tr>
+<tr><td><b>Ebony-Vinyl/dsh-our-free-model</b></td><td class="stars">54.9k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Free frontier models with no key. Potential fallback beside the Ollama gateway. ⚠️ Never install the bare-named npm package (fake); never send sensitive content to the free pool.</td></tr>
+<tr><td><b>MeteorNOX/DeepSeek-Balance-Whale-Widget</b></td><td class="stars">6.1k</td><td>MIT (code)</td><td><span class="tag eval">Evaluate</span></td><td>Balance/cost visibility incl. Ollama/LM Studio templates. Low risk, low value unless direct API use grows.</td></tr>
+<tr><td><b>anywhere-labs/dsh-desktop</b></td><td class="stars">34.3k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Community desktop client; target is the official Desktop app, so comparison only.</td></tr>
+<tr><td><b>dataelement/dsh-desktop</b></td><td class="stars">17.0k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Same — but its Safe Mode is a useful reference for our first-run install gate.</td></tr>
+<tr><td><b>Devin-AXIS/iPolloWork</b></td><td class="stars">7.3k</td><td>Source Available 1.0</td><td><span class="tag eval">Evaluate</span></td><td>Unified Codex/DSH/OpenCode workspace. <b>Not OSI</b>: free only for individual use &lt;3 users. Legal sign-off required.</td></tr>
+<tr><td><b>YuJunZhiXue/dsh-purge</b></td><td class="stars">14.1k</td><td>Apache-2.0</td><td><span class="tag reject">Reject</span></td><td>Prompt-swap/jailbreak red-team tool; patches local packages; supports 0.2.1-rc.2 only; legal warnings. Out of scope.</td></tr>
 </tbody>
 </table>
 
-<h2>4. Plugin governance policy (applies to A and B)</h2>
+<h2>5. Plugin governance policy (applies to A and B)</h2>
 <ul>
-<li><b>No blind installs.</b> Every plugin — mine or third-party — is staged, its <span class="code">dsh.bundle</span> / <span class="code">cordis.patch.yml</span> read, its network calls and filesystem writes reviewed, and its license checked.</li>
-<li><b>Ricardo installs.</b> Adrianna A stages; Ricardo runs the install command or uses the Desktop settings after reviewing the manifest. I never install third-party code or change a live profile on my own.</li>
-<li><b>One memory source of truth.</b> Mnemosyne. No plugin may create a parallel memory store or write directly to the Mnemosyne DB; DSH writes, if ever needed, go through Hermes' memory tools so consolidation, conflict resolution and audit stay in one place.</li>
+<li><b>No blind installs.</b> Every plugin is staged, its <span class="code">dsh.bundle</span> / <span class="code">cordis.patch.yml</span> read, network calls and filesystem writes reviewed, license checked.</li>
+<li><b>Ricardo installs.</b> Adrianna A stages; Ricardo installs after reviewing the manifest. I never install third-party code or change a live profile on my own.</li>
+<li><b>One memory source of truth.</b> Mnemosyne. No parallel store, no direct DB writes; Worker facts return to the Router, which writes through Hermes' memory tools.</li>
 <li><b>Read-only vault.</b> No plugin gets write access to Maio Hub. Beast remains the sole writer via OpenKnowledge.</li>
 <li><b>No credentials.</b> No key, token or password enters any plugin config, log or artifact — the credential hard stop applies unchanged.</li>
-<li><b>Fail-closed.</b> A plugin failure degrades to standard DSH behaviour and is logged; it never blocks the harness.</li>
-<li><b>Revert path.</b> Every install has a documented uninstall step and, where offered, a Safe Mode / isolated profile for first run.</li>
+<li><b>Proactive work is gated.</b> Unrequested actions run in observe mode until Ricardo approves a written rule — the prototype's own philosophy.</li>
+<li><b>Fail-closed and revertible.</b> A plugin failure degrades to standard DSH behaviour; every install has an uninstall step and a Safe Mode first run where offered.</li>
 </ul>
 
-<h2>5. UX &amp; UI design</h2>
-<p>The suite adds a settings panel under DSH Settings → <b>Maio Nexus</b>: Mnemosyne connection status (provider, DB path, last write), vault scope selector (AI-Space default, read-only badge), recall latency and token telemetry, and a list of adopted community plugins with version + install state. Third-party plugins keep their own settings pages — the panel only reports their status.</p>
+<h2>6. UX &amp; UI design</h2>
+<p>DSH Settings → <b>Maio Nexus</b>: Mnemosyne status (provider, DB path, last write, lock/degraded badge), vault scope (AI-Space default, read-only badge), Router/Worker panel (active Workers, dispatch reasons, context-packet sizes), recall latency and token telemetry, adopted-plugin list with version + install state. Third-party plugins keep their own pages; the panel only reports.</p>
 
-<h2>6. Non-functional requirements</h2>
+<h2>7. Non-functional requirements</h2>
 <ul>
-<li><b>Security:</b> 100% local execution; no vault contents, memory content or credentials leave the machine; read-only vault and read-only Mnemosyne access; no telemetry.</li>
-<li><b>Performance:</b> local FTS5 vault recall &lt; 50 ms warm; Mnemosyne recall under 100 ms warm; memory injection adds no visible latency to session start.</li>
-<li><b>Reliability:</b> SQLite reads use a busy timeout + bounded retry (the DB was observed locked under an active writer); fail-closed as above; nightly index idempotent.</li>
-<li><b>Compatibility:</b> DSH ≥ 0.2.x for both Web and Desktop; Mnemosyne schema read via documented tables, with capability detection so a future Mnemosyne version that moves tables fails loudly rather than silently returning nothing.</li>
+<li><b>Security:</b> 100% local; no vault, memory or credential content leaves the machine; read-only vault and Mnemosyne; no telemetry.</li>
+<li><b>Performance:</b> vault FTS recall &lt; 50 ms warm; Mnemosyne recall &lt; 100 ms warm; Router dispatch adds no visible latency; context packets stay within a token budget (default 2k).</li>
+<li><b>Reliability:</b> SQLite busy timeout + bounded retry; fail-closed; nightly index idempotent; Watchdog detects lock/staleness.</li>
+<li><b>Compatibility:</b> DSH ≥ 0.2.x on Web and Desktop; super-agent bundle format tracked as research code (MIT, not an official product; may break); Mnemosyne schema read via documented tables with capability detection.</li>
 </ul>
 
-<h2>7. Delivery plan</h2>
+<h2>8. Delivery plan</h2>
 <ul>
-<li><b>Phase 0 — Alignment check (Adrianna A).</b> Confirm Mnemosyne is the active provider in the main profile and in the target profiles; record DB paths, schema version and row counts; no build against a stale provider.</li>
-<li><b>Phase 1 — Staging (Adrianna A).</b> Build the <span class="code">dsh-maio-nexus</span> bundle skeleton (manifest, TS glue, <span class="code">vault_recall</span> tool, Mnemosyne read bridge, profile resolver) under <span class="code">~/AI Hub/dsh-maio-nexus/</span>; stage the adoption review notes for the Evaluate tier; no installs.</li>
-<li><b>Phase 2 — Review (Ricardo).</b> Manifest and code review; approve which Evaluate plugins graduate to Adopt.</li>
-<li><b>Phase 3 — Install (Ricardo).</b> Manual install into the Web profile and the Desktop app; first run in Safe Mode where available.</li>
-<li><b>Phase 4 — Verify (Adrianna A).</b> Run the acceptance criteria against real output — canary recall, isolation, vault hash check, install on both targets; report pass/fail with evidence; log to AI-Drive/Agent-Output/adrianna.</li>
-<li><b>Phase 5 — Operate.</b> Courage nightly index; monthly plugin review (new versions, CVEs, license changes); re-run the alignment check whenever Hermes' memory provider or Mnemosyne schema changes.</li>
+<li><b>Phase 0 — Alignment check (Adrianna A).</b> Confirm Mnemosyne active in main + target profiles; record DB paths, schema, row counts; confirm the super-agent prototype bundle format and whether Router hooks are available in the current DSH build.</li>
+<li><b>Phase 1 — Staging (Adrianna A).</b> Build the bundle skeleton (manifest, memory bridge, profile resolver, vault recall, context packet, memory return, watchdog, index cron) under <span class="code">~/AI Hub/dsh-maio-nexus/</span>; stage adoption review notes; no installs.</li>
+<li><b>Phase 2 — Review (Ricardo).</b> Manifest and code review; approve which Evaluate plugins graduate to Adopt; approve the proactive-rule set.</li>
+<li><b>Phase 3 — Install (Ricardo).</b> Manual install into Web, Desktop, and the super-agent prototype; first run in Safe Mode / observe mode.</li>
+<li><b>Phase 4 — Verify (Adrianna A).</b> Run F1-F4 and S1-S6 against real output — canary recall, isolation, vault hash, dispatch packet, watchdog lock test, cross-channel continuity; report pass/fail with evidence.</li>
+<li><b>Phase 5 — Operate.</b> Courage nightly index; monthly plugin review; re-run alignment when Mnemosyne schema or the super-agent prototype changes.</li>
 </ul>
 
 <div class="card warn">
-<p><b>Out of scope.</b> Installing any plugin without Ricardo's sign-off; writing to the vault; sending any credential, ID or health data to any plugin, gate or sandbox; auto-merging upstream plugin code; replacing Mnemosyne or Beast with a community store; building against Hindsight (inactive) or against a second memory store.</p>
+<p><b>Out of scope.</b> Installing any plugin without Ricardo's sign-off; writing to the vault; sending credentials to any plugin, gate or sandbox; auto-merging upstream code; replacing Mnemosyne or Beast; building against Hindsight or a second memory store; pointing the super-agent prototype at a real repository without an allowed list and observe mode.</p>
 </div>
 
-<div class="foot">Grounding: app-plan workflow; plugin facts re-verified against live GitHub pages (stars, licenses, manifests, DSH target versions); memory facts verified on this Mac on 2026-11-02 — <span class="code">hermes memory status</span> → <span class="code">Provider: mnemosyne</span>, <span class="code">profile_isolation: True</span>, plugin active; <span class="code">~/.hermes/mnemosyne/data/mnemosyne.db</span> 227 MB with <span class="code">working_memory</span> 10,004 rows; migration history from session 20261030_002328_b92f93e0 (Hindsight → Mnemosyne, 31 configs, 0 failures). No plugin was installed or executed. Published to AI-Space/3.PRD via rule-4 handoff.</div>
+<div class="foot">Grounding: app-plan workflow; super-agent facts from the official dsh-superagent-prototype README and the DeepSeek design article coverage (Router/Worker, event triggers, watchdog, research-prototype caveat, MIT); plugin facts re-verified on live GitHub pages; memory facts verified on this Mac 2026-11-02 (<span class="code">Provider: mnemosyne</span>, <span class="code">profile_isolation: True</span>, DB 227 MB, <span class="code">working_memory</span> 10,004 rows); migration history from session 20261030_002328_b92f93e0 (Hindsight → Mnemosyne, 31 configs, 0 failures). No plugin was installed or executed. Published to AI-Space/3.PRD via rule-4 handoff.</div>
 </div>
 </body>
 </html>
