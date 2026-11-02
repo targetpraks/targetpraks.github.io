@@ -1,0 +1,4341 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Infinity Brands — ClickUp operating specification v4.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="infinity-brands--clickup-operating-specification-v40">Infinity Brands — ClickUp operating specification v4.0</h1>
+<p><strong>The full build document: every Space, field, status, view, goal, dashboard, channel and template specified to the level a person can build from it without asking a question.</strong> Author Bruce Wayne · 2 November 2026 · Supersedes v3.1 of the same day, and v3.0, and v2.0.</p>
+<h2 id="summary">Summary</h2>
+<blockquote>
+<p>[!summary] Status — read this first This is a specification. No ClickUp account, trial, Workspace or purchase exists. Nothing here is approved for implementation. Every price is a published list price read on 2 November 2026, and every platform limit is quoted from ClickUp's own documentation on the same date. Where the document says "we will", the correct reading is "we propose, and Ricardo decides".</p>
+</blockquote>
+<blockquote>
+<p>[!note] What changed from v3.1 v3.1 compressed the plan into a decision memo. This edition does the opposite: it expands every Space into its full inventory, defines every field and every status transition, writes out all four dashboards card by card, maps every chat channel to the Cliq group it replaces, states the SLA clocks, sequences the migration, and gives the pilot a script. It also carries the configuration pack — thirteen CSV registers — so the build can be executed from data rather than from prose.</p>
+</blockquote>
+<h2 id="0-how-to-use-this-document">0. How to use this document</h2>
+<p>Three audiences read this differently.</p>
+<p><strong>Ricardo</strong> reads §1 (the decisions), §18 (the money) and §23 (what is still open). That is four pages. Everything else is delegation.</p>
+<p><strong>Whoever builds the Workspace</strong> reads §3 (the contract), §4 (Space by Space), §5 (fields), §6 (statuses), §7 (views) and works from the CSV pack in Appendix C. The pack and this document must not disagree; where they do, the pack wins because it is what gets imported.</p>
+<p><strong>Whoever runs it afterwards</strong> reads §8 (goals), §9 (meetings), §10 (dashboards), §17 (permissions) and §21 (governance). The build is two weeks; the operation is years.</p>
+<p><strong>Precedence.</strong> Where this document and any older edition disagree, this one governs. Where this document and a ClickUp platform limit disagree, the platform governs — limits are quoted with their source in Appendix D.</p>
+<p><strong>What "done" means for the build is defined in §21.5</strong>, not in this introduction. A Workspace that looks right and has nobody in it is not done.</p>
+<h2 id="1-the-decisions">1. The decisions</h2>
+<p>Eleven requirements arrived from Ricardo. Nine are design questions this document answers. Two are not design questions at all — they are his to sign.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Status</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D01</td>
+<td>One Workspace, brand carried as a field and a Folder — not one Workspace per brand</td>
+<td>Recommended, argued in §3.2</td>
+<td>§3</td>
+</tr>
+<tr>
+<td>D02</td>
+<td>Eleven Spaces, each with a named accountable owner</td>
+<td>Proposed</td>
+<td>§4</td>
+</tr>
+<tr>
+<td>D03</td>
+<td>Business plan at $17 per user per month, yearly</td>
+<td><strong>Ricardo decides</strong></td>
+<td>§18</td>
+</tr>
+<tr>
+<td>D04</td>
+<td>Business at $17; the step above it is Enterprise (quoted), taken only on one of four named conditions</td>
+<td><strong>Ricardo decides</strong></td>
+<td>§18.5</td>
+</tr>
+<tr>
+<td>D05</td>
+<td>Meetings get a private Space, not a Folder inside a function</td>
+<td>Proposed</td>
+<td>§9</td>
+</tr>
+<tr>
+<td>D06</td>
+<td>Work type is a field plus five standard views, never a Folder</td>
+<td>Proposed</td>
+<td>§7.3</td>
+</tr>
+<tr>
+<td>D07</td>
+<td>Every Coda rollup becomes a dashboard card, an automation-written field, or a manual figure</td>
+<td><strong>Ricardo decides per rollup</strong></td>
+<td>§13</td>
+</tr>
+<tr>
+<td>D08</td>
+<td>Chat replaces Cliq as a channel map plus a 21-day behaviour pilot</td>
+<td>Proposed</td>
+<td>§11</td>
+</tr>
+<tr>
+<td>D09</td>
+<td>Client SLAs run on three tiers plus internal store requests, with response and resolution clocks</td>
+<td>Proposed</td>
+<td>§12.3</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>The pilot is Finance plus the service desk, 30 days, with a written kill criterion</td>
+<td>Proposed</td>
+<td>§15</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Migration runs beside Zoho Projects for one full cycle, never as a cutover</td>
+<td>Proposed</td>
+<td>§14</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>Goals cascade company → function → team → person, four levels, reviewed weekly</td>
+<td>Proposed</td>
+<td>§8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The two that stop the build</strong> are D03 and D07. Everything else can be built and changed afterwards at low cost. A plan tier change mid-year is a finance event, and an unanswered rollup question leaves a Coda document alive with no owner.</p>
+<h2 id="2-the-organisation-this-serves">2. The organisation this serves</h2>
+<p>The Workspace must describe the company that exists, not the org chart that would be convenient. Five brands, roughly forty people, nine functions, and a leadership layer that meets weekly.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it is</th>
+<th>How the Workspace represents it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Group</td>
+<td>Infinity Brands as the holding entity</td>
+<td>The Workspace itself</td>
+</tr>
+<tr>
+<td>Brand</td>
+<td>Infinity Brands, Papa Pasta, The Local Farmer, Divorced Dads, INFX</td>
+<td>A <code>Brand</code> field on every task, plus one Folder per brand in Brand Operations</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>Finance, Marketing, People, Technology, Sales, Brand Ops, Client Delivery, Franchise &amp; Store Ops, Leadership</td>
+<td>One Space each</td>
+</tr>
+<tr>
+<td>Team</td>
+<td>The sub-team inside a function — payable, receivable, design, social, service desk</td>
+<td>A <code>Team</code> field value plus a List</td>
+</tr>
+<tr>
+<td>Person</td>
+<td>A member with a seat</td>
+<td>An assignee, never a List</td>
+</tr>
+</tbody>
+</table>
+<p>Two of Ricardo's eleven items ask the same question in different words: teams "based on the smaller sub teams or the larger teams" (§2 row 4) and the folder structure "based on department or by brands" (§3.3). The answer in both cases is the same: <strong>a Space per function, a Folder for the sub-teams inside it, and brand carried as data.</strong> Large structures made of Folders are where ClickUp installs go to die — 400 Folders and 400 Lists is the Business ceiling, and a Folder-per-brand-per-function grid eats that by March.</p>
+<table>
+<thead>
+<tr>
+<th>Requirement from Ricardo</th>
+<th>Answered in</th>
+<th>Short answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Teams by sub-team or larger team</td>
+<td>§2, §7.2</td>
+<td>Space = function, Folder = sub-team, <code>Team</code> field carries the rest</td>
+</tr>
+<tr>
+<td>Workspaces per brand</td>
+<td>§3.2</td>
+<td>One Workspace; brands are fields and Folders. Per-Workspace billing is the reason</td>
+</tr>
+<tr>
+<td>Folders by department or brand</td>
+<td>§3.3</td>
+<td>Department at the top, brand inside Brand Operations</td>
+</tr>
+<tr>
+<td>Company goals and OKRs, quarterly, per team and per person</td>
+<td>§8</td>
+<td>Four-level cascade, checked weekly</td>
+</tr>
+<tr>
+<td>Monday meeting structure, years of minutes, own folder or Space</td>
+<td>§9</td>
+<td>Own private Space, one Doc per year</td>
+</tr>
+<tr>
+<td>Chat spaces replacing Cliq</td>
+<td>§11</td>
+<td>Nine channels, mapped to the Cliq groups they retire</td>
+</tr>
+<tr>
+<td>Dashboards: EXCO, MANCO, team, company OKR</td>
+<td>§10</td>
+<td>Four dashboards, twenty cards, each with a definition</td>
+</tr>
+<tr>
+<td>Work type: Recurring, Once off, Requested</td>
+<td>§7.3</td>
+<td>A field plus five standard views</td>
+</tr>
+<tr>
+<td>Client SLA spaces replacing Coda</td>
+<td>§12, §13</td>
+<td>One Client Delivery Space, engagements as Folders, SLA clocks on tasks</td>
+</tr>
+<tr>
+<td>Documents that capture a…</td>
+<td>§16</td>
+<td>Seven templates, fully specified. The requirement broke off mid-sentence</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-the-workspace-contract">3. The Workspace contract</h2>
+<h3 id="31-the-hierarchy-stated-once">3.1 The hierarchy, stated once</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="cn">TD</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span>[<span class="st">&quot;Infinity Brands — one Workspace&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">S1</span>[<span class="st">&quot;01 Leadership&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S2</span>[<span class="st">&quot;02 Marketing &amp; Creative&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S3</span>[<span class="st">&quot;03 Finance&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S4</span>[<span class="st">&quot;04 People&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S5</span>[<span class="st">&quot;05 Technology&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S6</span>[<span class="st">&quot;06 Sales &amp; Revenue&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S7</span>[<span class="st">&quot;07 Brand Operations&quot;</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S8</span>[<span class="st">&quot;08 Client Delivery&quot;</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S9</span>[<span class="st">&quot;09 Franchise &amp; Store Ops&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S10</span>[<span class="st">&quot;10 Goals &amp; OKRs&quot;</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">WS</span> <span class="pp">--&gt;</span> <span class="dt">S11</span>[<span class="st">&quot;11 Meetings &amp; Minutes&quot;</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S7</span> <span class="pp">--&gt;</span> <span class="dt">F1</span>[<span class="st">&quot;Folder: Infinity Brands&quot;</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S7</span> <span class="pp">--&gt;</span> <span class="dt">F2</span>[<span class="st">&quot;Folder: Papa Pasta&quot;</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S7</span> <span class="pp">--&gt;</span> <span class="dt">F3</span>[<span class="st">&quot;Folder: The Local Farmer&quot;</span>]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S7</span> <span class="pp">--&gt;</span> <span class="dt">F4</span>[<span class="st">&quot;Folder: Divorced Dads&quot;</span>]</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S7</span> <span class="pp">--&gt;</span> <span class="dt">F5</span>[<span class="st">&quot;Folder: INFX&quot;</span>]</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F2</span> <span class="pp">--&gt;</span> <span class="dt">L1</span>[<span class="st">&quot;List: Openings&quot;</span>]</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F2</span> <span class="pp">--&gt;</span> <span class="dt">L2</span>[<span class="st">&quot;List: Store Standards&quot;</span>]</span></code></pre></div>
+<p>Every Space below carries Folders for its sub-teams and Lists for its objects of work. Nothing deeper than List. A task's home is one List, permanently; it may appear in twenty views and that does not move it.</p>
+<h3 id="32-one-workspace-and-why">3.2 One Workspace, and why</h3>
+<p>ClickUp bills per Workspace, not per Seat spread across Workspaces. A person who needs to work in five brand Workspaces needs five paid seats. The arithmetic at forty people is in §18.3: one Workspace is roughly $8,160 a year, five brand Workspaces run $11,220 to $12,240, and if everyone needs every brand it is $40,800.</p>
+<p>The decisive argument is not the money though. It is Ricardo's own requirement list. He asks for <strong>a company OKR dashboard</strong> and <strong>per-team dashboards</strong>. ClickUp's Goals and Dashboards live inside a Workspace. A dashboard cannot read goals from a different Workspace. So a five-Workspace design makes the single most senior requirement in the list — one place where the company's goals are visible — structurally impossible, and pays 37% more for the privilege.</p>
+<p>Brands therefore become: a <code>Brand</code> field on every task, a Folder per brand inside Brand Operations, and a dashboard card that splits by brand. Anyone who wants "just Papa Pasta" filters. Nobody pays twice.</p>
+<h3 id="33-naming-and-identity">3.3 Naming and identity</h3>
+<p>Inconsistent names are the tax you pay for eighteen months. These rules are short on purpose.</p>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th>Rule</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Space</td>
+<td>Two-digit number, then the function name</td>
+<td><code>03 Finance</code></td>
+</tr>
+<tr>
+<td>Folder</td>
+<td>Noun, plural, no verbs, no dates</td>
+<td><code>Openings</code>, <code>Creditors</code></td>
+</tr>
+<tr>
+<td>List</td>
+<td>What is inside it, plural</td>
+<td><code>Invoices</code>, <code>Store Requests</code></td>
+</tr>
+<tr>
+<td>Task</td>
+<td>Outcome first, then object</td>
+<td><code>Close October creditors</code>, not <code>Creditors closing</code></td>
+</tr>
+<tr>
+<td>Client Folder</td>
+<td>Client code, uppercase, four letters</td>
+<td><code>ACME — SLA</code></td>
+</tr>
+<tr>
+<td>Meeting Doc</td>
+<td>Team, then year</td>
+<td><code>Finance — Minutes 2026</code></td>
+</tr>
+<tr>
+<td>Decision</td>
+<td><code>DEC-</code> then the number, zero-padded</td>
+<td><code>DEC-48</code></td>
+</tr>
+<tr>
+<td>Task IDs</td>
+<td>ClickUp's own, never re-typed by hand</td>
+<td><code>BI--T78</code></td>
+</tr>
+</tbody>
+</table>
+<p>The number prefix on a Space is not decoration. It fixes the sidebar order, it stops two people creating <code>Finance</code> and <code>Finance 2</code>, and it makes the eleven Spaces addressable in conversation: "it's in 09" means one thing.</p>
+<h3 id="34-privacy-defaults">3.4 Privacy defaults</h3>
+<p>A Space is private unless there is a stated reason for it to be shared. The default costs nothing to change later; the opposite default leaks payroll to the whole company on day one.</p>
+<table>
+<thead>
+<tr>
+<th>Space</th>
+<th>Privacy</th>
+<th>Who is in it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01 Leadership</td>
+<td>Private</td>
+<td>Ricardo, Exco</td>
+</tr>
+<tr>
+<td>02 Marketing &amp; Creative</td>
+<td>Private</td>
+<td>Marketing plus invited brand leads</td>
+</tr>
+<tr>
+<td>03 Finance</td>
+<td>Private</td>
+<td>Finance plus CFO, Ricardo</td>
+</tr>
+<tr>
+<td>04 People</td>
+<td>Private</td>
+<td>HR plus CHO, Ricardo</td>
+</tr>
+<tr>
+<td>05 Technology</td>
+<td>Private</td>
+<td>IT and development</td>
+</tr>
+<tr>
+<td>06 Sales &amp; Revenue</td>
+<td>Private</td>
+<td>Sales plus marketing leads</td>
+</tr>
+<tr>
+<td>07 Brand Operations</td>
+<td>Shared</td>
+<td>All members, because store and brand work is company-visible</td>
+</tr>
+<tr>
+<td>08 Client Delivery</td>
+<td>Private</td>
+<td>Delivery team; client guests per engagement Folder</td>
+</tr>
+<tr>
+<td>09 Franchise &amp; Store Ops</td>
+<td>Shared</td>
+<td>All members plus store-facing staff</td>
+</tr>
+<tr>
+<td>10 Goals &amp; OKRs</td>
+<td>Shared</td>
+<td>All members read; function leads edit</td>
+</tr>
+<tr>
+<td>11 Meetings &amp; Minutes</td>
+<td>Private</td>
+<td>Only the people in those meetings</td>
+</tr>
+</tbody>
+</table>
+<p>Two platform facts force discipline here. On Business, <strong>a new Space is not private by default</strong> — that is an Enterprise-only switch — so privacy is set in the same minute the Space is created, by the one person allowed to create one. And <strong>guest invitations cannot be restricted on Business</strong>, so a member can invite an outsider without asking; §17.3 is the control that replaces the missing setting.</p>
+<h2 id="4-space-specifications">4. Space specifications</h2>
+<p>Eleven Spaces. Each one below is written to be built without a follow-up question: what it is for, who is in it, exactly what Folders and Lists exist, which statuses it uses, which views it opens on, which automations touch it, and how you know it works.</p>
+<p>The field names referenced here are defined once in §5. Do not invent a twelfth field while reading; if something is missing, §23 is where it goes.</p>
+<h3 id="41-space-01--leadership">4.1 Space 01 — Leadership</h3>
+<p><strong>Purpose.</strong> The room where decisions are made and recorded. Not a project Space. Its value is that a decision can be found three years later, with the alternatives that were rejected.</p>
+<p><strong>Accountable.</strong> Ricardo. <strong>Custodian.</strong> Bruce Wayne. <strong>Privacy.</strong> Private to Exco.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decisions</td>
+<td>Decision Register</td>
+<td>One task per decision, closed when decided, Doc attached</td>
+</tr>
+<tr>
+<td>Strategy</td>
+<td>Annual Themes, Quarterly Priorities</td>
+<td>The quarter's three or four bets, nothing else</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>Risk Register, Legal &amp; Compliance</td>
+<td>Open risks with an owner and a review date</td>
+</tr>
+<tr>
+<td>Board</td>
+<td>Board Packs, Resolutions</td>
+<td>The pack per meeting, and the signed resolutions</td>
+</tr>
+<tr>
+<td>People Decisions</td>
+<td>Appointments, Exits</td>
+<td>Restricted further; visible to Ricardo and CHO only</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> <code>Proposed → Decided</code>, plus the universal set for the risk lists.</p>
+<p><strong>Views.</strong> Decision Register table, grouped by quarter, with the decision owner visible. Risk Register grouped by rating, high first. Quarterly Priorities as a board by status.</p>
+<p><strong>Automations.</strong> When a task in Decision Register moves to Decided, lock the description and stamp the date. When a Risk Register task passes its review date, move it to Blocked and notify the owner.</p>
+<p><strong>Acceptance.</strong> Three historical decisions are back-filled as evidence the register is used. A new decision recorded by someone other than Bruce Wayne within the first fortnight.</p>
+<h3 id="42-space-02--marketing--creative">4.2 Space 02 — Marketing &amp; Creative</h3>
+<p><strong>Purpose.</strong> Every creative request, from intake to approved asset, with the brand and the campaign attached.</p>
+<p><strong>Accountable.</strong> Rhona Nortje, CMO. <strong>Privacy.</strong> Private plus invited brand leads.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Intake</td>
+<td>Requests</td>
+<td>One row per ask; triaged weekly, never worked directly</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>In Design, In Copy, In Video</td>
+<td>Live work, one List per craft so load is visible</td>
+</tr>
+<tr>
+<td>Approvals</td>
+<td>Awaiting Approval, Approved This Month</td>
+<td>The gate; nothing ships from anywhere else</td>
+</tr>
+<tr>
+<td>Brands</td>
+<td>Infinity Brands, Papa Pasta, The Local Farmer, Divorced Dads, INFX</td>
+<td>Brand standards and asset indexes per brand</td>
+</tr>
+<tr>
+<td>Campaigns</td>
+<td>Active Campaigns, Campaign Archive</td>
+<td>Campaign-level tasks with children per asset</td>
+</tr>
+<tr>
+<td>Social</td>
+<td>Content Calendar, Community</td>
+<td>Scheduled posts and incoming community work</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Domain set: <code>Drafting → Internal Review → Client Review → Approved</code>. Intake Requests use <code>Open → In Progress → Waiting → Done</code>.</p>
+<p><strong>Views.</strong> Requests board by status (the weekly triage view). In Design board by assignee with a WIP count per person. Content Calendar as a calendar view by publish date. Approvals as a table sorted oldest-first, because the oldest approval is the one costing money.</p>
+<p><strong>Automations.</strong> A Request that moves to In Progress creates its production task and links the two. Any task entering Awaiting Approval notifies the approver and starts a two-day clock. Approved tasks stamp the approval date and the approver.</p>
+<p><strong>Acceptance.</strong> Intake is the only door — measured by asking three marketers where work comes from and getting one answer. Time from request to approval is measurable for the first time.</p>
+<h3 id="43-space-03--finance">4.3 Space 03 — Finance</h3>
+<p><strong>Purpose.</strong> The daily control that keeps store data honest, and the month-end that keeps creditors paid.</p>
+<p><strong>Accountable.</strong> Pamela Fourie, CFO. <strong>Privacy.</strong> Private.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Daily Control</td>
+<td>Control Runs, Exceptions</td>
+<td>One task per store per trading day; exceptions as children</td>
+</tr>
+<tr>
+<td>Payables</td>
+<td>Invoices, Creditor Reconciliations, Payment Runs</td>
+<td>The creditor cycle</td>
+</tr>
+<tr>
+<td>Receivables</td>
+<td>Debtors, Collections, Age Analysis</td>
+<td>The debtor cycle</td>
+</tr>
+<tr>
+<td>Month End</td>
+<td>Close Checklist, Journals, Reconciliations</td>
+<td>The close, as a checklist with dates</td>
+</tr>
+<tr>
+<td>Reporting</td>
+<td>Management Accounts, Statutory</td>
+<td>The month's numbers and the filings</td>
+</tr>
+<tr>
+<td>Payroll</td>
+<td>Payroll Runs, Queries</td>
+<td>Runs and staff queries, restricted</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Domain set for control: <code>Open → Control Run → Exception → Approved</code>. Checklist items use the universal set with Blocked available, because a close that cannot proceed must say so.</p>
+<p><strong>Fields required.</strong> <code>Store</code>, <code>Brand</code>, <code>Trading Date</code>, <code>Period</code>, <code>Amount</code>, <code>Completeness %</code>, <code>Creditor</code>, <code>Invoice Number</code>.</p>
+<p><strong>Views.</strong> Control Runs as a board by trading date, showing today by default. Exceptions as a table grouped by store, so a single bad store is obvious. Close Checklist as a list with the due date column, sorted ascending — the close reads top to bottom.</p>
+<p><strong>Automations.</strong> Every trading day at a set hour, create control tasks for active stores from a Template. Any Exception left open past its due date escalates to the CFO. When the last close checklist item is Done, notify the CFO and stamp the close date.</p>
+<p><strong>Acceptance.</strong> Thirty consecutive trading days with a completeness figure that the CFO trusts enough to quote in a meeting. That is the whole test, and it is why this Space is in the pilot.</p>
+<h3 id="44-space-04--people">4.4 Space 04 — People</h3>
+<p><strong>Purpose.</strong> Hiring, onboarding, reviews and the things staff need to find without asking a person.</p>
+<p><strong>Accountable.</strong> Jenna McLaren, CHO. <strong>Privacy.</strong> Private; salary fields restricted.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hiring</td>
+<td>Vacancies, Candidates, Offers</td>
+<td>Pipeline per role</td>
+</tr>
+<tr>
+<td>Onboarding</td>
+<td>New Starters, First Week, Access Requests</td>
+<td>A task per starter with children per step</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>Review Cycles, One-on-Ones, Development Plans</td>
+<td>Cycles per half-year</td>
+</tr>
+<tr>
+<td>Records</td>
+<td>Contracts, Disciplinary, Leave Queries</td>
+<td>Restricted Lists; contracts are references, not scans</td>
+</tr>
+<tr>
+<td>Policy</td>
+<td>Policies, Acknowledgement Log</td>
+<td>Version per policy with dates</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Universal set, plus <code>Offer</code>-specific: <code>Applied → Screened → Interviewed → Offered → Accepted / Declined</code>.</p>
+<p><strong>Automations.</strong> A New Starter task creates its First Week children and an Access Request per system from a Template. A policy version update reopens acknowledgement tasks for everyone in scope.</p>
+<p><strong>Acceptance.</strong> One new starter onboards from the Space alone, with no WhatsApp thread. That is the test; if a person still asks HR for the link, the Space has failed.</p>
+<p><strong>Boundary.</strong> No identity numbers, bank details, medical information or salary figures in task names, comments or attachments. This is a hard rule, not a preference: ClickUp is not a records system of authority for personal data, and the vault rule against storing such details applies here too.</p>
+<h3 id="45-space-05--technology">4.5 Space 05 — Technology</h3>
+<p><strong>Purpose.</strong> The service desk, the systems register and the change log — the three things that stop IT being a corridor conversation.</p>
+<p><strong>Accountable.</strong> Prof Nguluvhe, CTO. <strong>Privacy.</strong> Private, with a shared intake Form.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Service Desk</td>
+<td>Tickets, Waiting on User, Recurring Maintenance</td>
+<td>The support queue</td>
+</tr>
+<tr>
+<td>Systems</td>
+<td>Systems Register, Access &amp; Licences, Renewals</td>
+<td>What we run, who owns it, when it expires</td>
+</tr>
+<tr>
+<td>Change</td>
+<td>Change Log, Incidents, Post-Mortems</td>
+<td>Anything that alters a live system</td>
+</tr>
+<tr>
+<td>Development</td>
+<td>Backlog, In Flight, Releases</td>
+<td>Product work, separate from support</td>
+</tr>
+<tr>
+<td>Data</td>
+<td>Backups, Integrations, Data Requests</td>
+<td>The plumbing nobody sees until it breaks</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Domain set for tickets: <code>Triage → Investigating → Resolved</code>. Changes: <code>Proposed → Approved → Applied → Verified</code>. A change that is not Verified is not finished.</p>
+<p><strong>Views.</strong> Tickets board by status with an SLA-age column. Systems Register grouped by owner. Renewals as a calendar, because a licence expiry is a date before it is a task.</p>
+<p><strong>Automations.</strong> A ticket submitted through the Form lands in Triage and notifies the desk. A ticket untouched for four business hours escalates. Any change touching a live system requires an approved Change Log entry before it can be marked Applied — enforced by a required field, not by goodwill.</p>
+<p><strong>Acceptance.</strong> A request made by someone outside IT becomes a ticket without a phone call, and a change is traceable to a person, a date and a reason.</p>
+<h3 id="46-space-06--sales--revenue">4.6 Space 06 — Sales &amp; Revenue</h3>
+<p><strong>Purpose.</strong> Pipeline, quotes and the handover into delivery. The handover is the part that breaks without a system.</p>
+<p><strong>Accountable.</strong> The sales lead, to be named. <strong>Privacy.</strong> Private, joined by marketing and finance leads.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pipeline</td>
+<td>Leads, Qualified, Quotes Out</td>
+<td>Stage per List, not a status per row</td>
+</tr>
+<tr>
+<td>Closed</td>
+<td>Won, Lost</td>
+<td>Won creates a delivery handover; Lost records the reason</td>
+</tr>
+<tr>
+<td>Accounts</td>
+<td>Accounts, Contacts, Renewals</td>
+<td>One row per buying entity</td>
+</tr>
+<tr>
+<td>Handover</td>
+<td>Handover Register</td>
+<td>The handover task that Client Delivery accepts</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Universal set; the pipeline stage is carried by the List plus a <code>Deal Stage</code> field for reporting, because a board needs one status vocabulary.</p>
+<p><strong>Automations.</strong> A Won task creates a Handover Register task and notifies Client Delivery. A quote with no reply after seven days moves to Waiting and notifies the owner. Renewal dates drive a task 60 days before expiry.</p>
+<p><strong>Acceptance.</strong> A deal is won and delivery starts without any document being re-typed. Measured once, in the first fortnight after go-live.</p>
+<h3 id="47-space-07--brand-operations">4.7 Space 07 — Brand Operations</h3>
+<p><strong>Purpose.</strong> The five brands as operating units: openings, standards, pricing and the brand-level reporting that EXCO actually reads. This is the Space where the brand Folder structure lives, because this is where brand work is done rather than referenced.</p>
+<p><strong>Accountable.</strong> The chief of brand operations. <strong>Privacy.</strong> Shared — brand work is company-visible.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Infinity Brands</td>
+<td>Openings, Brand Standards, Portfolio</td>
+<td>Holding-company work and the portfolio view</td>
+</tr>
+<tr>
+<td>Papa Pasta</td>
+<td>Openings, Store Standards, Menu &amp; Pricing, Marketing Requests</td>
+<td>Per-brand operating work</td>
+</tr>
+<tr>
+<td>The Local Farmer</td>
+<td>Openings, Store Standards, Produce &amp; Supply, Marketing Requests</td>
+<td>Per-brand operating work</td>
+</tr>
+<tr>
+<td>Divorced Dads</td>
+<td>Openings, Store Standards, Merchandise, Marketing Requests</td>
+<td>Per-brand operating work</td>
+</tr>
+<tr>
+<td>INFX</td>
+<td>Openings, Systems, Partners, Marketing Requests</td>
+<td>Franchise and partner work</td>
+</tr>
+<tr>
+<td>Cross-Brand</td>
+<td>Pricing Reviews, Openings Calendar, Compliance</td>
+<td>Work that spans brands and must not be filed under one</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Universal set for brand work; <code>Openings</code> uses <code>Requested → Scheduled → Completed</code> because an opening is a dated event with a run-up.</p>
+<p><strong>Views.</strong> Openings Calendar across all brands, grouped by month — this is the single most-watched view in the company. Store Standards grouped by brand. Marketing Requests as a table with the receiving Space's status, so brand-side and marketing-side do not contradict.</p>
+<p><strong>Automations.</strong> An Opening task 60 days out creates its standard task set (site, licence, fit-out, stock, staff, launch marketing) as children from a Template. Any brand task with no owner after three days notifies the brand lead.</p>
+<p><strong>Acceptance.</strong> Someone can answer "what does Papa Pasta have open right now" from one calendar, without asking a human.</p>
+<h3 id="48-space-08--client-delivery">4.8 Space 08 — Client Delivery</h3>
+<p><strong>Purpose.</strong> The replacement for the Coda space: every client engagement, its commitments, its counters and its evidence of delivery.</p>
+<p><strong>Accountable.</strong> The delivery lead. <strong>Privacy.</strong> Private; clients join one Folder each as guests.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pipeline Handover</td>
+<td>Accepted Handovers</td>
+<td>What sales handed over that delivery has accepted</td>
+</tr>
+<tr>
+<td>Engagements</td>
+<td>One Folder per client, containing: Commitments, Delivery, Issues, Reports</td>
+<td>The engagement itself</td>
+</tr>
+<tr>
+<td>SLA</td>
+<td>Service Levels, Breach Register, At Risk</td>
+<td>The clocks and their failures</td>
+</tr>
+<tr>
+<td>Standards</td>
+<td>Delivery Playbook, Templates, Quality Gates</td>
+<td>How delivery is done</td>
+</tr>
+<tr>
+<td>Reviews</td>
+<td>Client Reviews, Satisfaction</td>
+<td>The periodic review and its record</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Domain set: <code>Scoped → Delivering → Client Acceptance → Accepted</code>. Issues use the universal set with Blocked available.</p>
+<p><strong>Fields required.</strong> <code>Client</code>, <code>Engagement Tier</code>, <code>Service Tier</code>, <code>Response Due</code>, <code>Resolution Due</code>, <code>Breached</code>.</p>
+<p><strong>Automations.</strong> When an engagement task is created, compute Response Due and Resolution Due from the tier and stamp them. When now passes Response Due with no response, set <code>Breached</code> and notify the account owner. When a client comment lands, restart the response clock and clear <code>Breached</code> only with the client's sign-off.</p>
+<p><strong>Acceptance.</strong> The SLA report for one client is produced from ClickUp without a spreadsheet. That is the Coda test in one sentence.</p>
+<h3 id="49-space-09--franchise--store-ops">4.9 Space 09 — Franchise &amp; Store Ops</h3>
+<p><strong>Purpose.</strong> The store estate: requests from stores, the standards they are held to, and the audits that prove it.</p>
+<p><strong>Accountable.</strong> The store ops lead. <strong>Privacy.</strong> Shared.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Requests</td>
+<td>Store Requests, Area Requests, Escalations</td>
+<td>Anything a store asks for</td>
+</tr>
+<tr>
+<td>Standards</td>
+<td>Compliance Audits, Corrective Actions, Checklists</td>
+<td>The standards and the fixes</td>
+</tr>
+<tr>
+<td>Estate</td>
+<td>Store Register, Fit-Out, Maintenance</td>
+<td>The physical estate</td>
+</tr>
+<tr>
+<td>Supplies</td>
+<td>Orders, Deliveries, Supply Issues</td>
+<td>What stores consume</td>
+</tr>
+<tr>
+<td>Training</td>
+<td>Store Training, Certifications</td>
+<td>Who is trained for what</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Domain set for requests: <code>Requested → Scheduled → Completed</code>, plus universal for audits.</p>
+<p><strong>Views.</strong> Store Requests by store, oldest first. Compliance Audits as a heat table by store and month. Corrective Actions filtered to open, grouped by store.</p>
+<p><strong>Automations.</strong> A store request that ages past 48 hours escalates to the area lead. A failed audit item creates a Corrective Action automatically, linked back to the audit line.</p>
+<p><strong>Acceptance.</strong> A store manager raises a request and sees its status without phoning head office.</p>
+<h3 id="410-space-10--goals--okrs">4.10 Space 10 — Goals &amp; OKRs</h3>
+<p><strong>Purpose.</strong> The company's goals, and the only place their progress is calculated. Spaces hold work; this Space holds the numbers.</p>
+<p><strong>Accountable.</strong> Ricardo. <strong>Custodian.</strong> The CFO, because goals without a number owner become posters. <strong>Privacy.</strong> Shared; function leads edit.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company</td>
+<td>Annual Goals, Quarterly Goals</td>
+<td>Four or five annual goals, twelve quarterly ones</td>
+</tr>
+<tr>
+<td>Functions</td>
+<td>One List per function</td>
+<td>Each function's quarterly goals</td>
+</tr>
+<tr>
+<td>Teams</td>
+<td>One List per team</td>
+<td>Team goals that roll into the function</td>
+</tr>
+<tr>
+<td>Individuals</td>
+<td>One List per person in scope</td>
+<td>Personal targets, no more than three</td>
+</tr>
+<tr>
+<td>Cadence</td>
+<td>Weekly Check-ins, Quarterly Reviews</td>
+<td>The ritual, as tasks with dates</td>
+</tr>
+<tr>
+<td>Archive</td>
+<td>2026, 2027</td>
+<td>Closed years, retained</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statuses.</strong> Not a work workflow: <code>On Track → At Risk → Off Track → Achieved</code>. A goal is never "Done"; it is achieved or it is not.</p>
+<p><strong>Automations.</strong> Weekly, create a check-in task per goal owner. A goal with no check-in in fourteen days flips to At Risk and notifies the custodian. When a quarter closes, copy the goals into the Archive year List and reopen next quarter's from a Template.</p>
+<p><strong>Acceptance.</strong> Ricardo opens one dashboard on a Monday and sees whether the company is on plan, by function, without asking anyone. This is D12 and it is the point of the Space.</p>
+<h3 id="411-space-11--meetings--minutes">4.11 Space 11 — Meetings &amp; Minutes</h3>
+<p><strong>Purpose.</strong> The archive of what was decided and said, for years. Ricardo asked whether this needs its own folder or Space; it needs a Space, and §9.2 argues why.</p>
+<p><strong>Accountable.</strong> Ricardo. <strong>Custodian.</strong> Bruce Wayne. <strong>Privacy.</strong> Private — minutes contain personnel and commercial detail that must not sit in a shared Space.</p>
+<table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>Lists</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exco</td>
+<td>Minutes Docs, Actions</td>
+<td>One Doc per year, actions as tasks</td>
+</tr>
+<tr>
+<td>Manco</td>
+<td>Minutes Docs, Actions</td>
+<td>One Doc per year</td>
+</tr>
+<tr>
+<td>Team Meetings</td>
+<td>One Folder per team: Minutes Docs, Actions</td>
+<td>One Doc per year per team</td>
+</tr>
+<tr>
+<td>One-on-Ones</td>
+<td>One List per manager</td>
+<td>Private to the two people</td>
+</tr>
+<tr>
+<td>Templates</td>
+<td>Minute Template, Agenda Template</td>
+<td>The shape of the record</td>
+</tr>
+<tr>
+<td>Archive</td>
+<td>2026, 2027</td>
+<td>Closed years</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Docs, not tasks, are the record.</strong> A minute is a Doc inside the team Folder, named <code>Team — Minutes YYYY</code>, appended each week. Actions are tasks in the sibling Actions List, linked from the Doc. This is why the archive survives: a Doc has a body that grows, a task does not.</p>
+<p><strong>Automations.</strong> After each meeting, create the action tasks from the Doc's action table (manual acceptance, not automatic extraction, until the template has proven itself for a month). A meeting with no minutes Doc created by the following day notifies the chair.</p>
+<p><strong>Acceptance.</strong> A question about a decision from fourteen months ago is answered from the archive in under five minutes.</p>
+<h2 id="5-the-field-register">5. The field register</h2>
+<p>Sixteen custom fields, defined once, used everywhere. Custom fields are the difference between a Workspace that reports and one that only stores.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Allowed values</th>
+<th>Required on</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Brand</code></td>
+<td>Dropdown</td>
+<td>Infinity Brands, Papa Pasta, The Local Farmer, Divorced Dads, INFX, Group</td>
+<td>Every task except People records</td>
+<td>Single value; no multi-brand tasks — split them</td>
+</tr>
+<tr>
+<td><code>Function</code></td>
+<td>Dropdown</td>
+<td>The nine functions plus Client Delivery</td>
+<td>Every task</td>
+<td>Must match the Space's function or be Group-level</td>
+</tr>
+<tr>
+<td><code>Team</code></td>
+<td>Dropdown</td>
+<td>Sub-teams, maintained by each function lead</td>
+<td>Every task</td>
+<td>Cannot be blank on a task in progress</td>
+</tr>
+<tr>
+<td><code>Work Type</code></td>
+<td>Dropdown</td>
+<td>Recurring, Once Off, Requested, Project, Meeting Action</td>
+<td>Every task</td>
+<td>Recurring requires a recurrence rule</td>
+</tr>
+<tr>
+<td><code>Engagement Tier</code></td>
+<td>Dropdown</td>
+<td>HOF, ZOR, COR, ZEE</td>
+<td>Client and Brand work</td>
+<td>Required once a client is named</td>
+</tr>
+<tr>
+<td><code>Service Tier</code></td>
+<td>Dropdown</td>
+<td>Gold, Black, Silver</td>
+<td>Client engagements</td>
+<td>Drives SLA clocks; changing it recomputes dues</td>
+</tr>
+<tr>
+<td><code>Priority</code></td>
+<td>Dropdown</td>
+<td>High, Medium, Urgent, Low</td>
+<td>Everything</td>
+<td>Urgent requires a named escalation contact</td>
+</tr>
+<tr>
+<td><code>Frequency</code></td>
+<td>Dropdown</td>
+<td>Once Off, Daily, Weekly, Monthly, Quarterly</td>
+<td>Recurring work</td>
+<td>Must agree with the recurrence rule</td>
+</tr>
+<tr>
+<td><code>Store</code></td>
+<td>Dropdown</td>
+<td>Active store list, maintained by Store Ops</td>
+<td>Store and Finance work</td>
+<td>Retired stores are archived, never deleted</td>
+</tr>
+<tr>
+<td><code>Client</code></td>
+<td>Text</td>
+<td>Client code, four letters</td>
+<td>Client Delivery</td>
+<td>Must match an Accounts row</td>
+</tr>
+<tr>
+<td><code>Amount</code></td>
+<td>Currency</td>
+<td>ZAR</td>
+<td>Finance and Sales</td>
+<td>Required on invoices, quotes, payment runs</td>
+</tr>
+<tr>
+<td><code>Period</code></td>
+<td>Text</td>
+<td><code>YYYY-MM</code></td>
+<td>Finance</td>
+<td>Format enforced by template</td>
+</tr>
+<tr>
+<td><code>Completeness %</code></td>
+<td>Number</td>
+<td>0–100</td>
+<td>Daily Control</td>
+<td>Calculated where possible, typed where not</td>
+</tr>
+<tr>
+<td><code>Response Due</code></td>
+<td>Date</td>
+<td>Computed</td>
+<td>Client and Store requests</td>
+<td>Read-only to humans; written by automation</td>
+</tr>
+<tr>
+<td><code>Resolution Due</code></td>
+<td>Date</td>
+<td>Computed</td>
+<td>Client and Store requests</td>
+<td>Read-only to humans; written by automation</td>
+</tr>
+<tr>
+<td><code>Breached</code></td>
+<td>Checkbox</td>
+<td>True or false</td>
+<td>Client Delivery</td>
+<td>Set by automation, cleared by the account owner with a comment</td>
+</tr>
+</tbody>
+</table>
+<p>Four rules about fields, learned expensively elsewhere.</p>
+<p><strong>A dropdown is a decision, a text field is a hope.</strong> Anything that will be grouped, filtered or counted is a dropdown. Free text in a reportable column guarantees "Papa pasta", "Papa Pasta" and "PP" in the same chart.</p>
+<p><strong>Fields are inherited, not repeated.</strong> Set Brand and Function at the List level where a whole List belongs to one brand, and only override on the exceptions. Otherwise every task needs six clicks and nobody does six clicks.</p>
+<p><strong>Every field has an owner.</strong> A dropdown whose values nobody maintains becomes a museum within a year. The owner is named in the pack, and the review cadence is quarterly.</p>
+<p><strong>Read-only fields are the automation's contract.</strong> Response Due and Resolution Due are written by automation and read by people. If a person can edit them, the SLA is a fiction.</p>
+<h2 id="6-the-status-model">6. The status model</h2>
+<p>Statuses are where installs fail quietly. Two Spaces inventing their own vocabulary means no dashboard can ever count across them.</p>
+<h3 id="61-the-universal-set">6.1 The universal set</h3>
+<p>Seven statuses cover roughly nine tenths of all work. Every Space that has no stated domain set uses exactly these.</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Group</th>
+<th>Means</th>
+<th>Who moves it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open</td>
+<td>Not started</td>
+<td>Created, not picked up</td>
+<td>Anyone assigned</td>
+</tr>
+<tr>
+<td>In Progress</td>
+<td>Active</td>
+<td>Being worked now</td>
+<td>Assignee</td>
+</tr>
+<tr>
+<td>Waiting</td>
+<td>Active</td>
+<td>Blocked on someone outside the task</td>
+<td>Assignee</td>
+</tr>
+<tr>
+<td>Review</td>
+<td>Active</td>
+<td>Delivered, awaiting an approver</td>
+<td>Assignee</td>
+</tr>
+<tr>
+<td>Blocked</td>
+<td>Active</td>
+<td>A named blocker exists; cannot proceed</td>
+<td>Assignee</td>
+</tr>
+<tr>
+<td>Done</td>
+<td>Closed</td>
+<td>Accepted, with evidence attached</td>
+<td>Approver</td>
+</tr>
+<tr>
+<td>Closed</td>
+<td>Closed</td>
+<td>No further action, archived by age</td>
+<td>Automation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-domain-sets">6.2 Domain sets</h3>
+<p>Where a workflow has real stages, the Space gets its own vocabulary, and it is declared here so nobody invents a fourth.</p>
+<table>
+<thead>
+<tr>
+<th>Space</th>
+<th>Domain statuses</th>
+<th>Why it cannot use the universal set</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>02 Marketing</td>
+<td>Drafting, Internal Review, Client Review, Approved</td>
+<td>Two approval gates exist and they belong to different people</td>
+</tr>
+<tr>
+<td>03 Finance</td>
+<td>Control Run, Exception, Approved</td>
+<td>A control run is a state, not an activity</td>
+</tr>
+<tr>
+<td>08 Client Delivery</td>
+<td>Scoped, Delivering, Client Acceptance, Accepted</td>
+<td>Client Acceptance is a waiting state owned by a guest</td>
+</tr>
+<tr>
+<td>09 Store Ops</td>
+<td>Requested, Scheduled, Completed</td>
+<td>A request is scheduled before it is worked</td>
+</tr>
+<tr>
+<td>10 Goals</td>
+<td>On Track, At Risk, Off Track, Achieved</td>
+<td>A goal is never "in progress", it is on pace or not</td>
+</tr>
+<tr>
+<td>05 Technology</td>
+<td>Triage, Investigating, Resolved</td>
+<td>Support has a queue discipline the universal set cannot express</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-the-transition-matrix">6.3 The transition matrix</h3>
+<p>The rule is not "these transitions are legal"; it is "these transitions are the only ones that mean anything". Anything else is a person using a status to communicate instead of a comment, and it corrupts every count downstream.</p>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>Legal next</th>
+<th>Illegal and why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Open</td>
+<td>In Progress, Blocked, Closed</td>
+<td>Waiting before starting is a lie about effort</td>
+</tr>
+<tr>
+<td>In Progress</td>
+<td>Waiting, Review, Blocked, Done</td>
+<td>Back to Open means the work restarted; create a new task</td>
+</tr>
+<tr>
+<td>Waiting</td>
+<td>In Progress, Blocked, Closed</td>
+<td>Straight to Done skips the verification</td>
+</tr>
+<tr>
+<td>Review</td>
+<td>In Progress, Done</td>
+<td>Review never goes to Waiting; the reviewer is the assignee now</td>
+</tr>
+<tr>
+<td>Blocked</td>
+<td>In Progress, Closed</td>
+<td>Blocked to Done skips the fix</td>
+</tr>
+<tr>
+<td>Done</td>
+<td>Closed, In Progress</td>
+<td>Reopening is allowed, silently closing is not</td>
+</tr>
+</tbody>
+</table>
+<h3 id="64-work-in-progress">6.4 Work in progress</h3>
+<p>Two limits, both enforced by a view rather than by permission, because ClickUp will not stop a person and a dashboard will embarrass them.</p>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Value</th>
+<th>Where it is counted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tasks in Progress per person</td>
+<td>Five</td>
+<td>MANCO dashboard, "WIP over limit" card</td>
+</tr>
+<tr>
+<td>Tasks in Review per approver</td>
+<td>Ten</td>
+<td>Team dashboards, oldest-first</td>
+</tr>
+</tbody>
+</table>
+<p>The number five is a starting position, not a law. It is set low on purpose: the first fortnight of the pilot will show whether the real ceiling is four or eight, and the limit moves once, on evidence.</p>
+<h2 id="7-views-and-the-standard-view-set">7. Views and the standard view set</h2>
+<p>A Space without views is a filing cabinet. Every Space opens on the same five views, in the same order, so that moving between them costs nothing to learn.</p>
+<h3 id="71-the-five-standard-views">7.1 The five standard views</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>View</th>
+<th>Type</th>
+<th>Shows</th>
+<th>Why it exists</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Work</td>
+<td>Board</td>
+<td>Status columns, cards assigned</td>
+<td>The daily surface; where work is moved</td>
+</tr>
+<tr>
+<td>2</td>
+<td>This Week</td>
+<td>List</td>
+<td>Due within seven days, grouped by assignee</td>
+<td>The weekly commitment, not the backlog</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Everything</td>
+<td>Table</td>
+<td>All fields, sortable, filterable</td>
+<td>The reporting surface and the export</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Calendar</td>
+<td>Calendar</td>
+<td>Dated work by due date</td>
+<td>Anything with a date is easier to see as a date</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Waiting On</td>
+<td>List</td>
+<td>Waiting and Blocked, grouped by blocker holder</td>
+<td>The view that stops the "any updates?" message</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-space-specific-views">7.2 Space-specific views</h3>
+<table>
+<thead>
+<tr>
+<th>Space</th>
+<th>View</th>
+<th>Type</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>02 Marketing</td>
+<td>Triage</td>
+<td>Board</td>
+<td>Requests only, oldest first, one column per status</td>
+</tr>
+<tr>
+<td>03 Finance</td>
+<td>Today's Control</td>
+<td>Board</td>
+<td>Control Runs filtered to today's trading date</td>
+</tr>
+<tr>
+<td>03 Finance</td>
+<td>Exceptions by Store</td>
+<td>Table</td>
+<td>Open Exceptions grouped by Store with age</td>
+</tr>
+<tr>
+<td>05 Technology</td>
+<td>Ticket Age</td>
+<td>Table</td>
+<td>Open tickets with hours since creation, descending</td>
+</tr>
+<tr>
+<td>07 Brand Ops</td>
+<td>Openings Calendar</td>
+<td>Calendar</td>
+<td>All brand Openings by launch date, coloured by brand</td>
+</tr>
+<tr>
+<td>08 Client</td>
+<td>SLA Clock</td>
+<td>Table</td>
+<td>Engagements with Response Due and Resolution Due, breaches first</td>
+</tr>
+<tr>
+<td>09 Store Ops</td>
+<td>Audit Heat</td>
+<td>Table</td>
+<td>Audits by store and month, failed items highlighted</td>
+</tr>
+<tr>
+<td>10 Goals</td>
+<td>Quarter Table</td>
+<td>Table</td>
+<td>Every goal with current value, target, pace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73-work-type--a-field-a-view-never-a-folder">7.3 Work type — a field, a view, never a folder</h3>
+<p>Ricardo asked for team folders or a Space for Recurring, Once Off and Requested. The field is right and the structure is wrong, for one blunt reason: <strong>a task has one home.</strong> If a recurring finance obligation lives in a <code>Recurring</code> folder, then Finance's Space understates Finance's load, and the finance dashboard is wrong for the rest of the year. Work type is a property of the work, not a place to keep it.</p>
+<p>So: <code>Work Type</code> is a dropdown (<code>Recurring</code>, <code>Once Off</code>, <code>Requested</code>, <code>Project</code>, <code>Meeting Action</code>), and each Space carries three filtered views — <code>Recurring</code>, <code>Once Off</code>, <code>Requested</code> — which give Ricardo exactly what he asked for without breaking the home rule.</p>
+<table>
+<thead>
+<tr>
+<th>Work type</th>
+<th>Definition</th>
+<th>Where the view lives</th>
+<th>Owner of the view</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recurring</td>
+<td>Has a recurrence rule; must happen or something breaks</td>
+<td>Every Space, plus one cross-Space view</td>
+<td>Function lead</td>
+</tr>
+<tr>
+<td>Once Off</td>
+<td>Happens once, ends, no repeat</td>
+<td>Every Space</td>
+<td>Function lead</td>
+</tr>
+<tr>
+<td>Requested</td>
+<td>Arrived from someone outside the owning team</td>
+<td>Every Space with a Form</td>
+<td>Function lead</td>
+</tr>
+<tr>
+<td>Project</td>
+<td>A container with a brief, dates and children</td>
+<td>Only 07 Brand Ops and 08 Client</td>
+<td>Delivery lead</td>
+</tr>
+<tr>
+<td>Meeting Action</td>
+<td>Comes out of a minute, points at a Doc</td>
+<td>11 Meetings, mirrored into the owning Space</td>
+<td>Meeting chair</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>Recurring</code> cross-Space view is worth its own line. One view, in the Goals Space, filtered to <code>Work Type = Recurring</code>, grouped by Space and status, sorted by last update. It answers a question no single team can answer: which standing obligations across the whole company have not been done.</p>
+<h2 id="8-goals-and-okrs">8. Goals and OKRs</h2>
+<p>Ricardo's requirement: company goals and OKRs, broken into quarters, per team and per person. That is a four-level cascade, and it fails in a predictable way — each level invents its own goals, nobody connects them, and by March the dashboard shows forty unrelated numbers.</p>
+<h3 id="81-the-cascade">8.1 The cascade</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Who sets it</th>
+<th>Count</th>
+<th>Rolls up to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company</td>
+<td>Ricardo with Exco</td>
+<td>4 to 5 annual, 3 to 4 quarterly</td>
+<td>Nothing; this is the top</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>Function lead, agreed with Ricardo</td>
+<td>2 to 4 per quarter</td>
+<td>One or more company goals</td>
+</tr>
+<tr>
+<td>Team</td>
+<td>Team lead</td>
+<td>1 to 3 per quarter</td>
+<td>Exactly one function goal</td>
+</tr>
+<tr>
+<td>Person</td>
+<td>The person, agreed with their lead</td>
+<td>1 to 3 per quarter</td>
+<td>Exactly one team goal</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb2"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="cn">LR</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span>[<span class="st">&quot;Company goal</span><span class="sc">&lt;br/&gt;</span><span class="st">4 to 5 annual&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;Function goal</span><span class="sc">&lt;br/&gt;</span><span class="st">2 to 4 per quarter&quot;</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F</span> <span class="pp">--&gt;</span> <span class="dt">T</span>[<span class="st">&quot;Team goal</span><span class="sc">&lt;br/&gt;</span><span class="st">1 to 3 per quarter&quot;</span>]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">T</span> <span class="pp">--&gt;</span> <span class="dt">P</span>[<span class="st">&quot;Person goal</span><span class="sc">&lt;br/&gt;</span><span class="st">1 to 3 per quarter&quot;</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">P</span> <span class="pp">-.</span><span class="vs">weekly check-in</span><span class="pp">.-&gt;</span> <span class="dt">K</span>[<span class="st">&quot;Check-in task</span><span class="sc">&lt;br/&gt;</span><span class="st">value and note&quot;</span>]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">K</span> <span class="pp">-.</span><span class="vs">feeds</span><span class="pp">.-&gt;</span> <span class="dt">D</span>[<span class="st">&quot;OKR dashboard&quot;</span>]</span></code></pre></div>
+<p>Three rules make the cascade real rather than decorative.</p>
+<p><strong>A goal above must have a number below it.</strong> If a company goal has no function goal carrying a number toward it, the company goal is a slogan.</p>
+<p><strong>A person carries three, never nine.</strong> Three personal targets is a focus; nine is a wish list with better formatting.</p>
+<p><strong>Every goal has one accountable name.</strong> Not a team. A person. Goals assigned to a department are goals nobody checks.</p>
+<h3 id="82-what-the-goals-are">8.2 What the goals are</h3>
+<p>The specific targets are Ricardo's to set, and this document deliberately does not invent numbers that will be mistaken for decisions. What it specifies is the <em>shape</em>, the measurement and the cadence — which is the part that is hard.</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Goal shape</th>
+<th>Measurable type</th>
+<th>Example shape, targets set by Ricardo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company</td>
+<td>Revenue, store count, margin, brand health</td>
+<td>Number, with a target and a floor</td>
+<td>"Group revenue reaches R— by 31 December"</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>The function's contribution to a company goal</td>
+<td>Number or percentage</td>
+<td>"Finance closes within five working days, four quarters running"</td>
+</tr>
+<tr>
+<td>Team</td>
+<td>A delivery commitment</td>
+<td>Count or percentage</td>
+<td>"Design ships 90% of requests within five days"</td>
+</tr>
+<tr>
+<td>Person</td>
+<td>A capability or a number they control</td>
+<td>Either, but stated precisely</td>
+<td>"Cut my exception count to under ten a month"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-target-arithmetic">8.3 Target arithmetic</h3>
+<p>ClickUp Goals carry targets and can compute progress from tasks, from money, or manually. Three measurement modes, and each has a right and a wrong use.</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Use when</th>
+<th>Do not use when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tasks</td>
+<td>The goal is "close these things" and the tasks exist</td>
+<td>The goal is a financial number; a task count lies about revenue</td>
+</tr>
+<tr>
+<td>Currency</td>
+<td>The goal is money and the values are in task fields</td>
+<td>Values live in a spreadsheet nobody maintains</td>
+</tr>
+<tr>
+<td>Manual</td>
+<td>The number comes from outside the system</td>
+<td>Someone is expected to remember to update it weekly</td>
+</tr>
+</tbody>
+</table>
+<p>Manual goals always decay. If a goal is manual, the weekly check-in task must carry a required field for the current value, or the number is stale within a month.</p>
+<h3 id="84-the-cadence">8.4 The cadence</h3>
+<table>
+<thead>
+<tr>
+<th>When</th>
+<th>What happens</th>
+<th>Who</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Monday, in the team meeting</td>
+<td>Each person states their goal status in one line: on track, at risk, off track, and the reason</td>
+<td>Everyone</td>
+<td>Nothing written; the minute records it</td>
+</tr>
+<tr>
+<td>Weekly, before Monday</td>
+<td>A check-in task per goal owner appears automatically</td>
+<td>Goal owners</td>
+<td>A current value and a one-line note on each goal</td>
+</tr>
+<tr>
+<td>Monthly, first Exco</td>
+<td>Function goals reviewed against pace, not against last month</td>
+<td>Exco</td>
+<td>Decisions on any goal off track two months running</td>
+</tr>
+<tr>
+<td>Quarterly, last week</td>
+<td>Quarter closes, goals archive, next quarter's cascade is set</td>
+<td>Ricardo and function leads</td>
+<td>New goals in the Space, previous quarter archived</td>
+</tr>
+<tr>
+<td>Annually</td>
+<td>Annual goals set, quarterly goals derived</td>
+<td>Ricardo and Exco</td>
+<td>The year's frame</td>
+</tr>
+</tbody>
+</table>
+<h3 id="85-the-okr-dashboard-precisely">8.5 The OKR dashboard, precisely</h3>
+<p>Ricardo asked for a company OKR dashboard. It is one of four, and §10.4 defines it card by card. The thing that matters here is what it is <em>not</em>: it is not a list of tasks. It answers four questions in order — are we on plan, which function is off plan, which goal slipped this week, and who owns it.</p>
+<h2 id="9-meetings-and-minutes">9. Meetings and minutes</h2>
+<h3 id="91-the-structure-ricardo-asked-for">9.1 The structure Ricardo asked for</h3>
+<p>The Monday morning meeting, per team, recorded across years, with notes and documents attached. The question he asked was whether this needs its own folder or Space.</p>
+<h3 id="92-why-it-is-a-space-and-not-a-folder">9.2 Why it is a Space and not a Folder</h3>
+<p>Four reasons, in order of weight.</p>
+<p><strong>Privacy.</strong> Minutes contain personnel matters, commercial terms and decisions taken about named people. If they live in a Folder inside a function Space, everyone in that function reads them by inheritance. A separate Space is the only way to hold a record that is sensitive <em>and</em> durable.</p>
+<p><strong>Ownership.</strong> A Folder inside Finance belongs to Finance, and when the finance lead changes, the archive changes hands. A Meetings Space belongs to the company, with one custodian, and survives every personnel change.</p>
+<p><strong>Cross-team reading.</strong> Exco minutes reference every function. Filing them under Finance means a marketing lead has to be given Finance Space access to read a decision about marketing.</p>
+<p><strong>Scale.</strong> One Doc per team per year, times eleven teams, times five years, is fifty-five documents. That is a Space, not a Folder somebody remembers to maintain.</p>
+<h3 id="93-the-monday-meeting-timed">9.3 The Monday meeting, timed</h3>
+<p>Ninety minutes, per team, same shape every week. The shape matters more than the content: a meeting with a fixed shape can be prepared for in ten minutes, and one without cannot be prepared for at all.</p>
+<table>
+<thead>
+<tr>
+<th>Minutes</th>
+<th>Segment</th>
+<th>What happens</th>
+<th>Recorded in the minute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–5</td>
+<td>Numbers</td>
+<td>The team's four numbers, read out, no discussion unless a number moved wrong</td>
+<td>The numbers, as a line</td>
+</tr>
+<tr>
+<td>5–15</td>
+<td>Last week's actions</td>
+<td>Every action from last week, by owner: done, not done, dead</td>
+<td>Status per action</td>
+</tr>
+<tr>
+<td>15–40</td>
+<td>This week's commitments</td>
+<td>Each person says what they will finish, in one sentence each</td>
+<td>Commitments, as actions</td>
+</tr>
+<tr>
+<td>40–60</td>
+<td>Blockers</td>
+<td>Only blockers needing someone else in the room</td>
+<td>Blocker, holder, and the ask</td>
+</tr>
+<tr>
+<td>60–75</td>
+<td>Decisions</td>
+<td>Anything needing a decision today</td>
+<td>Decision, alternatives rejected, owner</td>
+</tr>
+<tr>
+<td>75–85</td>
+<td>Risks and escalations</td>
+<td>What is going to bite in the next month</td>
+<td>Risk, rating, review date</td>
+</tr>
+<tr>
+<td>85–90</td>
+<td>Actions confirmed</td>
+<td>The whole action list read back and accepted</td>
+<td>Final action table</td>
+</tr>
+</tbody>
+</table>
+<h3 id="94-the-minutes-template">9.4 The minutes template</h3>
+<p>One template, seven sections, filled in during the meeting and never afterwards from memory.</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Content</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Header</td>
+<td>Team, date, chair, attendees, apologies</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Numbers</td>
+<td>The team's standing metrics, this week's values</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Last actions</td>
+<td>Previous actions with done or not done and a reason</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Decisions</td>
+<td>Decision, alternatives rejected, owner, effective date</td>
+<td>Yes, even if "none"</td>
+</tr>
+<tr>
+<td>Commitments</td>
+<td>This week's commitments, one line per person</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Blockers</td>
+<td>Blocker, who holds it, what is needed, by when</td>
+<td>Yes, even if "none"</td>
+</tr>
+<tr>
+<td>Risks</td>
+<td>Risk, rating, owner, review date</td>
+<td>Yes, even if "none"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="95-the-archive-convention">9.5 The archive convention</h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One Doc per team per year</td>
+<td><code>Finance — Minutes 2026</code>, appended weekly, never split</td>
+</tr>
+<tr>
+<td>Newest entry at the top</td>
+<td>Reading a minute should not require scrolling to the end</td>
+</tr>
+<tr>
+<td>Actions are tasks, not bullets</td>
+<td>Each action is a task in the sibling Actions List, linked in the Doc</td>
+</tr>
+<tr>
+<td>Documents attach to the Doc</td>
+<td>A deck shown in the meeting is attached to that week's entry</td>
+</tr>
+<tr>
+<td>Years close, never delete</td>
+<td>On 31 December the Doc moves to Archive and a new one opens</td>
+</tr>
+<tr>
+<td>AI Notetaker writes the draft</td>
+<td>The Notetaker transcribes the call; a human edits it into the template before it is accepted</td>
+</tr>
+</tbody>
+</table>
+<p>That last row is a control, not a convenience. A Notetaker transcript dropped into the archive unedited is a record of what was said, not what was decided — and a year later nobody can tell which is which.</p>
+<h2 id="10-dashboards">10. Dashboards</h2>
+<p>Four dashboards, twenty cards. Every card states its source and its definition, because a card nobody can define is a card that gets ignored after three weeks.</p>
+<h3 id="101-exco--group">10.1 EXCO — Group</h3>
+<p>Seven cards, read in ninety seconds.</p>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>Type</th>
+<th>Source</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company goal progress</td>
+<td>Goals</td>
+<td>Goals Space</td>
+<td>Percent of annual targets on pace; coloured by status</td>
+</tr>
+<tr>
+<td>Revenue against plan</td>
+<td>Calculation</td>
+<td>Finance Lists</td>
+<td>Closed revenue for the month against plan, variance shown</td>
+</tr>
+<tr>
+<td>Store count and openings</td>
+<td>Calculation</td>
+<td>Store Ops Lists</td>
+<td>Active stores, plus openings completed this quarter</td>
+</tr>
+<tr>
+<td>Completeness average</td>
+<td>Calculation</td>
+<td>Daily Control</td>
+<td>Mean daily completeness across active stores, last 30 days</td>
+</tr>
+<tr>
+<td>Open risks</td>
+<td>List</td>
+<td>Leadership Risk Register</td>
+<td>Unresolved risks rated high or urgent, with owner and age</td>
+</tr>
+<tr>
+<td>SLA breaches</td>
+<td>Calculation</td>
+<td>Client Lists</td>
+<td>Engagements past Response Due or Resolution Due, this month</td>
+</tr>
+<tr>
+<td>Brand split</td>
+<td>Bar chart</td>
+<td>All Lists</td>
+<td>Open and closed work by Brand, last 90 days</td>
+</tr>
+</tbody>
+</table>
+<h3 id="102-manco--operations">10.2 MANCO — Operations</h3>
+<p>Six cards, aimed at load and blockage rather than results.</p>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>Type</th>
+<th>Source</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workload by team</td>
+<td>Bar chart</td>
+<td>All Lists</td>
+<td>Open tasks per Team, and per person within it</td>
+</tr>
+<tr>
+<td>Overdue by function</td>
+<td>Bar chart</td>
+<td>All Lists</td>
+<td>Tasks past due, grouped by Space</td>
+</tr>
+<tr>
+<td>Recurrence health</td>
+<td>List</td>
+<td>Recurring views</td>
+<td>Recurring obligations with no completion in their period</td>
+</tr>
+<tr>
+<td>SLA counters</td>
+<td>Calculation</td>
+<td>Client and Store Lists</td>
+<td>Responded, breached, at risk, this week</td>
+</tr>
+<tr>
+<td>WIP over limit</td>
+<td>List</td>
+<td>All Lists</td>
+<td>People above five tasks in Progress, by name</td>
+</tr>
+<tr>
+<td>Blocked by owner</td>
+<td>Table</td>
+<td>All Lists</td>
+<td>Blocked tasks, grouped by who holds the blocker</td>
+</tr>
+</tbody>
+</table>
+<h3 id="103-team--one-per-team">10.3 TEAM — one per team</h3>
+<p>Four cards, the same four in every team, so a person who moves teams loses nothing.</p>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>Type</th>
+<th>Source</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>My open work</td>
+<td>List</td>
+<td>Team Lists</td>
+<td>Open tasks assigned to the viewer, due first</td>
+</tr>
+<tr>
+<td>Due this week</td>
+<td>List</td>
+<td>Team Lists</td>
+<td>Tasks due within seven days</td>
+</tr>
+<tr>
+<td>Waiting on others</td>
+<td>List</td>
+<td>Team Lists</td>
+<td>Waiting or Blocked where the viewer is not the holder</td>
+</tr>
+<tr>
+<td>Team goal progress</td>
+<td>Goals</td>
+<td>Goals Space</td>
+<td>The team's goals against quarter pace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="104-okr--company">10.4 OKR — Company</h3>
+<p>Three cards plus two views. This is the dashboard Ricardo asked for by name.</p>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>Type</th>
+<th>Source</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Goals by brand</td>
+<td>Goals</td>
+<td>Goals Space</td>
+<td>Every company and team goal, coloured by Brand</td>
+</tr>
+<tr>
+<td>Quarterly targets</td>
+<td>Calculation</td>
+<td>Goals Space</td>
+<td>Counts of on track, at risk, off track</td>
+</tr>
+<tr>
+<td>Department goal list</td>
+<td>List</td>
+<td>Function goal Lists</td>
+<td>One row per function goal, with owner and pace</td>
+</tr>
+<tr>
+<td>Key targets table</td>
+<td>Table</td>
+<td>Goals Space</td>
+<td>Every target with current value and target value</td>
+</tr>
+</tbody>
+</table>
+<h3 id="105-the-rule-about-dashboard-emails">10.5 The rule about dashboard emails</h3>
+<p>Scheduled dashboard reports are limited: forty uses on Business, unlimited on Enterprise. Forty sounds generous until a monthly send to three audiences over two years is counted, so the design is not "email the dashboard". So the design is not "email the dashboard". The design is: <strong>people open it.</strong> Two scheduled sends exist, both to Exco, both monthly, and the rest is a bookmark in the sidebar that everyone has.</p>
+<h2 id="106-what-the-dashboards-cannot-do">10.6 What the dashboards cannot do</h2>
+<p>Three honest limits, stated here so nobody promises otherwise.</p>
+<p><strong>Live cross-Workspace data is impossible.</strong> Already argued in §3.2; it is why there is one Workspace.</p>
+<p><strong>Goals do not compute from Coda-style rollups.</strong> ClickUp Goals compute from tasks, money or manual entry. A Coda formula that summed a linked column across three tables has no direct equivalent. That is the substance of D07 in §13.</p>
+<p><strong>A dashboard is not a report.</strong> It shows now. Any month-over-month narrative has to be written by a person, which is why §16 includes a monthly report template rather than pretending the dashboard covers it.</p>
+<h2 id="11-chat--replacing-cliq">11. Chat — replacing Cliq</h2>
+<p>Ricardo wants chat spaces that are functionally better than Cliq and can replace it. Two facts decide the design, and both are uncomfortable.</p>
+<p><strong>There is no Cliq importer.</strong> ClickUp's importer list covers Slack among others; Cliq is not on it. History does not travel. Every migration of this kind therefore starts with a decision about what to do with the old history — and the answer is to keep Cliq read-only for a year rather than pretend the archives moved.</p>
+<p><strong>History is not the problem; control is.</strong> Message history is included from Core upwards, so the archive survives on Business. What Business does not have is an audit trail and the ability to restrict who may invite a guest — both are Enterprise and Max rows on the comparison table. So chat on Business is usable and ungoverned, and the governance has to be a written rule with a monthly review (§17.3) rather than a setting.</p>
+<h3 id="111-channels-mapped">11.1 Channels, mapped</h3>
+<p>Nine channels replace the Cliq groups that exist today. The mapping is deliberately one-to-one at the start, because a new tool should not simultaneously change who talks to whom.</p>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Replaces</th>
+<th>Members</th>
+<th>Purpose</th>
+<th>Guests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#exco</code></td>
+<td>EXCO group</td>
+<td>Exco only</td>
+<td>Decisions in flight; never a substitute for a minute</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>#manco</code></td>
+<td>MANCO group</td>
+<td>Manco and function leads</td>
+<td>The weekly operating picture</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>#finance-daily</code></td>
+<td>Finance ops group</td>
+<td>Finance team</td>
+<td>Control runs and exceptions</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>#service-desk</code></td>
+<td>IT support group</td>
+<td>Technology and requesters</td>
+<td>Ticket chatter, then a task</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>#creative</code></td>
+<td>Creative group</td>
+<td>Marketing and brand leads</td>
+<td>Work in progress and approvals</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>#store-ops</code></td>
+<td>Store ops group</td>
+<td>Store ops and area managers</td>
+<td>Daily store issues</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>#client-&lt;code&gt;</code></td>
+<td>Client WhatsApp and email threads</td>
+<td>Account team plus client guests</td>
+<td>One per engagement, with the client in it</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>#general</code></td>
+<td>Company announcements</td>
+<td>All members</td>
+<td>Broadcast; replies discouraged</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>#random</code></td>
+<td>Social chatter</td>
+<td>All members</td>
+<td>Not work. Keeps work channels clean</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h3 id="112-the-three-rules-that-make-chat-work">11.2 The three rules that make chat work</h3>
+<p><strong>A decision in chat is not a decision.</strong> If a channel produces a decision, someone writes it in the minute or the Decision Register the same day. The channel is where it is discussed; it is never where it lives.</p>
+<p><strong>Chat does not carry work.</strong> A message that asks for work becomes a task at the moment it is asked. The test is simple: if nobody created a task, nobody has been asked to do anything.</p>
+<p><strong>One channel per audience, not per topic.</strong> Topic channels multiply and die; audience channels survive because the audience does not change.</p>
+<h3 id="113-the-21-day-behaviour-pilot">11.3 The 21-day behaviour pilot</h3>
+<p>Chat is the part of ClickUp most likely to be abandoned, because it is the part people did not ask for. So it is piloted separately, with a test that has nothing to do with adoption numbers.</p>
+<table>
+<thead>
+<tr>
+<th>Days</th>
+<th>What happens</th>
+<th>Evidence collected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1–7</td>
+<td>Finance and the service desk move their internal chat entirely to their two channels. Cliq stays up for everything else.</td>
+<td>Message counts per channel per day</td>
+</tr>
+<tr>
+<td>8–14</td>
+<td>Decisions made in chat must appear in the minute within one day.</td>
+<td>Count of decisions in chat versus minutes; any gap is a finding</td>
+</tr>
+<tr>
+<td>15–21</td>
+<td>A client engagement runs over <code>#client-&lt;code&gt;</code> with the client as a guest.</td>
+<td>Response times versus the SLA clock; guest experience notes</td>
+</tr>
+<tr>
+<td>Day 21</td>
+<td>Review against the criteria below</td>
+<td>Written verdict, not a feeling</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pass criteria.</strong> All three must hold: more than 60% of the cohort's internal messages in ClickUp rather than Cliq; zero decisions found in chat that never reached a minute; and the client in the guest channel asking for at least one thing without an email.</p>
+<p><strong>If it fails.</strong> Chat is not the reason to buy ClickUp. Cliq stays for conversation, ClickUp carries work, and the two are joined by links. That is a legitimate outcome and it is cheaper than a tool nobody opens.</p>
+<h2 id="12-client-delivery-and-sla">12. Client delivery and SLA</h2>
+<p>Ricardo wants client SLA spaces that replace the Coda space and all its functions. Coda's value was never the documents; it was the counters and the rollups. So the design below is about clocks, not pages.</p>
+<h3 id="121-the-structure">12.1 The structure</h3>
+<p>One Space (08 Client Delivery), one Folder per client engagement, and inside it four Lists that every engagement has: Commitments, Delivery, Issues, Reports. The Folder is the unit of sharing — that is what makes a guest model work: a client sees their own Folder, and nothing else in the Workspace.</p>
+<h3 id="122-the-four-engagement-tiers">12.2 The four engagement tiers</h3>
+<p>The existing tier vocabulary travels with the work: <code>HOF</code>, <code>ZOR</code>, <code>COR</code>, <code>ZEE</code>. It is a dropdown, required on any client work, and it drives reporting rather than process.</p>
+<h3 id="123-the-sla-clocks">12.3 The SLA clocks</h3>
+<p>Three service tiers plus one internal tier. The numbers below are a starting position to be agreed with the clients, not an existing commitment.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>First response</th>
+<th>Resolution</th>
+<th>Escalation at 75% of clock</th>
+<th>Escalation at breach</th>
+<th>Review</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gold</td>
+<td>2 working hours</td>
+<td>24 working hours</td>
+<td>Account owner</td>
+<td>Delivery lead</td>
+<td>Quarterly</td>
+</tr>
+<tr>
+<td>Black</td>
+<td>4 working hours</td>
+<td>48 working hours</td>
+<td>Account owner</td>
+<td>Delivery lead</td>
+<td>Quarterly</td>
+</tr>
+<tr>
+<td>Silver</td>
+<td>8 working hours</td>
+<td>72 working hours</td>
+<td>Account owner</td>
+<td>Delivery lead, weekly review</td>
+<td>Quarterly</td>
+</tr>
+<tr>
+<td>Internal store request</td>
+<td>4 working hours</td>
+<td>48 working hours</td>
+<td>Store ops lead</td>
+<td>Express ops at breach</td>
+<td>Monthly</td>
+</tr>
+</tbody>
+</table>
+<h3 id="124-how-the-clock-works">12.4 How the clock works</h3>
+<p>Five rules, and they exist because an SLA without arithmetic is a marketing claim.</p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Working hours only</td>
+<td>The clock runs 08:00–17:00 Monday to Friday, excluding public holidays. A request at 16:00 on Friday is not late on Saturday</td>
+</tr>
+<tr>
+<td>Written on creation</td>
+<td>Response Due and Resolution Due are computed when the task is created, from the tier, by automation</td>
+</tr>
+<tr>
+<td>Paused by the client</td>
+<td>A request waiting on client information pauses the clock; resumption restarts it</td>
+</tr>
+<tr>
+<td>Breach is a state, not a complaint</td>
+<td><code>Breached</code> is set by automation, never typed by a person, and cleared only with a comment naming the reason</td>
+</tr>
+<tr>
+<td>Reported monthly</td>
+<td>Every client gets the SLA report in §16, whether or not there were breaches</td>
+</tr>
+</tbody>
+</table>
+<h3 id="125-the-escalation-ladder">12.5 The escalation ladder</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Trigger</th>
+<th>Who acts</th>
+<th>What they do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>75% of the response clock used</td>
+<td>Account owner</td>
+<td>Chases the assignee directly; no email to the client</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Breach</td>
+<td>Delivery lead</td>
+<td>Reassigns or resets the commitment with the client, in writing</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Two breaches in a month</td>
+<td>Ricardo</td>
+<td>Commercial conversation with the client about scope or tier</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Three breaches in a quarter</td>
+<td>Ricardo</td>
+<td>Renegotiate the tier or end the engagement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="126-the-guest-model">12.6 The guest model</h3>
+<table>
+<thead>
+<tr>
+<th>Guest type</th>
+<th>Sees</th>
+<th>Cannot see</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Client viewer</td>
+<td>Their engagement Folder only</td>
+<td>Everything else in the Workspace</td>
+<td>One guest seat</td>
+</tr>
+<tr>
+<td>Client commenter</td>
+<td>Their Folder, can comment and attach</td>
+<td>Other clients, other Spaces</td>
+<td>One guest seat</td>
+</tr>
+<tr>
+<td>Vendor</td>
+<td>One shared List</td>
+<td>Rest of the Workspace</td>
+<td>One guest seat</td>
+</tr>
+</tbody>
+</table>
+<p>Guests are the cheapest lever in the whole design and the most dangerous: a guest who can see a List can often see its parent Folder's siblings. Every guest invitation is set at Folder level, never at Space level, and the permissions check in §17.3 is run before any client is invited.</p>
+<h2 id="13-replacing-coda">13. Replacing Coda</h2>
+<p>This is the hardest of the eleven requirements, and the honest answer is that ClickUp replaces most of Coda and not all of it. Saying so now is cheaper than discovering it in March.</p>
+<h3 id="131-what-coda-is-actually-doing">13.1 What Coda is actually doing</h3>
+<p>Before anything is migrated, the Coda space is inventoried document by document. The inventory is a task list in 08 Client Delivery, and each row carries the same fields, so the decision can be forced rather than deferred.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Values</th>
+<th>Why it is captured</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document</td>
+<td>Name</td>
+<td>Identity</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>Tables, forms, buttons, formulas, charts, automations</td>
+<td>What kind of thing it is</td>
+</tr>
+<tr>
+<td>Used by</td>
+<td>A named person or team</td>
+<td>An unused document is not migrated</td>
+</tr>
+<tr>
+<td>Frequency</td>
+<td>Daily, weekly, monthly, rarely</td>
+<td>Drives whether it needs a counter</td>
+</tr>
+<tr>
+<td>Rollups</td>
+<td>None, simple, cross-table</td>
+<td>The thing ClickUp may not reproduce</td>
+</tr>
+<tr>
+<td>Replacement</td>
+<td>Dashboard card, field, automation, agent, retire</td>
+<td>The forced decision</td>
+</tr>
+</tbody>
+</table>
+<h3 id="132-the-mapping">13.2 The mapping</h3>
+<table>
+<thead>
+<tr>
+<th>Coda capability</th>
+<th>ClickUp equivalent</th>
+<th>Fidelity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Table with rows</td>
+<td>List with tasks</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>Lookup column</td>
+<td>Relationship or a formula field</td>
+<td>Good, with setup</td>
+</tr>
+<tr>
+<td>Rollup across a relation</td>
+<td>Not native</td>
+<td><strong>Gap</strong> — see §13.3</td>
+</tr>
+<tr>
+<td>Formula column</td>
+<td>Formula field, or a computed custom field</td>
+<td>Partial; deep nesting is painful</td>
+</tr>
+<tr>
+<td>Button that creates a row</td>
+<td>Automation, or an Automation template</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>Form</td>
+<td>Form view</td>
+<td>Full</td>
+</tr>
+<tr>
+<td>Chart</td>
+<td>Dashboard card</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>Automation</td>
+<td>Automation, 10,000 actions a month on Business</td>
+<td>Good</td>
+</tr>
+<tr>
+<td>Doc with tables inside</td>
+<td>Doc with embedded views</td>
+<td>Partial — links inside templates are weaker</td>
+</tr>
+<tr>
+<td>Cross-document automation</td>
+<td>Not native</td>
+<td><strong>Gap</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="133-the-four-real-gaps">13.3 The four real gaps</h3>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>What it means in practice</th>
+<th>The three options</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cross-row rollups</td>
+<td>A total across rows linked from another table has no native equivalent</td>
+<td>(a) a dashboard card that computes it, (b) an automation that writes the total into a field, (c) an agent that computes it nightly</td>
+</tr>
+<tr>
+<td>Deep nested formulas</td>
+<td>Multi-step formulas become unreadable</td>
+<td>Flatten into two or three fields, or push the calculation into the system of record</td>
+</tr>
+<tr>
+<td>Links inside templates</td>
+<td>A template that pre-links related rows needs manual setup</td>
+<td>Accept one manual step per instantiation, or use a Doc template</td>
+</tr>
+<tr>
+<td>Summing linked columns</td>
+<td>No native column sum across relations</td>
+<td>Dashboard card, or a rollup field written by automation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="134-the-decision-sheet">13.4 The decision sheet</h3>
+<p>Every Coda rollup gets one of five verdicts, and Ricardo signs the sheet rather than the concept. This is D07.</p>
+<table>
+<thead>
+<tr>
+<th>Verdict</th>
+<th>When it is right</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard card</td>
+<td>The number is read, not acted on</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Automation-written field</td>
+<td>The number must sit on a row and be filtered</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Formula field</td>
+<td>The number is computed from fields on the same row</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>The number needs joining across systems, or a judgement</td>
+<td>High</td>
+</tr>
+<tr>
+<td>Retire</td>
+<td>Nobody used it</td>
+<td>Zero, and the cheapest win available</td>
+</tr>
+</tbody>
+</table>
+<h3 id="135-what-does-not-move">13.5 What does not move</h3>
+<p>Stated plainly so nobody promises a clean sweep: Coda documents with heavy formula dependence stay readable in Coda for as long as they are needed, exported to PDF and filed in the vault when the Coda subscription ends. The replacement is for <em>operations</em>, not for history.</p>
+<h2 id="14-migration-and-coexistence">14. Migration and coexistence</h2>
+<p>Installing a work system beside an existing one is where these projects die — not at the build, at the fourteenth week when someone says "but it's still in Zoho". The rule is <strong>coexistence, one full cycle, then a decision</strong>, never a cutover.</p>
+<h3 id="141-what-moves-and-what-does-not">14.1 What moves and what does not</h3>
+<table>
+<thead>
+<tr>
+<th>Zoho Projects</th>
+<th>ClickUp</th>
+<th>Carried in the spreadsheet import</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Projects</td>
+<td>Spaces and Folders</td>
+<td>No — created by hand from the pack</td>
+</tr>
+<tr>
+<td>Task lists</td>
+<td>Lists</td>
+<td>Yes, as the destination</td>
+</tr>
+<tr>
+<td>Tasks and subtasks</td>
+<td>Tasks and subtasks</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Status</td>
+<td>Yes, mapped by name</td>
+</tr>
+<tr>
+<td>Priority</td>
+<td>Priority field</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Owner</td>
+<td>Assignee</td>
+<td>Yes, by email</td>
+</tr>
+<tr>
+<td>Due date</td>
+<td>Due date</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Description</td>
+<td>Description</td>
+<td>Yes, as text</td>
+</tr>
+<tr>
+<td>Custom fields</td>
+<td>Custom fields</td>
+<td>Partly — only where the field exists first</td>
+</tr>
+<tr>
+<td>Comments</td>
+<td>—</td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Attachments</td>
+<td>—</td>
+<td><strong>No</strong> — re-link the important ones by hand</td>
+</tr>
+<tr>
+<td>Time logs</td>
+<td>—</td>
+<td><strong>No</strong>, unless time tracking is enabled and imported separately</td>
+</tr>
+<tr>
+<td>Recurrences</td>
+<td>Recurrence settings</td>
+<td><strong>No</strong> — recreated from the pack</td>
+</tr>
+</tbody>
+</table>
+<p>Two losses need saying out loud before anyone signs: <strong>comments and attachment history do not come across.</strong> For the ninety days of live work that matters, the old Zoho task is kept and linked from the ClickUp task; for historical work, Zoho goes read-only and the archive stays.</p>
+<h3 id="142-the-migration-runbook">14.2 The migration runbook</h3>
+<p>Nine steps. Steps 3 and 6 are the ones people skip.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Step</th>
+<th>Who</th>
+<th>Done when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Freeze the scope: name exactly which live Lists migrate</td>
+<td>Ricardo</td>
+<td>A written list of Lists, no "everything"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Build the destination from the pack</td>
+<td>Builder</td>
+<td>Lists exist with fields and statuses already correct</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Export from Zoho Projects to Excel, one file per List</td>
+<td>Finance or ops admin</td>
+<td>Row count reconciles against Zoho's own count</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Clean the export: statuses mapped, owners matched to email, blanks filled</td>
+<td>Builder</td>
+<td>Zero unmapped statuses; every owner resolves</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Import into the existing List</td>
+<td>Builder</td>
+<td>ClickUp's error report is empty or understood</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Reconcile counts and spot-check ten rows per List</td>
+<td>Builder and the List owner</td>
+<td>Counts match; ten sampled tasks have correct fields</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Recreate the recurrences from the pack</td>
+<td>Builder</td>
+<td>Recurring view has the same obligations as Zoho's</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Link old to new where history matters</td>
+<td>List owner</td>
+<td>A link to the Zoho task on any task with live comment history</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Set Zoho read-only for the migrated Lists</td>
+<td>Ricardo</td>
+<td>Nobody can create in the old place</td>
+</tr>
+</tbody>
+</table>
+<h3 id="143-the-mapping-table-the-importer-needs">14.3 The mapping table the importer needs</h3>
+<p>ClickUp's spreadsheet importer matches columns to existing fields by name. So the export is renamed to match the destination before import — mapping done in the spreadsheet, not in a hope.</p>
+<table>
+<thead>
+<tr>
+<th>Export column</th>
+<th>Rename to</th>
+<th>Must exist in ClickUp before import</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Task Name</code></td>
+<td><code>Task Name</code></td>
+<td>Built in</td>
+</tr>
+<tr>
+<td><code>Task List</code></td>
+<td><code>List</code></td>
+<td>The destination List, exact name</td>
+</tr>
+<tr>
+<td><code>Status</code></td>
+<td><code>Status</code></td>
+<td>Status must exist in that List's status set</td>
+</tr>
+<tr>
+<td><code>Priority</code></td>
+<td><code>Priority</code></td>
+<td>The dropdown, values identical</td>
+</tr>
+<tr>
+<td><code>Owner</code></td>
+<td><code>Assignee</code></td>
+<td>The user must be invited first</td>
+</tr>
+<tr>
+<td><code>Due Date</code></td>
+<td><code>Due Date</code></td>
+<td>Built in, <code>YYYY-MM-DD</code></td>
+</tr>
+<tr>
+<td><code>Description</code></td>
+<td><code>Description</code></td>
+<td>Built in</td>
+</tr>
+<tr>
+<td><code>Custom field X</code></td>
+<td><code>Brand</code>, <code>Team</code>, and so on</td>
+<td>The custom field, created before import</td>
+</tr>
+</tbody>
+</table>
+<p>The order matters and it is the whole trick: <strong>users, then fields, then statuses, then Lists, then import.</strong> An import that fails on an unknown status wastes an afternoon and teaches nothing.</p>
+<h3 id="144-rollback">14.4 Rollback</h3>
+<p>A migration with no rollback is a bet. This one has a cheap exit.</p>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Import produced duplicated tasks</td>
+<td>Delete the imported List's contents and re-import; the export still exists</td>
+</tr>
+<tr>
+<td>Statuses came in wrong</td>
+<td>Fix in ClickUp, not in the spreadsheet; the mapping is then corrected for the next List</td>
+</tr>
+<tr>
+<td>The team does not adopt within the pilot</td>
+<td>Stop. Zoho stays live. Cost is the seat spend for the pilot period, nothing more</td>
+</tr>
+<tr>
+<td>A critical workflow cannot be represented</td>
+<td>Stop that List's migration, keep it in Zoho, raise the gap to Ricardo with the specific field or rule that failed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="15-the-pilot">15. The pilot</h2>
+<p>Thirty days, two cohorts, one written kill criterion. The point of a pilot is to be able to say no, and a pilot with no kill criterion is a purchase with extra steps.</p>
+<h3 id="151-the-cohorts">15.1 The cohorts</h3>
+<table>
+<thead>
+<tr>
+<th>Cohort</th>
+<th>Who</th>
+<th>Why them</th>
+<th>What proves success</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Proof</td>
+<td>Finance team, service desk</td>
+<td>Their work is daily, countable and currently painful</td>
+<td>The work moves, and the numbers are trustworthy</td>
+</tr>
+<tr>
+<td>Visibility</td>
+<td>Exco</td>
+<td>They need to see the goal dashboard in week one or the company loses interest</td>
+<td>Ricardo opens the OKR dashboard twice a week without being asked</td>
+</tr>
+<tr>
+<td>Deferred</td>
+<td>Marketing, Store Ops</td>
+<td>Valuable, but their peak workload would make a bad test</td>
+<td>Nothing; they join after the verdict</td>
+</tr>
+</tbody>
+</table>
+<h3 id="152-the-30-day-script">15.2 The 30-day script</h3>
+<table>
+<thead>
+<tr>
+<th>Week</th>
+<th>What is built and run</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Spaces 03 and 05 built from the pack; users invited; the five daily control tasks created by hand</td>
+<td>Users can log in and find their work unaided</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Control runs automated, tickets via Form, first SLAs running on internal requests</td>
+<td>Automated tasks appear without a human creating them</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Goals loaded for Finance and Technology, check-ins running, EXCO dashboard switched on</td>
+<td>Two check-in cycles completed without a reminder</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Migration of one live List from Zoho, end to end, by the runbook</td>
+<td>One List lives in ClickUp only, reconciled</td>
+</tr>
+</tbody>
+</table>
+<h3 id="153-the-measures">15.3 The measures</h3>
+<p>Five numbers, collected weekly, no sentiment.</p>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>How it is counted</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Work in the system</td>
+<td>Tasks created this week in the cohort's Spaces</td>
+<td>80% of the cohort's new work</td>
+</tr>
+<tr>
+<td>Work completed there</td>
+<td>Tasks closed, with evidence</td>
+<td>Growing week on week</td>
+</tr>
+<tr>
+<td>Duplicate systems</td>
+<td>Items in Zoho or on paper that also exist in ClickUp</td>
+<td>Falling to zero by day 30</td>
+</tr>
+<tr>
+<td>Decision traceability</td>
+<td>Chat decisions that reached a minute</td>
+<td>100%</td>
+</tr>
+<tr>
+<td>Trust in the number</td>
+<td>CFO's own words on the completeness figure</td>
+<td>"I would quote this"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="154-the-kill-criterion">15.4 The kill criterion</h3>
+<p><strong>If, on day 30, the proof cohort has not moved at least 80% of its new work into ClickUp and has not completed two full check-in cycles, the answer is no.</strong> Stop, keep Zoho and Cliq, and write down the reason. That verdict costs one month of seats. The alternative — carrying two systems for a year because nobody wanted to call it — costs the year.</p>
+<h2 id="16-documents-library">16. Documents library</h2>
+<p>Ricardo's eleventh requirement broke off mid-sentence ("documents that capture a…"), so this section specifies the seven documents the business demonstrably needs, each with its sections. If he meant something else, §23 carries the question.</p>
+<p>Every template is a ClickUp Doc template inside its home Space, and each one has an owner and a review cadence, because an unowned template rots.</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Sections</th>
+<th>Home</th>
+<th>Owner</th>
+<th>Review</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decision record</td>
+<td>Context, decision, alternatives rejected, consequences, owner, date</td>
+<td>01 Leadership / Decisions</td>
+<td>Bruce Wayne</td>
+<td>Never; immutable once decided</td>
+</tr>
+<tr>
+<td>Meeting minutes</td>
+<td>The seven sections in §9.4</td>
+<td>11 Meetings / team Folder</td>
+<td>Team lead</td>
+<td>Never; appended only</td>
+</tr>
+<tr>
+<td>SOP</td>
+<td>Purpose, trigger, steps, owner, tools, failure modes, change log</td>
+<td>Function Space / SOPs</td>
+<td>Function owner</td>
+<td>Every six months</td>
+</tr>
+<tr>
+<td>Client SLA report</td>
+<td>Period, commitments, delivered, breaches, cause, remedy, next period</td>
+<td>Client Folder / Reports</td>
+<td>Account owner</td>
+<td>Monthly</td>
+</tr>
+<tr>
+<td>Brand standard</td>
+<td>Voice, visual rules, do-nots, examples, asset links</td>
+<td>Brand Folder</td>
+<td>Marketing lead</td>
+<td>Quarterly</td>
+</tr>
+<tr>
+<td>Project brief</td>
+<td>Outcome, scope, exclusions, owner, dates, cost, acceptance</td>
+<td>Requesting Space / Briefs</td>
+<td>Requester</td>
+<td>At project close</td>
+</tr>
+<tr>
+<td>Onboarding pack</td>
+<td>Week one, access, tools, first tasks, who to ask</td>
+<td>04 People / Onboarding</td>
+<td>HR</td>
+<td>Every six months</td>
+</tr>
+</tbody>
+</table>
+<h3 id="161-the-one-rule-for-all-documents">16.1 The one rule for all documents</h3>
+<p>A document is a record or it is a draft. Records are appended, never rewritten — a minute edited three weeks later is not a minute. Drafts live in the Space; records live in the vault, filed by Beast, because the vault is where the company's memory is kept and ClickUp is where its work is done.</p>
+<h2 id="17-permissions-and-information-boundaries">17. Permissions and information boundaries</h2>
+<h3 id="171-who-can-do-what">17.1 Who can do what</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Spaces</th>
+<th>Can edit</th>
+<th>Can delete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Owner (Ricardo)</td>
+<td>All</td>
+<td>Everything</td>
+<td>Nothing — deletes are archived, not destroyed</td>
+</tr>
+<tr>
+<td>Space owner</td>
+<td>Their Space</td>
+<td>Structure, fields, automations</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Function lead</td>
+<td>Their Space</td>
+<td>Tasks, views, goals</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Member</td>
+<td>Assigned Spaces</td>
+<td>Their tasks and comments</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Guest</td>
+<td>One Folder</td>
+<td>Comment, attach</td>
+<td>Nothing</td>
+</tr>
+<tr>
+<td>Read-only</td>
+<td>Named Spaces</td>
+<td>Nothing</td>
+<td>Nothing</td>
+</tr>
+</tbody>
+</table>
+<h3 id="172-the-restricted-registers">17.2 The restricted registers</h3>
+<p>Four Lists are restricted beyond their Space, because a Space-level permission is not fine enough for them.</p>
+<table>
+<thead>
+<tr>
+<th>List</th>
+<th>Who</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>People Decisions</td>
+<td>Ricardo, CHO</td>
+<td>Appointments and exits are not team reading</td>
+</tr>
+<tr>
+<td>Payroll</td>
+<td>CFO, Ricardo</td>
+<td>Amounts are personal</td>
+</tr>
+<tr>
+<td>Disciplinary</td>
+<td>CHO, Ricardo</td>
+<td>Legal exposure</td>
+</tr>
+<tr>
+<td>Client Commercials</td>
+<td>Ricardo, CFO, delivery lead</td>
+<td>Terms belong to the people who agreed them</td>
+</tr>
+</tbody>
+</table>
+<h3 id="173-the-permission-check-before-any-guest">17.3 The permission check before any guest</h3>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Pass condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Folder-level sharing used</td>
+<td>Not Space-level, not List-level</td>
+</tr>
+<tr>
+<td>Sibling Folders verified invisible</td>
+<td>A test guest confirms</td>
+</tr>
+<tr>
+<td>Contract or confidentiality in place</td>
+<td>Signed before the invite</td>
+</tr>
+<tr>
+<td>Exit date recorded</td>
+<td>A task exists to remove the guest</td>
+</tr>
+</tbody>
+</table>
+<p>That last row exists because guests are forgotten. Every guest invitation creates a removal task with a date, and an unremoved guest is a breach waiting to happen.</p>
+<h2 id="18-the-commercial-model">18. The commercial model</h2>
+<h3 id="181-the-plan-ladder-as-it-stands-today">18.1 The plan ladder as it stands today</h3>
+<p>The ladder was read from ClickUp's own pricing comparison table on 2 November 2026, and it is not the ladder the previous editions assumed. There is <strong>no Business Plus any more</strong>, and there is no "Unlimited". The five plans are Free, Core, Business, Enterprise and Max.</p>
+<table>
+<thead>
+<tr>
+<th>Plan</th>
+<th>Price, per user per month, yearly</th>
+<th>The line that decides it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Free</td>
+<td>$0</td>
+<td>Goals and dashboards are trial only; 5 Spaces; 100 Folders per Space</td>
+</tr>
+<tr>
+<td>Core</td>
+<td>$9</td>
+<td>Goals included; dashboards still <strong>trial</strong> only; 3 Teams; 3 max Doc wikis</td>
+</tr>
+<tr>
+<td>Business</td>
+<td>$17</td>
+<td>Dashboards included; required and pinned custom fields; Private Docs and Whiteboards; 10 Teams; 10,000 automation actions</td>
+</tr>
+<tr>
+<td>Enterprise</td>
+<td>Quoted</td>
+<td>Share with Teams, Share Spaces with Teams, Audit Trails, SAML and Okta SSO, restrict guest invites, private Spaces by default</td>
+</tr>
+<tr>
+<td>Max</td>
+<td>$100</td>
+<td>Everything in Enterprise plus unlimited AI automations</td>
+</tr>
+</tbody>
+</table>
+<p><strong>This changes the recommendation's reasoning, not its direction.</strong> The previous edition said Goals and dashboards both start at Business. Goals actually start at Core. Dashboards — four of them, which Ricardo asked for by name — still start at Business. So Business remains the floor, but for one fewer reason than before, and the step above it is not a $12 upgrade. It is Enterprise, quoted, or Max at $100 a user.</p>
+<h3 id="182-what-business-actually-gives-and-where-it-stops">18.2 What Business actually gives, and where it stops</h3>
+<p>Every figure below is a row from the comparison table, not an inference.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Free</th>
+<th>Core</th>
+<th>Business</th>
+<th>Enterprise</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Spaces</td>
+<td>5</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Folders per Space</td>
+<td>100</td>
+<td>200</td>
+<td>400</td>
+<td>Unlimited</td>
+<td>Unlimited</td>
+</tr>
+<tr>
+<td>Lists per Space</td>
+<td>40</td>
+<td>200</td>
+<td>400</td>
+<td>1,500</td>
+<td>1,500</td>
+</tr>
+<tr>
+<td>Teams (user groups)</td>
+<td>2</td>
+<td>3</td>
+<td>10</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Share with Teams</td>
+<td>No</td>
+<td>No</td>
+<td><strong>No</strong></td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Share Spaces with Teams</td>
+<td>No</td>
+<td>No</td>
+<td><strong>No</strong></td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Goals</td>
+<td>Trial</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Goal Folders</td>
+<td>No</td>
+<td>No</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Dashboards</td>
+<td>Trial</td>
+<td><strong>Trial</strong></td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Required custom fields</td>
+<td>No</td>
+<td>No</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Pinned custom fields</td>
+<td>No</td>
+<td>No</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Private Docs</td>
+<td>No</td>
+<td>No</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Protect Docs</td>
+<td>No</td>
+<td>No</td>
+<td><strong>No</strong></td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Doc wikis</td>
+<td>1 max</td>
+<td>1 max</td>
+<td>1 max</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Table and Form exports</td>
+<td>No</td>
+<td>No</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Message history</td>
+<td>90 days</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Audit Trails</td>
+<td>No</td>
+<td>No</td>
+<td><strong>No</strong></td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Google SSO</td>
+<td>No</td>
+<td>No</td>
+<td>Included</td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>SAML, Okta, Microsoft SSO</td>
+<td>No</td>
+<td>No</td>
+<td><strong>No</strong></td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Restrict guest invites</td>
+<td>No</td>
+<td>No</td>
+<td><strong>No</strong></td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>New Spaces private by default</td>
+<td>No</td>
+<td>No</td>
+<td><strong>No</strong></td>
+<td>Included</td>
+<td>Included</td>
+</tr>
+<tr>
+<td>Automation actions</td>
+<td>100/month</td>
+<td>1,000/month</td>
+<td>10,000/month</td>
+<td>1M/month</td>
+<td>1M/month</td>
+</tr>
+</tbody>
+</table>
+<h3 id="183-the-four-gaps-on-business-and-what-each-one-costs-us">18.3 The four gaps on Business, and what each one costs us</h3>
+<p>These are not reasons to buy Enterprise. They are reasons to design around four things, and to put each one in a person's hands rather than a setting's.</p>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>What it means</th>
+<th>The manual control that replaces it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No Team-level sharing</td>
+<td>A List cannot be shared with a Team; it is shared with people or a Space</td>
+<td>Share at Space level, and accept that a List has a wider audience than its owners</td>
+</tr>
+<tr>
+<td>New Spaces are public by default</td>
+<td>A newly created Space is visible before its privacy is set</td>
+<td>Space creation is a Ricardo-only action, and privacy is set in the same minute as the name</td>
+</tr>
+<tr>
+<td>Guest invites cannot be restricted</td>
+<td>Any member can invite a guest</td>
+<td>A written rule plus the §17.3 checks; guests are reviewed monthly because the tool will not do it</td>
+</tr>
+<tr>
+<td>No audit trail</td>
+<td>You cannot prove who changed what</td>
+<td>The Decision Register and the pack version log serve as the audit trail for structure; task comments serve for work</td>
+</tr>
+</tbody>
+</table>
+<h3 id="184-cost-at-forty-people">18.4 Cost at forty people</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Seats</th>
+<th>Yearly</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core only, 40 seats</td>
+<td>40</td>
+<td>$4,320 — but no dashboards, so it does not meet the brief</td>
+</tr>
+<tr>
+<td><strong>Business, 40 seats</strong></td>
+<td>40</td>
+<td><strong>$8,160</strong></td>
+</tr>
+<tr>
+<td>Business, 30 seats plus guests</td>
+<td>30</td>
+<td>$6,120 plus guest seats, which are free on view and comment</td>
+</tr>
+<tr>
+<td>Enterprise</td>
+<td>Quoted</td>
+<td>Unknown; the four features that would drive it are listed in §18.5</td>
+</tr>
+<tr>
+<td>Max, 40 seats</td>
+<td>40</td>
+<td>$48,000 — not a candidate at this size</td>
+</tr>
+</tbody>
+</table>
+<p>Five separate Workspaces would multiply the seat count by the number of brands a person needs, which is why §3.2 rejects them. On the current ladder the difference between 40 business seats and 200 is the difference between $8,160 and $40,800 for the same people.</p>
+<h3 id="185-the-conditions-that-would-force-enterprise">18.5 The conditions that would force Enterprise</h3>
+<p>Enterprise is not a bigger version of the same thing; it is bought for control features. It becomes the answer only if one of these is true, and each one is observable.</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>How you would know</th>
+<th>What to try first</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Team-level sharing becomes necessary</td>
+<td>People cannot share a List with a group and start sharing task by task</td>
+<td>Share the Space instead; it costs a wider audience, not a contract</td>
+</tr>
+<tr>
+<td>An audit trail becomes a requirement</td>
+<td>A client, an auditor or a funder asks who changed a record</td>
+<td>Export and version the pack; the register is the record</td>
+</tr>
+<tr>
+<td>SSO is mandated</td>
+<td>Security policy requires SAML or Okta</td>
+<td>Google SSO is on Business and may satisfy the policy</td>
+</tr>
+<tr>
+<td>Guest control becomes a real exposure</td>
+<td>A guest was invited by someone who should not have had the right</td>
+<td>Written rule, monthly review, and one owner for guest access</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommendation: Business, and stay there until one of those four fires.</strong> At this company size the manual controls above cost a few hours a month; Enterprise costs a negotiation and a contract.</p>
+<h2 id="19-test-plan">19. Test plan</h2>
+<p>Fifty-one tests in eleven families. Each one has a pass condition that a person can check without judgement, because "looks right" is not a test.</p>
+<h3 id="191-build-t01t06">19.1 Build (T01–T06)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T01</td>
+<td>Eleven Spaces exist, numbered, in sidebar order</td>
+<td>Order matches §4</td>
+</tr>
+<tr>
+<td>T02</td>
+<td>Folders and Lists match the pack row for row</td>
+<td>Zero differences</td>
+</tr>
+<tr>
+<td>T03</td>
+<td>Sixteen custom fields exist with the stated types</td>
+<td>All sixteen present</td>
+</tr>
+<tr>
+<td>T04</td>
+<td>Status sets per Space match §6.2</td>
+<td>No extra statuses</td>
+</tr>
+<tr>
+<td>T05</td>
+<td>Views per Space: five standard plus the Space's own</td>
+<td>Present and named as specified</td>
+</tr>
+<tr>
+<td>T06</td>
+<td>Nobody can create a List outside the pack</td>
+<td>Verified by attempting it</td>
+</tr>
+</tbody>
+</table>
+<h3 id="192-permissions-t07t12">19.2 Permissions (T07–T12)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T07</td>
+<td>A member of Finance cannot open 04 People</td>
+<td>Denied</td>
+</tr>
+<tr>
+<td>T08</td>
+<td>A guest sees only their engagement Folder</td>
+<td>Denied on siblings</td>
+</tr>
+<tr>
+<td>T09</td>
+<td>A test guest cannot see Client Commercials</td>
+<td>Denied</td>
+</tr>
+<tr>
+<td>T10</td>
+<td>Restricted Lists are invisible to their Space's members</td>
+<td>Denied</td>
+</tr>
+<tr>
+<td>T11</td>
+<td>Nobody but Ricardo and CHO can open People Decisions</td>
+<td>Denied</td>
+</tr>
+<tr>
+<td>T12</td>
+<td>Every guest has a removal task with a date</td>
+<td>Counts match</td>
+</tr>
+</tbody>
+</table>
+<h3 id="193-finance-control-t13t18">19.3 Finance control (T13–T18)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T13</td>
+<td>Daily control tasks appear for every active store without human action</td>
+<td>All stores, on the day</td>
+</tr>
+<tr>
+<td>T14</td>
+<td>An exception left open past due escalates</td>
+<td>CFO notified</td>
+</tr>
+<tr>
+<td>T15</td>
+<td>Completeness figure matches the source data for three sampled stores</td>
+<td>Exact match</td>
+</tr>
+<tr>
+<td>T16</td>
+<td>Close checklist blocks completion until every item is Done</td>
+<td>Cannot close early</td>
+</tr>
+<tr>
+<td>T17</td>
+<td>Payment run cannot be marked Done without an amount and a reference</td>
+<td>Field enforced</td>
+</tr>
+<tr>
+<td>T18</td>
+<td>Thirty consecutive trading days recorded</td>
+<td>Present in the Space</td>
+</tr>
+</tbody>
+</table>
+<h3 id="194-service-desk-t19t24">19.4 Service desk (T19–T24)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T19</td>
+<td>A Form submission creates a ticket in Triage</td>
+<td>Created, notifier sent</td>
+</tr>
+<tr>
+<td>T20</td>
+<td>Untouched ticket escalates at four business hours</td>
+<td>Escalated</td>
+</tr>
+<tr>
+<td>T21</td>
+<td>Ticket age column is accurate to the hour</td>
+<td>Within one hour</td>
+</tr>
+<tr>
+<td>T22</td>
+<td>A change cannot be Applied without an approved Change Log entry</td>
+<td>Blocked</td>
+</tr>
+<tr>
+<td>T23</td>
+<td>Resolved requires the requester's confirmation</td>
+<td>Enforced</td>
+</tr>
+<tr>
+<td>T24</td>
+<td>Renewals calendar shows every licence with a date</td>
+<td>Counts match register</td>
+</tr>
+</tbody>
+</table>
+<h3 id="195-goals-t25t30">19.5 Goals (T25–T30)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T25</td>
+<td>Four levels exist and each lower goal names its parent</td>
+<td>No orphan goals</td>
+</tr>
+<tr>
+<td>T26</td>
+<td>Weekly check-in tasks appear for every goal owner</td>
+<td>All owners</td>
+</tr>
+<tr>
+<td>T27</td>
+<td>A goal with no check-in for fourteen days flips to At Risk</td>
+<td>Flipped</td>
+</tr>
+<tr>
+<td>T28</td>
+<td>Quarterly rollover archives the closed quarter and opens the next</td>
+<td>Both done</td>
+</tr>
+<tr>
+<td>T29</td>
+<td>No person has more than three personal goals</td>
+<td>Count verified</td>
+</tr>
+<tr>
+<td>T30</td>
+<td>Every goal has one accountable name, not a team</td>
+<td>Zero team-assigned goals</td>
+</tr>
+</tbody>
+</table>
+<h3 id="196-dashboards-t31t36">19.6 Dashboards (T31–T36)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T31</td>
+<td>Four dashboards exist, each shared with the right audience</td>
+<td>Audience verified by login</td>
+</tr>
+<tr>
+<td>T32</td>
+<td>Every card's number reconciles with its source List for one day</td>
+<td>Exact match</td>
+</tr>
+<tr>
+<td>T33</td>
+<td>The OKR dashboard opens in under five seconds</td>
+<td>Timed</td>
+</tr>
+<tr>
+<td>T34</td>
+<td>A brand filter on a card changes the numbers</td>
+<td>Changes correctly</td>
+</tr>
+<tr>
+<td>T35</td>
+<td>Scheduled reports: two configured, not forty</td>
+<td>Count is two</td>
+</tr>
+<tr>
+<td>T36</td>
+<td>A team dashboard shows the viewer's own work by default</td>
+<td>Correct</td>
+</tr>
+</tbody>
+</table>
+<h3 id="197-chat-t37t41">19.7 Chat (T37–T41)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T37</td>
+<td>Nine channels exist with the stated membership</td>
+<td>Membership verified</td>
+</tr>
+<tr>
+<td>T38</td>
+<td>A client guest in <code>#client-&lt;code&gt;</code> cannot see other channels</td>
+<td>Denied</td>
+</tr>
+<tr>
+<td>T39</td>
+<td>Sixty per cent of cohort messages land in ClickUp by day 21</td>
+<td>Measured</td>
+</tr>
+<tr>
+<td>T40</td>
+<td>Zero decisions found in chat that never reached a minute</td>
+<td>Measured</td>
+</tr>
+<tr>
+<td>T41</td>
+<td>The client asks for something in-channel without an email</td>
+<td>Observed once</td>
+</tr>
+</tbody>
+</table>
+<h3 id="198-client-sla-t42t45">19.8 Client SLA (T42–T45)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T42</td>
+<td>Response Due is written on creation from the tier</td>
+<td>Correct for all four tiers</td>
+</tr>
+<tr>
+<td>T43</td>
+<td>Clock does not run outside 08:00–17:00 or at weekends</td>
+<td>Verified across a weekend</td>
+</tr>
+<tr>
+<td>T44</td>
+<td>Breach sets automatically and clears only with a comment</td>
+<td>Both enforced</td>
+</tr>
+<tr>
+<td>T45</td>
+<td>An SLA report is produced from ClickUp, with no spreadsheet</td>
+<td>One client, one month</td>
+</tr>
+</tbody>
+</table>
+<h3 id="199-migration-t46t48">19.9 Migration (T46–T48)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T46</td>
+<td>One List imported with row counts reconciled</td>
+<td>Exact</td>
+</tr>
+<tr>
+<td>T47</td>
+<td>Ten sampled tasks have correct fields and statuses</td>
+<td>Ten of ten</td>
+</tr>
+<tr>
+<td>T48</td>
+<td>Recurrences recreated and counted against Zoho's</td>
+<td>No obligations lost</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1910-documents-t49t50">19.10 Documents (T49–T50)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T49</td>
+<td>Seven templates exist in their home Spaces</td>
+<td>All seven</td>
+</tr>
+<tr>
+<td>T50</td>
+<td>A minute created from the template has all seven sections</td>
+<td>Present</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1911-governance-t51">19.11 Governance (T51)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T51</td>
+<td>A change to the pack is logged and approved by Ricardo</td>
+<td>One entry present</td>
+</tr>
+</tbody>
+</table>
+<h2 id="20-risks-and-assumptions">20. Risks and assumptions</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>The build drifts from the pack, so the Space and the document disagree</td>
+<td>Medium</td>
+<td>High</td>
+<td>The pack is the source; T02 is run before go-live</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>Finance's daily control does not reach a number the CFO trusts</td>
+<td>Medium</td>
+<td>High</td>
+<td>It is the pilot's whole purpose; if it fails, stop</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>Chat is abandoned and Cliq lingers</td>
+<td>High</td>
+<td>Medium</td>
+<td>The 21-day pilot with an explicit failure path (§11.3)</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>Coda rollups cannot be replaced and the Coda subscription survives</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Per-rollup decisions (§13.4), signed before the build</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>Guest invitations leak visibility between clients</td>
+<td>Low</td>
+<td>High</td>
+<td>Folder-level sharing and the §17.3 checks</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Scheduled reports are exhausted early</td>
+<td>Medium</td>
+<td>Low</td>
+<td>Two configured sends, everything else opens the dashboard</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>People keep working in Zoho out of habit</td>
+<td>High</td>
+<td>High</td>
+<td>Zoho set read-only at step 9 of the runbook</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>The ten-Team limit is hit as the company adds functions</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>The four Enterprise conditions (§18.5); merge two Teams before buying a tier</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>Goals become posters nobody updates</td>
+<td>High</td>
+<td>Medium</td>
+<td>Check-in tasks with a required value field</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>Minutes are edited after the fact</td>
+<td>Low</td>
+<td>High</td>
+<td>Records are appended; originals go to the vault</td>
+</tr>
+<tr>
+<td>R11</td>
+<td>A key person leaves and the structure is unmaintained</td>
+<td>Medium</td>
+<td>High</td>
+<td>Named owners per Space in the pack, and a custodian per register</td>
+</tr>
+<tr>
+<td>R12</td>
+<td>Cost is approved on the pilot, not on year two</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>The three-year cost is in §18.3, decided with the tier</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Assumption</th>
+<th>If it is wrong</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>Roughly forty people need seats</td>
+<td>Re-run §18.3; nothing structural changes</td>
+</tr>
+<tr>
+<td>A2</td>
+<td>Five brands share one holding entity</td>
+<td>Per-entity Workspaces return as a question; the cost answer changes</td>
+</tr>
+<tr>
+<td>A3</td>
+<td>Zoho Projects exports to Excel cleanly</td>
+<td>Migration slows; the pilot's week 4 slips a week</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>Coda's rollups are a small number of documents</td>
+<td>The Coda decision grows from a sheet into a project</td>
+</tr>
+<tr>
+<td>A5</td>
+<td>Cliq's history can be kept read-only for a year</td>
+<td>The archive question becomes a legal question, not a technical one</td>
+</tr>
+</tbody>
+</table>
+<h2 id="21-governance">21. Governance</h2>
+<h3 id="211-who-decides-what">21.1 Who decides what</h3>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Who</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Buy, tier, seats, migration scope</td>
+<td>Ricardo</td>
+<td>Written, recorded in the Decision Register</td>
+</tr>
+<tr>
+<td>Space structure, fields, statuses</td>
+<td>Ricardo, on Bruce Wayne's recommendation</td>
+<td>Pack version bump</td>
+</tr>
+<tr>
+<td>Day-to-day changes to a List or a view</td>
+<td>Space owner</td>
+<td>No approval needed</td>
+</tr>
+<tr>
+<td>Adding a Space</td>
+<td>Ricardo</td>
+<td>Because eleven became eleven for a reason</td>
+</tr>
+<tr>
+<td>Adding a custom field</td>
+<td>Ricardo</td>
+<td>Fields are cheap to add and expensive to remove</td>
+</tr>
+<tr>
+<td>Guest invitations</td>
+<td>Ricardo or the delivery lead</td>
+<td>With the §17.3 checks</td>
+</tr>
+</tbody>
+</table>
+<h3 id="212-change-control">21.2 Change control</h3>
+<p>The pack is versioned. <code>v4.0</code> is what gets built. Any change after build start is a new pack version, with a one-line reason, and Ricardo approves it. A change made in ClickUp but not in the pack is drift, and drift is what R1 is about.</p>
+<h3 id="213-review-cadence">21.3 Review cadence</h3>
+<table>
+<thead>
+<tr>
+<th>When</th>
+<th>What</th>
+<th>Who</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fortnightly during build</td>
+<td>Build against the pack, tests T01–T12</td>
+<td>Builder and Bruce Wayne</td>
+</tr>
+<tr>
+<td>Weekly during the pilot</td>
+<td>The five measures in §15.3</td>
+<td>Bruce Wayne, reported to Ricardo</td>
+</tr>
+<tr>
+<td>Monthly after go-live</td>
+<td>Structure health: unused Lists, empty fields, dead Teams</td>
+<td>Bruce Wayne</td>
+</tr>
+<tr>
+<td>Quarterly</td>
+<td>Field and status hygiene, goal cascade, tier check</td>
+<td>Ricardo and function leads</td>
+</tr>
+<tr>
+<td>Annually</td>
+<td>Whether the tool still fits the company</td>
+<td>Ricardo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="214-what-gets-reported-and-to-whom">21.4 What gets reported, and to whom</h3>
+<p>One page, monthly, to Ricardo: the five pilot measures during the pilot, then the EXCO dashboard numbers after. The same page carries a single line on pack drift — "none" is the expected answer and the interesting one.</p>
+<h3 id="215-definition-of-done">21.5 Definition of done</h3>
+<p>The build is done when all of these are true, not when the Spaces exist.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>T01 to T12 pass</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Every Space has a named owner who has logged in and moved a task</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Every custom field in §5 exists with its owner named</td>
+</tr>
+<tr>
+<td>4</td>
+<td>The four dashboards open, with one card reconciled by hand</td>
+</tr>
+<tr>
+<td>5</td>
+<td>One minute exists, created from the template, with actions as tasks</td>
+</tr>
+<tr>
+<td>6</td>
+<td>One client engagement runs through the SLA clocks, breaching nothing</td>
+</tr>
+<tr>
+<td>7</td>
+<td>The pack in Appendix C matches the built Workspace, row for row</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Ricardo has signed the tier decision and the Coda rollup sheet</td>
+</tr>
+</tbody>
+</table>
+<h2 id="22-decision-register">22. Decision register</h2>
+<p>Every decision in this document, in one table, so nothing lives only in prose.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decision</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D01</td>
+<td>One Workspace; brand as field and Folder</td>
+<td>Ricardo</td>
+<td>Recommended</td>
+</tr>
+<tr>
+<td>D02</td>
+<td>Eleven Spaces with named owners</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D03</td>
+<td>Business plan, $17 yearly</td>
+<td>Ricardo</td>
+<td><strong>Open</strong></td>
+</tr>
+<tr>
+<td>D04</td>
+<td>Business, with Enterprise only on one of four conditions</td>
+<td>Ricardo</td>
+<td><strong>Open</strong></td>
+</tr>
+<tr>
+<td>D05</td>
+<td>Meetings in their own private Space</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D06</td>
+<td>Work type as field plus views, never a Folder</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D07</td>
+<td>Each Coda rollup gets a verdict from §13.4</td>
+<td>Ricardo</td>
+<td><strong>Open</strong></td>
+</tr>
+<tr>
+<td>D08</td>
+<td>Chat with a 21-day behaviour pilot and a failure path</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D09</td>
+<td>Three SLA tiers plus internal store requests</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D10</td>
+<td>Pilot = Finance and service desk, 30 days, kill criterion</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D11</td>
+<td>Coexistence with Zoho for one cycle, never a cutover</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D12</td>
+<td>Four-level goal cascade, weekly check-ins</td>
+<td>Ricardo</td>
+<td>Proposed</td>
+</tr>
+<tr>
+<td>D13</td>
+<td>Fifteen Spaces rejected; eleven is the ceiling for a 40-person company</td>
+<td>Bruce Wayne</td>
+<td>Settled</td>
+</tr>
+<tr>
+<td>D14</td>
+<td>Custom fields capped at sixteen until a field is retired</td>
+<td>Bruce Wayne</td>
+<td>Settled</td>
+</tr>
+<tr>
+<td>D15</td>
+<td>Records are appended, never rewritten</td>
+<td>Bruce Wayne</td>
+<td>Settled</td>
+</tr>
+</tbody>
+</table>
+<h2 id="23-open-items">23. Open items</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Why it is open</th>
+<th>Who answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>Which plan, and how many seats in year one</td>
+<td>Money</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>The Coda rollup verdicts, document by document</td>
+<td>Data</td>
+<td>Ricardo, with Bruce Wayne producing the inventory</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>The eleventh requirement, which broke off at "documents that capture a"</td>
+<td>It was truncated; nothing was invented to fill it</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>Whether Cliq is retired at all, or kept for conversation</td>
+<td>Depends on the chat pilot</td>
+<td>Ricardo, after day 21</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>The specific numbers behind each company goal</td>
+<td>Targets are Ricardo's to set</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>SLA tiers agreed with each client</td>
+<td>Commercial</td>
+<td>Ricardo and the delivery lead</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>Which live Lists migrate in the pilot</td>
+<td>Scope</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td>Whether AI Notetaker is switched on for meetings</td>
+<td>Cost and consent</td>
+<td>Ricardo</td>
+</tr>
+</tbody>
+</table>
+<p>Three housekeeping items from earlier editions remain untouched and remain Ricardo's call: the duplicate v2.0 in the vault's Archived folder, the v1.0 of 29 October still marked active, and the archived v3.0 that this edition supersedes.</p>
+<h2 id="appendix-a--glossary">Appendix A — Glossary</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Space</td>
+<td>The top-level container; one per function in this design</td>
+</tr>
+<tr>
+<td>Folder</td>
+<td>A grouping inside a Space; one per sub-team or per client</td>
+</tr>
+<tr>
+<td>List</td>
+<td>Where tasks live; a task has exactly one home List</td>
+</tr>
+<tr>
+<td>Team</td>
+<td>A ClickUp user group, used for assignment and mentions. Capped at ten on Business</td>
+</tr>
+<tr>
+<td>Guest</td>
+<td>A non-member with access to one shared Folder, not a paid seat</td>
+</tr>
+<tr>
+<td>Goal</td>
+<td>A ClickUp object with a target and a progress source, at Core and above</td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td>A page of cards reading from Lists and Goals; Business and above</td>
+</tr>
+<tr>
+<td>Card</td>
+<td>One widget on a dashboard</td>
+</tr>
+<tr>
+<td>View</td>
+<td>A rendering of a List: board, table, calendar, list</td>
+</tr>
+<tr>
+<td>Work type</td>
+<td>A field value: Recurring, Once Off, Requested, Project, Meeting Action</td>
+</tr>
+<tr>
+<td>Pack</td>
+<td>The CSV registers in Appendix C that define the build</td>
+</tr>
+<tr>
+<td>Custodian</td>
+<td>The person who maintains a register, as distinct from the person accountable for it</td>
+</tr>
+</tbody>
+</table>
+<h2 id="appendix-b--the-build-order">Appendix B — The build order</h2>
+<p>The order matters more than the speed. Each step depends on the one above it, and skipping forward produces an import that fails on an unknown status.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Step</th>
+<th>Why it cannot move</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Buy the plan, invite the users</td>
+<td>Nothing imports without users to assign</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Create the sixteen custom fields</td>
+<td>Fields must exist before Lists inherit them</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Create the status sets per Space</td>
+<td>An import fails on an unknown status</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Create the eleven Spaces, set privacy immediately</td>
+<td>Privacy is not defaulted on Business</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Create Folders and Lists from the pack</td>
+<td>Row for row, no improvisation</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Apply the five standard views plus each Space's own</td>
+<td>Views are how the work is seen</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Build the automations from the pack</td>
+<td>After Lists exist, because they point at Lists</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Load the goals and the four dashboards</td>
+<td>Goals need Lists and owners</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Run tests T01 to T12</td>
+<td>Before a single person is asked to use it</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Start the pilot</td>
+<td>Only after the tests pass</td>
+</tr>
+</tbody>
+</table>
+<h2 id="appendix-c--the-configuration-pack">Appendix C — The configuration pack</h2>
+<p>Thirteen registers, all in <code>AI-Drive/Agent-Output/batman/clickup-prd-v4-0/config/</code>. The pack is the build; this document is the argument for it.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Rows</th>
+<th>Columns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>automations.csv</code></td>
+<td>12</td>
+<td>rule_id, trigger, condition, action, why</td>
+</tr>
+<tr>
+<td><code>chat_channels.csv</code></td>
+<td>9</td>
+<td>channel, replaces, members, purpose, guests</td>
+</tr>
+<tr>
+<td><code>dashboards.csv</code></td>
+<td>21</td>
+<td>dashboard, audience, card, source, definition, cadence</td>
+</tr>
+<tr>
+<td><code>documents.csv</code></td>
+<td>7</td>
+<td>template, sections, home, owner, review</td>
+</tr>
+<tr>
+<td><code>fields.csv</code></td>
+<td>16</td>
+<td>field_id, name, type, values, where, required</td>
+</tr>
+<tr>
+<td><code>goals.csv</code></td>
+<td>6</td>
+<td>period, level, goal, target_type, owner, check_in</td>
+</tr>
+<tr>
+<td><code>migration.csv</code></td>
+<td>6</td>
+<td>source, object, destination, route, owner, verification</td>
+</tr>
+<tr>
+<td><code>raci.csv</code></td>
+<td>11</td>
+<td>space, accountable, responsible, consulted, informed, review_cadence</td>
+</tr>
+<tr>
+<td><code>sla.csv</code></td>
+<td>4</td>
+<td>tier, first_response_hours, resolution_hours, escalation_1, escalation_2, review</td>
+</tr>
+<tr>
+<td><code>spaces.csv</code></td>
+<td>11</td>
+<td>space_id, name, prefix, owner, accountable, privacy, folders_lists, audience</td>
+</tr>
+<tr>
+<td><code>statuses.csv</code></td>
+<td>26</td>
+<td>space, status, group, meaning, moves_it</td>
+</tr>
+<tr>
+<td><code>tests.csv</code></td>
+<td>51</td>
+<td>id, family, test, pass_condition</td>
+</tr>
+<tr>
+<td><code>views.csv</code></td>
+<td>5</td>
+<td>view_name, type, filter, group_by, sort, purpose</td>
+</tr>
+</tbody>
+</table>
+<p>Total: 13 files, 185 rows. Every row is a thing to create, a rule to build, a test to run, or a decision already taken.</p>
+<p>Where the document and the pack disagree, the pack wins, because the pack is what gets imported. A change to either is a version bump, approved by Ricardo.</p>
+<h2 id="evidence">Evidence</h2>
+<p>Appendix D. Every platform fact in this document was read on 2 November 2026 — pricing and limits from the comparison table on ClickUp's pricing page, feature behaviour from ClickUp's help centre.</p>
+<p>Every platform fact in this document was read on 2 November 2026. Pricing and limits come from the comparison table on ClickUp's pricing page; feature behaviour comes from ClickUp's help centre.</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>What it supports</th>
+<th>Read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://clickup.com/pricing">ClickUp pricing and plan comparison</a></td>
+<td>The five plans, every limit row quoted in §18.2, prices per user</td>
+<td>2 Nov 2026</td>
+</tr>
+<tr>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6309466958103-Intro-to-Spaces">Intro to Spaces</a></td>
+<td>Space structure and privacy behaviour referenced in §3</td>
+<td>2 Nov 2026</td>
+</tr>
+<tr>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6326036524823-Use-Teams-in-your-organization">Use Teams in your organization</a></td>
+<td>Teams as assignable groups, Teams Hub, sharing behaviour in §18.2</td>
+<td>2 Nov 2026</td>
+</tr>
+<tr>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6325733579671-Create-a-Goal">Create a Goal</a></td>
+<td>Goal targets and progress measurement in §8</td>
+<td>2 Nov 2026</td>
+</tr>
+<tr>
+<td><a href="https://help.clickup.com/hc/en-us/articles/21257864098071-Dashboards-feature-availability-and-limits">Dashboards feature availability and limits</a></td>
+<td>Dashboard availability by plan and the scheduled-report allowance in §10.5</td>
+<td>2 Nov 2026</td>
+</tr>
+<tr>
+<td><a href="https://help.clickup.com/hc/en-us/articles/31261465371159-Schedule-Dashboard-Reports">Schedule Dashboard Reports</a></td>
+<td>How scheduled reports behave, and why the design opens the dashboard instead</td>
+<td>2 Nov 2026</td>
+</tr>
+<tr>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6310834724247-Use-the-Spreadsheets-Importer">Use the Spreadsheets Importer</a></td>
+<td>Import into existing Lists, field mapping, the error report in §14</td>
+<td>2 Nov 2026</td>
+</tr>
+<tr>
+<td><a href="https://clickup.com/import">ClickUp import</a></td>
+<td>The import entry point and the list of supported sources</td>
+<td>2 Nov 2026</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What is not sourced here.</strong> Zoho Projects' export behaviour is described from the system's own interface, not from a public document; it is an assumption in §20 (A3) and it is tested first in the pilot's week four. Every SLA number in §12.3 is a proposal, not a published commitment, and every goal target is Ricardo's to set.</p>
+<h2 id="related">Related</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="2026-11-02-infinity-brands-clickup-requirements-prd-v3-0.md">ClickUp requirements PRD v3.0</a></td>
+<td>Ricardo's eleven requirements traced, with five v2.0 assumptions overturned</td>
+</tr>
+<tr>
+<td><a href="2026-11-02-infinity-brands-clickup-prd-v3-1-build-edition.md">ClickUp PRD v3.1, the build edition</a></td>
+<td>The compressed decision memo this edition expands</td>
+</tr>
+<tr>
+<td><code>2026-11-01-infinity-brands-clickup-implementation-prd-v2-0-deep-build.md</code></td>
+<td>The deep build: ten depth packs, 112 tests, thirty decisions</td>
+</tr>
+<tr>
+<td><code>config/</code> beside this document</td>
+<td>The thirteen CSV registers that are the actual build</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>End of the operating specification. The build starts when Ricardo signs D03, and not before.</em></p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
