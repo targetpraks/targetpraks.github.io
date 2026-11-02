@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite + Ecosystem Adoption</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #0b0c10; color: #c5c6c7; line-height: 1.6; }
+  .wrap { max-width: 860px; margin: 40px auto; padding: 0 20px; }
+  header { border-bottom: 1px solid #1f2833; padding-bottom: 16px; margin-bottom: 24px; }
+  h1 { font-size: 23px; margin: 0 0 6px; color: #66fcf1; }
+  .kicker { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #45a29e; margin-bottom: 8px; }
+  .meta { font-size: 13px; color: #889; margin: 0; }
+  .meta a { color: #66fcf1; text-decoration: none; }
+  h2 { font-size: 17px; color: #66fcf1; margin: 28px 0 10px; border-bottom: 1px solid #1f2833; padding-bottom: 5px; }
+  h3 { font-size: 14.5px; color: #c5c6c7; margin: 18px 0 6px; }
+  p { margin: 0 0 12px; color: #c5c6c7; }
+  ul { margin: 6px 0 14px; padding-left: 20px; color: #c5c6c7; }
+  li { margin-bottom: 7px; }
+  b { color: #66fcf1; }
+  .card { background: #11161e; border: 1px solid #1f2833; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+  .card.highlight { border-color: #1f6b4a; background: #0a1c14; }
+  .card.warn { border-color: #6b4a00; background: #1c140a; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #66fcf1; border: 1px solid #1f2833; border-radius: 4px; padding: 1px 7px; margin-right: 6px; margin-bottom: 6px; }
+  .tag.adopt { color: #4ade80; border-color: #15803d; }
+  .tag.eval { color: #fbbf24; border-color: #b45309; }
+  .tag.reject { color: #f87171; border-color: #7f1d1d; }
+  .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; background: #0f141a; padding: 2px 6px; border-radius: 4px; color: #ff7b72; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 20px; font-size: 13px; }
+  th { text-align: left; color: #9fd; padding: 8px 10px; border-bottom: 1px solid #1f2833; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+  td { padding: 9px 10px; border-bottom: 1px solid #161c24; vertical-align: top; }
+  tr:hover { background: #141b24; }
+  .stars { font-weight: 700; color: #f1c40f; }
+  .foot { font-size: 12px; color: #667; margin-top: 36px; border-top: 1px solid #1f2833; padding-top: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<p class="kicker">Adrianna A · Product Requirement Document · App Plan · v2 (supersedes v1)</p>
+<h1>PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite + Ecosystem Adoption</h1>
+<p class="meta">Targets: Web profile (<span class="code">dsh web</span>) <b>and</b> official DSH Desktop app · Base integration: Hermes memory + Beast / OpenKnowledge vault (AI-Space) · Model path: local Ollama gateway :11434/v1 · Staged by Adrianna A, reviewed and manually installed by Ricardo.</p>
+</header>
+
+<div class="card highlight">
+<p><b>Executive summary.</b> Two deliberate workstreams, one plan. <b>(A) Build</b> a custom suite — <span class="code">dsh-maio-nexus</span> — that gives DSH shared memory with Hermes and read-only recall over the Maio Hub vault. <b>(B) Adopt</b> a curated, verified subset of the community plugin ecosystem alongside it — each with an explicit adopt / evaluate / reject decision, a security review gate, and a manual install step owned by Ricardo. The two workstreams share one staging area, one security policy, and one install gate.</p>
+<p><b>What changed in v2:</b> v1 covered only the custom suite. This version adds the full ecosystem adoption matrix (all ten re-verified plugins from the top-10 study), the plugin governance policy, and a unified phased delivery plan.</p>
+</div>
+
+<h2>1. Vision &amp; Problem</h2>
+<p><b>Problem.</b> DeepSeek Harness sessions are isolated from the rest of Ricardo's Mac stack. A DSH session cannot see Hermes memory (user preferences, standing rules, cross-session facts), cannot query the Obsidian vault (<span class="code">Maio Hub</span>) for PRDs, research or guidelines, and has no curated, risk-assessed path to the community plugin ecosystem — the <span class="code">dsh-plugin</span> topic alone carries 25,115 tagged repos, many of them tag-squatters.</p>
+<p><b>Solution.</b> <span class="code">dsh-maio-nexus</span> registers Cordis plugin handlers that inject Hermes memory into DSH session context and expose a read-only <span class="code">vault_recall</span> tool over AI-Space via Beast/OK. In parallel, the adoption workstream gives each community plugin an explicit decision and a reviewable install path — no blind installs, no third-party code run by me.</p>
+
+<h2>2. Workstream A — Custom suite <span class="code">dsh-maio-nexus</span></h2>
+<table>
+<thead><tr><th>Module</th><th>Component ID</th><th>Function</th><th>Integration point</th></tr></thead>
+<tbody>
+<tr><td><b>Memory Sync Bridge</b></td><td><span class="code">nexus-memory-bridge</span></td><td>Reads Hermes memory stores and injects relevant facts/preferences into DSH session context. Never writes Hermes config.</td><td><span class="code">~/.hermes/</span> memory files (read-only)</td></tr>
+<tr><td><b>Vault Recall Engine</b></td><td><span class="code">nexus-vault-recall</span></td><td>Registers a <span class="code">vault_recall</span> tool doing FTS5 + semantic search over <span class="code">AI-Space/</span> markdown, read-only, via Beast/OpenKnowledge.</td><td>OK MCP <span class="code">:64200/mcp</span> · <span class="code">/Users/Shared/Maio-Hub/</span></td></tr>
+<tr><td><b>Dual Runtime Manifest</b></td><td><span class="code">dsh.bundle</span> + <span class="code">cordis.patch.yml</span></td><td>One bundle that installs cleanly into the Web profile and the official DSH Desktop app.</td><td>DSH plugin lifecycle / settings UI</td></tr>
+<tr><td><b>Nightly Index</b></td><td><span class="code">nexus-index-cron</span></td><td>Courage cron job reindexes vault + memory caches nightly; no UI interruption.</td><td>Courage scheduled jobs</td></tr>
+</tbody>
+</table>
+<p><b>Acceptance criteria.</b> F1: DSH sessions recall Ricardo's standing rules without prompting. F2: <span class="code">vault_recall</span> returns exact vault snippets, vault files unchanged (hash check). F3: one bundle installs on both targets without root or core breakage. F4: nightly reindex completes silently and idempotently. Fail-closed: if OK or memory stores are unreachable, DSH proceeds with standard context and logs a warning — no fatal errors.</p>
+
+<h2>3. Workstream B — Ecosystem adoption matrix</h2>
+<p>All ten re-verified plugins from the top-10 study, each with a decision. <b>Adopt</b> = stage, review, install after Ricardo's sign-off. <b>Evaluate</b> = read-only study first (manifest, permissions, network calls), install only if it earns its place. <b>Reject</b> = do not install.</p>
+<table>
+<thead><tr><th style="width:22%">Plugin</th><th style="width:8%">Stars</th><th style="width:9%">License</th><th style="width:9%">Decision</th><th>Rationale</th></tr></thead>
+<tbody>
+<tr><td><b>MemTensor/MemOS</b></td><td class="stars">12.2k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate</span></td><td>Strongest ecosystem fit: official Hermes Agent local memory plugin (100% local, FTS5 + vector, dedup, tiered skill evolution). Could complement the nexus memory bridge — study overlap first, adopt only if it adds retrieval quality we don't already have.</td></tr>
+<tr><td><b>yjh051108/dsh-routing-suite</b></td><td class="stars">7.0k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Measured, task-aware reasoning-mode routing (P1-P23). Useful as observability reference beside the local Ollama gateway; read-only study, then decide.</td></tr>
+<tr><td><b>Fei2411/DS-Bot</b></td><td class="stars">3.9k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate</span></td><td>Long-lived bots inside DSH, local data under <span class="code">~/.dsh</span>. Reference design for the Discord/Telegram bot pattern; not required for the suite.</td></tr>
+<tr><td><b>zhu1090093659/dsh-web</b></td><td class="stars">9.9k</td><td>Apache-2.0</td><td><span class="tag eval">Evaluate</span></td><td>Task board with cron, multi-agent cascade, GitHub Issue-to-PR loop, token bank. Overlaps Courage; study for ideas, do not adopt wholesale.</td></tr>
+<tr><td><b>Ebony-Vinyl/dsh-our-free-model</b></td><td class="stars">54.9k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Free frontier models with no key/signup. Potential fallback beside the Ollama gateway. ⚠️ Never install the bare-named npm package (fake); never send sensitive content to the free pool.</td></tr>
+<tr><td><b>MeteorNOX/DeepSeek-Balance-Whale-Widget</b></td><td class="stars">6.1k</td><td>MIT (code)</td><td><span class="tag eval">Evaluate</span></td><td>Balance/cost visibility with 34 vendor templates incl. Ollama/LM Studio. Low risk, low value unless direct DeepSeek API use grows.</td></tr>
+<tr><td><b>anywhere-labs/dsh-desktop</b></td><td class="stars">34.3k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Community desktop client. Target is the official DSH Desktop app, so this is a comparison point only.</td></tr>
+<tr><td><b>dataelement/dsh-desktop</b></td><td class="stars">17.0k</td><td>MIT</td><td><span class="tag eval">Evaluate</span></td><td>Same — but its Safe Mode (isolated profile, third-party plugins blocked) is a useful reference for our install gate.</td></tr>
+<tr><td><b>Devin-AXIS/iPolloWork</b></td><td class="stars">7.3k</td><td>Source Available 1.0</td><td><span class="tag eval">Evaluate</span></td><td>Unified Codex/DSH/OpenCode workspace. <b>Not OSI</b>: free only for individual use &lt;3 users; written authorization for more. Legal sign-off required before any use.</td></tr>
+<tr><td><b>YuJunZhiXue/dsh-purge</b></td><td class="stars">14.1k</td><td>Apache-2.0</td><td><span class="tag reject">Reject</span></td><td>Prompt-swap/jailbreak red-team tool; patches local @deepseek-ai packages; supports 0.2.1-rc.2 only; author posts legal warnings. Out of scope for this stack.</td></tr>
+</tbody>
+</table>
+
+<h2>4. Plugin governance policy (applies to A and B)</h2>
+<ul>
+<li><b>No blind installs.</b> Every plugin — mine or third-party — is staged, its <span class="code">dsh.bundle</span> / <span class="code">cordis.patch.yml</span> read, its network calls and filesystem writes reviewed, and its license checked.</li>
+<li><b>Ricardo installs.</b> Adrianna A stages; Ricardo runs the install command or uses the Desktop settings after reviewing the manifest. I never install third-party code or change a live profile on my own.</li>
+<li><b>Read-only vault.</b> No plugin gets write access to Maio Hub. Beast remains the sole writer via OpenKnowledge.</li>
+<li><b>No credentials.</b> No key, token or password enters any plugin config, log or artifact — the credential hard stop applies unchanged.</li>
+<li><b>Fail-closed.</b> A plugin failure degrades to standard DSH behaviour and is logged; it never blocks the harness.</li>
+<li><b>Revert path.</b> Every install has a documented uninstall step and, where offered, a Safe Mode / isolated profile for first run.</li>
+</ul>
+
+<h2>5. UX &amp; UI design</h2>
+<p>The suite adds a settings panel under DSH Settings → <b>Maio Nexus</b>: connection status for Hermes memory and Beast/OK, vault scope selector (AI-Space default, read-only badge), recall latency and token telemetry, and a list of adopted community plugins with version + install state. Third-party plugins keep their own settings pages — the panel only reports their status.</p>
+
+<h2>6. Non-functional requirements</h2>
+<ul>
+<li><b>Security:</b> 100% local execution; no vault contents or credentials leave the machine; read-only vault access; no telemetry.</li>
+<li><b>Performance:</b> local FTS5 vault recall &lt; 50 ms warm; memory injection adds no visible latency to session start.</li>
+<li><b>Reliability:</b> fail-closed as above; nightly reindex idempotent.</li>
+<li><b>Compatibility:</b> DSH ≥ 0.2.x for both Web and Desktop; plugin API differences handled by capability detection, not version pinning alone.</li>
+</ul>
+
+<h2>7. Delivery plan</h2>
+<ul>
+<li><b>Phase 1 — Staging (Adrianna A).</b> Build the <span class="code">dsh-maio-nexus</span> bundle skeleton (manifest, TS glue, <span class="code">vault_recall</span> tool, memory bridge) under <span class="code">~/AI Hub/dsh-maio-nexus/</span>; stage the adoption review notes for the Evaluate tier; no installs.</li>
+<li><b>Phase 2 — Review (Ricardo).</b> Manifest and code review; approve which Evaluate plugins graduate to Adopt.</li>
+<li><b>Phase 3 — Install (Ricardo).</b> Manual install into the Web profile and the Desktop app; first run in Safe Mode where available.</li>
+<li><b>Phase 4 — Verify (Adrianna A).</b> Run the acceptance criteria against real output; report pass/fail with evidence; log to AI-Drive/Agent-Output/adrianna.</li>
+<li><b>Phase 5 — Operate.</b> Courage nightly reindex; monthly plugin review (new versions, CVEs, license changes).</li>
+</ul>
+
+<div class="card warn">
+<p><b>Out of scope.</b> Installing any plugin without Ricardo's sign-off; writing to the vault; sending any credential, ID or health data to any plugin, gate or sandbox; auto-merging upstream plugin code; replacing Hermes memory or Beast with a community store.</p>
+</div>
+
+<div class="foot">Grounding: built on the app-plan workflow; plugin facts re-verified against live GitHub pages (stars, licenses, manifests, DSH target versions); stack facts confirmed on this Mac (Hermes at ~/.hermes, vault at Maio Hub, OK at /Users/Shared/Maio-Hub, Ollama running). Published to AI-Space/3.PRD via rule-4 handoff. No plugin was installed or executed.</div>
+</div>
+</body>
+</html>
