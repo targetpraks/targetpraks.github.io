@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>G4 — a DSH session ran the plan → tickets → workers → verify chain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<p>Adrianna A · G4 run record · 2026-11-02 19:40 SAST</p>
+<h1 id="g4--the-routerworker-chain-executed-on-this-mac">G4 — the Router/Worker chain, executed on this Mac</h1>
+<p><strong>Verdict: PASS.</strong> One DSH session acted as Router, planned two tickets, dispatched each to a <strong>different</strong> subagent with a written reason, then verified the result itself. I then re-ran the verification independently and got the same answer. Nothing was hand-written by me into the slice.</p>
+<figure>
+<svg viewBox="0 0 820 210" role="img" aria-label="One DSH router session dispatched ticket T1 to worker A and T2 to worker B, then verified the result and wrote a scorecard." style="width:100%;height:auto">
+  <g font-family="ui-sans-serif,system-ui,-apple-system,sans-serif" font-size="13" fill="currentColor">
+    <text x="10" y="18" font-size="11" fill="#64748b">ROUTER</text>
+    <rect x="10" y="28" width="180" height="86" rx="7" fill="#2563eb" opacity="0.12" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="24" y="50" font-weight="600">dsh mini</text>
+    <text x="24" y="68" font-size="12">plans 2 tickets</text>
+    <text x="24" y="86" font-size="12">records a reason each</text>
+    <text x="24" y="104" font-size="11" fill="#64748b">deepseek-v4.1-flash:1017</text>
+
+<pre><code>&lt;text x=&quot;300&quot; y=&quot;18&quot; font-size=&quot;11&quot; fill=&quot;#64748b&quot;&gt;WORKERS — ISOLATED SESSIONS&lt;/text&gt;
+&lt;rect x=&quot;300&quot; y=&quot;28&quot; width=&quot;220&quot; height=&quot;38&quot; rx=&quot;6&quot; fill=&quot;#e2e8f0&quot; stroke=&quot;#94a3b8&quot;/&gt;
+&lt;text x=&quot;314&quot; y=&quot;52&quot; font-size=&quot;12&quot;&gt;T1 · baec6639… · probe.py&lt;/text&gt;
+&lt;rect x=&quot;300&quot; y=&quot;76&quot; width=&quot;220&quot; height=&quot;38&quot; rx=&quot;6&quot; fill=&quot;#e2e8f0&quot; stroke=&quot;#94a3b8&quot;/&gt;
+&lt;text x=&quot;314&quot; y=&quot;100&quot; font-size=&quot;12&quot;&gt;T2 · 26c19a8d… · test_probe.py&lt;/text&gt;
+&lt;text x=&quot;300&quot; y=&quot;132&quot; font-size=&quot;11&quot; fill=&quot;#64748b&quot;&gt;no shared context · no shared file writes&lt;/text&gt;
+
+&lt;text x=&quot;600&quot; y=&quot;18&quot; font-size=&quot;11&quot; fill=&quot;#64748b&quot;&gt;VERIFY&lt;/text&gt;
+&lt;rect x=&quot;600&quot; y=&quot;28&quot; width=&quot;200&quot; height=&quot;86&quot; rx=&quot;7&quot; fill=&quot;none&quot; stroke=&quot;#d97706&quot; stroke-width=&quot;1.5&quot; stroke-dasharray=&quot;6 4&quot;/&gt;
+&lt;text x=&quot;614&quot; y=&quot;50&quot; font-weight=&quot;600&quot;&gt;router reruns the test&lt;/text&gt;
+&lt;text x=&quot;614&quot; y=&quot;70&quot; font-size=&quot;12&quot;&gt;python3 test_probe.py&lt;/text&gt;
+&lt;text x=&quot;614&quot; y=&quot;90&quot; font-size=&quot;12&quot;&gt;→ PASS (exit 0)&lt;/text&gt;
+&lt;text x=&quot;614&quot; y=&quot;108&quot; font-size=&quot;11&quot; fill=&quot;#64748b&quot;&gt;then writes scorecard.json&lt;/text&gt;
+
+&lt;line x1=&quot;192&quot; y1=&quot;56&quot; x2=&quot;296&quot; y2=&quot;47&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.5&quot;/&gt;
+&lt;line x1=&quot;192&quot; y1=&quot;80&quot; x2=&quot;296&quot; y2=&quot;95&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.5&quot;/&gt;
+&lt;line x1=&quot;522&quot; y1=&quot;95&quot; x2=&quot;596&quot; y2=&quot;75&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.5&quot;/&gt;
+&lt;text x=&quot;10&quot; y=&quot;160&quot; font-size=&quot;11&quot; fill=&quot;#64748b&quot;&gt;I re-ran the verification myself: PASS, exit 0 — the router&#39;s green was not taken on trust.&lt;/text&gt;</code></pre>
+  </g>
+</svg>
+<figcaption>Figure 1 — the G4 run: one router, two isolated workers, one recorded reason per dispatch.</figcaption>
+</figure>
+
+<h2 id="what-ran">What ran</h2>
+<p><code>dsh mini "&lt;router prompt&gt;"</code> — the installed profile, no <code>--patch</code>, with the nexus MCP bridge mounted.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Router</td>
+<td>one DSH session, model route <code>deepseek-v4.1-flash:1017</code> via the local gateway</td>
+</tr>
+<tr>
+<td>Ticket T1 → Worker A</td>
+<td>session id <code>baec6639-58f4-4c85-aa97-f72f01c8ae7d</code></td>
+</tr>
+<tr>
+<td>Ticket T2 → Worker B</td>
+<td>session id <code>26c19a8d-9135-4133-9786-191c4ea7850d</code></td>
+</tr>
+<tr>
+<td>Dispatch reasons</td>
+<td>both recorded in <code>scorecard.json</code> (in the slice and quoted below)</td>
+</tr>
+<tr>
+<td>Router self-verification</td>
+<td>ran the test; wrote <code>verified: true</code></td>
+</tr>
+<tr>
+<td>My independent re-run</td>
+<td><code>python3 /tmp/g4-slice/test_probe.py</code> → <strong>PASS</strong> (exit 0)</td>
+</tr>
+<tr>
+<td>Worker output</td>
+<td><code>python3 probe.py</code> → <code>{"tools": ["nexus_status", "nexus_memory_recall", "nexus_vault_recall", "nexus_vault_get"]}</code></td>
+</tr>
+<tr>
+<td>Session record</td>
+<td><code>~/.dsh/storages/session_projcache/sessions/session-15222979…json</code> references <strong>both</strong> worker ids</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-routers-own-record">The router's own record</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;tickets&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;T1&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;worker&quot;</span><span class="fu">:</span> <span class="st">&quot;baec6639-58f4-4c85-aa97-f72f01c8ae7d&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;reason&quot;</span><span class="fu">:</span> <span class="st">&quot;Separate worker keeps the implementation artifact (probe.py) isolated from the test artifact so it cannot be co-designed with the assertion.&quot;</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;result&quot;</span><span class="fu">:</span> <span class="st">&quot;DONE: wrote /tmp/g4-slice/probe.py (stdlib-only json emitter); runs to exactly {</span><span class="ch">\&quot;</span><span class="st">tools</span><span class="ch">\&quot;</span><span class="st">: [</span><span class="ch">\&quot;</span><span class="st">nexus_status</span><span class="ch">\&quot;</span><span class="st">, </span><span class="ch">\&quot;</span><span class="st">nexus_memory_recall</span><span class="ch">\&quot;</span><span class="st">, </span><span class="ch">\&quot;</span><span class="st">nexus_vault_recall</span><span class="ch">\&quot;</span><span class="st">, </span><span class="ch">\&quot;</span><span class="st">nexus_vault_get</span><span class="ch">\&quot;</span><span class="st">]} with exit 0.&quot;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;id&quot;</span><span class="fu">:</span> <span class="st">&quot;T2&quot;</span><span class="fu">,</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;worker&quot;</span><span class="fu">:</span> <span class="st">&quot;26c19a8d-9135-4133-9786-191c4ea7850d&quot;</span><span class="fu">,</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;reason&quot;</span><span class="fu">:</span> <span class="st">&quot;A different worker writes the test independently, so the assertion is derived from the ticket contract rather than from the producer&#39;s code.&quot;</span><span class="fu">,</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;result&quot;</span><span class="fu">:</span> <span class="st">&quot;DONE: wrote /tmp/g4-slice/test_probe.py (subprocess + JSON, strict ordered equality on exactly four names); prints PASS/exit 0 on success, FAIL/exit 1 otherwise.&quot;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;verified&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;dispatch_reasons&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;T1 -&gt; baec6639-58f4-4c85-aa97-f72f01c8ae7d: isolate the implementation artifact from the test artifact.&quot;</span><span class="ot">,</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;T2 -&gt; 26c19a8d-9135-4133-9786-191c4ea7850d: independent authoring of the assertion avoids co-design bias.&quot;</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<h2 id="why-the-reasons-matter-more-than-the-files">Why the reasons matter more than the files</h2>
+<p>The two dispatch reasons are the part the article actually claims for a Router: it decides <strong>who</strong> gets <strong>what</strong>, and says why — it "cannot do the work". Here the reasons were structural, not decorative: T1 was isolated so the implementation could not be co-designed with the assertion, and T2 was authored by a different worker so the test derives from the ticket contract, not from the producer's code.</p>
+<h2 id="what-g4-does-and-does-not-prove">What G4 does and does not prove</h2>
+<ul>
+<li><strong>Proven:</strong> DSH rc.5 has the routing primitive — a main session that spawns isolated subagents with recorded reasons, then judges their output. Model selection and discovery are present (<code>list_subagent_models</code>, <code>subagent</code> with <code>modelSelection</code>/<code>modelDiscovery</code>).</li>
+<li><strong>Not proven:</strong> the published <code>dsh-superagent-prototype</code> bundle itself (Router preset, Executor preset, GitHub trigger, work items, panel). It is cloned at <code>~/AI Hub/dsh-superagent-prototype</code> and builds, but it is <strong>not installed</strong>: setup requires a target repository, a dedicated GitHub account the agent acts as, and the operator's answer on who may ask for work.</li>
+</ul>
+<h2 id="next">Next</h2>
+<p>Install the prototype bundle when those three answers exist. Until then the harness routing G4 exercises is the same seam the prototype is built on, which is why the chain ran without it.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
