@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<p>Adrianna A · Product Requirement Document · App Plan · v4 (Router/Worker + code-video lane + corrected memory state) — supersedes every earlier 2026-11-02 edition</p>
+<h1 id="prd-dsh-maio-nexus--unified-deepseek-harness-plugin-suite--ecosystem-adoption--code-video-lane">PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite + Ecosystem Adoption + Code-Video Lane</h1>
+<p>Targets: Web profile (dsh web), official DSH Desktop app, <strong>and the super-agent bundle</strong> (dsh-superagent-prototype, MIT, research code) · <strong>Memory: the Hermes provider active at build time — Hindsight today, verified fleet-wide after the Mnemosyne trial was reverted on 2026-11-02</strong> · Vault: Beast / OpenKnowledge (AI-Space, read-only) · Model path: local Ollama gateway :11434/v1 · Rendered video: 12 verified code-video repos · Staged by Adrianna A, reviewed and manually installed by Ricardo.</p>
+<p><strong>Executive summary.</strong> Three deliberate workstreams, one plan. <strong>(A) Build</strong> a custom suite — dsh-maio-nexus — that gives DSH shared memory with Hermes and read-only recall over the Maio Hub vault, designed to run <em>inside</em> the super-agent's Router/Worker split rather than as a plain session plugin. <strong>(B) Adopt</strong> a curated, verified subset of the community plugin ecosystem alongside it — each with an explicit adopt / evaluate / reject decision and a manual install step owned by Ricardo. <strong>(C) Render</strong> video from code — HTML, React, 3D and FFmpeg — so a DSH session can turn a brief into an MP4 with no stock footage and no studio invoice.</p>
+<p><strong>What changed in v4.</strong> Three corrections, one document. <strong>(1)</strong> The super-agent design is a first-class constraint: a long-lived <strong>Router</strong> that talks to people and dispatches work, plus context-isolated <strong>Worker</strong> sessions that execute in parallel. Memory bridge and vault recall split across those layers — Router gets shared context and the dispatch decision, Workers get a scoped slice — instead of pretending DSH is one flat session. <strong>(2)</strong> The <strong>code-rendered video lane</strong> is restored as Workstream C: it was dropped when this document was re-emitted from the older v2 base on 2026-11-02. <strong>(3)</strong> The memory claim is corrected to what was actually measured: the fleet-wide <strong>Mnemosyne</strong> rollout ran, the trial was then reverted, and <strong>Hindsight is the active provider again</strong> — so the bridge is a provider adapter, not a plugin bolted to one vendor's tables.</p>
+<h2 id="1-vision--problem">1. Vision &amp; Problem</h2>
+<p><strong>Problem.</strong> DeepSeek Harness sessions are isolated from the rest of Ricardo's Mac stack. A DSH session cannot see Hermes memory (user preferences, standing rules, cross-session facts), cannot query the Obsidian vault (Maio Hub) for PRDs, research or guidelines, and has no curated, risk-assessed path to the community plugin ecosystem. With the super-agent, the problem gets sharper: work is spread across a Router and many Workers, so context must be <em>deliberately</em> placed — shared where it must be shared, isolated where it must be isolated. And when a brief asks for video, the only paths today are a stock subscription or a studio quote, while this Mac already holds the parts of a code-rendering pipeline that costs nothing per render.</p>
+<p><strong>Solution.</strong> dsh-maio-nexus registers Cordis handlers that (a) feed the Router a compact shared memory + vault context, (b) let the Router package a scoped context slice for each Worker dispatch, (c) give Workers a read-only vault_recall tool and a scoped memory query on the <strong>active</strong> provider, and (d) return durable facts from Workers to the Router, which is the only writer through Hermes' memory tools. No second memory store; no cross-worker leakage. Workstream C pins a short, verified, free stack that a DSH session can drive from brief to finished MP4.</p>
+<p><strong>Memory source of truth (verified on this Mac, 2026-11-02, 07:50 SAST).</strong> <code>hermes memory status</code> reports <strong>Provider: hindsight</strong> with the hindsight plugin active on the default profile and on batman, beast and courage; the fleet-wide revert log ends <code>REVERT COMPLETE — plugins moved to /tmp/mnemosyne-rollback-20261102T0746</code>, 33 plugin copies moved, every profile verified <code>provider: hindsight</code>. <strong>Mnemosyne is installed but inactive</strong>: store <code>~/.hermes/mnemosyne/data/mnemosyne.db</code> is 227 MB (WAL 826 MB at check time, i.e. an active writer), <code>mnemosyne.profile_isolation: true</code>, and a <code>mnemosyne_stats</code> call during the trial returned <em>database is locked</em>. That history is why the bridge is written as a <strong>provider adapter</strong>: it asks Hermes which provider is active, then reads that store through a documented, capability-detected path, with a SQLite busy timeout and bounded retry. If the fleet re-adopts Mnemosyne — or moves to a third store — the adapter swaps; the plugin does not.</p>
+<h2 id="2-super-agent-fit--how-nexus-works-with-the-routerworker">2. Super-agent fit — how nexus works with the Router/Worker</h2>
+<p>The prototype's architecture, from its README and the DeepSeek design article: a long-lived <strong>Router</strong> handles people and dispatches; context-isolated <strong>Workers</strong> do one work item each in their own session and directory; events (chat, GitHub, CI) arrive as triggers; a <strong>Watchdog</strong> checks progress; state lives in a database while compute and machine are separated. The Router "cannot do the work" — it only decides which Worker gets which request.</p>
+<h3 id="21-where-each-nexus-module-lives">2.1 Where each nexus module lives</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Layer</th>
+<th>What it does in the super-agent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>nexus-memory-bridge</strong></td>
+<td>Router + Worker</td>
+<td>Router side: builds the compact shared memory block injected into the Router's context (standing rules, user preferences, active plans) so a plan agreed in Discord is understood when the same thread continues in DSH Web or Desktop. Worker side: answers a scoped query — only the facts relevant to that Worker's work item — never the whole store. Provider resolved at runtime.</td>
+</tr>
+<tr>
+<td><strong>nexus-profile-resolver</strong></td>
+<td>Router</td>
+<td>Resolves which Hermes profile owns the conversation before any store is opened. Isolation is enforced per profile <em>and</em> per Worker: a Worker cannot open a sibling's store.</td>
+</tr>
+<tr>
+<td><strong>nexus-vault-recall</strong></td>
+<td>Router + Worker</td>
+<td>Router uses it to answer "what did we decide?" and to cite PRDs/guidelines when dispatching. Each Worker gets the same read-only tool bound to its task (AI-Space scope), so it can pull the exact note it needs without a shared mutable cache.</td>
+</tr>
+<tr>
+<td><strong>nexus-context-packet</strong> <em>(new in v4)</em></td>
+<td>Router</td>
+<td>The dispatch contract: Router hands each Worker a packet of {request, scoped memory facts, vault references, acceptance criteria, channel + thread id}. This is the Router's decision output — what the article calls "which Worker gets which request" — not a task breakdown.</td>
+</tr>
+<tr>
+<td><strong>nexus-memory-return</strong> <em>(new in v4)</em></td>
+<td>Worker → Router</td>
+<td>Workers do not write memory. They return <em>memory candidates</em> (fact, confidence, source) to the Router; the Router writes through Hermes' memory tools, preserving one source of truth, consolidation and audit.</td>
+</tr>
+<tr>
+<td><strong>nexus-index-cron</strong></td>
+<td>Router/ops</td>
+<td>Courage job refreshes the vault index and warms the memory read path; the Watchdog consumes its freshness timestamp.</td>
+</tr>
+<tr>
+<td><strong>nexus-watchdog</strong> <em>(new in v4)</em></td>
+<td>Router/ops</td>
+<td>Separate timer session: checks every Worker is making real progress, checks the active memory store is readable (the lock observed during the Mnemosyne trial is exactly the failure mode it exists for), checks vault index freshness. On failure it reports in plain language and marks the recall path degraded — fail-closed, never blocks the harness.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-the-routers-dispatch-decision-the-vote-step">2.2 The Router's dispatch decision (the "vote" step)</h3>
+<p>The prototype has <strong>no formal voting mechanism</strong>. The Router's dispatch is a rules-first, model-judged decision: deterministic filters run in code, and the model judges only what passes. nexus models that step explicitly in nexus-context-packet: the Router picks the Worker type, assembles the scoped memory + vault slice, and records why. If "router vote" meant a literal multi-agent vote, say so and I will add a scoring variant — otherwise this is the decision step the PRD implements.</p>
+<h3 id="23-event-driven-recall-proactive-but-gated">2.3 Event-driven recall (proactive, but gated)</h3>
+<ul>
+<li><strong>Triggers:</strong> new or changed vault note, a memory write, a chat message, a GitHub comment, a CI result. Code filters first — a note that fails the AI-Space scope filter never reaches a model.</li>
+<li><strong>Observe mode:</strong> unrequested proactive work is <em>recorded only</em> until Ricardo approves the rule that allows it — matching the prototype's "acts only when asked, or when a written rule allows it."</li>
+<li><strong>Freshness:</strong> a vault write invalidates the recall cache and schedules a reindex; the Router never answers from a stale index without saying so.</li>
+</ul>
+<h3 id="24-continuity-across-channels">2.4 Continuity across channels</h3>
+<p>Discord, Telegram, DSH Web and DSH Desktop all terminate at the Router, so the same memory slice and vault scope apply everywhere. A Worker subscribes to its own thread, so follow-ups skip the Router — exactly the prototype's behavior — while the Router keeps the cross-channel record.</p>
+<h2 id="3-workstream-a--custom-suite-dsh-maio-nexus">3. Workstream A — Custom suite dsh-maio-nexus</h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Component ID</th>
+<th>Function</th>
+<th>Integration point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Memory Sync Bridge</strong></td>
+<td>nexus-memory-bridge</td>
+<td>Provider adapter over Hermes' active memory store: resolves the provider, then reads FTS, semantic and graph layers through documented tables. Read-only; never writes the store or Hermes config.</td>
+<td>active provider store (Hindsight today; Mnemosyne at ~/.hermes/mnemosyne/data/mnemosyne.db if re-adopted) · per-profile · busy-timeout</td>
+</tr>
+<tr>
+<td><strong>Profile Resolver</strong></td>
+<td>nexus-profile-resolver</td>
+<td>Resolves the calling profile first; opens only that store. Profile isolation is a hard boundary, per profile and per Worker.</td>
+<td>~/.hermes/profiles/&lt;name&gt;/ · the default profile's store</td>
+</tr>
+<tr>
+<td><strong>Vault Recall Engine</strong></td>
+<td>nexus-vault-recall</td>
+<td>vault_recall tool: FTS5 + semantic search over AI-Space/ markdown, read-only, via Beast/OpenKnowledge.</td>
+<td>OK MCP :64200/mcp · /Users/Shared/Maio-Hub/</td>
+</tr>
+<tr>
+<td><strong>Context Packet</strong></td>
+<td>nexus-context-packet</td>
+<td>Router→Worker dispatch contract: scoped facts, vault refs, acceptance criteria, channel/thread. Records the dispatch reason.</td>
+<td>Super-agent Router dispatch hook</td>
+</tr>
+<tr>
+<td><strong>Memory Return</strong></td>
+<td>nexus-memory-return</td>
+<td>Worker→Router memory candidates; Router writes via Hermes memory tools. No Worker writes.</td>
+<td>Worker completion hook → Hermes memory tool</td>
+</tr>
+<tr>
+<td><strong>Watchdog</strong></td>
+<td>nexus-watchdog</td>
+<td>Timer session: Worker progress, memory-store readability, index freshness; plain-language failure report.</td>
+<td>Courage timer + DSH panel</td>
+</tr>
+<tr>
+<td><strong>Nightly Index</strong></td>
+<td>nexus-index-cron</td>
+<td>Refreshes the vault index and warms the memory read path; no UI interruption.</td>
+<td>Courage scheduled jobs</td>
+</tr>
+<tr>
+<td><strong>Dual Runtime Manifest</strong></td>
+<td>dsh.bundle + cordis.patch.yml</td>
+<td>One bundle for Web, Desktop and the super-agent prototype bundle format.</td>
+<td>DSH plugin lifecycle / settings UI</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Acceptance criteria.</strong> <strong>F1 (memory):</strong> a canary fact written through Hermes' active memory tool is recalled by a DSH session unprompted, and the same canary written by a <em>different</em> profile is not recalled (isolation test). <strong>F2 (vault):</strong> vault_recall returns exact vault snippets and vault file hashes are unchanged. <strong>F3 (bundle):</strong> one bundle installs on Web, Desktop and the prototype without root or core breakage. <strong>F4 (index):</strong> nightly job completes silently and idempotently. <strong>S1 (Router):</strong> the Router injects shared memory + vault context and produces a context packet for every dispatch. <strong>S2 (Worker isolation):</strong> Worker A cannot recall Worker B's scratch facts or open a sibling profile's store. <strong>S3 (follow-up):</strong> a follow-up in the same thread reaches its Worker without a Router re-decision; the Router still records it. <strong>S4 (event freshness):</strong> a vault write is visible to recall within the configured SLA (default 5 min) or the answer says "stale index". <strong>S5 (watchdog):</strong> a forced lock on the active store is detected, reported in plain language, and the recall path degrades fail-closed. <strong>S6 (cross-channel):</strong> a plan agreed in Discord is recalled in a DSH Web session for the same profile. <strong>Fail-closed:</strong> if the active provider is locked or unreachable, DSH proceeds with built-in MEMORY.md/USER.md context and logs a warning — no fatal errors.</p>
+<h2 id="4-workstream-b--ecosystem-adoption-matrix">4. Workstream B — Ecosystem adoption matrix</h2>
+<p>All ten re-verified plugins, each with a decision. <strong>Adopt</strong> = stage, review, install after Ricardo's sign-off. <strong>Evaluate</strong> = read-only study first. <strong>Reject</strong> = do not install. Memory constraint: <strong>Hermes has exactly one active memory provider</strong>, so a plugin that brings its own store must interoperate with it or be rejected.</p>
+<table>
+<thead>
+<tr>
+<th>Plugin</th>
+<th>Stars</th>
+<th>License</th>
+<th>Decision</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MemTensor/MemOS</strong></td>
+<td>12.2k</td>
+<td>Apache-2.0</td>
+<td>Evaluate (interop only)</td>
+<td>Its Hermes memory plugin is no longer the draw — Hermes already has an active provider. Worth studying only if it reads/writes the same store without becoming a second source of truth; otherwise reject.</td>
+</tr>
+<tr>
+<td><strong>yjh051108/dsh-routing-suite</strong></td>
+<td>7.0k</td>
+<td>MIT</td>
+<td>Evaluate</td>
+<td>Task-aware model routing. Directly relevant to the Router layer: could inform how the Router picks a Worker's model. Read-only study; no install until proven.</td>
+</tr>
+<tr>
+<td><strong>Fei2411/DS-Bot</strong></td>
+<td>3.9k</td>
+<td>Apache-2.0</td>
+<td>Evaluate</td>
+<td>Long-lived bots inside DSH, local data. Reference design for the Router's channel handling; not required.</td>
+</tr>
+<tr>
+<td><strong>zhu1090093659/dsh-web</strong></td>
+<td>9.9k</td>
+<td>Apache-2.0</td>
+<td>Evaluate</td>
+<td>Task board with cron and multi-agent cascade — an alternative coordination pattern to the Router. Study for ideas; do not adopt wholesale.</td>
+</tr>
+<tr>
+<td><strong>Ebony-Vinyl/dsh-our-free-model</strong></td>
+<td>54.9k</td>
+<td>MIT</td>
+<td>Evaluate</td>
+<td>Free frontier models with no key. Potential fallback beside the Ollama gateway. ⚠️ Never install the bare-named npm package (fake); never send sensitive content to the free pool.</td>
+</tr>
+<tr>
+<td><strong>MeteorNOX/DeepSeek-Balance-Whale-Widget</strong></td>
+<td>6.1k</td>
+<td>MIT (code)</td>
+<td>Evaluate</td>
+<td>Balance/cost visibility incl. Ollama/LM Studio templates. Low risk, low value unless direct API use grows.</td>
+</tr>
+<tr>
+<td><strong>anywhere-labs/dsh-desktop</strong></td>
+<td>34.3k</td>
+<td>MIT</td>
+<td>Evaluate</td>
+<td>Community desktop client; target is the official Desktop app, so comparison only.</td>
+</tr>
+<tr>
+<td><strong>dataelement/dsh-desktop</strong></td>
+<td>17.0k</td>
+<td>MIT</td>
+<td>Evaluate</td>
+<td>Same — but its Safe Mode is a useful reference for our first-run install gate.</td>
+</tr>
+<tr>
+<td><strong>Devin-AXIS/iPolloWork</strong></td>
+<td>7.3k</td>
+<td>Source Available 1.0</td>
+<td>Evaluate</td>
+<td>Unified Codex/DSH/OpenCode workspace. <strong>Not OSI</strong>: free only for individual use &lt;3 users. Legal sign-off required.</td>
+</tr>
+<tr>
+<td><strong>YuJunZhiXue/dsh-purge</strong></td>
+<td>14.1k</td>
+<td>Apache-2.0</td>
+<td>Reject</td>
+<td>Prompt-swap/jailbreak red-team tool; patches local packages; supports 0.2.1-rc.2 only; legal warnings. Out of scope.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-workstream-c--code-rendered-video-lane">5. Workstream C — Code-rendered video lane</h2>
+<p><strong>Goal.</strong> One brief in, one MP4 out, rendered entirely from code: HTML and React compositions, browser 3D, timeline animation, local transcription for captions, and FFmpeg for the export. No stock library, no per-render fee, no studio. This is the lane Ricardo asked for on 2026-11-02 from @flxrnc's twelve-repo post; every entry below was verified live on GitHub that day (existence, stars, licence, last push), and every local-state cell was measured on this Mac.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span>[<span class="st">&quot;Brief</span><span class="sc">&lt;br/&gt;</span><span class="st">one line&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;Composition</span><span class="sc">&lt;br/&gt;</span><span class="st">HyperFrames (HTML)</span><span class="sc">&lt;br/&gt;</span><span class="st">Remotion (React)&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;Motion &amp; type</span><span class="sc">&lt;br/&gt;</span><span class="st">GSAP&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">D</span>[<span class="st">&quot;3D</span><span class="sc">&lt;br/&gt;</span><span class="st">Three.js · Blender + MCP&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">B</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span>[<span class="st">&quot;Stills</span><span class="sc">&lt;br/&gt;</span><span class="st">ComfyUI&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;Voiceover&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="st">&quot;Captions</span><span class="sc">&lt;br/&gt;</span><span class="st">faster-whisper&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">H</span>[<span class="st">&quot;Export</span><span class="sc">&lt;br/&gt;</span><span class="st">FFmpeg&quot;</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">H</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">H</span> <span class="pp">--&gt;</span> <span class="dt">I</span>[<span class="st">&quot;MP4 · 1080x1920 · local&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">I</span> <span class="pp">--&gt;</span> <span class="dt">J</span>[<span class="st">&quot;Anti-slop pass</span><span class="sc">&lt;br/&gt;</span><span class="st">Hallmark · Impeccable&quot;</span>]</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Repo (verified)</th>
+<th>Stars</th>
+<th>Licence</th>
+<th>Role in the lane</th>
+<th>Local state on this Mac</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>heygen-com/hyperframes</strong></td>
+<td>77.2k</td>
+<td>Apache-2.0</td>
+<td>Write HTML, get a video — built for agents; the shortest path from a brief to an MP4</td>
+<td>CLI not installed</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>ahujasid/mcp-for-blender</strong> (the "Blender MCP", renamed from blender-mcp)</td>
+<td>33.0k</td>
+<td>—</td>
+<td>Lets an agent drive Blender: real 3D models, rigs, renders</td>
+<td>Blender not installed</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>remotion-dev/remotion</strong></td>
+<td>69.8k</td>
+<td>Remotion licence (NOASSERTION)</td>
+<td>Programmatic video in React — the workhorse for branded, data-driven pieces</td>
+<td>not installed; Node v26.13.0 present</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>remotion-dev/skills</strong></td>
+<td>6.1k</td>
+<td>no licence file</td>
+<td>Agent skills that teach a coding agent to build Remotion video properly</td>
+<td>not installed</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>greensock/GSAP</strong></td>
+<td>30.0k</td>
+<td>GreenSock standard licence</td>
+<td>Smooth motion and kinetic type inside HTML compositions</td>
+<td>not installed</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>mrdoob/three.js</strong></td>
+<td>117.4k</td>
+<td>MIT</td>
+<td>3D in the browser — WebGL/WebGPU scenes rendered frame by frame</td>
+<td>not installed; Node present</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>blender/blender</strong></td>
+<td>21.5k</td>
+<td>GPL (official mirror)</td>
+<td>The 3D application itself — offline modelling, rigging, render</td>
+<td>not installed</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Comfy-Org/ComfyUI</strong></td>
+<td>144.5k</td>
+<td>GPL-3.0</td>
+<td>Local image/video generation pipeline (node graph, local API)</td>
+<td>not running on :8188, no install found</td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>SYSTRAN/faster-whisper</strong></td>
+<td>26.4k</td>
+<td>MIT</td>
+<td>Auto captions from any voiceover, locally (CTranslate2)</td>
+<td>not installed</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>Nutlope/hallmark</strong></td>
+<td>45.1k</td>
+<td>MIT</td>
+<td>Design skill that kills the "AI slop" look before it ships</td>
+<td>not installed</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>pbakaus/impeccable</strong></td>
+<td>99.6k</td>
+<td>Apache-2.0</td>
+<td>Design vocabulary for the agent: polish, bolder, critique, audit</td>
+<td>not installed</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>FFmpeg/FFmpeg</strong></td>
+<td>66.2k</td>
+<td>LGPL/GPL build</td>
+<td>Exports and concatenates the final MP4</td>
+<td><strong>ffmpeg 9.0.2 installed</strong> (Homebrew)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What is already true on this machine (verified 2026-11-02).</strong> Node v26.13.0 and npm 12.2.1 are installed, so Remotion, HyperFrames and Three.js need no runtime work. FFmpeg 9.0.2 is installed but built without <code>drawtext</code> and <code>subtitles</code> (filter count 0), so <strong>no text is ever burned in with FFmpeg on this Mac</strong>: text is drawn as PNG cards, HTML overlays or Remotion/GSAP type. Blender, ComfyUI, faster-whisper, the HyperFrames CLI and the Remotion packages are all absent today.</p>
+<p><strong>Acceptance criteria.</strong> <strong>F5:</strong> a DSH session takes a one-line brief and produces a 1080×1920 MP4 of ≤ 30 s with no stock asset, no paid credit and no studio; a second run of the same brief renders the same output. <strong>F6:</strong> all text arrives through PNG cards, HTML/Remotion overlays or GSAP type — never through an FFmpeg drawtext filter. <strong>F7:</strong> every asset and every render stays on this Mac; the lane makes no outbound call to a stock, render-farm or model-hosted service unless Ricardo has approved that service separately.</p>
+<p><strong>Constraints.</strong> ComfyUI video on Apple MPS is not production-viable (images only) — the lane uses ComfyUI for stills, not motion. Renders are local and CPU/GPU-bound, so clips stay short. Licensing is checked per repo before any monetised use: Remotion carries its own company licence (NOASSERTION), GSAP its standard licence, <code>remotion-dev/skills</code> ships no licence file and is therefore reference material only, Blender is GPL and fine as a tool, ComfyUI is GPL-3.0. None of this is a spend decision; it is a licence reading, and legal stays with Ricardo.</p>
+<h2 id="6-plugin-governance-policy-applies-to-a-b-and-c">6. Plugin governance policy (applies to A, B and C)</h2>
+<ul>
+<li><strong>No blind installs.</strong> Every plugin is staged, its dsh.bundle / cordis.patch.yml read, network calls and filesystem writes reviewed, license checked. A video repo is installable code too: same gate.</li>
+<li><strong>Ricardo installs.</strong> Adrianna A stages; Ricardo installs after reviewing the manifest. I never install third-party code or change a live profile on my own.</li>
+<li><strong>One memory source of truth.</strong> Whatever provider Hermes has active — Hindsight today. No parallel store, no direct store writes; Worker facts return to the Router, which writes through Hermes' memory tools.</li>
+<li><strong>Read-only vault.</strong> No plugin gets write access to Maio Hub. Beast remains the sole writer via OpenKnowledge.</li>
+<li><strong>No credentials.</strong> No key, token or password enters any plugin config, log or artifact — the credential hard stop applies unchanged.</li>
+<li><strong>Proactive work is gated.</strong> Unrequested actions run in observe mode until Ricardo approves a written rule — the prototype's own philosophy. A render never ships to a client channel without Ricardo's look first.</li>
+<li><strong>Fail-closed and revertible.</strong> A plugin failure degrades to standard DSH behaviour; every install has an uninstall step and a Safe Mode first run where offered.</li>
+</ul>
+<h2 id="7-ux--ui-design">7. UX &amp; UI design</h2>
+<p>DSH Settings → <strong>Maio Nexus</strong>: memory-provider status (active provider, store path, last write, lock/degraded badge), vault scope (AI-Space default, read-only badge), Router/Worker panel (active Workers, dispatch reasons, context-packet sizes), recall latency and token telemetry, adopted-plugin list with version + install state, and a <strong>Video</strong> tab listing which lane elements are present (HyperFrames, Remotion, Blender, ComfyUI, FFmpeg, faster-whisper) with the last render path and duration. Third-party plugins keep their own pages; the panel only reports.</p>
+<h2 id="8-non-functional-requirements">8. Non-functional requirements</h2>
+<ul>
+<li><strong>Security:</strong> 100% local; no vault, memory or credential content leaves the machine; read-only vault and read-only memory store; no telemetry.</li>
+<li><strong>Performance:</strong> vault FTS recall &lt; 50 ms warm; memory recall &lt; 100 ms warm; Router dispatch adds no visible latency; context packets stay within a token budget (default 2k); a ≤ 30 s code render completes unattended in one pass.</li>
+<li><strong>Reliability:</strong> SQLite busy timeout + bounded retry on every memory-store read; fail-closed; nightly index idempotent; Watchdog detects lock/staleness; repeated renders of the same brief are reproducible.</li>
+<li><strong>Compatibility:</strong> DSH ≥ 0.2.x on Web and Desktop; super-agent bundle format tracked as research code (MIT, not an official product; may break); the memory adapter detects the active provider and its schema version, failing loudly rather than silently returning nothing.</li>
+</ul>
+<h2 id="9-delivery-plan">9. Delivery plan</h2>
+<ul>
+<li><strong>Phase 0 — Alignment check (Adrianna A).</strong> Confirm which memory provider is active in main + target profiles <em>at build time</em> (Hindsight on 2026-11-02, after the Mnemosyne revert); record store paths, schema and row counts; confirm the super-agent prototype bundle format and whether Router hooks exist in the current DSH build. No build against a provider that is not live.</li>
+<li><strong>Phase 1 — Staging (Adrianna A).</strong> Build the bundle skeleton (manifest, memory adapter, profile resolver, vault recall, context packet, memory return, watchdog, index cron) under ~/AI Hub/dsh-maio-nexus/; stage adoption review notes; stage the video lane as a skill folder with one worked HyperFrames and one worked Remotion example. No installs.</li>
+<li><strong>Phase 2 — Review (Ricardo).</strong> Manifest and code review; approve which Evaluate plugins graduate to Adopt; approve the proactive-rule set; approve the first video install batch (HyperFrames + Remotion — Node-only, no root, no licence fee).</li>
+<li><strong>Phase 3 — Install (Ricardo).</strong> Manual install into Web, Desktop and the super-agent prototype; first run in Safe Mode / observe mode. Video order: HyperFrames CLI → Remotion + remotion-dev/skills → faster-whisper (own venv) → Hallmark/Impeccable → Blender + Blender MCP only if 3D is genuinely needed.</li>
+<li><strong>Phase 4 — Verify (Adrianna A).</strong> Run F1–F7 and S1–S6 against real output — canary recall, isolation, vault hash, dispatch packet, watchdog lock test, cross-channel continuity, one rendered MP4; report pass/fail with evidence; log to AI-Drive/Agent-Output/adrianna.</li>
+<li><strong>Phase 5 — Operate.</strong> Courage nightly index; monthly plugin review (versions, CVEs, licences); monthly re-verification of the video repo list (repos get renamed — the Blender MCP entry already moved once); re-run the alignment check whenever Hermes' memory provider changes (it changed twice on 2026-11-02).</li>
+</ul>
+<p><strong>Out of scope.</strong> Installing any plugin without Ricardo's sign-off; writing to the vault; sending credentials to any plugin, gate or sandbox; auto-merging upstream code; replacing the active Hermes provider, Mnemosyne or Beast with a community store; building against a memory provider that is not active in Hermes at build time; pointing the super-agent prototype at a real repository without an allowed list and observe mode; paying for stock footage, render farms or hosted video models as part of this lane.</p>
+<p><strong>Grounding.</strong> app-plan workflow; super-agent facts from the official dsh-superagent-prototype README and the DeepSeek design article coverage (Router/Worker, event triggers, watchdog, research-prototype caveat, MIT); plugin facts re-verified on live GitHub pages; video repos verified live through the GitHub API on 2026-11-02; local stack measured on this Mac (Node v26.13.0, npm 12.2.1, ffmpeg 9.0.2 with 0 drawtext/subtitles filters, no Blender, nothing on :8188, no HyperFrames CLI, no faster-whisper); memory state measured the same day — <code>hermes memory status</code> → Provider: hindsight on default, batman, beast and courage; Mnemosyne installed but inactive (DB 227 MB, profile_isolation true, observed lock) with its 33 plugin copies moved to /tmp/mnemosyne-rollback-20261102T0746. No plugin was installed or executed.</p>
+<h2 id="read-it">Read it</h2>
+<p>The styled reading edition of this note: <a href="https://targetpraks.github.io/2026-11-02-prd-dsh-maio-nexus-unified-deepseek-harness-plugin-suite.html">PRD: dsh-maio-nexus — Unified DeepSeek Harness Plugin Suite</a>.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
