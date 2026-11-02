@@ -130,6 +130,15 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Prepared by:</strong> Adrianna A · <strong>Date:</strong> 2026-11-02 (weekly benchmark run, sources pulled 05:01 SAST, lanes probed from 05:21) · <strong>Status:</strong> canonical fleet allocation reference</p>
 <p>This is the <strong>single canonical document</strong> for the fleet's model allocation and benchmark standing. It is updated in place weekly (never duplicated) by the benchmark cron <code>348372409258</code>. Every number below came from a live pull (<code>bench-pull --source all</code>, 17 sources), a live inference probe, or the fleet config census, all taken on 2026-11-02. No figure is estimated.</p>
 <p><strong>Architecture note:</strong> 31 of 32 homes route every model call through the <strong>local Ollama gateway</strong> <code>http://127.0.0.1:11434/v1</code> with pinned <code>-cloud</code> tags (in force since the 2026-10-29 harness consolidation; <code>~/.hermes/HARNESS-CHANGES-2026-10-29.md</code>). Primary on those homes: <code>deepseek-v4.1-flash:1017-cloud</code>. Local-only home(s): <code>shadow</code>. Gateway-era references to LiteLLM are historical — LiteLLM was decommissioned 2026-10-19.</p>
+<p><strong>How a model call actually travels today</strong> (modal fallback chain, 10 of 32 homes, each hop labelled with this run's probe):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TD</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">H</span>[<span class="st">&quot;32 Hermes homes&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="st">&quot;local Ollama gateway</span><span class="sc">&lt;br/&gt;</span><span class="st">127.0.0.1:11434/v1&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">P</span>[<span class="st">&quot;primary: deepseek-v4.1-flash:1017-cloud</span><span class="sc">&lt;br/&gt;</span><span class="st">31 of 32 homes&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">P</span> <span class="pp">--&gt;</span> <span class="dt">F1</span>[<span class="st">&quot;hop 1: glm-5.3-flash:cloud</span><span class="sc">&lt;br/&gt;</span><span class="st">gateway: present&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F1</span> <span class="pp">--&gt;</span> <span class="dt">F2</span>[<span class="st">&quot;hop 2: gemini-3.5-flash-lite</span><span class="sc">&lt;br/&gt;</span><span class="st">Gemini: 200 in 1.6s&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F2</span> <span class="pp">--&gt;</span> <span class="dt">F3</span>[<span class="st">&quot;hop 3: nvidia/nemotron-3.5-super-vl:free</span><span class="sc">&lt;br/&gt;</span><span class="st">OpenRouter: 200 in 0.6s&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F3</span> <span class="pp">--&gt;</span> <span class="dt">F4</span>[<span class="st">&quot;hop 4: nvidia/nemotron-3-ultra-550b-a55b:free</span><span class="sc">&lt;br/&gt;</span><span class="st">OpenRouter: KeyError&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F4</span> <span class="pp">--&gt;</span> <span class="dt">F5</span>[<span class="st">&quot;last net: llama3.2-1b-mlx</span><span class="sc">&lt;br/&gt;</span><span class="st">local: 200 in 1.4s&quot;</span>]</span></code></pre></div>
 <!-- /bench:header -->
 
 <hr />
@@ -1480,6 +1489,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>d3 gate decisions: <code>gates.csv</code> (<strong>13 rows dated 2026-11-02</strong>) + <code>bench-runs/gate-picks-2026-11-02.json</code>.</li>
 <li>Fleet config census (<code>32</code> files, all parsed): <strong>31 on <code>deepseek-v4.1-flash:1017-cloud</code></strong>, <strong>1 on <code>local-delegate:latest</code></strong>.</li>
 <li>Local Ollama gateway (<code>/v1/models</code>): <strong>13</strong> model ids served.</li>
+</ul>
+<p><strong>Where these numbers come from</strong> — the public boards each pull reads, so any figure here can be checked against its own source:</p>
+<ul>
+<li><a href="https://livebench.ai">LiveBench</a> · <a href="https://artificialanalysis.ai">Artificial Analysis</a> · <a href="https://lmarena.ai">LMArena</a> · <a href="https://openrouter.ai/models">OpenRouter models</a> · <a href="https://www.swebench.com">SWE-bench</a> · <a href="https://swe-bench-live.github.io">SWE-bench Live</a> · <a href="https://epoch.ai">Epoch AI</a> · <a href="https://vals.ai">Vals AI</a> · <a href="https://nousresearch.com">Hermes benchmarks</a></li>
 </ul>
 <!-- /bench:8 -->
 
