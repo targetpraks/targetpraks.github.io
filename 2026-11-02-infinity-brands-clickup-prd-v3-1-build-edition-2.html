@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Infinity Brands — ClickUp PRD v3.1, the build edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="infinity-brands--clickup-prd-v31">Infinity Brands — ClickUp PRD v3.1</h1>
+<p><strong>The build edition: decisions locked, configuration packaged, migration specified.</strong> Author Bruce Wayne · 2 November 2026 · Supersedes v3.0 (same day). Still unapproved for build, and no ClickUp account exists.</p>
+<blockquote>
+<p>[!summary] Read the rendered report The styled reading edition is live here: <a href="https://targetpraks.github.io/2026-11-02-infinity-brands-clickup-prd-v3-1-build-edition.html">ClickUp PRD v3.1, the build edition</a> — the Markdown below is the searchable companion.</p>
+</blockquote>
+<h2 id="summary">Summary</h2>
+<p>v3.0 answered your eleven requirements. It also ended with seven questions back to you, which is a polite way of not finishing the job. Six of those seven were mine to answer, so v3.1 answers them and leaves you exactly two: the plan tier, and whether the Coda rollups become dashboards, automation-written fields, or an agent. Everything after this paragraph is executable by a person or an agent without another meeting.</p>
+<p>Three things changed beyond the decisions. The configuration is now a machine-readable pack — eleven Spaces, sixteen fields, five standard views, twelve automation rules, six goals and fourteen tests, as CSV. Migration from Zoho Projects is specified for the first time, because that is where installations of this kind actually die: the import path exists (spreadsheet importer into existing Lists) and the loss points are named. And the build got smaller: twenty-six automation rules became twelve, the hundred-and-twelve test index became fourteen tests that run before anyone is invited.</p>
+<blockquote>
+<p>[!note] The one-line version One workspace, eleven Spaces, ten Teams, the whole build in a seven-file pack, a thirty-day pilot with a kill criterion, and two decisions left open because they cost money.</p>
+</blockquote>
+<h2 id="1-what-this-version-settles">1. What this version settles</h2>
+<p>The v3.0 register asked seven questions. Six now have answers, with the reasoning kept short because the argument lives in the linked sections of v3.0.</p>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>v3.0 left it open</th>
+<th>v3.1 locks it</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEC-48-01</code></td>
+<td>One Workspace or one per brand</td>
+<td>One Workspace</td>
+<td>Per-brand tenancy multiplies seats and breaks cross-brand reporting. Arithmetic in v3.0 §35.1.</td>
+</tr>
+<tr>
+<td><code>DEC-48-02</code></td>
+<td>Business or Business Plus</td>
+<td>Business now, Business Plus only on a named trigger</td>
+<td>Ten Teams is enough for the function layer; the trigger list is in §8.</td>
+</tr>
+<tr>
+<td><code>DEC-48-03</code></td>
+<td>Whether sub-teams exist</td>
+<td>As reporting groups, never as permission</td>
+<td>Teams cannot share items on Business, so a sub-team layer buys reporting only.</td>
+</tr>
+<tr>
+<td><code>DEC-48-04</code></td>
+<td>Whether minutes get their own Space</td>
+<td>Yes — Space 11</td>
+<td>Minutes are the most sensitive routine document the company keeps.</td>
+</tr>
+<tr>
+<td><code>DEC-48-05</code></td>
+<td>Whether every person carries an individual Goal</td>
+<td>No — Task Targets on real work</td>
+<td>A personal Goal that is not tied to a task is a self-assessment, not a measure.</td>
+</tr>
+<tr>
+<td><code>DEC-48-06</code></td>
+<td>Chat replaces Cliq, and when</td>
+<td>Pilot in wave two, with a task-created bar</td>
+<td>Chat is cheap to try and expensive to get wrong; it follows the workspace, not the other way round.</td>
+</tr>
+</tbody>
+</table>
+<p>Two stay open, and both are yours: the plan tier is money, and the rollup mechanism is a data-retention call.</p>
+<table>
+<thead>
+<tr>
+<th>Open</th>
+<th>Question</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEC-49-01</code></td>
+<td>Business at $17 or Business Plus at an unpublished rate</td>
+<td>Start Business. Step up only if a trigger in §8 fires.</td>
+</tr>
+<tr>
+<td><code>DEC-49-02</code></td>
+<td>What each Coda rollup becomes</td>
+<td>Decide per rollup: dashboard card, automation-written field, or agent-computed field. Never leave it to the formula that cannot do it.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-requirements-still-traceable">2. Requirements, still traceable</h2>
+<p>Your eleven items, kept visible so the build can be audited against them. This table is the contract; v3.0 §34 to §47 hold the arguments.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Requirement</th>
+<th>Built as</th>
+<th>Section</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R01</td>
+<td>Teams, sub-teams or larger</td>
+<td>Ten Teams, sub-teams as reporting groups</td>
+<td>§3</td>
+</tr>
+<tr>
+<td>R02</td>
+<td>Workspaces per brand</td>
+<td>One Workspace, Brand field, Folder where isolation is needed</td>
+<td>§3</td>
+</tr>
+<tr>
+<td>R03</td>
+<td>Folders by department or brand</td>
+<td>Space is function; Folder is brand, client or store</td>
+<td>§3</td>
+</tr>
+<tr>
+<td>R04</td>
+<td>Company goals and OKRs by quarter, team, person</td>
+<td>Space 10, Goal Folders per year and quarter, Task Targets</td>
+<td>§4</td>
+</tr>
+<tr>
+<td>R05</td>
+<td>Monday meetings, years of notes</td>
+<td>Space 11, Doc per team per year, AI Notetaker</td>
+<td>§5</td>
+</tr>
+<tr>
+<td>R06</td>
+<td>Chat that replaces Cliq</td>
+<td>Wave two pilot, two groups, task-created bar</td>
+<td>§6</td>
+</tr>
+<tr>
+<td>R07</td>
+<td>Dashboards: EXCO, MANCO, team, OKR</td>
+<td>Four dashboards, one card per question</td>
+<td>§7</td>
+</tr>
+<tr>
+<td>R08</td>
+<td>Work type: recurring, once off, requested</td>
+<td>Field plus five standard views</td>
+<td>§3</td>
+</tr>
+<tr>
+<td>R09</td>
+<td>Client SLA spaces, replace Coda</td>
+<td>Client Folders in Space 08, SLA fields and clocks</td>
+<td>§6</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>Documents that capture a…</td>
+<td>Seven templates with named homes</td>
+<td>§9</td>
+</tr>
+<tr>
+<td>R11</td>
+<td>(list ended mid-sentence)</td>
+<td>Named as an open item, not invented</td>
+<td>§10</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-the-configuration">3. The configuration</h2>
+<p>The whole build is a pack, not a rule book. Seven files sit beside this document, and each one can be read straight into a build task.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Holds</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spaces.csv</code></td>
+<td>Eleven Spaces, folder and list structure, accountable owner, audience</td>
+<td>11</td>
+</tr>
+<tr>
+<td><code>fields.csv</code></td>
+<td>The field register in creation order, with values and where each is required</td>
+<td>16</td>
+</tr>
+<tr>
+<td><code>views.csv</code></td>
+<td>The five standard views every Space receives</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>automations.csv</code></td>
+<td>Twelve rules with trigger, condition and why</td>
+<td>12</td>
+</tr>
+<tr>
+<td><code>goals.csv</code></td>
+<td>The 2027 cascade skeleton</td>
+<td>6</td>
+</tr>
+<tr>
+<td><code>tests.csv</code></td>
+<td>The fourteen tests that run before anyone is invited</td>
+<td>14</td>
+</tr>
+<tr>
+<td><code>migration.csv</code></td>
+<td>Every object moving from Zoho, Cliq and Coda, and its route</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The eleven Spaces.</strong> Nine functions carried forward from v2.0 §8.1 unchanged, plus the two your requirements added.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Space</th>
+<th>Prefix</th>
+<th>Accountable</th>
+<th>Shape</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td>Leadership</td>
+<td>LDR</td>
+<td>Sponsor</td>
+<td>Governance, Decisions, Strategic Programmes</td>
+</tr>
+<tr>
+<td>02</td>
+<td>Marketing &amp; Creative</td>
+<td>MKT</td>
+<td>CMO</td>
+<td>Intake, Production, Client Review</td>
+</tr>
+<tr>
+<td>03</td>
+<td>Finance</td>
+<td>FIN</td>
+<td>CFO</td>
+<td>Daily Control, Close &amp; Compliance, Approvals</td>
+</tr>
+<tr>
+<td>04</td>
+<td>People</td>
+<td>PPL</td>
+<td>CHO</td>
+<td>Recruitment, Employee Lifecycle, People Compliance, Restricted Cases</td>
+</tr>
+<tr>
+<td>05</td>
+<td>Technology</td>
+<td>TEC</td>
+<td>CTO</td>
+<td>Service Desk, Platform, Development, Workspace Operations</td>
+</tr>
+<tr>
+<td>06</td>
+<td>Sales &amp; Revenue</td>
+<td>SAL</td>
+<td>CRO</td>
+<td>Sales Actions, Proposals, Account Actions</td>
+</tr>
+<tr>
+<td>07</td>
+<td>Brand Operations</td>
+<td>OPS</td>
+<td>CAO</td>
+<td>Group Administration, Brand Execution, Supply Chain</td>
+</tr>
+<tr>
+<td>08</td>
+<td>Client Delivery</td>
+<td>DEL</td>
+<td>Delivery lead</td>
+<td>Intake, then a Folder per client and engagement</td>
+</tr>
+<tr>
+<td>09</td>
+<td>Franchise &amp; Store Ops</td>
+<td>STO</td>
+<td>Express Ops</td>
+<td>Intake, Region, then a Folder per store</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Goals &amp; OKRs</td>
+<td>GLS</td>
+<td>Ricardo</td>
+<td>Year and quarter Folders, company and team Goals</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Meetings &amp; Minutes</td>
+<td>MTG</td>
+<td>Ricardo</td>
+<td>A Folder per team, a Doc per year</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The five views, identical everywhere.</strong> Predictability beats cleverness: same names, same order, every Space. <code>00 Requests</code>, <code>01 This week</code>, <code>Recurring — Board</code>, <code>Once off — List</code>, <code>Everything</code>.</p>
+<p><strong>The sixteen fields.</strong> Four do the structural work: <code>Brand</code>, <code>Work Type</code>, <code>Function</code>, <code>Quarter</code>. Four run the service clocks: <code>Service Tier</code>, <code>Response Due</code>, <code>Resolution Due</code>, <code>First Response At</code>. The rest are plumbing. Detail in <code>fields.csv</code>, including which are required and where.</p>
+<p><strong>A task has one home.</strong> The Space records who is accountable. Brand, work type and quarter are fields, because a field cannot steal a task from its function the way a folder can.</p>
+<h2 id="4-goals-and-okrs">4. Goals and OKRs</h2>
+<p>Space 10 holds the cascade. A Goal Folder per year, a Goal Folder per quarter inside it, and the company goal in the year folder. ClickUp Goals are separate objects from tasks, with four Target types: Number, True/False, Currency, Task.</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Object</th>
+<th>Owner</th>
+<th>Check-in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company, annual</td>
+<td>Goal in Folder <code>2027</code></td>
+<td>Ricardo</td>
+<td>Monthly</td>
+</tr>
+<tr>
+<td>Team, quarterly</td>
+<td>Goal in Folder <code>2027 Q1</code>, named <code>&lt;Team&gt; — Q1</code></td>
+<td>Function lead</td>
+<td>Weekly</td>
+</tr>
+<tr>
+<td>Individual</td>
+<td>Task Target on that person's own task</td>
+<td>The person</td>
+<td>As the work moves</td>
+</tr>
+</tbody>
+</table>
+<p>Naming rule, because the platform has no quarter field: <code>2027 Q1 — Finance — Close by day 5, three months running</code>. The quarter lives in the folder and the name, never in a free-text field somebody forgets.</p>
+<h2 id="5-meetings">5. Meetings</h2>
+<p>Space 11, private. A Folder per team, one Doc per year inside it, one page per week: <code>W01 · 2027-01-04 · Monday</code>. AI Notetaker joins the calendar meeting and writes the notes Doc, which is what makes the archive self-filing rather than a filing chore. The human fills decisions and actions; automation A09 turns action lines into tasks in the owning Space.</p>
+<p>The fifteen-minute order, the same every week: last week's actions, this week's numbers against target, blockers, decisions needed, the Goal check.</p>
+<h2 id="6-chat-clients-and-the-order-they-arrive">6. Chat, clients, and the order they arrive</h2>
+<p>Chat is included on Core and above, unlimited messages and history, with task creation from a message. It also has no Cliq importer, and retention controls only on Enterprise. So Chat is wave two: two groups, one operating month, measured on tasks created from messages rather than messages sent. Cliq goes read-only only after an export for legal and HR is signed off.</p>
+<p>Clients live in Space 08 as a Folder per client, shared with a guest while the Space stays closed. View-only guests are free; permission-controlled guests cost a member seat beyond the allowance; same-domain accounts cannot be guests at all. That last rule matters: an employee with a company address is always a member, never a guest.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span>[<span class="st">&quot;Zoho Projects tasks&quot;</span>] <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;export to Excel&quot;</span><span class="vs">|</span> <span class="dt">B</span>[<span class="st">&quot;Spreadsheet importer&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;into existing Lists&quot;</span><span class="vs">|</span> <span class="dt">C</span>[<span class="st">&quot;ClickUp Lists&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">D</span>[<span class="st">&quot;Dual run: one full cycle&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;adoption bar met&quot;</span><span class="vs">|</span> <span class="dt">E</span>[<span class="st">&quot;Zoho frozen, read-only&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;bar missed&quot;</span><span class="vs">|</span> <span class="dt">F</span>[<span class="st">&quot;Stop, keep Zoho, no second year&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">G</span>[<span class="st">&quot;Cliq history&quot;</span>] <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;no importer&quot;</span><span class="vs">|</span> <span class="dt">H</span>[<span class="st">&quot;Export, archive, sign off&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">I</span>[<span class="st">&quot;Coda docs&quot;</span>] <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;rebuild&quot;</span><span class="vs">|</span> <span class="dt">J</span>[<span class="st">&quot;Docs and Lists&quot;</span>]</span></code></pre></div>
+<h2 id="7-migration-and-coexistence">7. Migration and coexistence</h2>
+<p>This is the part v3.0 did not have, and it is the part that decides whether any of the rest happens. The capability is verified: ClickUp's spreadsheet importer takes Excel, CSV, JSON, TSV or TXT and imports into an existing List, Folder or Space, carrying tasks, subtasks and nested subtasks with status, priority and assignee mapped to existing values, then prints an import report. There is no Zoho Projects importer, so the route is export, then import.</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>What moves</th>
+<th>What does not</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zoho Projects</td>
+<td>Projects, tasks, subtasks, status, priority, assignee by email</td>
+<td>Comments and attachments</td>
+<td>Project lead</td>
+</tr>
+<tr>
+<td>Cliq</td>
+<td>Nothing directly</td>
+<td>All history; export for legal and HR</td>
+<td>Bruce Wayne</td>
+</tr>
+<tr>
+<td>Coda</td>
+<td>Documents and tables, rebuilt</td>
+<td>Rollups and nested formulas, replaced per rollup</td>
+<td>Doc owner</td>
+</tr>
+</tbody>
+</table>
+<p>Three rules for the window. Nothing is deleted anywhere. Both systems run for one full cycle, so a missed recurrence shows up in the old tool before the new one is trusted. And the import runs into existing Lists, never into a fresh List that then has to be reorganised, because reorganising after import is how fields get lost.</p>
+<h2 id="8-the-pilot">8. The pilot</h2>
+<p>Thirty days, two cohorts, and a bar that can fail.</p>
+<table>
+<thead>
+<tr>
+<th>Cohort</th>
+<th>Who</th>
+<th>Job</th>
+<th>Why them</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Proof</td>
+<td>Finance daily control, Technology service desk</td>
+<td>Show that daily regime work can leave Zoho</td>
+<td>They use Zoho hardest, so their verdict is real</td>
+</tr>
+<tr>
+<td>Visibility</td>
+<td>Leadership</td>
+<td>Goals, minutes, one dashboard</td>
+<td>Visible to you in week one, no guests, no migration</td>
+</tr>
+</tbody>
+</table>
+<p>Measured, not felt: tasks created in ClickUp as a share of new work in the cohort's function, Monday minutes captured without a human filing, requests arriving through a form rather than a message, and time to answer "what is outstanding for this person".</p>
+<p>The kill criterion, stated before the pilot starts: if the proof cohort has not moved the majority of its new work into ClickUp by day thirty, stop. Keep Zoho, keep the goals and minutes in ClickUp if they earned it, and do not fund a second year of two systems.</p>
+<p><strong>Step-up triggers.</strong> Business becomes Business Plus only if one of these fires: sub-teams need permission sharing; more than ten Teams are wanted; scheduled report sends pass forty; or Docs need page protection. Otherwise the step-up is a cost with no use.</p>
+<h2 id="9-the-document-library">9. The document library</h2>
+<p>Seven templates, each with a home and an owner, so a person never asks where a document goes.</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Captures</th>
+<th>Home</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decision record</td>
+<td>Decision, alternatives, consequences</td>
+<td>01 Leadership, Decisions</td>
+<td>Bruce Wayne</td>
+</tr>
+<tr>
+<td>Meeting minutes</td>
+<td>The Monday standard</td>
+<td>11 Meetings, team Folder</td>
+<td>Team lead</td>
+</tr>
+<tr>
+<td>SOP</td>
+<td>One recurring job, step by step</td>
+<td>Function Space, SOPs</td>
+<td>Function owner</td>
+</tr>
+<tr>
+<td>Client SLA report</td>
+<td>Service against tier over a period</td>
+<td>Client Folder, Reports</td>
+<td>Account owner</td>
+</tr>
+<tr>
+<td>Brand standard</td>
+<td>Voice, visual rules, do-nots</td>
+<td>Brand Folder</td>
+<td>Marketing lead</td>
+</tr>
+<tr>
+<td>Project brief</td>
+<td>One page before any project</td>
+<td>Requesting Space, Briefs</td>
+<td>Requester</td>
+</tr>
+<tr>
+<td>Onboarding pack</td>
+<td>Week one for a new person</td>
+<td>01 Leadership, People</td>
+<td>HR</td>
+</tr>
+</tbody>
+</table>
+<h2 id="10-what-was-cut-and-what-is-still-open">10. What was cut, and what is still open</h2>
+<p>An optimisation that only adds is a rewrite. These came out.</p>
+<table>
+<thead>
+<tr>
+<th>Cut</th>
+<th>Was</th>
+<th>Now</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Automation rules</td>
+<td>26 in v2.0</td>
+<td>12</td>
+<td>Each rule is a thing that breaks; twelve cover the load-bearing behaviour</td>
+</tr>
+<tr>
+<td>Tests to run now</td>
+<td>112 indexed</td>
+<td>14 before anyone is invited</td>
+<td>The rest run on demand when the area changes</td>
+</tr>
+<tr>
+<td>Forms</td>
+<td>4 planned</td>
+<td>3</td>
+<td>One request door per function, not per scenario</td>
+</tr>
+<tr>
+<td>Sprint and whiteboard features</td>
+<td>Deferred</td>
+<td>Out</td>
+<td>No requirement asks for them</td>
+</tr>
+<tr>
+<td>CRM</td>
+<td>Considered</td>
+<td>Out</td>
+<td>Opportunity stages stay in the CRM</td>
+</tr>
+</tbody>
+</table>
+<p>Still open, and not to be guessed: your requirement list ended at "documents that capture a". Nothing was invented to fill it. The gate tool's custom-question endpoint returned a 400 error when asked to arbitrate the pilot choice, so §8 stands on argument rather than a gate verdict, and that defect is worth fixing before the next planning round.</p>
+<h2 id="11-risks-ranked">11. Risks, ranked</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Why it bites</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Two systems, one habit</td>
+<td>People keep using Zoho because it is familiar</td>
+<td>Dual-run one cycle, then freeze with a named date</td>
+</tr>
+<tr>
+<td>Comment and attachment loss</td>
+<td>The importer does not carry them</td>
+<td>Accept in writing before import, not after</td>
+</tr>
+<tr>
+<td>Chat pilot judged on messages</td>
+<td>Feels busy, proves nothing</td>
+<td>The bar is tasks created from messages</td>
+</tr>
+<tr>
+<td>Guest creep</td>
+<td>View-only is free, permission guests are not</td>
+<td>Guest budget per client, reviewed monthly</td>
+</tr>
+<tr>
+<td>Business Plus drift</td>
+<td>Every Teams limitation looks like a plan problem</td>
+<td>Four named triggers in §8</td>
+</tr>
+<tr>
+<td>Formula illusions</td>
+<td>Rollups cannot be formulas</td>
+<td>Every rollup gets a named mechanism first</td>
+</tr>
+</tbody>
+</table>
+<h2 id="evidence">Evidence</h2>
+<ul>
+<li><a href="https://clickup.com/pricing">ClickUp pricing</a> — per-Workspace billing, plan prices, seat and guest arithmetic.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6309466958103-Intro-to-Spaces">Intro to Spaces</a> — Spaces, Lists and Folders per plan.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/30914854991255-Teams-feature-availability-and-limits">Teams availability and limits</a> — ten Teams on Business, sharing with Teams on Business Plus.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/29776622610199-Chat-feature-availability-and-limits">Chat availability and limits</a> — message and history limits, retention on Enterprise.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/25790737416855-What-is-Chat">What is Chat</a> — Channels, Posts, task creation, Slack importer only.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6325733579671-Create-a-Goal">Create a Goal</a> — Goal objects, four Target types, Goal Folders.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/30807756167447-Use-views-for-goals-and-OKRs">Views for goals and OKRs</a> — the four OKR views.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/21257864098071-Dashboards-feature-availability-and-limits">Dashboards availability and limits</a> — unlimited dashboards on Business, forty scheduled report sends.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/28928137493015-Use-AI-Notetaker-to-take-notes-and-record-meetings">AI Notetaker</a> — capture sources and the Doc it writes.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6328174371351-Intro-to-Docs">Intro to Docs</a> — Docs on every plan, page protection on Business Plus.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6308656424983-Intro-to-Formula-Fields">Intro to Formula Fields</a> — the four formula limits that reshape Coda rollups.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6310022323991-Guest-type-user-roles">Guest-type user roles</a> — guest pricing and the same-domain rule.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6310834724247-Use-the-Spreadsheets-Importer">Spreadsheets Importer</a> — import into an existing List, Folder or Space, with task hierarchy.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6310876671255-Fields-supported-by-the-Spreadsheets-importer">Fields supported by the importer</a> — task name is the only required column.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/29806883199127-Consolidate-Workspaces">Consolidate Workspaces</a> — the one-way migration window and permanent archive.</li>
+<li>Configuration pack beside this document: <code>AI-Drive/Agent-Output/batman/clickup-prd-v3-1/config/</code> (seven CSV files, row counts in §3).</li>
+<li>Gate record: <code>AI-Drive/Agent-Output/batman/clickup-prd-v3-1/gates.csv</code>, one routing row, custom-question endpoint returned 400.</li>
+</ul>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="../Active/2026-11-02-infinity-brands-clickup-requirements-prd-v3-0.md">ClickUp requirements PRD v3.0</a></li>
+<li><a href="../Active/2026-11-01-infinity-brands-clickup-implementation-prd-v2-0-deep-build.md">ClickUp implementation PRD v2.0</a></li>
+<li><a href="../../../ReadME_MasterIndex.md">ReadME_MasterIndex</a></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
