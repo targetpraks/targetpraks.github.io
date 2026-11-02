@@ -197,6 +197,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h2 id="the-trap-that-would-have-made-it-useless">The trap that would have made it useless</h2>
 <p>A read-only SQLite open is not free. <code>mode=ro</code> on a <a href="https://www.sqlite.org/wal.html">WAL</a> board with <strong>no live writer</strong> fails with <em>unable to open database file</em>, because there is no <code>-shm</code> shared-memory index to open. A lookup written the obvious way swallows that error, sees an empty board, and opens exactly the second card the change exists to prevent — the fix would have shipped looking correct and doing nothing.</p>
 <p>The tool now falls back to a normal connection with <a href="https://www.sqlite.org/pragma.html#pragma_query_only"><code>PRAGMA query_only=ON</code></a>, which the engine enforces statement by statement. Proven, not assumed: on a fallback connection an <code>INSERT</code> is refused with <em>attempt to write a readonly database</em>, while the same connection reads rows normally. <code>test_a_wal_board_with_no_live_writer_is_still_read</code> pins that path.</p>
+<h2 id="the-second-trap-found-by-the-live-run">The second trap, found by the live run</h2>
+<p>The body of a card is rewritten only on the CLI lane. A worker whose terminal is fenced supersedes with a <strong>comment</strong>, so the card body keeps naming the revision it was <em>opened</em> with forever. Reading only the body makes the newest bytes look like yet another new revision — so every re-run stacked another identical supersede comment, and the "a re-run reuses the card" promise held on one lane only.</p>
+<p>The lookup therefore reads the card's thread as well and treats the <strong>newest</strong> <code>superseded:</code> comment as the card's current staged path and sha16, with the body as the fallback. A re-publish of the newest revision now returns <code>card-reused</code>, exit 0, no spec and no comment, on both lanes.</p>
 <h2 id="evidence">Evidence</h2>
 <p>Real runs of the real binary against a real <code>hermes</code> CLI and a sandbox board — three publishes of one document:</p>
 <pre><code>publish-1   status=card-created     card=t_d923d1ca   sha=5c7e4903212c76b0
@@ -207,11 +210,17 @@ cards on the board: 1
 comment on t_d923d1ca: superseded: revision …/2026-11-02-dedupe-probe.md (sha16 5c7e4903212c76b0) → …
 card body carries newest staged path: True</code></pre>
 <p>Three revisions, one card, one supersede comment, body rewritten to the newest staged path. The no-<code>--task-id</code> lane behaves the same: v1 → created, v2 → superseded, v3 → superseded, one card, two comments, card body naming the newest bytes.</p>
-<p>Tests: <strong>121 run, 121 OK</strong> (<code>python3 -m unittest discover -s tests</code>, 129 s), fenced and unfenced. New coverage lives in <code>TestDestinationDedupe</code> — reuse, supersede, REPLACE-after-done, duplicate warnings, tombstone written and deliberately <em>not</em> written on a reoccupied path, fenced comment spec, unreadable board, and the WAL-without-<code>-shm</code> read.</p>
-<h3 id="this-note-is-the-fourth-proof">This note is the fourth proof</h3>
-<p>It was published to the live board twice from a worker whose terminal is fenced. The first publish handed back a card spec and opened <code>t_324770b8</code>. The second publish — this revision, with the diagram and this section — found that card by its destination marker and returned a <strong>comment</strong> instead of a second card. So the live board carries one card for this destination, plus one comment naming which revision to file. That is the whole change, exercised by the document that describes it.</p>
+<p>Tests: <strong>125 run, 125 OK</strong> (<code>python3 -m unittest discover -s tests</code>, 100 s), fenced and unfenced. New coverage lives in <code>TestDestinationDedupe</code> — reuse, supersede, REPLACE-after-done, duplicate warnings, tombstone written and deliberately <em>not</em> written on a reoccupied path, fenced comment spec, reuse when the newest revision lives only in the thread, newest-comment-wins, unreadable board, and the WAL-without-<code>-shm</code> read.</p>
+<h3 id="this-note-is-the-live-proof">This note is the live proof</h3>
+<p>It was published three times to the live board, from a worker whose terminal is fenced:</p>
+<ol type="1">
+<li><strong>v1</strong> — nothing carded → a card spec, posted as <code>t_324770b8</code>.</li>
+<li><strong>v2</strong> (this revision's predecessor) — the card found by its destination marker → a <strong>comment</strong> naming the newest revision, and no second card.</li>
+<li><strong>the same bytes again</strong> — <code>card-reused</code>, exit 0, no spec, no comment.</li>
+</ol>
+<p>One card for this destination, one comment saying which revision to file. That is the whole change, exercised on the live board by the document that describes it.</p>
 <h2 id="where-it-lives">Where it lives</h2>
-<p><code>~/.config/maio-stack/tools/publish_document.py</code> — <strong>1.7.0</strong>, sha256 <code>d97c88130841…</code>. The <code>maio-tools</code> repo was retired on 2026-10-25, so the runtime tree is the only home and there is no commit to point at; the pre-change bytes are kept beside it as <code>publish_document.py.bak-20261102-t_1c8f0b86</code>. The spec grew §1.8 in <code>docs/document-publishing-convention.md</code>, and the per-prompt instruction block was re-installed to all 32 profiles so every worker knows the comment variant.</p>
+<p><code>~/.config/maio-stack/tools/publish_document.py</code> — <strong>1.7.0</strong>, sha256 <code>a9f297f6995f…</code>. The <code>maio-tools</code> repo was retired on 2026-10-25, so the runtime tree is the only home and there is no commit to point at; the pre-change bytes are kept beside it as <code>publish_document.py.bak-20261102-t_1c8f0b86</code>. The spec grew §1.8 in <code>docs/document-publishing-convention.md</code>, and the per-prompt instruction block was re-installed to all 32 profiles so every worker knows the comment variant.</p>
 <p>Nothing is needed from a human: the legacy multi-card destinations are all filed and closed. The fix governs every publish from here.</p>
 <h2 id="related">Related</h2>
 <ul>
