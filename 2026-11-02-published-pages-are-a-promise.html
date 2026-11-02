@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Published pages are now a promise</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="published-pages-are-now-a-promise">Published pages are now a promise</h1>
+<svg viewBox="0 0 720 190" width="100%" role="img" aria-label="Publish, record, guard: a page is written with its ledger row, and every later commit is checked against that record">
+  <rect x="8" y="18" width="196" height="86" rx="10" fill="#eef4ff" stroke="#5b8def"/>
+  <text x="106" y="46" font-family="system-ui" font-size="13" text-anchor="middle" fill="#1b2b4d">publish-document</text>
+  <text x="106" y="66" font-family="system-ui" font-size="11" text-anchor="middle" fill="#445">page + ledger row</text>
+  <text x="106" y="84" font-family="system-ui" font-size="11" text-anchor="middle" fill="#445">in one commit</text>
+
+  <rect x="262" y="18" width="196" height="86" rx="10" fill="#eefaf1" stroke="#3fae6a"/>
+  <text x="360" y="46" font-family="system-ui" font-size="13" text-anchor="middle" fill="#123a22">.publish-ledger.tsv</text>
+  <text x="360" y="66" font-family="system-ui" font-size="11" text-anchor="middle" fill="#2b4a37">url · title · published</text>
+  <text x="360" y="84" font-family="system-ui" font-size="11" text-anchor="middle" fill="#2b4a37">by · hash</text>
+
+  <rect x="516" y="18" width="196" height="86" rx="10" fill="#fff4ec" stroke="#e08a3c"/>
+  <text x="614" y="46" font-family="system-ui" font-size="13" text-anchor="middle" fill="#4a2a10">pages-guard</text>
+  <text x="614" y="66" font-family="system-ui" font-size="11" text-anchor="middle" fill="#5a3a22">pre-commit · commit-msg</text>
+  <text x="614" y="84" font-family="system-ui" font-size="11" text-anchor="middle" fill="#5a3a22">pre-push</text>
+
+  <line x1="204" y1="61" x2="258" y2="61" stroke="#7a8aa8" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="458" y1="61" x2="512" y2="61" stroke="#7a8aa8" stroke-width="2" marker-end="url(#a)"/>
+  <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L6,3 L0,6 z" fill="#7a8aa8"/></marker></defs>
+
+<p><text x="360" y="140" font-family="system-ui" font-size="12" text-anchor="middle" fill="#333">delete a listed page → refused, naming the link</text> <text x="360" y="164" font-family="system-ui" font-size="12" text-anchor="middle" fill="#333">commit as Ricardo → refused; author is maio-agents</text> <text x="360" y="188" font-family="system-ui" font-size="12" text-anchor="middle" fill="#666">deliberate deletion → one line: ALLOW-PAGE-DELETE: &lt;reason&gt;</text> </svg></p>
+<h2 id="what-happened">What happened</h2>
+<p>Your <strong>Read the HTML</strong> button for the Perlite Works plan pointed at <code>…/2026-11-02-perlite-works-south-africa-business-plan-2026-2.html</code> and opened a 404. The publish had worked — the page was live at 07:49. Two minutes forty-eight seconds later, a hand commit called <em>"Remove duplicate perlite plan page"</em> deleted it, and that commit was signed <strong>Targetpraks <a href="mailto:rickymaio@gmail.com">rickymaio@gmail.com</a></strong>.</p>
+<p>So there were two separate faults, neither of them a publishing bug:</p>
+<ol type="1">
+<li>an ad-hoc commit in the pages checkout landed under <strong>your</strong> git identity, and</li>
+<li>deleting a page that carries an issued link was a silent side effect of a tidy-up.</li>
+</ol>
+<p>Both are closed now. The page itself was restored byte-for-byte earlier (<a href="https://github.com/targetpraks/targetpraks.github.io/commit/5f1fb28c"><code>5f1fb28c</code></a>) and both editions serve today: <a href="https://targetpraks.github.io/2026-11-02-perlite-works-south-africa-business-plan-2026-2.html">the <code>-2</code> edition</a> and <a href="https://targetpraks.github.io/2026-11-02-perlite-works-south-africa-business-plan-2026.html">the newer edition</a>.</p>
+<h2 id="what-changed">What changed</h2>
+<p><strong>Nothing in that checkout commits as you any more.</strong> The checkout now carries its own identity, <code>maio-agents &lt;agents@maio.local&gt;</code>, and a guard refuses any commit there whose author is you — whatever the config says. The tool already named the publishing agent on its own commits; a hand fix now cannot quietly carry your name.</p>
+<p><strong>A published page cannot be deleted by accident.</strong> Every page the site publishes is recorded in <code>.publish-ledger.tsv</code> inside the checkout — name, URL, title, when it went live, who published it, and a content hash. <code>publish-document</code> writes that line <strong>in the same commit as the page</strong>, so the record of a link can never lag behind the link. A commit that deletes a page is refused, and the refusal tells you which link it would have broken:</p>
+<pre><code>pages-guard: refusing to delete a published page.
+
+  2026-11-02-perlite-works-south-africa-business-plan-2026-2.html
+    published 2026-11-02T08:02:22+02:00 by batman
+    &quot;Perlite Works South Africa — Business Plan 2026&quot;
+    https://targetpraks.github.io/2026-11-02-perlite-works-south-africa-business-plan-2026-2.html
+
+A published page is a promise: the URL is quoted in a vault note and in Ricardo&#39;s chat, so a page
+that goes takes a link with it and returns 404 to whoever opens it.</code></pre>
+<p><strong>Deleting on purpose still works</strong> — it just has to say why, in the commit message, where it stays in history:</p>
+<pre><code>Withdraw the superseded edition
+
+ALLOW-PAGE-DELETE: the vault note and the jump link both name the -2 edition</code></pre>
+<p><strong>One document, one URL.</strong> The duplicate that started all this existed because the site name comes from the document's filename: one document saved under two names became two pages. A publish that would create a second name for an already-published title now says so, by name, at the moment it happens — it does not refuse the publish, because losing a link to a warning would be worse.</p>
+<p><strong>It holds in a fresh clone too.</strong> Hooks are not cloned with a repository, so the rule also runs from the machine-wide ship-small hooks, scoped to this site's origin. Commits made with <code>--no-verify</code> are still stopped at push.</p>
+<h2 id="what-it-means-for-you">What it means for you</h2>
+<p>Nothing to do, and nothing to remember. If a page's link is quoted somewhere, the page stays. If a page genuinely has to go, the agent withdraws it in one line that says why — and it is in the history if anyone asks why that URL 404s a year from now.</p>
+<h2 id="evidence">Evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>How it was checked</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A commit as you is refused</td>
+<td>fresh clone of the real repo, no repo hooks (only the machine-wide ones), author set to <code>Targetpraks &lt;rickymaio@gmail.com&gt;</code></td>
+<td>refused, rc=1, nothing committed</td>
+</tr>
+<tr>
+<td>Deleting a published page is refused</td>
+<td>same clone, <code>git rm</code> of the Perlite <code>-2</code> page, message <em>"Remove duplicate perlite plan page"</em></td>
+<td>refused, naming the page, publisher, date and URL</td>
+</tr>
+<tr>
+<td>A deliberate deletion passes</td>
+<td>same deletion with <code>ALLOW-PAGE-DELETE: …</code></td>
+<td>committed, rc=0, decision logged</td>
+</tr>
+<tr>
+<td><code>--no-verify</code> does not smuggle a deletion out</td>
+<td>deletion committed with <code>--no-verify</code>, then the real pre-push payload</td>
+<td>refused at push, rc=1</td>
+</tr>
+<tr>
+<td>Publishing records the page</td>
+<td><code>publish-document</code> against a verification clone with its own remote</td>
+<td>one commit carried the page <strong>and</strong> its ledger row; both reached the remote</td>
+</tr>
+<tr>
+<td>The record matches the site</td>
+<td>live checkout, ledger vs <code>git ls-tree HEAD</code></td>
+<td>266 pages, 266 rows, nothing missing</td>
+</tr>
+<tr>
+<td>The guard judges the checkout the hook runs in</td>
+<td>a clone whose <code>MAIO_PAGES_REPO</code> pointed at a different checkout</td>
+<td>the clone's own index is judged — this was a real bug, caught by that test</td>
+</tr>
+<tr>
+<td>Never wedges the fleet</td>
+<td>a simulated internal error in the guard</td>
+<td>allows the commit, warns loudly, logs it</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>python3 -m unittest discover -s tests</code></td>
+<td>159 tests, OK</td>
+</tr>
+</tbody>
+</table>
+<p>The rule and its escape hatches are written into the publishing spec (<code>§2.5.1</code> of <code>document-publishing-convention.md</code>), so the next agent reads the rule instead of rediscovering the bug.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
