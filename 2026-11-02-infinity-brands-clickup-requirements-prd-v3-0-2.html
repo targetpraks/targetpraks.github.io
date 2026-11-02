@@ -1,0 +1,1356 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Infinity Brands — ClickUp requirements PRD v3.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="infinity-brands--clickup-requirements-prd-v30">Infinity Brands — ClickUp requirements PRD v3.0</h1>
+<p><strong>Installation, setup, and the eleven requirements in Ricardo's own words.</strong> Author Bruce Wayne · 2 November 2026 · Status: ready for the owner decisions in §47. Not approved for implementation, no ClickUp account or trial exists.</p>
+<blockquote>
+<p>[!summary] Read the rendered report The styled reading edition is live here: <a href="https://targetpraks.github.io/2026-11-02-infinity-brands-clickup-requirements-prd-v3-0.html">ClickUp requirements PRD v3.0</a> — the Markdown below is the searchable companion.</p>
+</blockquote>
+<h2 id="summary">Summary</h2>
+<p>v2.0 answered <em>how to build a workspace</em>. v3.0 answers <em>your</em> list, and your list is a different brief: brand workspaces, OKRs, Monday meetings as an archive, chat that replaces Cliq, client SLA spaces, Coda retired. Five of those eleven requirements contradict the v2 design or the v2 cost model, so this version settles each one with current official evidence rather than carrying the older assumption forward. The single most expensive finding: <strong>ClickUp bills per Workspace</strong>, so "a workspace per brand" multiplies seats, not Spaces. The single most useful finding: your Monday meeting requirement is already a native ClickUp behaviour — AI Notetaker writes a Doc per meeting, and a Doc lives in a named place in the hierarchy, so years of minutes can archive themselves.</p>
+<h2 id="requirements-trace">Requirements trace</h2>
+<p>Eleven items as you wrote them. Verdict is either <strong>adopt</strong> (it becomes the build), <strong>reshape</strong> (keep the intent, move the mechanism), or <strong>decide</strong> (owner-only, and it changes the money or the operating model).</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Your requirement</th>
+<th>Verdict</th>
+<th>Where it lands</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R01</td>
+<td>Teams based on the smaller sub-teams or the larger teams</td>
+<td>adopt</td>
+<td>§34 Teams model</td>
+<td><code>DEC-34-01</code></td>
+</tr>
+<tr>
+<td>R02</td>
+<td>Workspaces per brand</td>
+<td>reshape</td>
+<td>§35 brand axis</td>
+<td><code>DEC-35-01</code></td>
+</tr>
+<tr>
+<td>R03</td>
+<td>Folder structure by department or by brand</td>
+<td>adopt</td>
+<td>§35 primary axis</td>
+<td><code>DEC-35-02</code></td>
+</tr>
+<tr>
+<td>R04</td>
+<td>Company goals and OKRs, broken into quarters per team and everyone</td>
+<td>adopt</td>
+<td>§36 Goals and OKRs</td>
+<td><code>DEC-36-01</code></td>
+</tr>
+<tr>
+<td>R05</td>
+<td>Weekly Monday morning meeting per team, formatted, years of notes kept — own folder or space?</td>
+<td>adopt</td>
+<td>§37 Meetings</td>
+<td><code>DEC-37-01</code></td>
+</tr>
+<tr>
+<td>R06</td>
+<td>Chat spaces good enough to replace Cliq</td>
+<td>decide</td>
+<td>§38 Chat</td>
+<td><code>DEC-38-01</code></td>
+</tr>
+<tr>
+<td>R07</td>
+<td>Dashboards: EXCO, MANCO, per team, company OKR</td>
+<td>adopt</td>
+<td>§39 Dashboards</td>
+<td><code>DEC-39-01</code></td>
+</tr>
+<tr>
+<td>R08</td>
+<td>Team folders or space per work type: recurring, once off, requested</td>
+<td>reshape</td>
+<td>§40 Work type</td>
+<td><code>DEC-40-01</code></td>
+</tr>
+<tr>
+<td>R09</td>
+<td>Client SLA spaces, replacing the Coda space and all its functions</td>
+<td>adopt, partial</td>
+<td>§41 Clients, §42 Coda</td>
+<td><code>DEC-42-01</code></td>
+</tr>
+<tr>
+<td>R10</td>
+<td>Documents that capture a… (sentence unfinished)</td>
+<td>decide</td>
+<td>§43 Document library</td>
+<td><code>DEC-43-01</code></td>
+</tr>
+<tr>
+<td>R11</td>
+<td>(your list ended mid-sentence — nothing was inferred)</td>
+<td>—</td>
+<td>§47 open items</td>
+<td><code>DEC-43-01</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-five-collisions">The five collisions</h2>
+<p>Your list is not a wish list on top of v2.0. In five places it replaces an instruction v2.0 gave the builder.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>v2.0 said</th>
+<th>You now say</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>"One workspace named Infinity Brands" and "do not silently create a second workspace" (§8.1)</td>
+<td>Workspaces per brand</td>
+<td>One workspace unless the brand must be separately billed or legally isolated. Costed in §35.1.</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>"Tasks stay under their accountable delivery function" (§8.1); work type was not modelled</td>
+<td>Folders per work type</td>
+<td>Work type becomes a required field with standard views, not a container. §40.</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>"ClickUp Chat/email replacement — Excluded. Cliq stays in place" (§17)</td>
+<td>Chat replaces Cliq</td>
+<td>Chat is inside the build, piloted, with the retention and history gaps named. §38.</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>"Sprints/goals/whiteboards — Deferred" (§17)</td>
+<td>Company OKRs, quarterly, per team and per person</td>
+<td>Goals are in scope. §36.</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>Coda not mentioned; four dashboards defined</td>
+<td>Coda retired; EXCO and MANCO dashboards added</td>
+<td>Coda functions mapped one by one, gaps named. §42.</td>
+</tr>
+</tbody>
+</table>
+<p>Two rules survive untouched from v2.0 and still bind the builder: external access is always a separately permissioned container, and no Zoho job, user or attachment is copied across.</p>
+<h2 id="key-facts">Key facts</h2>
+<p>Every figure here was read from the page linked beside it on 2 November 2026.</p>
+<table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Value</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How ClickUp bills</td>
+<td>Payment is per Workspace; each Workspace needs an individual upgrade</td>
+<td><a href="https://clickup.com/pricing">ClickUp pricing</a></td>
+</tr>
+<tr>
+<td>Plans and price</td>
+<td>Free $0 · Core $9 user/mo yearly ($12 regular) · Business $17 ($25) · Enterprise custom · Max $100 ($120)</td>
+<td><a href="https://clickup.com/pricing">ClickUp pricing</a></td>
+</tr>
+<tr>
+<td>Spaces per plan</td>
+<td>Free 5 Spaces · Core and above unlimited Spaces</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6309466958103-Intro-to-Spaces">Intro to Spaces</a></td>
+</tr>
+<tr>
+<td>Lists and Folders per Space</td>
+<td>Free 40 Lists / 100 Folders · Core 200 / 200 · Business 400 / 400 · Business Plus 1,000 / 1,000 · Enterprise 1,000 / 1,000</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6309466958103-Intro-to-Spaces">Intro to Spaces</a></td>
+</tr>
+<tr>
+<td>Teams per plan</td>
+<td>Free 2 · Core 3 · Business 10 · Business Plus unlimited</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/30914854991255-Teams-feature-availability-and-limits">Teams availability</a></td>
+</tr>
+<tr>
+<td>Share items with Teams</td>
+<td>Business Plus and above only; sharing Spaces with Teams is Enterprise and Max only</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/30914854991255-Teams-feature-availability-and-limits">Teams availability</a></td>
+</tr>
+<tr>
+<td>Chat</td>
+<td>Free: 1,000 messages workspace-wide and 90-day history · Core and above: unlimited messages and history · data retention controls only on Enterprise and Max</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/29776622610199-Chat-feature-availability-and-limits">Chat availability</a></td>
+</tr>
+<tr>
+<td>Chat migration</td>
+<td>Slack importer exists; there is no Cliq importer</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/25790737416855-What-is-Chat">What is Chat</a></td>
+</tr>
+<tr>
+<td>Goals</td>
+<td>Every plan; Free 100 uses, unlimited above · four Target types: Number, True/False, Currency, Task · Goal Folders on Business and above</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6325733579671-Create-a-Goal">Create a Goal</a></td>
+</tr>
+<tr>
+<td>OKR views</td>
+<td>Recommended List and Gantt views: Department goals, Region projects, Team goals, Key targets</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/30807756167447-Use-views-for-goals-and-OKRs">Views for goals and OKRs</a></td>
+</tr>
+<tr>
+<td>Dashboards</td>
+<td>Free 60 uses · Core 100 uses · Business unlimited · 100 cards per dashboard, 500 rows</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/21257864098071-Dashboards-feature-availability-and-limits">Dashboards availability</a></td>
+</tr>
+<tr>
+<td>Scheduled reports</td>
+<td>40 uses total on Free, Core and Business; unlimited on Business Plus and above; uses never reset</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/21257864098071-Dashboards-feature-availability-and-limits">Dashboards availability</a></td>
+</tr>
+<tr>
+<td>Docs</td>
+<td>Every plan, guests included · pages and subpages · wikis · public view sharing · Protect Docs on Business Plus and above</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6328174371351-Intro-to-Docs">Intro to Docs</a></td>
+</tr>
+<tr>
+<td>AI Notetaker</td>
+<td>Records SyncUps and Zoom, Teams or Meet meetings from a connected Google or Outlook calendar; writes a Doc; Personal, Workspace or Shared</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/28928137493015-Use-AI-Notetaker-to-take-notes-and-record-meetings">AI Notetaker</a></td>
+</tr>
+<tr>
+<td>Formula fields</td>
+<td>Unlimited on paid plans · cannot use text fields · nesting limited to one layer · cannot sum values from linked fields · not compatible with templates</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6308656424983-Intro-to-Formula-Fields">Formula Fields</a></td>
+</tr>
+<tr>
+<td>Guests</td>
+<td>Same-domain and SSO users cannot be guests · view-only guests free and unlimited · permission-controlled guests cost a member seat beyond the allowance · guests cannot be invited to a Space</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/6310022323991-Guest-type-user-roles">Guest roles</a></td>
+</tr>
+<tr>
+<td>Moving data between Workspaces</td>
+<td>A ClickUp-run, one-way migration in a Thursday 2pm–5pm CST window, hours of downtime, source archived permanently</td>
+<td><a href="https://help.clickup.com/hc/en-us/articles/29806883199127-Consolidate-Workspaces">Consolidate Workspaces</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="detail">Detail</h2>
+<h3 id="34-teams-sub-teams-or-the-larger-teams">34. Teams: sub-teams or the larger teams</h3>
+<p>You asked whether teams should follow the smaller sub-teams or the larger teams. The platform answer decides it for you before any preference does.</p>
+<p>Business allows <strong>ten Teams</strong>. Your functional structure is already nine Spaces plus EXCO: ten. So on Business the Teams feature is exactly full, with no room for a sub-team layer, and no Team-based sharing at all — sharing items with Teams is Business Plus and above, and sharing whole Spaces with Teams is Enterprise and Max only.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What it means operationally</th>
+<th>Teams cost</th>
+<th>Plan needed</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1 — nine function Teams plus EXCO</td>
+<td>One Team per Space. Dashboards and workload group by Team. Permissions still granted per person.</td>
+<td>10 of 10 used</td>
+<td>Business</td>
+<td>Recommended on Business</td>
+</tr>
+<tr>
+<td>T2 — sub-teams of 2–4 people per function</td>
+<td>Closer to how the work actually splits: finance daily controls, creative production, store ops. Permission sharing then becomes possible.</td>
+<td>18–24 Teams</td>
+<td>Business Plus</td>
+<td>Recommended if you want sub-teams at all</td>
+</tr>
+<tr>
+<td>T3 — no Teams, Spaces only</td>
+<td>Simplest. Reporting groups by Space and by custom field. Loses the org chart and team activity views.</td>
+<td>0</td>
+<td>any paid</td>
+<td>Fallback</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ruling (proposed):</strong> the larger team is the permission boundary; the smaller sub-team is a <em>Team object</em> used for reporting, the org chart and workload — never for permission. That gives you both names without asking ClickUp to share by Team.</p>
+<blockquote>
+<p>[!note] The one number to hold in your head Business = 10 Teams, and you need 10 just for the functions. Any sub-team layer is a Business Plus decision, not a naming decision.</p>
+</blockquote>
+<h3 id="35-brand-axis-workspaces-spaces-and-folders">35. Brand axis: workspaces, Spaces and folders</h3>
+<h4 id="351-why-a-workspace-per-brand-is-a-money-decision-not-a-layout-decision">35.1 Why "a workspace per brand" is a money decision, not a layout decision</h4>
+<p>ClickUp bills per Workspace. Every Workspace carries its own seat count, even for the same person. The brands also do not talk to each other inside ClickUp: no cross-workspace reporting, no cross-workspace task links, and moving data between Workspaces is a ClickUp-operated migration with hours of downtime in a fixed Thursday window that permanently archives the source.</p>
+<p>Arithmetic on the 40-human planning scenario, Business at $17 user/mo billed yearly. A <em>seat-instance</em> is one person holding one seat in one Workspace.</p>
+<table>
+<thead>
+<tr>
+<th>Brand layout</th>
+<th>Workspaces</th>
+<th>Seat-instances</th>
+<th>Annual, Business</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One workspace, brand as a field and optional Folder</td>
+<td>1</td>
+<td>40</td>
+<td>$8,160</td>
+</tr>
+<tr>
+<td>Five workspaces, every brand-seat filled by 40 people</td>
+<td>5</td>
+<td>200</td>
+<td>$40,800</td>
+</tr>
+<tr>
+<td>Five workspaces, branded teams only (say 8 people per brand plus 15 leaders in each)</td>
+<td>5</td>
+<td>55–60</td>
+<td>$11,220 – $12,240</td>
+</tr>
+<tr>
+<td>Five workspaces on Core instead</td>
+<td>5</td>
+<td>200</td>
+<td>$21,600</td>
+</tr>
+</tbody>
+</table>
+<p>Add the reporting cost that no invoice shows: a company OKR dashboard cannot span five Workspaces, so your R07 company dashboard would need five separate versions stitched together by hand.</p>
+<p><strong>Ruling (proposed):</strong> one Workspace. A brand is a required <code>Brand</code> field everywhere, and a private Folder inside a Space only where the brand needs its own container — an external audience, a franchisee, a legally separate entity, or a different billing relationship. Split into separate Workspaces only for a brand that must be isolated in law or in money, and only with the arithmetic above signed off.</p>
+<h4 id="352-the-hierarchy-one-axis">35.2 The hierarchy, one axis</h4>
+<p>A Space is the permission boundary. A Folder inside it is either a brand, a client, or a store — never "department" and "brand" at once, because two axes produce two homes for the same task.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="cn">TD</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W</span>[<span class="st">&quot;Workspace — Infinity Brands (one)&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">S1</span>[<span class="st">&quot;Space 01 Leadership&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W</span> <span class="pp">--&gt;</span> <span class="dt">S2</span>[<span class="st">&quot;Space 02 Marketing &amp; Creative&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W</span> <span class="pp">--&gt;</span> <span class="dt">S3</span>[<span class="st">&quot;Space 03 Finance&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W</span> <span class="pp">--&gt;</span> <span class="dt">S4</span>[<span class="st">&quot;Space 10 Goals &amp; OKRs&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W</span> <span class="pp">--&gt;</span> <span class="dt">S5</span>[<span class="st">&quot;Space 11 Meetings &amp; Minutes&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S2</span> <span class="pp">--&gt;</span> <span class="dt">F1</span>[<span class="st">&quot;Folder — Intake&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S2</span> <span class="pp">--&gt;</span> <span class="dt">F2</span>[<span class="st">&quot;Folder — Production&quot;</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S2</span> <span class="pp">--&gt;</span> <span class="dt">F3</span>[<span class="st">&quot;Folder — Papa Pasta (brand container)&quot;</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S2</span> <span class="pp">--&gt;</span> <span class="dt">F4</span>[<span class="st">&quot;Folder — Client / Audience ID (private)&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F3</span> <span class="pp">--&gt;</span> <span class="dt">L1</span>[<span class="st">&quot;List — Always-On&quot;</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F3</span> <span class="pp">--&gt;</span> <span class="dt">L2</span>[<span class="st">&quot;List — Campaigns&quot;</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F4</span> <span class="pp">--&gt;</span> <span class="dt">L3</span>[<span class="st">&quot;List — Deliverables&quot;</span>]</span></code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Axis</th>
+<th>Use it for</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Space</td>
+<td>Function, one per accountable owner, private</td>
+<td><code>03 Finance</code></td>
+</tr>
+<tr>
+<td>Folder</td>
+<td>Brand, client, or store where isolation or external access is needed</td>
+<td><code>Papa Pasta</code>, <code>Client ACDC</code>, <code>Store 38</code></td>
+</tr>
+<tr>
+<td>List</td>
+<td>A queue of work with one workflow and one owner</td>
+<td><code>Creditors &amp; Approvals</code></td>
+</tr>
+<tr>
+<td>Field</td>
+<td>Everything that is an attribute: Brand, Work Type, Service Tier, Department</td>
+<td>required dropdowns</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>[!note] Ten Spaces, not nine Your requirements add two: a Goals and OKRs Space, and a Meetings and Minutes Space. Both are argued in §36 and §37. Everything else keeps the v2 structure.</p>
+</blockquote>
+<h3 id="36-goals-and-okrs-company-quarter-team-person">36. Goals and OKRs: company, quarter, team, person</h3>
+<p>ClickUp Goals are a separate object from tasks. A Goal holds measurable Targets, and a Target is one of four types: a Number, a True/False checkbox, a Currency amount, or a Task (which tracks a task, subtask or whole List). Goals exist on every plan; goal <em>Folders</em> — the thing that groups a year or a quarter — need Business or above. That single fact decides the shape.</p>
+<p><strong>The cascade.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>ClickUp object</th>
+<th>Example</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Company goal, annual</td>
+<td>Goal inside Goal Folder <code>2027</code></td>
+<td>Grow group revenue to R X</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>Company key result</td>
+<td>Target of type Currency or Number</td>
+<td>Group revenue R X by 31 Dec</td>
+<td>CFO</td>
+</tr>
+<tr>
+<td>Quarterly goal, per team</td>
+<td>Goal inside Goal Folder <code>2027 Q1</code>, named <code>&lt;Team&gt; — Q1</code></td>
+<td>Finance closes books by day 5</td>
+<td>Function owner</td>
+</tr>
+<tr>
+<td>Team key result</td>
+<td>Number or Task Target</td>
+<td>3 of 3 months closed by day 5</td>
+<td>Function owner</td>
+</tr>
+<tr>
+<td>Individual contribution</td>
+<td>Task Target on that person's own task, plus the <code>Goal</code> link</td>
+<td>Month-end close task attached to the Q1 goal</td>
+<td>The person</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why this order.</strong> ClickUp has no native "quarter" field and no native per-person goal assignment. The quarter is a Goal Folder plus a naming rule; the person is reached through a Task Target on real work, which is also the only version that cannot be gamed by ticking a box.</p>
+<p><strong>Build constants.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Space</td>
+<td><code>10 Goals &amp; OKRs</code> — private, member read, owner edit</td>
+</tr>
+<tr>
+<td>Goal Folders</td>
+<td>One per year, one per quarter inside it</td>
+</tr>
+<tr>
+<td>Naming</td>
+<td><code>2027 Q1 — Finance — Close by day 5</code></td>
+</tr>
+<tr>
+<td>Goal colour</td>
+<td>One per brand, so a dashboard reads at a glance</td>
+</tr>
+<tr>
+<td>Views</td>
+<td>List grouped by Department; Gantt for the year; filtered <code>Team goals</code>; <code>Key targets</code> as its own list</td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td>A Goals card on the company OKR dashboard (§39)</td>
+</tr>
+<tr>
+<td>Cadence</td>
+<td>Targets updated in the Monday meeting; the meeting Doc links the Goal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What this replaces.</strong> v2.0 §17 deferred goals outright. That line is now struck. The deferral was about scope, not capability, and your requirement settles the scope.</p>
+<h3 id="37-meetings-the-monday-standard-and-the-years-archive">37. Meetings: the Monday standard and the years archive</h3>
+<p>You asked the right question — own folder or own Space — and the answer is a Space, for a reason that is about permissions rather than tidiness.</p>
+<p><strong>Why a Space.</strong> Meeting minutes are the most sensitive routine documents you hold. EXCO minutes, a disciplinary conversation, a client escalation: different audiences. A Space is the only real permission boundary in ClickUp; a Folder inside a shared Space inherits too much. One Space, <code>11 Meetings &amp; Minutes</code>, private, with a Folder per team and a Doc per year inside each Folder, gives you one archive that is browsable, searchable and correctly closed.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Standard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Space</td>
+<td><code>11 Meetings &amp; Minutes</code>, private</td>
+</tr>
+<tr>
+<td>Folder per team</td>
+<td><code>EXCO</code>, <code>MANCO</code>, <code>Finance</code>, <code>Marketing</code>, <code>Brand Ops</code>, <code>Tech</code>, <code>Sales</code>, <code>Client Delivery</code>, <code>Store Ops</code></td>
+</tr>
+<tr>
+<td>Doc per team per year</td>
+<td><code>Monday — Finance — 2027</code> — one Doc, a page per week</td>
+</tr>
+<tr>
+<td>Page name</td>
+<td><code>W01 · 2027-01-04 · Monday</code> (week number, date, meeting name)</td>
+</tr>
+<tr>
+<td>Template</td>
+<td>Agenda → decisions → actions → owners → risks → links. Actions become real tasks in the owning Space, not text in a Doc.</td>
+</tr>
+<tr>
+<td>Capture</td>
+<td>AI Notetaker joins the calendar meeting, records, transcribes, and writes the notes Doc; the human fills decisions and actions</td>
+</tr>
+<tr>
+<td>Findability</td>
+<td>Docs Hub search, <code>#W07</code> page anchors, and a <code>Meeting</code> tag per Doc</td>
+</tr>
+<tr>
+<td>Retention</td>
+<td>Years of history stay as pages in one Doc per year — no yearly migration, no folder sprawl</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The mechanics that make it actually automatic.</strong> AI Notetaker works on SyncUps and on Zoom, Teams or Google Meet meetings once the Google or Outlook calendar is connected. Three notetaker types exist: Personal (only you see the notes), Shared (attendees see them), and Workspace (everyone sees them). Admins pick the default and can lock it. It writes a Doc, and a Doc can live as a view in a named hierarchy location — that is what lets each team's notes land in its own Folder without a human filing them.</p>
+<p><strong>Where it does not work, stated plainly.</strong> In-person meetings with no video link capture nothing. Breakout rooms are not supported. A meeting that moves after it starts yields notes for the original slot only.</p>
+<p><strong>The Monday format, per team.</strong> Fifteen minutes, same order every week: last week's actions, this week's numbers against target, blockers, decisions needed, then the Goal check. The Doc template enforces the order; the dashboard card (§39) supplies the numbers so nobody reads them aloud.</p>
+<h3 id="38-chat-replacing-cliq">38. Chat: replacing Cliq</h3>
+<p>Chat is real and included: Core and above give unlimited messages and unlimited history, Channels and direct messages, Posts, SyncUps for face-to-face, task creation straight from a message, Chat automations, and AI summaries. Your team would move from Cliq without buying anything extra.</p>
+<p>Four facts decide how far you can take it.</p>
+<table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Consequence for replacing Cliq</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No Cliq importer; only Slack has one</td>
+<td>Cliq history stays in Cliq. Export what you need for legal and HR before anything is switched off.</td>
+</tr>
+<tr>
+<td>Data retention controls are Enterprise and Max only</td>
+<td>On Business you cannot enforce a retention policy inside Chat. If retention is a compliance requirement, that is a plan decision, not a setting.</td>
+</tr>
+<tr>
+<td>Guests can chat only inside Channels they are invited to, and cannot create Channels</td>
+<td>Client Channels are possible, but the client must be invited to each one.</td>
+</tr>
+<tr>
+<td>Free plan caps Chat at 1,000 messages and 90 days</td>
+<td>Irrelevant here — the build is on a paid plan. Recorded so nobody tests on Free and gets a false answer.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ruling (proposed):</strong> pilot Chat with two groups — EXCO plus one delivery team — for one operating month, in parallel with Cliq. Move a channel only when its work already lives in ClickUp, because the value is the task created from the message, not the message. Cliq goes read-only only after the export is signed off, and nobody announces a cut-over before the pilot passes.</p>
+<blockquote>
+<p>[!note] The honest risk Chat that replaces Cliq is a behaviour change, not a feature. The plan's success measure is not "messages sent" but "tasks created from Chat messages" — that is the only number that proves work moved.</p>
+</blockquote>
+<h3 id="39-dashboards-exco-manco-team-company-okr">39. Dashboards: EXCO, MANCO, team, company OKR</h3>
+<p>Four dashboard tiers, because four audiences ask four different questions. Dashboards are unlimited on Business, and the cards are free — the constraint that bites is scheduled reports: <strong>40 sends in total per Workspace on Business, and those uses never reset.</strong> So the design is "they open the dashboard", not "we email it".</p>
+<table>
+<thead>
+<tr>
+<th>Dashboard</th>
+<th>Audience</th>
+<th>Question it answers</th>
+<th>Cards</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EXCO — Group</code></td>
+<td>Exco, 1 view each</td>
+<td>Are we winning the year?</td>
+<td>Company Goals card · Revenue vs plan · Store count and openings · SCI average · Top 10 open risks · SLA breaches this week · Brand revenue split</td>
+</tr>
+<tr>
+<td><code>MANCO — Operations</code></td>
+<td>Manco</td>
+<td>Is delivery healthy this week?</td>
+<td>Workload by Team · Overdue by function · Recurrence health (missed obligations) · Client SLA counters · WIP over limit · Blocked items by owner</td>
+</tr>
+<tr>
+<td><code>TEAM — &lt;team&gt;</code></td>
+<td>One per Team, 9 of them</td>
+<td>What do I do this week?</td>
+<td>My open work · This week's due · Blocked · Waiting on someone else · Team Goal progress</td>
+</tr>
+<tr>
+<td><code>OKR — Company</code></td>
+<td>Everyone</td>
+<td>How is the quarter going?</td>
+<td>Goals card by brand · Quarterly targets on/off track · Department goal list · Key targets table</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Design rules that keep these honest.</strong></p>
+<ul>
+<li>One card, one number, one owner. If nobody would act on a card, it comes off.</li>
+<li>Every dashboard filters to the same fiscal calendar, defined once.</li>
+<li>The team dashboards are duplicated from a master template so a new team costs minutes, not a rebuild.</li>
+<li>Scheduled reports are rationed: 40 for the whole Workspace. Reserve them for EXCO only, monthly, and count them.</li>
+<li>A dashboard card must be reproducible: the same card, opened by two people, shows the same number.</li>
+</ul>
+<h3 id="40-work-type-recurring-once-off-requested">40. Work type: recurring, once off, requested</h3>
+<p>You asked for a folder or a Space per work type. Do not build it that way, and the reason is mechanical: a task has one home in the hierarchy. If recurring work lives in a Work-Type folder, then the Finance recurring task sits in <code>Recurring</code> and leaves <code>03 Finance</code>, and every function dashboard and permission rule silently loses it. The work type is a property of the task, not a place.</p>
+<table>
+<thead>
+<tr>
+<th>Need you expressed</th>
+<th>Built as</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>See all recurring work for a team</td>
+<td>Required field <code>Work Type = Recurring</code> plus a <code>Recurring — Board</code> view inside every Space</td>
+</tr>
+<tr>
+<td>See all once-off work</td>
+<td>Same field, <code>Once off — List</code> view, grouped by owner</td>
+</tr>
+<tr>
+<td>Catch requests</td>
+<td>A real intake List per Space, <code>00 Requests</code>, fed by that function's Form — this is the one place a container is correct, because a request is not yet work</td>
+</tr>
+<tr>
+<td>Report across the company</td>
+<td>One Everything view at Workspace level filtering <code>Work Type</code>, which no folder structure can give you</td>
+</tr>
+</tbody>
+</table>
+<p>Standard view set, identical in every Space: <code>00 Requests</code> · <code>01 This week</code> · <code>Recurring — Board</code> · <code>Once off — List</code> · <code>Everything</code>. Five views, same names, same order, everywhere. Predictability is the feature.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Values</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Work Type</td>
+<td>Dropdown</td>
+<td>Recurring · Once off · Requested</td>
+<td>Yes, except Requested forms where it is set by the form</td>
+</tr>
+<tr>
+<td>Frequency</td>
+<td>Dropdown</td>
+<td>Once Off · Daily · Weekly · Monthly · Quarterly</td>
+<td>Yes when Recurring</td>
+</tr>
+<tr>
+<td>Review Cadence</td>
+<td>Dropdown</td>
+<td>Weekly · Monthly · Quarterly</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h3 id="41-client-sla-spaces">41. Client SLA spaces</h3>
+<p>Clients get a container of their own, and the container is a Folder inside the delivering Space — not a Space, and not a Workspace. A client Folder can be shared with a guest while the Space it sits in stays private, which is exactly the boundary you want: the client sees their work, never the company's.</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Standard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Container</td>
+<td><code>Client — &lt;CODE&gt;</code> Folder inside the delivering Space, privacy set to the account team</td>
+</tr>
+<tr>
+<td>Lists</td>
+<td><code>Deliverables</code> · <code>Approvals</code> · <code>Issues</code> · <code>Reports</code></td>
+</tr>
+<tr>
+<td>Fields</td>
+<td>Service Tier (Gold/Black/Silver) · Response Due · Resolution Due · First Response At · SLA Status (formula) · Client Contact</td>
+</tr>
+<tr>
+<td>Clocks</td>
+<td>Automation stamps Response Due from Service Tier and Priority at creation; the breach is a computed field, not a human's memory</td>
+</tr>
+<tr>
+<td>Guest access</td>
+<td>Permission-controlled guest on the client Folder only: view, comment, or edit per the contract — never the Space</td>
+</tr>
+<tr>
+<td>Reporting</td>
+<td>One <code>Client SLA</code> dashboard filtered by Tier; the EXCO card counts breaches only</td>
+</tr>
+</tbody>
+</table>
+<p><strong>SLA field arithmetic.</strong> Response Due = created + tier allowance. SLA Status = a formula over First Response At and Response Due. Two limits from the platform, both verified: a formula cannot reference text fields, and a <code>TODAY()</code> formula cannot be sorted, filtered or grouped and cannot feed a calculated column. So the clock uses date fields, not text, and the breach state is stored, not derived from today's date at read time.</p>
+<p><strong>Guest arithmetic you will feel.</strong> View-only guests are free and unlimited. Permission-controlled guests cost the same as a member seat once you exceed the allowance that comes with your plan. Same-domain and SSO accounts cannot be guests at all — an Infinity Brands employee with an <code>@infinitybrands</code> address is a member, always. So the client guest count is a real cost line: budget it per client, not per project.</p>
+<h3 id="42-replacing-coda">42. Replacing Coda</h3>
+<p>Coda is a document-and-database hybrid: tables that reference each other, formula columns across rows, buttons that run actions, and Packs that talk to outside services. ClickUp covers most of that list, and fails in four specific places. Map the functions, keep the honest gaps.</p>
+<table>
+<thead>
+<tr>
+<th>Coda function</th>
+<th>ClickUp equivalent</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Structured table</td>
+<td>List with Custom Fields</td>
+<td>Works</td>
+</tr>
+<tr>
+<td>Relational table (linked records)</td>
+<td>Relationship fields between Lists</td>
+<td>Works, manual</td>
+</tr>
+<tr>
+<td>Formula column</td>
+<td>Formula Field</td>
+<td>Works, with the four gaps below</td>
+</tr>
+<tr>
+<td>Button that runs an action</td>
+<td>Automation with a manual or button trigger</td>
+<td>Works, verify the trigger on our plan</td>
+</tr>
+<tr>
+<td>Scheduled automation</td>
+<td>Time-based Automation</td>
+<td>Works, quota-bound</td>
+</tr>
+<tr>
+<td>Document with embedded live table</td>
+<td>Doc with embedded List view</td>
+<td>Works</td>
+</tr>
+<tr>
+<td>Cross-row rollup (sum of a linked column)</td>
+<td>Not supported in Formula Fields</td>
+<td>Gap</td>
+</tr>
+<tr>
+<td>Nested formula three levels deep</td>
+<td>Nesting limited to one layer</td>
+<td>Gap</td>
+</tr>
+<tr>
+<td>Formula inside a template</td>
+<td>Formula Fields are not compatible with templates</td>
+<td>Gap</td>
+</tr>
+<tr>
+<td>Pack / external API call</td>
+<td>Webhook, integration, or the agent API</td>
+<td>Works, needs a builder</td>
+</tr>
+<tr>
+<td>Public share of a page</td>
+<td>Public Doc view</td>
+<td>Works</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The four gaps are real, and they change one habit.</strong> In Coda a column can sum its children. In ClickUp it cannot, so any rollup you rely on today must become either a Dashboard calculation card, an automation that writes a number field, or an agent that computes it nightly and writes back. Decide per rollup which of those three it becomes before the Coda form is retired, or the number quietly disappears.</p>
+<p><strong>Retirement order.</strong> Inventory every Coda doc and its functions → map each to the table above → build the mapped replacement → run both for one cycle → export the Coda doc to PDF or Markdown for the record → then freeze, and only then retire. No Coda doc is deleted, ever; freezing is enough.</p>
+<h3 id="43-the-document-library">43. The document library</h3>
+<p>Your last line broke off mid-sentence — "documents that capture a" — so this section specifies the library and leaves the final item for you in §47. A document that captures a decision, a standard, a client relationship or a week of work is a template plus a home, and nothing else.</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Captures</th>
+<th>Home</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decision record</td>
+<td>A decision, who made it, alternatives rejected, consequences</td>
+<td><code>01 Leadership / Decisions</code></td>
+<td>Bruce Wayne</td>
+</tr>
+<tr>
+<td>Meeting minutes</td>
+<td>The Monday standard in §37</td>
+<td><code>11 Meetings &amp; Minutes</code></td>
+<td>Team lead</td>
+</tr>
+<tr>
+<td>SOP</td>
+<td>How one recurring job is done, step by step, with the owner</td>
+<td>Function Space, <code>SOPs</code> Folder</td>
+<td>Function owner</td>
+</tr>
+<tr>
+<td>Client SLA report</td>
+<td>Service delivered against the tier over a period</td>
+<td>Client Folder, <code>Reports</code></td>
+<td>Account owner</td>
+</tr>
+<tr>
+<td>Brand standard</td>
+<td>Voice, visual rules, do-nots, examples</td>
+<td>Brand Folder, <code>Brand</code></td>
+<td>Marketing lead</td>
+</tr>
+<tr>
+<td>Project brief</td>
+<td>The one-page brief before any project starts</td>
+<td>Requesting Space, <code>Briefs</code> Folder</td>
+<td>Requester</td>
+</tr>
+<tr>
+<td>Onboarding pack</td>
+<td>What a new person needs in week one</td>
+<td><code>01 Leadership / People</code></td>
+<td>HR</td>
+</tr>
+</tbody>
+</table>
+<p>Docs are on every plan, guests can read them, pages nest, and a Doc can hold a live List view — so a brief in a Doc and its tasks in a List are one surface, not two. Protect Docs needs Business Plus; on Business, editing rights are held by Space privacy instead.</p>
+<h3 id="44-commercial-model-recut">44. Commercial model, recut</h3>
+<p>The v2.0 cost model assumed one Workspace and Business seats. Your requirements add three pressures: a possible Business Plus step for sub-teams and team sharing, a per-brand Workspace multiplier if R02 goes that way, and client guests.</p>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Business</th>
+<th>Business Plus</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Seat price</td>
+<td>$17 user/mo yearly ($25 monthly)</td>
+<td>Not published on the pricing page — confirm with ClickUp</td>
+<td>Core $9, Max $100</td>
+</tr>
+<tr>
+<td>Spaces</td>
+<td>Unlimited</td>
+<td>Unlimited</td>
+<td>Not a constraint</td>
+</tr>
+<tr>
+<td>Lists / Folders per Space</td>
+<td>400 / 400</td>
+<td>1,000 / 1,000</td>
+<td>Enough either way for v3</td>
+</tr>
+<tr>
+<td>Teams</td>
+<td>10</td>
+<td>Unlimited</td>
+<td>The sub-team decision</td>
+</tr>
+<tr>
+<td>Share items with Teams</td>
+<td>No</td>
+<td>Yes</td>
+<td>The reason to step up</td>
+</tr>
+<tr>
+<td>Share Spaces with Teams</td>
+<td>No</td>
+<td>No — Enterprise and Max only</td>
+<td>Not needed if Spaces are function-private</td>
+</tr>
+<tr>
+<td>Scheduled reports</td>
+<td>40 total, never reset</td>
+<td>Unlimited</td>
+<td>The reason to ration</td>
+</tr>
+<tr>
+<td>Protect Docs and pages</td>
+<td>No</td>
+<td>Yes</td>
+<td>Needed only if Docs become policy</td>
+</tr>
+<tr>
+<td>AI Notetaker</td>
+<td>Unlimited per the pricing page</td>
+<td>Unlimited</td>
+<td>Confirm the AI bundle line on the invoice</td>
+</tr>
+<tr>
+<td>Automations</td>
+<td>10,000</td>
+<td>Higher tier</td>
+<td>v2 budgeted 26 rules, far inside</td>
+</tr>
+<tr>
+<td>Audit logs</td>
+<td>No</td>
+<td>No — Enterprise</td>
+<td>A governance gap if it ever matters</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Three scenarios, 40 humans, yearly billing.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Composition</th>
+<th>Annual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lean, one Workspace, Business</td>
+<td>40 seats at $17</td>
+<td>$8,160</td>
+</tr>
+<tr>
+<td>Sub-teams, one Workspace, Business Plus</td>
+<td>40 seats at an unconfirmed higher rate</td>
+<td>TBD — needs a quote</td>
+</tr>
+<tr>
+<td>Per-brand Workspaces, Business</td>
+<td>55–60 seat-instances at $17</td>
+<td>$11,220 – $12,240</td>
+</tr>
+</tbody>
+</table>
+<p>Add client guests: view-only is free, permission-controlled costs a member seat beyond the allowance. Ten active clients with two permission-controlled guests each is twenty seats of exposure unless the allowance covers them — check the allowance at provision time and record it.</p>
+<blockquote>
+<p>[!note] Owner-only Nothing here is purchased, quoted or accepted by any agent. The plan choice, the Workspace count and the guest budget are yours, and the numbers above are the decision paper, not an order.</p>
+</blockquote>
+<h3 id="45-tests-this-version-adds">45. Tests this version adds</h3>
+<p>v2.0 defined T01–T112 as a test index. These are the new ones, all written to be run by a person or an agent against the real Workspace and recorded PASS, FAIL or BLOCKED with evidence.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T113</td>
+<td>Create a Team, then grant permission by Team on Business</td>
+<td>Sharing options do not include Teams; the limit of 10 is enforced</td>
+</tr>
+<tr>
+<td>T114</td>
+<td>Count Teams after creating the function set plus EXCO</td>
+<td>Exactly 10, and the 11th is refused</td>
+</tr>
+<tr>
+<td>T115</td>
+<td>Read the invoice line for seat count</td>
+<td>Equals active members plus permission-controlled guests beyond allowance</td>
+</tr>
+<tr>
+<td>T116</td>
+<td>Create a second Workspace and attempt a shared dashboard</td>
+<td>No cross-workspace card exists</td>
+</tr>
+<tr>
+<td>T117</td>
+<td>Attempt to move a task between Workspaces</td>
+<td>Not possible without migration</td>
+</tr>
+<tr>
+<td>T118</td>
+<td>Create a Goal Folder, then three quarterly Goals</td>
+<td>Folders accepted on the plan; naming rule holds</td>
+</tr>
+<tr>
+<td>T119</td>
+<td>Add all four Target types to one Goal</td>
+<td>Number, True/False, Currency and Task all accepted</td>
+</tr>
+<tr>
+<td>T120</td>
+<td>Attach a Task Target to a person's task</td>
+<td>Progress updates when the task closes</td>
+</tr>
+<tr>
+<td>T121</td>
+<td>Build the four OKR views</td>
+<td>Department, Team, Key targets and Gantt all filter correctly</td>
+</tr>
+<tr>
+<td>T122</td>
+<td>Send AI Notetaker to a calendar meeting</td>
+<td>A notes Doc appears in the target Folder with a transcript</td>
+</tr>
+<tr>
+<td>T123</td>
+<td>Confirm the notes Doc lands where the Doc view is configured</td>
+<td>Correct team Folder, correct year</td>
+</tr>
+<tr>
+<td>T124</td>
+<td>Run a meeting with no video link</td>
+<td>Nothing is captured, as documented</td>
+</tr>
+<tr>
+<td>T125</td>
+<td>Create a page per week in one yearly Doc, 52 pages</td>
+<td>Search and navigation still usable</td>
+</tr>
+<tr>
+<td>T126</td>
+<td>Create a <code>Work Type</code> field and the five standard views</td>
+<td>Views resolve on existing tasks with no data loss</td>
+</tr>
+<tr>
+<td>T127</td>
+<td>Search company-wide by <code>Work Type</code></td>
+<td>One Everything view returns cross-Space results</td>
+</tr>
+<tr>
+<td>T128</td>
+<td>Create a client Folder, share it with a guest, open the Space as that guest</td>
+<td>Folder visible, Space not</td>
+</tr>
+<tr>
+<td>T129</td>
+<td>Add a same-domain address as a guest</td>
+<td>Refused; converted to member</td>
+</tr>
+<tr>
+<td>T130</td>
+<td>Let the SLA formula reference a text field</td>
+<td>Refused by the field editor</td>
+</tr>
+<tr>
+<td>T131</td>
+<td>Sort a <code>TODAY()</code> formula column</td>
+<td>Not available; confirms the clock must be stored</td>
+</tr>
+<tr>
+<td>T132</td>
+<td>Apply a template that contains a Formula Field</td>
+<td>Field does not carry; documented deviation</td>
+</tr>
+<tr>
+<td>T133</td>
+<td>Sum a linked column with a Formula</td>
+<td>Not possible; rollup must be an alternative</td>
+</tr>
+<tr>
+<td>T134</td>
+<td>Count scheduled reports sent in a month</td>
+<td>Against the 40-use ceiling</td>
+</tr>
+<tr>
+<td>T135</td>
+<td>Open each of the four dashboards as a member</td>
+<td>Numbers match a manual count</td>
+</tr>
+<tr>
+<td>T136</td>
+<td>Send a Chat message, then create a task from it</td>
+<td>Task created with the message linked</td>
+</tr>
+<tr>
+<td>T137</td>
+<td>Attempt to import Cliq history</td>
+<td>No importer; export path documented</td>
+</tr>
+<tr>
+<td>T138</td>
+<td>Check whether a retention policy can be set in Chat</td>
+<td>Refused on Business</td>
+</tr>
+<tr>
+<td>T139</td>
+<td>Add a guest to a Channel</td>
+<td>Allowed; Channel list is scoped</td>
+</tr>
+<tr>
+<td>T140</td>
+<td>Run the full standard view set in a fresh Space</td>
+<td>Five views, same names, same order</td>
+</tr>
+</tbody>
+</table>
+<h3 id="46-build-order">46. Build order</h3>
+<p>Staged by dependency, not by calendar. Everything inside a stage runs in parallel. The first stage that can be seen is the first stage that ships.</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Work</th>
+<th>Exit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S0 — Decisions</td>
+<td>R02 brand axis, plan tier, Chat pilot scope, Coda inventory, roster of 40</td>
+<td>Every decision in §47 closed or explicitly deferred</td>
+</tr>
+<tr>
+<td>S1 — Provision</td>
+<td>One Workspace, ten Teams, ten Spaces, standard fields, IDs recorded</td>
+<td>Read-back matches the approved hierarchy</td>
+</tr>
+<tr>
+<td>S2 — Goals</td>
+<td>Goal Folders <code>2027</code> and Q1, company goal, nine team goals, targets</td>
+<td>Cascade visible in the OKR dashboard</td>
+</tr>
+<tr>
+<td>S3 — Meetings</td>
+<td><code>11 Meetings &amp; Minutes</code>, folders, yearly Docs, template, calendar connection</td>
+<td>One real Monday meeting captured end to end</td>
+</tr>
+<tr>
+<td>S4 — Views</td>
+<td>Five standard views per Space, Work Type field, request forms</td>
+<td>Requests land in <code>00 Requests</code> without help</td>
+</tr>
+<tr>
+<td>S5 — Dashboards</td>
+<td>EXCO, MANCO, nine team, one OKR</td>
+<td>Each opens with correct numbers</td>
+</tr>
+<tr>
+<td>S6 — Chat pilot</td>
+<td>Two groups, task-from-message habit, Cliq export signed off</td>
+<td>Pilot measures tasks created, not messages sent</td>
+</tr>
+<tr>
+<td>S7 — Clients</td>
+<td>Client Folders, SLA fields and clocks, guest access tested</td>
+<td>A client sees their Folder and nothing else</td>
+</tr>
+<tr>
+<td>S8 — Coda</td>
+<td>Inventory, map, build, run both, freeze</td>
+<td>Each retired function has a named replacement or an accepted gap</td>
+</tr>
+<tr>
+<td>S9 — Documents</td>
+<td>Seven templates, homes, owners</td>
+<td>A person can find the template without asking</td>
+</tr>
+</tbody>
+</table>
+<h3 id="47-what-only-you-can-decide">47. What only you can decide</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decision</th>
+<th>Why it is yours</th>
+<th>Recommended answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEC-35-01</td>
+<td>One Workspace, or Workspaces per brand</td>
+<td>It multiplies seats and splits reporting</td>
+<td>One Workspace; brand as a field and a Folder</td>
+</tr>
+<tr>
+<td>DEC-34-01</td>
+<td>Ten function Teams on Business, or sub-teams on Business Plus</td>
+<td>It changes the plan and the price</td>
+<td>Sub-teams only if you want team-level sharing; otherwise T1</td>
+</tr>
+<tr>
+<td>DEC-38-01</td>
+<td>Whether Chat replaces Cliq, and when Cliq freezes</td>
+<td>It is a behaviour change with legal exposure</td>
+<td>Pilot with two groups; freeze Cliq only after the export is signed</td>
+</tr>
+<tr>
+<td>DEC-42-01</td>
+<td>Which Coda docs are retired, and what each rollup becomes</td>
+<td>It is a data-retention decision</td>
+<td>Inventory first, retire nothing until mapped</td>
+</tr>
+<tr>
+<td>DEC-36-01</td>
+<td>Whether each person carries an individual Goal</td>
+<td>It changes how performance is read</td>
+<td>Task Targets on real work, not standalone personal Goals</td>
+</tr>
+<tr>
+<td>DEC-37-01</td>
+<td>Whether all teams' minutes sit in one Space</td>
+<td>It is a sensitivity call</td>
+<td>Yes — one private Space, a Folder per team</td>
+</tr>
+<tr>
+<td>DEC-43-01</td>
+<td>Finish the sentence: "documents that capture a…"</td>
+<td>Only you know the object</td>
+<td>Named in the table in §43; add the missing one</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Open items carried from the evidence, not guessed.</strong></p>
+<ul>
+<li>Business Plus is described in ClickUp's help pages but not priced on the public pricing page. Its price needs a quote.</li>
+<li>The permission-controlled guest allowance formula differs between older documentation and the current article. Confirm at provision.</li>
+<li>A "button" automation trigger needs verification on the chosen plan.</li>
+<li>Rollup behaviour across linked Lists is documented as unsupported in Formula Fields; confirm whether any Rollup field exists on the plan before designing around it.</li>
+<li>Your requirement list ended at "documents that capture a". Nothing was invented to fill it.</li>
+<li>Housekeeping: v2.0 sits in <code>Active</code> while an identical copy sits in <code>Archived</code>, and v1.0 still reads <code>status: active</code>. That is a Beast filing job, waiting on your word.</li>
+</ul>
+<h2 id="evidence">Evidence</h2>
+<ul>
+<li><a href="https://clickup.com/pricing">ClickUp pricing page</a> — per-Workspace billing, plan prices, Spaces and seats.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6309466958103-Intro-to-Spaces">Intro to Spaces</a> — Space availability, Lists and Folders per Space.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/30914854991255-Teams-feature-availability-and-limits">Teams feature availability and limits</a> — Teams per plan, when sharing with Teams works.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/29776622610199-Chat-feature-availability-and-limits">Chat feature availability and limits</a> — message caps, history, retention.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/25790737416855-What-is-Chat">What is Chat</a> — Channels, Posts, task creation, Slack import only.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6325733579671-Create-a-Goal">Create a Goal</a> — Goal and Target types, Goal Folders, plan limits.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/30807756167447-Use-views-for-goals-and-OKRs">Use views for goals and OKRs</a> — the four recommended OKR views.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/21257864098071-Dashboards-feature-availability-and-limits">Dashboards availability and limits</a> — dashboard uses, card and row caps, scheduled reports.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6328174371351-Intro-to-Docs">Intro to Docs</a> — Doc and wiki availability, pages, public views, Protect Docs.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/28928137493015-Use-AI-Notetaker-to-take-notes-and-record-meetings">AI Notetaker</a> — capture sources, notetaker types, Doc output, limits.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6308656424983-Intro-to-Formula-Fields">Intro to Formula Fields</a> — the four formula gaps.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/6310022323991-Guest-type-user-roles">Guest-type user roles</a> — guest pricing, domain rules, Space restriction.</li>
+<li><a href="https://help.clickup.com/hc/en-us/articles/29806883199127-Consolidate-Workspaces">Consolidate Workspaces</a> — the migration window, downtime and permanent archive.</li>
+<li>Carried forward: <a href="../Active/2026-11-01-infinity-brands-clickup-implementation-prd-v2-0-deep-build.md">v2.0 implementation PRD</a> — hierarchy §8, exclusions §17, runbook §18.</li>
+<li>Requirement list: supplied by Ricardo in writing on 2 November 2026, reproduced as R01–R11 in the trace table.</li>
+<li>Local build directory: <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/batman/clickup-prd-v3/</code>.</li>
+</ul>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="../../../../ReadME_MasterIndex.md">ReadME_MasterIndex</a></li>
+<li><a href="../Active/2026-11-01-infinity-brands-clickup-implementation-prd-v2-0-deep-build.md">ClickUp implementation PRD v2.0</a></li>
+<li><a href="../Active/2026-10-29-infinity-brands-clickup-implementation-prd.md">ClickUp implementation PRD v1.0</a></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
