@@ -129,7 +129,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>This is the <strong>single canonical document</strong> for the fleet's model allocation and benchmark standing. It is updated in place weekly (never duplicated) by the benchmark cron <code>05dc60dd84d2</code>. Every number below came from a live pull (<code>bench-pull --source all</code>, 17 sources) or a live inference probe run on 2026-10-26. No figure is estimated.</p>
 <p><strong>Architecture note:</strong> Hermes homes use <strong>direct ollama-cloud lanes</strong> (32 config files: 31 profiles + the root config) since the 2026-10-17 retirement of LiteLLM as the primary path. <strong>LiteLLM is fully decommissioned as of 2026-10-19</strong> (containers and volume removed, no auto-start). Gateway-era references in older copies of this document are historical.</p>
 <hr />
-<h2 id="1-live-platform-status-2026-10-26">1. Live platform status (2026-10-26)</h2>
+<h2 id="1-live-platform-status-2026-11-02">1. Live platform status (2026-11-02)</h2>
 <p>Every supplier probed host-side with one real chat completion on <strong>2026-10-26 between 05:03 and 05:05 SAST</strong>. "Latency" is wall-clock for a trivial prompt — a health signal, not a quality signal. <code>&lt;empty&gt;</code> means the lane answered <strong>200</strong> but the content came back blank because the 10-token budget was spent inside a reasoning block (<code>finish_reason: length</code>) — a probe artifact, not a failure.</p>
 <table>
 <thead>
@@ -516,7 +516,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Board leaders (context, not reachable on our lanes):</strong> AA #1 <strong>Claude Opus 5.5 — 57.62</strong>; Hermes #1 <strong>Claude Opus 5.5 — 63.31</strong> ($4.99/task); LB coding #1 <strong>claude-fable-5.1 — 97.7</strong>; LB reasoning #1 <strong>gemini-4-argon — 95.1</strong>; LMArena text #1 <strong>Gemini 4 Argon (High) — 1517.2</strong>; LMArena code #1 <strong>Claude Opus 5.5 (Max) — 1806.9</strong>; SWE-bench Verified #1 <strong>Claude 4.5 Opus — 79.2 %</strong>.</p>
 <p><strong>What the table says about our reachable set:</strong></p>
 <ul>
-<li><strong><code>deepseek-v4.1-flash:1017</code> is the strongest model we can reach on both index and coding.</strong> AA now scores it <strong>45.10</strong> — up from 39.46 last week, and within 2.7 points of glm-5.3 (44.78) while costing <strong>$0.259 vs $3.78 per task</strong>. LB coding <strong>96.0</strong> is third on the whole board behind claude-fable-5.1 (97.7) and claude-opus-5.5 (96.3), both of which we cannot reach.</li>
+<li><strong><code>deepseek-v4.1-flash:1017</code> is the strongest model we can reach on both index and coding.</strong> AA scores it <strong>45.10</strong> — within 2.7 points of glm-5.3 (44.78) while costing <strong>$0.259 vs $3.78 per task</strong>. (The 39.46 quoted here last week was the lagging OpenRouter feed, not an AA reading; see the next bullet.) LB coding <strong>96.0</strong> is third on the whole board behind claude-fable-5.1 (97.7) and claude-opus-5.5 (96.3), both of which we cannot reach.</li>
 <li><strong>The AA index-version drift flagged last week has closed</strong> — AA and the self-reported feed now agree that the 1017 refresh is the frontier-flash tier, so the orchestrator/worker/deep allocation is confirmed on evidence rather than on a disputed number.</li>
 <li><strong>kimi-k3 has dropped off the AA board entirely.</strong> Only <strong>Kimi K3.1 Pro</strong> (AA 55.09) carries a Kimi row now. kimi-k3 keeps the highest LB reasoning in our reachable set (<strong>90.7</strong>) and a top-20 LMArena standing on both boards, which is why the single reason seat still holds it — but its coding is the weakest in the top tier (59.3) and it costs <strong>$6.50/task</strong>, 25× the flash tier.</li>
 <li><strong><code>kimi-k3.1-pro</code> is the interesting miss:</strong> AA <strong>55.09</strong>, LB <strong>81.8 / 91.1</strong>, LMArena code <strong>#8</strong>. It is <em>not</em> on Ollama Cloud (the 23-model catalog has no K3.1) and exists on OpenRouter only as a <strong>paid</strong> model ($2/M in, $10/M out). At a $0 balance it is not wireable — held, not forgotten (§9).</li>
@@ -1161,71 +1161,76 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Verification:</strong> 32/32 configs parse; live MoA and council runs both engaged the new seat; <code>hermes -p beast chat</code> returns a real completion on the new worker model (<code>model=deepseek-v4.1-flash:1017 provider=ollama-cloud</code>, 2.6 s in <code>agent.log</code>). Census after the change: <strong>28 homes on deepseek-v4.1-flash:1017, 2 on gpt-oss:20b, 1 kimi-k3, 1 llama3.2:1b.</strong> Backups: <code>config.yaml.bak-20261019-m31</code> beside every config. Shadow deliberately untouched (local-only, no MoA, no OpenRouter hop).</p>
 <p><strong>The answer to Ricardo's question — which flash model gives the most bang for the buck:</strong> <strong><code>deepseek-v4.1-flash:1017</code></strong>. On AA v4.3.2 it is the smartest flash model we can reach (<strong>45</strong>) and, once verbosity is priced in, also the <strong>cheapest per completed task ($0.26)</strong> — cheaper than glm-5.3-flash (42 at $0.28) and only 4 cents above minimax-m3.1-flash (42 at $0.22) while scoring 3 points higher and running 3× faster on our lane. m3.1 wins only on raw token price for very short prompt-heavy calls (our eval: $0.00013 vs $0.00020 per task), and pays for it in latency and hallucination discipline. That is why m3.1 got the seats where its 1M context, vision and $0 price matter (MoA/council seat, free fallback hop) and not a primary.</p>
 <hr />
-<h3 id="54-role-re-pick--2026-10-26-d3-gate-run-all-seven-seats-held">5.4 Role re-pick — 2026-10-26 d3 gate run (all seven seats held)</h3>
-<p>Every seat was re-asked against today's evidence with the local d3 gate. <strong>All seven picks came back the same model that is already wired</strong> — so the allocation stands with no primary change. Two picks landed under 0.6 confidence and were confirmed by pairwise + mirror before being accepted.</p>
+<h3 id="54-role-re-pick--2026-10-26-d3-gate-run-six-seats-held-the-reason-seat-contested">5.4 Role re-pick — 2026-10-26 d3 gate run (six seats held, the reason seat contested)</h3>
+<p>Two independent gate runs, because a single run is not evidence the lane is stable. <strong>Run 1</strong> was asked role-by-role with each seat's own governing rule in the state. <strong>Run 2</strong> is the new automated <code>gate-picks.py</code>, which builds one scoreboard from the day's pulls and asks every seat against it. Both runs are in <code>gates.csv</code> — <strong>49 rows dated 2026-10-26</strong>, because the log is append-only and keeps every re-run (11 role-framed calls, plus five automated <code>gate-picks.py</code> passes as the helper itself was being verified).</p>
 <table>
 <thead>
 <tr>
 <th>Role</th>
-<th>Form</th>
-<th>Winner (unchanged)</th>
-<th>Confidence</th>
-<th>Note</th>
+<th>Winner (wired)</th>
+<th>Run 1 — role-framed</th>
+<th>Run 2 — automated</th>
+<th>Outcome</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>orchestrator / leadership</td>
-<td>3-way choice</td>
 <td>deepseek-v4.1-flash:1017</td>
 <td><strong>0.9853</strong></td>
-<td>AA 45.10 at $0.259/task beats glm-5.3 (44.78 at $3.78)</td>
+<td><strong>0.9147</strong></td>
+<td>held</td>
 </tr>
 <tr>
 <td>deep work</td>
-<td>3-way choice</td>
 <td>deepseek-v4.1-flash:1017</td>
 <td><strong>0.9640</strong></td>
-<td>LB coding 96.0 — best reachable</td>
+<td><strong>0.9448</strong></td>
+<td>held</td>
 </tr>
 <tr>
 <td>worker</td>
-<td>3-way choice</td>
 <td>deepseek-v4.1-flash:1017</td>
 <td><strong>0.9818</strong></td>
-<td>14× cheaper per task than glm-5.3</td>
-</tr>
-<tr>
-<td>reason</td>
-<td>3-way → pairwise</td>
-<td>kimi-k3</td>
-<td>0.5522 → <strong>0.9875 / mirror 0.8341</strong></td>
-<td>LB reasoning 90.7 highest reachable; flagship allowed on 1 home</td>
+<td><strong>0.9395</strong></td>
+<td>held</td>
 </tr>
 <tr>
 <td>fast / tiny</td>
-<td>3-way choice</td>
 <td>gpt-oss:20b</td>
 <td><strong>0.8720</strong></td>
-<td>0.7 s, tool-calling tuned</td>
+<td><strong>0.7124</strong></td>
+<td>held</td>
 </tr>
 <tr>
 <td>MoA reference seat</td>
-<td>4-way → pairwise</td>
 <td>minimax-m3.1-flash</td>
-<td>0.5584 → <strong>0.9966 / mirror 0.9816</strong></td>
-<td>distinct lineage + AA 42.71; mistral-large-4 is the new runner-up</td>
+<td>0.5584 → pair <strong>0.9966 / 0.9816</strong></td>
+<td><strong>0.9954</strong>, pair agrees</td>
+<td>held</td>
 </tr>
 <tr>
 <td>free fallback hop</td>
-<td>3-way choice</td>
-<td>nvidia/nemotron-3.5-super-vl:free</td>
+<td><strong>nvidia/nemotron-3.5-super-vl:free</strong></td>
 <td><strong>0.9999</strong></td>
-<td>replaces the 404'd minimax hop — <strong>needs GO</strong></td>
+<td><strong>0.8080</strong></td>
+<td>held — <strong>needs Ricardo's GO</strong></td>
+</tr>
+<tr>
+<td><strong>reason</strong> (bigbrains)</td>
+<td>kimi-k3</td>
+<td>0.5522 → pair <strong>0.9875 / 0.8341</strong> for <strong>kimi-k3</strong></td>
+<td>0.5678 → pair <strong>0.9941</strong> for <strong>deepseek-v4.1-flash:1017</strong></td>
+<td><strong>CONTESTED — no change applied</strong></td>
 </tr>
 </tbody>
 </table>
-<p>All eleven rows are in <code>gates.csv</code> (2026-10-26 05:06–05:07) and <code>bench-runs/gate-picks-2026-10-26.json</code>.</p>
+<p><strong>The reason seat is the one real question this week, and the lane will not settle it.</strong> Asked as a reasoning seat where a flagship is allowed, the gate picks <strong>kimi-k3</strong>; asked against the plain scoreboard it picks <strong>deepseek-v4.1-flash:1017</strong>, and both runs are internally consistent (pairwise and mirror agree with themselves at 0.83–0.99). The split is not noise — it tracks the evidence:</p>
+<ul>
+<li><strong>For kimi-k3:</strong> best reasoning of any reachable model, LB <strong>90.7</strong> vs 89.1; 8 places higher on LMArena code (17 vs 25) and a flagship is explicitly allowed on a one-home seat.</li>
+<li><strong>For deepseek-1017:</strong> AA <strong>45.10</strong> vs no AA row at all; Hermes 36.91 vs 39.16 within noise; LB coding <strong>96.0 vs 59.3</strong>; <strong>$0.259 vs $6.50 per task</strong> — 25× cheaper.</li>
+</ul>
+<p>Per the doctrine used for the contested <code>vision</code> seat last week, <strong>the wired model stays and the seat is flagged rather than churned</strong>: bigbrains remains on kimi-k3, no config change, and the question is put to Ricardo in §9. A one-home seat is not worth a flip on a frame-dependent answer.</p>
 <h2 id="6-d3-decision-record-2026-10-26">6. d3 decision record (2026-10-26)</h2>
 <p>Seven role picks, two low-confidence confirmations. Gate: local <code>d3-gate</code> on :8110 (Decision 3.0), <code>route: local-d3</code> on every call, health <code>{daemon, inference, cli, mcp} = true</code>. Logged to <code>AI-Drive/Agent-Output/adrianna/gates.csv</code> — <strong>11 rows today</strong> (7 picks + 4 pairwise).</p>
 <table>
@@ -1262,10 +1267,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>reason</td>
-<td>3-way → pairwise</td>
-<td>kimi-k3</td>
-<td>0.5522 → <strong>0.9875 y / 0.8341 n</strong></td>
-<td>Both directions agree; deepest reasoning reachable (90.7) wins on a 1-home flagship seat</td>
+<td>3-way → pairwise, then a second full run</td>
+<td><strong>contested</strong> — kimi-k3 wired</td>
+<td>0.5522 → <strong>0.9875 y / 0.8341 n</strong> (kimi-k3)</td>
+<td><strong>The automated re-run inverts it</strong>: 0.5678 → pairwise <strong>0.9941</strong> for deepseek-v4.1-flash:1017. Both runs internally consistent, opposite conclusions ⇒ contested ⇒ wired model held, no change, escalated (§5.4, §9)</td>
 </tr>
 <tr>
 <td>fast / tiny</td>
@@ -1290,7 +1295,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 </tbody>
 </table>
-<p><strong>Why nothing changed but one thing must:</strong> the gate re-asked all seven seats and found the wired model best in every case, at higher confidence than last week — the allocation is settled. The exception is outside the seven: the <strong>free fallback hop's wired model no longer exists</strong>. That is a config defect, not a capability question, and it is the one change this run recommends (§5.2).</p>
+<p><strong>Why almost nothing changed, and what did:</strong> six of the seven seats came back to the wired model in both runs, at high confidence — the orchestration, deep, worker and fast tiers are settled. The <strong>reason seat is contested</strong> and was deliberately left alone (§5.4). The one change this run recommends is outside the seven: the <strong>free fallback hop's wired model no longer exists</strong>, which is a config defect, not a capability question (§5.2).</p>
 <h3 id="61-previous-week-2026-10-19--audit-trail">6.1 Previous week (2026-10-19) — audit trail</h3>
 <table>
 <thead>
@@ -1388,11 +1393,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><code>bench-pull --source all</code> — refresh all 17 sources into a dated folder. <strong>Verified today that a single failed source no longer aborts the run</strong> (the 2026-10-19 guard did not work — see §2 and §8).</li>
 <li><code>preview_scan.py</code> — catalog + benchmarks + per-free-model endpoint probes → <code>preview-scan.json</code>.</li>
 <li>Live-probe every platform lane host-side, direct (no router).</li>
-<li>d3 gate for the role picks; rows appended to <code>gates.csv</code>.</li>
+<li><code>gate-picks.py</code> — the role re-pick: builds the reachable scoreboard from the day's pulls plus <code>bench-runs/probe-&lt;date&gt;.json</code>, asks one bounded question per role, and confirms anything under 0.70 with a pairwise <strong>and its mirror</strong> (agreement is <code>yes/no</code> <em>or</em> <code>no/yes</code>; only a contradiction leaves the seat unsettled). Every call lands in <code>gates.csv</code> and the summary in <code>bench-runs/gate-picks-&lt;date&gt;.json</code>.</li>
 <li><strong>Update THIS note in place</strong> — the one canonical vault document, never a second copy.</li>
 <li>Publish via the rule-4 handoff (Beast files it; the link keeps working).</li>
 </ol>
-<p><strong>Maintenance done this run:</strong> repaired the LiveBench puller for the third upstream schema change (<code>_e=</code> anchor lost to minified renaming) and fixed the pipeline guard that had silently killed the runner between the pull and the probe for at least one week.</p>
+<p><strong>Maintenance done this run:</strong> repaired the LiveBench puller for the third upstream schema change (<code>_e=</code> anchor lost to minified renaming); fixed the pipeline guard that had silently killed the runner between the pull and the probe for at least one week; and closed a gap where the runner <strong>claimed</strong> to run gate picks but never did — step 4 is now a real, reproducible <code>gate-picks.py</code> call, and the probe list includes the free hops the chains actually carry instead of a stale set.</p>
 <h2 id="publication-defect-found-and-fixed-this-run-publish-document-prefixes-the-vault-filename-with-the-run-date-so-each-weekly-run-was-creating-a-new-dated-note--six-copies-of-this-document-now-sit-in-the-vault-2026-10-11-3-on-2026-10-12-2-on-2026-10-19-publication-now-pins---date-2026-10-19---slug-maio-llm-fleet-master-benchmark-matrix-live---on-exists-supersede-which-overwrites-the-newest-existing-note-in-place-and-creates-nothing-new-the-older-copies-need-beast-to-archive-them-adrianna-cannot-delete-vault-records"><strong>Publication defect found and fixed this run:</strong> <code>publish-document</code> prefixes the vault filename with the run date, so each weekly run was creating a <strong>new</strong> dated note — six copies of this document now sit in the vault (2026-10-11, ×3 on 2026-10-12, ×2 on 2026-10-19). Publication now pins <code>--date 2026-10-19 --slug maio-llm-fleet-master-benchmark-matrix-live --on-exists supersede</code>, which overwrites <strong>the newest existing note in place</strong> and creates nothing new. The older copies need Beast to archive them (Adrianna cannot delete vault records).</h2>
 <h2 id="8-evidence">8. Evidence</h2>
 <ul>
@@ -1405,11 +1410,17 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Free-pool re-probes after the platform sweep (the four the chain depends on): <code>minimax/minimax-m3.1-flash:free</code> <strong>HTTP 404</strong> · <code>nvidia/nemotron-3-super-120b-a12b:free</code> <strong>HTTP 404</strong> (not wired) · <code>nvidia/nemotron-3.5-super-vl:free</code> <strong>200 / 0.6 s</strong> · <code>nvidia/nemotron-3-ultra-550b-a55b:free</code> <strong>200 / 1.5 s</strong> · <code>thinkingmachines/inkling:free</code> <strong>403</strong> · <code>google/gemma-4-31b-it:free</code> <strong>429</strong>.</li>
 <li>Ollama Cloud catalog (<code>GET https://ollama.com/v1/models</code>, authenticated): <strong>23 models</strong>. <strong>No <code>kimi-k3.1</code> entry</strong> — K3.1 Pro is OpenRouter-paid only (<code>moonshotai/kimi-k3.1-pro</code>, $2/M in, $10/M out).</li>
 <li>Fleet config census (32 files parse): <strong>28 homes on <code>deepseek-v4.1-flash:1017</code>, 2 on <code>gpt-oss:20b</code> (courage, storm), 1 <code>kimi-k3</code> (bigbrains), 1 <code>llama3.2:1b</code> (shadow)</strong>. <strong>31/32 homes carry the dead <code>minimax/minimax-m3.1-flash:free</code> hop, 62 occurrences</strong> (only <code>shadow</code> is clean).</li>
-<li>d3 gate decisions: <code>gates.csv</code> (11 rows dated 2026-10-26) + <code>bench-runs/gate-picks-2026-10-26.json</code>. Gate health at run time: <code>{daemon: true, inference: true, cli: true, mcp: true}</code>, <code>probe_noul 0.886</code>.</li>
+<li>d3 gate decisions: <code>gates.csv</code> (<strong>49 rows dated 2026-10-26</strong> — 7 role-framed picks + 4 pairwise, plus five automated <code>gate-picks.py</code> passes; append-only, so every re-run stays visible rather than being overwritten) + <code>bench-runs/gate-picks-2026-10-26.json</code>.</li>
+<li>Live probe capture: <code>bench-runs/probe-2026-10-26.json</code> — 24 lanes with ok/status/latency, written by the runner itself; the two 404 free hops appear in it every week from now on. Gate health at run time: <code>{daemon: true, inference: true, cli: true, mcp: true}</code>, <code>probe_noul 0.886</code>.</li>
 <li>Document backup before this update: <code>llm-fleet-master-benchmark-matrix.md.bak-2026-10-26</code> (40,205 bytes).</li>
 </ul>
 <hr />
 <h2 id="9-what-to-watch-next-week">9. What to watch next week</h2>
+<p><strong>Two decisions for Ricardo (both are his call, not mine):</strong></p>
+<ol type="1">
+<li><strong>The dead free hop (§5.2)</strong> — approve replacing <code>minimax/minimax-m3.1-flash:free</code> (HTTP 404) with <code>nvidia/nemotron-3.5-super-vl:free</code> (200 / 0.6 s, highest index in the free pool) across 31 config files, 62 occurrences. It is a bulk edit, so it waits for his yes.</li>
+<li><strong>The reason seat (§5.4)</strong> — kimi-k3 or deepseek-v4.1-flash:1017 for bigbrains. The gate will not settle it: kimi-k3 wins on reasoning (LB 90.7 vs 89.1, and it is the only reasoning board gap we have), deepseek-1017 wins on AA (45.10 vs no AA row), coding (96.0 vs 59.3) and cost ($0.259 vs $6.50/task, 25×). The seat keeps kimi-k3 until he decides.</li>
+</ol>
 <ul>
 <li><strong>The free pool is not renewable right now — it is shrinking.</strong> Two hops disappeared in one week (<code>minimax-m3.1-flash:free</code>, <code>nemotron-3-super-120b:free</code>). Treat every <code>:free</code> hop as a lease, not an asset: the chain must always name two live free fallbacks, and this run's probe set is the evidence.</li>
 <li><strong><code>kimi-k3.1-pro</code> is the first real upgrade candidate in a month</strong> (AA 55.09, LB reasoning 91.1, LMArena code #8) and it is blocked by money, not availability: Ollama Cloud does not carry it and OpenRouter sells it at $2/$10 per M. Worth a decision when a paid lane is next considered — not before.</li>
