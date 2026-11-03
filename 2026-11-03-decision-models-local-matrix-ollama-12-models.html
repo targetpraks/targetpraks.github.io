@@ -357,6 +357,77 @@ quoted with the benchmark they came from — they are <strong>not</strong> inter
 alongside the rest of the fleet (Ollama, the Hermes agents, Beast, Maio OS). Download sizes are the
 publisher's stated tag sizes, not resident memory.</p>
 
+<h2>Local vs subscription — <span class="n">measured on this Mac, 3 Nov 2026</span></h2>
+<p>Same 17 hand-labelled questions, same endpoint (<code>/v1/systemone</code>), asked of the model this Mac
+actually runs for decisions and of the two Clef models on the Ollama subscription. Ground truth is our own
+labels — this is not a benchmark, and a one-question gap on 17 questions is noise.</p>
+
+<div class="tblwrap" style="margin-bottom:14px">
+<table style="min-width:900px">
+<thead>
+<tr><th class="plain">Metric</th><th class="plain">d3-flash-mlx <em>(local)</em></th>
+    <th class="plain">clef-flash:cloud</th><th class="plain">clef:27b-cloud</th></tr>
+</thead>
+<tbody>
+<tr><td class="model">Lane</td><td class="mono">local · 10.31 GB resident</td>
+    <td class="mono">subscription</td><td class="mono">subscription</td></tr>
+<tr><td class="model">Context actually served</td><td class="mono">32,768 resident<br>(262,144 in weights)</td>
+    <td class="mono">24,576</td><td class="mono">65,536</td></tr>
+<tr><td class="model">Accuracy, 17 questions</td><td class="score">15/17 = 88.2%</td>
+    <td class="score">16/17 = 94.1%</td><td class="score">16/17 = 94.1%</td></tr>
+<tr><td class="model">choice / noul / score</td><td class="mono">4/5 · 9/9 · 2/3</td>
+    <td class="mono">4/5 · 9/9 · 3/3</td><td class="mono">5/5 · 9/9 · 2/3</td></tr>
+<tr><td class="model">Mean confidence when right</td><td class="score">0.832</td>
+    <td class="score">0.839</td><td class="score">0.713</td></tr>
+<tr><td class="model">Mean confidence when wrong</td><td class="score">0.215</td>
+    <td class="score">0.138</td><td class="score">0.005</td></tr>
+<tr><td class="model">Median latency</td><td class="mono">935 ms</td><td class="mono">489 ms</td>
+    <td class="mono">489 ms</td></tr>
+<tr><td class="model">Answer agreement with local d3</td><td class="mono">—</td>
+    <td class="mono">16/17</td><td class="mono">16/17</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="notes">
+  <div class="note">
+    <h3>Where the three actually diverge</h3>
+    <ul>
+      <li><strong>Sarcasm / sentiment</strong> — "Great, another outage. Third one this week." Gold is
+      Negative. Local d3 read it as Neutral with 0.22 confidence (miss). clef-flash got it, 0.595
+      confidence. clef 27B also missed it — but at <span class="mono">0.005</span> confidence, i.e. it knew
+      it had no idea. That is the single most useful difference on this set.</li>
+      <li><strong>A buried SLA band</strong> — a long triage note with a distractor queue. Gold P3. d3 and
+      clef-flash both answered P2; only the 27B picked P3. This is the one place the big model earned its
+      size.</li>
+      <li><strong>Everything else agreed</strong> — 16 of 17 answers identical between local and either cloud
+      lane, including all nine yes/no items.</li>
+    </ul>
+  </div>
+  <div class="note warn">
+    <h3>The subscription runs a smaller window than the local weights</h3>
+    <p><code>ollama show</code> on this machine: <code>clef-flash:cloud</code> serves
+    <strong>24,576</strong> tokens and <code>clef:27b-cloud</code> serves <strong>65,536</strong>, while the
+    local packages advertise 256K. So the cloud lane is cheaper to run but the first thing you give up is
+    context, not accuracy. Sending a 100K-token document to <code>clef:27b-cloud</code> is rejected, not
+    truncated.</p>
+  </div>
+  <div class="note">
+    <h3>Clef vs Clef-flash, same suite, published</h3>
+    <p>Only Cloudflare scores both on one yardstick, so this is the one legitimate family head-to-head:</p>
+    <ul>
+      <li><strong>clef-flash wins</strong> — BFCL 98.8 vs 98.5, API-Bank 93.1 vs 91.9, home-appliance
+      simulator 97.7 vs 83.0, median latency 38.8 ms vs 209.3 ms.</li>
+      <li><strong>clef 27B wins</strong> — CLINC150+OOS 97.4 vs 66.8 (a 30-point gap on intent
+      classification), ANLI 69.8 vs 59.1, When2Call 72.4 vs 65.6, BANKING77 94.2 vs 90.9, PhishNChips 79.6
+      vs 75.0.</li>
+      <li><strong>Read</strong>: for tool-call gating and bounded state machines, flash is the better and
+      far faster model. For routing on open-ended intent and for long-context judgement, the 27B is worth
+      its 5× latency.</li>
+    </ul>
+  </div>
+</div>
+
 <h2>What the numbers actually mean — <span class="n">read this before quoting any of them</span></h2>
 <div class="notes">
   <div class="note warn">
