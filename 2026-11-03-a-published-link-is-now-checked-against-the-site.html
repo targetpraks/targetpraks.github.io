@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>A published link is now checked against the site</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="a-published-link-is-now-checked-against-the-site">A published link is now checked against the site</h1>
+<svg viewBox="0 0 720 175" width="100%" role="img" aria-label="Publish, verify, and keep the old name alive: the tool waits for the site to answer before it quotes a URL, and a moved page leaves an alias behind">
+  <rect x="8" y="16" width="196" height="86" rx="10" fill="#eef4ff" stroke="#5b8def"/>
+  <text x="106" y="44" font-family="system-ui" font-size="13" text-anchor="middle" fill="#1b2b4d">publish-document</text>
+  <text x="106" y="64" font-family="system-ui" font-size="11" text-anchor="middle" fill="#445">writes the page, pushes</text>
+  <text x="106" y="82" font-family="system-ui" font-size="11" text-anchor="middle" fill="#445">then asks the site</text>
+
+  <rect x="262" y="16" width="196" height="86" rx="10" fill="#eefaf1" stroke="#3fae6a"/>
+  <text x="360" y="44" font-family="system-ui" font-size="13" text-anchor="middle" fill="#123a22">200 · building · gone</text>
+  <text x="360" y="64" font-family="system-ui" font-size="11" text-anchor="middle" fill="#2b4a37">only a serving page</text>
+  <text x="360" y="82" font-family="system-ui" font-size="11" text-anchor="middle" fill="#2b4a37">hands over a URL</text>
+
+  <rect x="516" y="16" width="196" height="86" rx="10" fill="#fff4ec" stroke="#e08a3c"/>
+  <text x="614" y="44" font-family="system-ui" font-size="13" text-anchor="middle" fill="#4a2a10">old name → alias</text>
+  <text x="614" y="64" font-family="system-ui" font-size="11" text-anchor="middle" fill="#5a3a22">a moved page keeps</text>
+  <text x="614" y="82" font-family="system-ui" font-size="11" text-anchor="middle" fill="#5a3a22">its old address alive</text>
+
+  <line x1="204" y1="59" x2="258" y2="59" stroke="#7a8aa8" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="458" y1="59" x2="512" y2="59" stroke="#7a8aa8" stroke-width="2" marker-end="url(#a)"/>
+  <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+    <path d="M0,0 L6,3 L0,6 z" fill="#7a8aa8"/></marker></defs>
+
+<p><text x="360" y="132" font-family="system-ui" font-size="12" text-anchor="middle" fill="#333">a page still building is reported as building, never as a dead link</text> <text x="360" y="155" font-family="system-ui" font-size="12" text-anchor="middle" fill="#666">GitHub checks both rules on every merge, including merges made on the web</text> </svg></p>
+<h2 id="what-happened">What happened</h2>
+<p>Two <strong>Read the HTML</strong> links dead-ended on a 404 this week. They looked like one bug and were two different ones — which is why fixing only the publish tool would have left one of them alive.</p>
+<p><strong>The free-LLM edition was never broken.</strong> Its page was pushed to the site at 10:23 and GitHub Pages finished building it at <strong>10:27:13</strong> — three minutes and thirty-five seconds later. Anyone who opened the link inside that window got a 404, and the report repeated it. The page is live: <a href="https://targetpraks.github.io/2026-11-03-free-llm-top-five-nvidia-openrouter-opencode-verified-2026.html">Free LLM tier — NVIDIA · OpenRouter · OpenCode</a>. A slow build had been mistaken for a failed publish, and nothing in the tool knew the difference.</p>
+<p><strong>The AAC edition was genuinely renamed away.</strong> It was published on 2 November at 23:12:56 under one name, and <strong>73 seconds later</strong> a pull request merged on github.com (<a href="https://github.com/targetpraks/targetpraks.github.io/commit/83d1afda"><code>83d1afda</code></a>) renamed it to <code>2026-11-02-aac-wall-system-business-model-south-africa.html</code> — and rewrote its ledger row in the same commit. So the record of published pages still looked complete while the address in your vault note and on the jump page had stopped existing. The guard built last week cannot see this: it runs in this Mac's git hooks, and a merge on the web never touches this Mac.</p>
+<p>Both addresses work now: <a href="https://targetpraks.github.io/2026-11-02-aac-supply-and-install-a-south-african-wall-system-business.html">the note's link</a> → <a href="https://targetpraks.github.io/2026-11-02-aac-wall-system-business-model-south-africa.html">the current edition</a>.</p>
+<h2 id="what-changed">What changed</h2>
+<p><strong>A URL is a promise only once the site serves it.</strong> <code>publish-document</code> no longer hands back an address because it wrote a file. After the push it checks that the page is really on the site and asks the site for it. Until the answer is a 200, the URL is either withheld — if the page never reached the site, you get a warning instead of a link that will 404 for as long as it is quoted — or labelled for what it is:</p>
+<pre><code>Pages: serving  — https://targetpraks.github.io/… (HTTP 200)
+Pages: building — https://targetpraks.github.io/… (GitHub Pages needs 1–4 minutes)</code></pre>
+<p>A page that is still building is <strong>building</strong>, not broken, and the publish never waits forever: past the timeout it says so and still delivers the document, its AI-Drive copy and its Discord post. A slow build must not cost you a document.</p>
+<p><strong>A name once published stays published.</strong> If a page is renamed or moved, the old address becomes a small forwarding page — the same title, a canonical link and a real link to the current edition — so the link in your note keeps working forever. Three were created today: both AAC addresses your notes quote, and <a href="https://targetpraks.github.io/papa-pasta-leverage-2026-10.html"><code>papa-pasta-leverage-2026-10.html</code></a>, which a vault note quotes and which had also been retired.</p>
+<p><strong>A check runs where the merge happens.</strong> The pages repository now has its own GitHub workflow (<a href="https://github.com/targetpraks/targetpraks.github.io/actions/runs/41606273547">run</a>), and it holds both rules: every published URL must answer 200, and every name that was ever published must still exist. It runs on every push and once a day, in fifteen seconds, and it cannot be bypassed by merging on the web — which is exactly how the AAC link died. This Mac also has a daily audit that includes the links quoted inside your vault, the one surface GitHub cannot see.</p>
+<h2 id="what-it-means-for-you">What it means for you</h2>
+<p>Nothing to do, and nothing new to remember. The two links you were sent work. When a page is genuinely renamed, the old address keeps answering instead of dead-ending. And the next time a page does go missing, the build goes red within a minute instead of you finding it first.</p>
+<h2 id="evidence">Evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>How it was checked</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The free-LLM URL serves</td>
+<td><code>curl</code> on the issued address, over the wire</td>
+<td><strong>200</strong>, title <em>Free LLM tier — NVIDIA · OpenRouter · OpenCode — verified 2026-11-03</em></td>
+</tr>
+<tr>
+<td>The AAC URLs serve</td>
+<td><code>curl</code> on the note's own link and on the card's variant</td>
+<td>both <strong>200</strong>; each forwards to the current edition</td>
+</tr>
+<tr>
+<td>A real publish verifies itself</td>
+<td><code>publish_html_page()</code> against the live checkout on the free-LLM document (identical bytes, so nothing new was committed)</td>
+<td><code>ref origin/main</code>, page in origin, <code>serving True</code>, <code>HTTP 200</code></td>
+</tr>
+<tr>
+<td>A page mid-build says so</td>
+<td>the three alias publishes, polled inside the build window</td>
+<td><code>building — GitHub Pages needs 1–4 minutes</code>, then 200 within a minute</td>
+</tr>
+<tr>
+<td>A page that never reached the site gets no URL</td>
+<td>test with a remote that was never pushed</td>
+<td><code>url None</code>, warning naming the checkout</td>
+</tr>
+<tr>
+<td>Old names keep working</td>
+<td>alias for the Papa Pasta page, whose vault note quotes a retired name</td>
+<td>committed <code>c5c31431</code>, <strong>200</strong>, forwards to the current edition</td>
+</tr>
+<tr>
+<td>An alias never overwrites a real page</td>
+<td>test</td>
+<td>refused, page untouched</td>
+</tr>
+<tr>
+<td>The whole surface is clean</td>
+<td><code>pages-link-check check</code> — ledger, retired names, and the vault's own links</td>
+<td><strong>292</strong> published URLs, <strong>292</strong> past names, <strong>129</strong> vault links, all 200</td>
+</tr>
+<tr>
+<td>GitHub now checks it</td>
+<td>the workflow's first run</td>
+<td><code>ok — 292 published URLs answer 200 and every published name still exists</code>, 15s, green</td>
+</tr>
+<tr>
+<td>…and fails loudly when a page dies</td>
+<td>the same check against a throwaway repo with a dead row and a deleted page</td>
+<td>exit 1, naming the page and the one-line repair</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>python3 -m unittest discover -s tests</code></td>
+<td>181 tests, OK</td>
+</tr>
+</tbody>
+</table>
+<p>The rule is written into the publishing spec as <strong>§2.5.2</strong> of <code>document-publishing-convention.md</code>, next to last week's §2.5.1, so the next agent reads it instead of rediscovering it.</p>
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="../../../User.md">User</a> — who Ricardo is (read first)</li>
+<li><a href="../../../Soul.md">Soul</a> — the Maio agent collective identity and rules</li>
+<li><a href="../../../ReadME_MasterIndex.md">ReadME_MasterIndex</a> — the vault index this note hangs off</li>
+<li><a href="./2026-11-02-published-pages-are-a-promise.md">Published pages are now a promise</a> — last week's half of the same rule</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
