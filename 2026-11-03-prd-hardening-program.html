@@ -9613,7 +9613,7 @@ CREATE UNIQUE INDEX network_plan_one_active ON network_plan(brand_id) WHERE stat
 <h1 id="domain-model">Domain model</h1>
 <p>Organization model (brand → optional project group → project → optional file section → asset → immutable version). Brand is the security boundary; groups and sections are organizational metadata, not permissions or review spaces. Groups one level deep only; no cross-brand moves; ungrouped projects and files remain first-class; every file section uses the project's review flow (cannot override thresholds or spaces).</p>
 <p>Stage states (presentation labels over plan levels; "Not started" is a presentation state, not a persisted round): Preparing file, Not started, In review, Changes required, Blocked, Ready for release, Released, Returned/awaiting confirmation, Historical/superseded. Movement rules: threshold satisfaction is not release when a gatekeeper exists; without one use existing <code>AutoReleases</code>; exhaustion stays blocked; new version visibly distinguishes past released rounds; realtime/stale responses cannot roll the UI backwards or overwrite a newer version/round.</p>
-<p>Tables: reuse existing <code>project</code>, <code>asset</code>, <code>version</code>, <code>round</code>, <code>assignment</code>, <code>decision</code>, <code>comment</code>, <code>thread</code>, <code>notification</code>, <code>comment_read</code>. New (forward-only migrations, if accepted): <code>project_group</code> (optional, one level), <code>file_section</code> (optional), <code>principal_ui_pref</code> (favorites, per principal, server-side) — UI preferences are not approval evidence and must not enter the event chain.</p>
+<p>Tables: reuse existing <code>project</code>, <code>asset</code>, <code>version</code>, <code>round</code>, <code>assignment</code>, <code>decision</code>, <code>comment</code> (threading is the <code>comment.thread_id</code> column at <code>migrations/0001_init.sql:168</code>, not a <code>thread</code> table — <code>grep -rniE "create table[a-z ]*thread" migrations/</code> → 0 matches), <code>notification</code>, <code>comment_read</code>. New (forward-only migrations, if accepted): <code>project_group</code> (optional, one level), <code>file_section</code> (optional), <code>principal_ui_pref</code> (favorites, per principal, server-side) — UI preferences are not approval evidence and must not enter the event chain.</p>
 <p>Indexes that decide performance: workflow read projection must be bounded (≤50 asset rows per page, cursor pagination); no per-cell query; one bounded batch fetch of stage summaries per asset page.</p>
 <p>Invariants:</p>
 <ul>
@@ -11612,7 +11612,7 @@ CREATE UNIQUE INDEX network_plan_one_active ON network_plan(brand_id) WHERE stat
 <tr>
 <td>Configuration pack (7 CSVs)</td>
 <td>implemented</td>
-<td>7 files under <code>AI-Drive/Agent-Output/batman/clickup-prd-v3-1/config/</code>; data rows 11/16/5/12/6/14/6</td>
+<td>7 files under <code>AI-Drive/Agent-Output/batman/clickup-prd-v3-1/config/</code>; data rows 11/16/5/12/6/14/6; <code>ls .../config/</code> → 7 CSVs present; <code>2026-11-02-infinity-brands-clickup-prd-v3-1-build-edition.html:768-769</code></td>
 <td>Not committed to the repo; not applied to a workspace</td>
 </tr>
 <tr>
@@ -12821,7 +12821,7 @@ CREATE UNIQUE INDEX network_plan_one_active ON network_plan(brand_id) WHERE stat
 <tr>
 <td>Configuration pack (7 CSVs)</td>
 <td>implemented</td>
-<td>7 files under <code>AI-Drive/Agent-Output/batman/clickup-prd-v3-1/config/</code>; data rows 11/16/5/12/6/14/6</td>
+<td>7 files under <code>AI-Drive/Agent-Output/batman/clickup-prd-v3-1/config/</code>; data rows 11/16/5/12/6/14/6; <code>ls .../config/</code> → 7 CSVs present; <code>2026-11-02-infinity-brands-clickup-prd-v3-1-build-edition.html:768-769</code></td>
 <td>Not committed to the repo; not applied to a workspace</td>
 </tr>
 </tbody>
@@ -13248,19 +13248,19 @@ CREATE UNIQUE INDEX network_plan_one_active ON network_plan(brand_id) WHERE stat
 <tr>
 <td>MCP bridge <code>nexus</code> (4 tools) on stdio</td>
 <td>implemented</td>
-<td><code>~/AI Hub/dsh-maio-nexus/nexus_mcp.py</code>; A1 pass; tools = [nexus_status, nexus_memory_recall, nexus_vault_recall, nexus_vault_get]</td>
+<td><code>~/AI Hub/dsh-maio-nexus/nexus_mcp.py</code>; A1 pass; tools = [nexus_status, nexus_memory_recall, nexus_vault_recall, nexus_vault_get]; <code>dsh --dump-config --profile acp</code> → mcp-nexus stdio entry present in 6 profiles (acp, dshweb, headless, mini, superagent, web)</td>
 <td>none</td>
 </tr>
 <tr>
 <td>Vault index (FTS5) over vault notes</td>
 <td>implemented</td>
-<td><code>index/vault.db</code>; build.json notes=2574; A8 median 1 ms</td>
+<td><code>index/vault.db</code>; build.json notes=2574; A8 median 1 ms; <code>cat index/build.json</code> → notes=2574, built 2026-11-03T03:50:19+0200</td>
 <td>none</td>
 </tr>
 <tr>
 <td>Profile overlays in web/mini/headless/dshweb/acp</td>
 <td>implemented</td>
-<td><code>cordis.patch.yml</code> contains <code>mcp-nexus</code>; <code>dsh --dump-config</code> composes (install.py)</td>
+<td><code>cordis.patch.yml</code> contains <code>mcp-nexus</code>; <code>dsh --dump-config</code> composes (install.py); <code>grep mcp-nexus ~/.dsh/profiles/*/cordis.patch.yml</code> → 6 profiles (acp, dshweb, headless, mini, superagent, web); desktop app-owned (no patch)</td>
 <td>desktop untouched (app-owned) by design</td>
 </tr>
 <tr>
@@ -13272,13 +13272,13 @@ CREATE UNIQUE INDEX network_plan_one_active ON network_plan(brand_id) WHERE stat
 <tr>
 <td>Acceptance suite 10/10</td>
 <td>implemented</td>
-<td><code>tests/acceptance.py</code>; <code>docs/reviews/acceptance-2026-11-02T18-36.json</code></td>
+<td><code>tests/acceptance.py</code>; <code>docs/reviews/acceptance-2026-11-02T18-36.json</code> → A1–A9 + F2 all pass (10/10)</td>
 <td>none</td>
 </tr>
 <tr>
 <td>Watchdog plain-language, fail-closed</td>
 <td>implemented</td>
-<td><code>watchdog.sh</code>; exits 1 when degraded</td>
+<td><code>watchdog.sh</code>; exits 1 when degraded; <code>watchdog.sh</code> → "nexus: memory ok · index 417m · 2574 notes · suite all pass." exit 0 (healthy on this run)</td>
 <td>cron scheduling unverified (see §13 row)</td>
 </tr>
 <tr>
@@ -13290,8 +13290,8 @@ CREATE UNIQUE INDEX network_plan_one_active ON network_plan(brand_id) WHERE stat
 <tr>
 <td>Skills nexus-memory / nexus-vault / video-lane</td>
 <td>implemented</td>
-<td>present in <code>~/.hermes/skills</code> and <code>~/.claude/skills</code></td>
-<td>none</td>
+<td>present in <code>~/.hermes/skills</code> and <code>~/.claude/skills</code>; `ls ~/.hermes/skills</td>
+<td>grep -E 'nexus</td>
 </tr>
 <tr>
 <td>Provider adapter (Hindsight active)</td>
