@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Models — Local Matrix · Ollama · 2026-11-03</title>
+<style>
+:root{
+  --ink:#101418; --ink-2:#3c4750; --ink-3:#6b7883;
+  --line:#e2e6e9; --line-2:#eef1f3;
+  --bg:#fbfbfa; --card:#ffffff;
+  --accent:#0f6d5c; --accent-soft:#e7f2ef;
+  --warn:#8a4b00; --warn-soft:#fdf3e4;
+  --stop:#8c1d1d; --stop-soft:#fbeceb;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding:48px 28px 90px}
+header.top{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;
+ border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:34px}
+.kicker{font:600 11px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+h1{font-size:34px;line-height:1.12;letter-spacing:-.02em;margin:14px 0 8px;font-weight:650}
+.lede{font-size:17px;color:var(--ink-2);max-width:74ch;margin:0 0 6px}
+.stamp{font:500 12px/1 var(--mono);color:var(--ink-3)}
+h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);
+ font-weight:700;margin:52px 0 16px;font-family:var(--mono)}
+h2 .n{color:var(--accent)}
+p{margin:0 0 14px}
+code{font:500 13px/1.4 var(--mono);background:#f1f3f4;padding:1.5px 5px;border-radius:4px}
+
+.callout{background:var(--accent-soft);border:1px solid #cfe3dd;border-left:3px solid var(--accent);
+ padding:18px 22px;border-radius:8px;margin:22px 0}
+.callout .t{font:700 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+ color:var(--accent);margin-bottom:8px}
+.callout p{margin:0;font-size:15.5px}
+
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:14px}
+.pick{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 18px 16px;
+ display:flex;flex-direction:column;gap:8px}
+.pick .role{font:700 10.5px/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.pick .name{font-size:21px;font-weight:660;letter-spacing:-.01em}
+.pick .name small{font-weight:500;color:var(--ink-3);font-size:13px;letter-spacing:0}
+.pick .why{font-size:14.5px;color:var(--ink-2);margin:0}
+.pick .spec{font:500 11.5px/1.5 var(--mono);color:var(--ink-3);margin-top:auto;
+ border-top:1px solid var(--line-2);padding-top:9px}
+
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:1180px;font-size:13.5px}
+thead th{background:#f7f8f8;text-align:left;padding:11px 12px;font:700 10.5px/1.3 var(--mono);
+ letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);
+ cursor:pointer;white-space:nowrap;position:sticky;top:0;z-index:2}
+thead th:hover{color:var(--accent)}
+thead th::after{content:" ⇅";opacity:.35;font-size:10px}
+thead th.plain{cursor:default}
+thead th.plain::after{content:""}
+tbody td{padding:11px 12px;border-bottom:1px solid var(--line-2);vertical-align:top;line-height:1.45}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#fafbfb}
+td.model{font-weight:650;white-space:nowrap}
+td.model em{display:block;font:500 11px/1.4 var(--mono);color:var(--ink-3);font-style:normal;
+ letter-spacing:.02em;margin-top:3px;font-weight:500}
+.mono{font-family:var(--mono);font-size:12.5px;color:var(--ink-2)}
+.score{font-family:var(--mono);font-size:13px;font-weight:600}
+.tag{display:inline-block;font:700 9.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;
+ padding:4px 6px;border-radius:4px;margin:2px 3px 0 0;white-space:nowrap}
+.t-ok{background:var(--accent-soft);color:var(--accent)}
+.t-warn{background:var(--warn-soft);color:var(--warn)}
+.t-stop{background:var(--stop-soft);color:var(--stop)}
+.t-neu{background:#f1f3f4;color:var(--ink-3)}
+tr.installed td{background:#f6fbf9}
+tr.installed:hover td{background:#f2f8f6}
+
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;margin-top:8px}
+.note{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.note h3{font-size:14px;margin:0 0 8px;letter-spacing:-.01em}
+.note p,.note li{font-size:13.8px;color:var(--ink-2);margin:0 0 8px}
+.note ul{margin:0;padding-left:17px}
+.note li{margin-bottom:6px}
+.note.warn{border-left:3px solid var(--warn)}
+.note.stop{border-left:3px solid var(--stop)}
+
+pre{background:#101418;color:#e8edf0;padding:15px 17px;border-radius:8px;overflow-x:auto;
+ font:12.5px/1.6 var(--mono);margin:12px 0 0}
+pre .c{color:#7d8a93}
+footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);
+ font:12px/1.7 var(--mono);color:var(--ink-3)}
+a{color:var(--accent)}
+@media print{body{background:#fff}.tblwrap{overflow:visible}table{min-width:0;font-size:9.5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="kicker">AI stack brief</span>
+  <span class="kicker">·</span>
+  <span class="kicker">ollama.com/search?c=local&amp;c=decision&amp;o=newest</span>
+</header>
+
+<h1>Decision models you can actually run locally — 12-model matrix</h1>
+<p class="lede">Every model on Ollama's <em>local + decision</em> filter, checked against the specs on its own
+page, then scored for one machine: this Mac mini (M4 Pro, 24&nbsp;GB unified memory). Published numbers are
+quoted with the benchmark they came from — they are <strong>not</strong> interchangeable.</p>
+<p class="stamp">Compiled 2026-11-03 · 12 models · 1 model verified running on this machine</p>
+
+<div class="callout">
+  <div class="t">The answer, in one line</div>
+  <p><strong>clef-flash</strong> (Cloudflare, 9B, Apache 2.0) is the best general-purpose local decision
+  model for this Mac: strongest tool-call gating in the field (BFCL 98.8), lowest measured latency of any
+  model in its class (38.8 ms median), 64K–256K context, image input, and it fits in 11–12 GB.
+  <strong>kev:9b-nvfp4</strong> is the best accuracy-per-byte pick (6.7 GB, 68/111 hard JevBench tasks).
+  <strong>d3</strong> — which this Mac already runs as the §8 gate — remains the safest strategic bet because
+  it is the only family with a 2B→27B ladder you can climb as hardware grows.</p>
+</div>
+
+<h2>The shortlist — <span class="n">pick by role, not by leaderboard</span></h2>
+<div class="picks">
+  <div class="pick">
+    <div class="role">Best overall · ≤12 GB</div>
+    <div class="name">clef-flash <small>Cloudflare · 9B</small></div>
+    <p class="why">Highest accuracy on agent-shaped decisions (BFCL 98.8, API-Bank 93.1, home-appliance
+    simulator 97.7) and the fastest median latency in Cloudflare's own Decision Index runs — 5× faster than
+    the 27B Clef. Text + images, 64K usable context, Apache 2.0.</p>
+    <div class="spec">11–12 GB · 38.8 ms median · 122.4 ms p95</div>
+  </div>
+  <div class="pick">
+    <div class="role">Best accuracy per byte</div>
+    <div class="name">kev:9b-nvfp4 <small>Jared Palmer · 9B</small></div>
+    <p class="why">6.7 GB download, 11.16 GiB resident, yet beats the 9B BF16 build on the hard JevBench
+    subset (68/111 vs 66/111) and beats 4B BF16 outright (60/111). 255 options per question, 73,728-token
+    num_ctx, Apache 2.0. The value pick.</p>
+    <div class="spec">6.7 GB · 68/111 hard · 11.16 GiB resident</div>
+  </div>
+  <div class="pick">
+    <div class="role">Best tiny / highest throughput</div>
+    <div class="name">laya <small>Convai · 421M</small></div>
+    <p class="why">844 MB, 38.4 ms single question, 14.4 ms per question at 50 batched, genuinely calibrated
+    (ECE 0.060 in-task). Ideal for routing and screening at volume — but 65.1% on held-out task families and
+    text-only, so never for a decision that leaves the building.</p>
+    <div class="spec">844 MB · 14.4 ms/q batched · 8K context</div>
+  </div>
+  <div class="pick">
+    <div class="role">Best if RAM were free</div>
+    <div class="name">pplx-decider <small>Perplexity · 27B</small></div>
+    <p class="why">85.7% across 11 public benchmarks (Jev 84.5%, its own Qwen3.8-27B base 74.8%) — the highest
+    published accuracy on the whole list, text + images, Apache 2.0. 17 GB makes it a poor neighbour for a
+    fleet on a 24 GB box.</p>
+    <div class="spec">17 GB · 85.7% / 11 benchmarks · 256K</div>
+  </div>
+</div>
+
+<h2>The matrix — <span class="n">all 12 models, click a column to sort</span></h2>
+<div class="tblwrap">
+<table id="mx">
+<thead>
+<tr>
+  <th data-k="0" data-t="s">Model</th>
+  <th data-k="1" data-t="s">Publisher · base</th>
+  <th data-k="2" data-t="s">Sizes</th>
+  <th data-k="3" data-t="n">Download</th>
+  <th data-k="4" data-t="s">Context</th>
+  <th data-k="5" data-t="s">Inputs</th>
+  <th data-k="6" data-t="s">Published accuracy <em>(benchmark named)</em></th>
+  <th data-k="7" data-t="n">Latency</th>
+  <th data-k="8" data-t="s">Licence</th>
+  <th data-k="9" data-t="s">On this Mac (24 GB)</th>
+</tr>
+</thead>
+<tbody>
+
+<tr class="installed">
+  <td class="model">d3<em>installed here</em></td>
+  <td class="mono">vLLM Semantic Router<br>Qwen3.5 encoder · decision head</td>
+  <td class="mono">2B / 4B / 9B / 27B</td>
+  <td class="mono" data-v="10">10 GB <small>(9B)</small></td>
+  <td class="mono">256K stated<br>4,096 per package</td>
+  <td class="mono">text, JSON,<br>still images</td>
+  <td><span class="score">Text 38.9 / 52.6 / 55.8 / 66.3</span><br>
+      <span class="score">Vision 54.7 / 63.2 / 66.9 / 71.3</span><br>
+      <span class="mono">Jev Decision Index 0.3.2 (publisher checkpoints)</span></td>
+  <td class="mono" data-v="370">370 ms warm<br><span class="mono">measured here, 2 questions</span></td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-ok">fits — 10.31 GB</span><span class="tag t-stop">27B: no</span></td>
+</tr>
+
+<tr>
+  <td class="model">clef-flash</td>
+  <td class="mono">Cloudflare<br>Qwen3.5-9B fine-tune</td>
+  <td class="mono">9B</td>
+  <td class="mono" data-v="11">11–12 GB</td>
+  <td class="mono">64K stated<br>256K in table</td>
+  <td class="mono">text, JSON,<br>images</td>
+  <td><span class="score">BFCL 98.8 · API-Bank 93.1<br>BANKING77 90.9 · CLINC150 66.8</span><br>
+      <span class="mono">Cloudflare Decision Index suite vs Clef 98.5 / Jev 95.8</span></td>
+  <td class="mono" data-v="38">38.8 ms med<br>122.4 ms p95</td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-warn">tight — 11–12 GB</span></td>
+</tr>
+
+<tr>
+  <td class="model">kev</td>
+  <td class="mono">Jared Palmer<br>Qwen3.5 bases (27B: Qwen3.8 tok.)</td>
+  <td class="mono">0.8B / 4B / 9B / 27B</td>
+  <td class="mono" data-v="6.7">6.7 GB <small>(9B nvfp4)</small><br>19 GB <small>(27B nvfp4)</small></td>
+  <td class="mono">256K table<br>73,728 num_ctx</td>
+  <td class="mono">text, JSON<br><em>no images</em></td>
+  <td><span class="score">JevBench 146 / 175 / 183 / 205 of 231</span><br>
+      <span class="score">Hard subset 39 / 60 / 68 / 86 of 111</span><br>
+      <span class="mono">local runs, JevBench v1.2.16, publisher-reported</span></td>
+  <td class="mono" data-v="999">not published<br><span class="mono">resident 11.16 GiB (9B)</span></td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-ok">fits — 6.7 GB</span><span class="tag t-stop">27B: no</span></td>
+</tr>
+
+<tr>
+  <td class="model">nimble-v3</td>
+  <td class="mono">Bespoke Labs<br>Qwen3.5-9B fine-tune</td>
+  <td class="mono">9B</td>
+  <td class="mono" data-v="6.9">6.9 GB <small>(nvfp4)</small><br>9.3 GB <small>(mxfp8)</small></td>
+  <td class="mono">32K</td>
+  <td class="mono">text, JSON</td>
+  <td><span class="score">Decision Index 0.2.1 = 56.88</span><br>
+      <span class="score">JevBench 201 / 231</span><br>
+      <span class="mono">publisher reference implementation</span></td>
+  <td class="mono" data-v="88">88 ms med <small>(BF16)</small><br>103 ms <small>(mxfp8)</small></td>
+  <td><span class="tag t-stop">CC BY-NC 4.0</span></td>
+  <td><span class="tag t-stop">licence blocks business use</span></td>
+</tr>
+
+<tr>
+  <td class="model">clef</td>
+  <td class="mono">Cloudflare<br>Qwen3.8-27B fine-tune</td>
+  <td class="mono">27B <small>(+ :cloud)</small></td>
+  <td class="mono" data-v="20">18–20 GB</td>
+  <td class="mono">64K stated<br>256K in table</td>
+  <td class="mono">text, JSON,<br>images</td>
+  <td><span class="score">Tops Cloudflare's Decision Index</span><br>
+      <span class="score">BANKING77 94.2 · CLINC150 97.4<br>ANLI 69.8 · When2Call 72.4</span><br>
+      <span class="mono">Cloudflare Decision Index suite</span></td>
+  <td class="mono" data-v="209">209.3 ms med<br>238.6 ms p95</td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-stop">too big — 18–20 GB</span></td>
+</tr>
+
+<tr>
+  <td class="model">pplx-decider</td>
+  <td class="mono">Perplexity<br>Qwen3.8-27B fine-tune</td>
+  <td class="mono">27B</td>
+  <td class="mono" data-v="17">17 GB</td>
+  <td class="mono">256K</td>
+  <td class="mono">text, JSON,<br>images</td>
+  <td><span class="score">85.7% across 11 public benchmarks</span><br>
+      <span class="score">Jev 84.5% · Qwen3.8-27B base 74.8%</span><br>
+      <span class="mono">e.g. RAGTruth 88.8 · TabFact 90.6 · JudgeBench 78.3</span></td>
+  <td class="mono" data-v="999">not published</td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-stop">too big — 17 GB</span></td>
+</tr>
+
+<tr>
+  <td class="model">nimble</td>
+  <td class="mono">Bespoke Labs<br>Qwen3.5-9B fine-tune</td>
+  <td class="mono">9B</td>
+  <td class="mono" data-v="9.3">9.3–9.5 GB</td>
+  <td class="mono">256K table<br>8,192 effective</td>
+  <td class="mono">text, JSON</td>
+  <td><span class="score">75.7% mean over 13 public datasets</span><br>
+      <span class="score">Jev 1.13 = 76.0% on the same set</span><br>
+      <span class="mono">Bespoke Labs 13-dataset run, 3,880 decisions</span></td>
+  <td class="mono" data-v="100">&lt;100 ms <small>(M5 Max)</small></td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-ok">fits — 9.3 GB</span></td>
+</tr>
+
+<tr>
+  <td class="model">d1</td>
+  <td class="mono">Liquid AI<br>LFM2.5-VL-3B</td>
+  <td class="mono">3B <small>(+ 2B tag)</small></td>
+  <td class="mono" data-v="3.7">3.7 GB <small>(32K)</small><br>3.9 GB <small>(2B, 125K)</small></td>
+  <td class="mono">32K / 125K<br>(by tag)</td>
+  <td class="mono">text, JSON,<br>images</td>
+  <td><span class="score">Decision Index 0.2.1 = 48.57</span><br>
+      <span class="score">best under 10B</span> <span class="mono">(35B-A3B Decider 47.11)</span><br>
+      <span class="mono">mean 82.9 over 7 benchmarks</span></td>
+  <td class="mono" data-v="999">not published</td>
+  <td><span class="tag t-warn">LFM Open License v1.0</span></td>
+  <td><span class="tag t-ok">fits comfortably</span></td>
+</tr>
+
+<tr>
+  <td class="model">tev1</td>
+  <td class="mono">Together AI<br>Qwen3.5-4B / 0.8B</td>
+  <td class="mono">4B / 0.8B</td>
+  <td class="mono" data-v="4.4">4.4–4.6 GB <small>(4B)</small><br>812 MB <small>(0.8B)</small></td>
+  <td class="mono">256K table<br>~2,000 effective</td>
+  <td class="mono">text, JSON</td>
+  <td><span class="score">73.3% <small>(4B)</small> · 63.5% <small>(0.8B)</small></span><br>
+      <span class="score">Jev 1.13 = 76.0% on the same set</span><br>
+      <span class="mono">Bespoke Labs 13-dataset run · Together's own 88% is not independent</span></td>
+  <td class="mono" data-v="999">not published</td>
+  <td><span class="tag t-warn">data/scripts MIT, weights unclear</span></td>
+  <td><span class="tag t-ok">fits — 4.4 GB</span></td>
+</tr>
+
+<tr>
+  <td class="model">strands-decider</td>
+  <td class="mono">Strands Agents<br>Qwen3.5-2B-Base + head</td>
+  <td class="mono">2B</td>
+  <td class="mono" data-v="2.0">2.0 GB</td>
+  <td class="mono">4K</td>
+  <td class="mono">text, JSON</td>
+  <td><span class="score">JevBench 180 / 231 <small>(publisher)</small></span><br>
+      <span class="score">183 / 231 <small>(Ollama's own run, MXFP8)</small></span><br>
+      <span class="mono">unmodified JevBench, 231 cases</span></td>
+  <td class="mono" data-v="33">33.3 ms med<br>343.5 ms p95</td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-warn">fits — 4K context cap</span></td>
+</tr>
+
+<tr>
+  <td class="model">laya</td>
+  <td class="mono">Convai Innovations<br>ModernBERT-large (395M) + head</td>
+  <td class="mono">421M</td>
+  <td class="mono" data-v="0.84">844 MB</td>
+  <td class="mono">8K <small>(some tags 512 / 1K)</small></td>
+  <td class="mono">text only</td>
+  <td><span class="score">83.8% in-task macro · ECE 0.060</span><br>
+      <span class="score">65.1% held-out families · ECE 0.207</span><br>
+      <span class="mono">Convai task-family sets; intent/routing 99.1%</span></td>
+  <td class="mono" data-v="38">38.4 ms single<br>14.4 ms/q batched</td>
+  <td><span class="tag t-ok">Apache 2.0</span></td>
+  <td><span class="tag t-ok">fits — 844 MB</span></td>
+</tr>
+
+<tr>
+  <td class="model">d1-omni</td>
+  <td class="mono">Liquid AI<br>LFM2.5-Encoder-350M</td>
+  <td class="mono">600M <small>(+ 2B)</small></td>
+  <td class="mono" data-v="0.85">850 MB <small>(600M)</small><br>4.4 GB <small>(2B)</small></td>
+  <td class="mono">125K</td>
+  <td class="mono">text, image,<br><strong>audio</strong> (30 s)</td>
+  <td><span class="score">Decision Index 0.2.1 = 15.95</span><br>
+      <span class="score">mean 78.4 over 7 benchmarks</span><br>
+      <span class="mono">d1 scores 48.57 / 82.9 on the same two</span></td>
+  <td class="mono" data-v="999">not published</td>
+  <td><span class="tag t-warn">LFM Open License v1.0</span></td>
+  <td><span class="tag t-ok">fits — 850 MB</span><span class="tag t-warn">not for text decisions</span></td>
+</tr>
+
+</tbody>
+</table>
+</div>
+<p class="stamp" style="margin-top:12px">Green rows are verified on this machine. "Fits" = loads in 24 GB
+alongside the rest of the fleet (Ollama, the Hermes agents, Beast, Maio OS). Download sizes are the
+publisher's stated tag sizes, not resident memory.</p>
+
+<h2>What the numbers actually mean — <span class="n">read this before quoting any of them</span></h2>
+<div class="notes">
+  <div class="note warn">
+    <h3>Four different "indexes" are in play</h3>
+    <p>These models are scored on at least four unrelated yardsticks, and the pages quote them side by side
+    as if comparable:</p>
+    <ul>
+      <li><strong>Jev Decision Index 0.2.1</strong> — d1 48.57, nimble-v3 56.88</li>
+      <li><strong>Jev Decision Index 0.3.2</strong> — d3 38.9–66.3 (text), 54.7–71.3 (vision)</li>
+      <li><strong>JevBench 231-case public set</strong> — kev 183/231, nimble-v3 201/231, strands 183/231</li>
+      <li><strong>Cloudflare's Decision Index</strong> — the suite behind clef's BFCL/API-Bank table</li>
+    </ul>
+    <p>A 56.88 and a 55.8 are <em>not</em> a 1-point gap. Index versions and task sets differ. The only
+    honest cross-model comparison is on the same 231 JevBench cases, and that only covers kev, nimble,
+    strands and the older nimble.</p>
+  </div>
+
+  <div class="note stop">
+    <h3>nimble-v3 is non-commercial</h3>
+    <p>Bespoke Labs relicensed <code>nimble-v3</code> to <strong>CC BY-NC 4.0</strong> — a change from the
+    earlier <code>nimble</code>, which is Apache 2.0. It is the best-scoring 9B on Decision Index 0.2.1 and
+    it is unusable for any paid work in the group. Use <code>nimble</code> (v1) instead, or clef-flash.</p>
+  </div>
+
+  <div class="note">
+    <h3>Context lengths are advertised, not usable</h3>
+    <ul>
+      <li><code>d3</code> — table says 256K; the page's own limits section says the shipped packages run
+      at <strong>4,096 tokens</strong>.</li>
+      <li><code>clef</code> / <code>clef-flash</code> — highlight says 64K, spec table says 256K.</li>
+      <li><code>tev1</code> — 256K in the table, "about 2,000 tokens" in the notes; longest training
+      example ~1,500.</li>
+      <li><code>nimble</code> — 256K in the table, 8,192-token prompt cap in the notes.</li>
+      <li><code>strands-decider</code> — genuinely 4,096, stated plainly. Plan for short inputs.</li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <h3>The gate model is already good news</h3>
+    <p>This Mac's §8 gate runs <code>d3-flash-mlx</code>. Its real identity, from
+    <code>ollama show</code>: <span class="mono">qwen3_5 · 8.4B · int8 · ctx 262,144 · 10.31 GB
+    resident</span>. A live System One request returned
+    <span class="mono">urgent 0.997, team = technical 0.9998</span> in <strong>10.1 s cold</strong> and
+    <strong>0.36–0.39 s warm</strong>. That is the baseline any replacement has to beat on this box.</p>
+    <pre><span class="c"># what is actually loaded</span>
+ollama show d3-flash-mlx     <span class="c"># qwen3_5, 8.4B, int8, 262144 ctx</span>
+curl -s localhost:11434/v1/systemone -d '{
+  "model":"d3-flash-mlx",
+  "state":"Our app crashes on launch for every user.",
+  "questions":{"urgent":{"type":"noul","instructions":"Is this urgent?"},
+               "team":{"type":"choice","instructions":"Which team?",
+                       "criteria":{"billing":null,"technical":null}}}}'</pre>
+  </div>
+
+  <div class="note">
+    <h3>Every page says the same thing about trust</h3>
+    <p>Without exception, the publishers warn that probabilities are model outputs, not real-world
+    frequencies, and that <code>confidence</code> measures how concentrated the distribution is — not the
+    chance the answer is right. Laya's page is bluntest: a 0.9 confidence does not mean 90% correct on your
+    data. Any threshold this stack relies on has to be refit on our own labelled examples, per model.</p>
+  </div>
+
+  <div class="note">
+    <h3>Practical recommendation for the fleet</h3>
+    <ul>
+      <li><strong>Keep d3 as the gate</strong> — installed, working, vision, and the only 2B→27B ladder
+      (swap in <code>d3:27b</code> the day a 64 GB machine joins).</li>
+      <li><strong>Trial clef-flash beside it</strong> for speed-sensitive gating: ~10× the measured warm
+      latency headroom, image input, Apache 2.0. Cost: ~1.5 GB more RAM.</li>
+      <li><strong>Add laya</strong> only if routing volume justifies a second always-loaded model — 844 MB
+      and 14 ms/question batched make it nearly free, but it is text-only and weak off-distribution.</li>
+      <li><strong>Rule out</strong> pplx-decider, clef 27B, d3:27b and kev:27b on this hardware;
+      <strong>rule out nimble-v3</strong> on licence.</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+Sources: ollama.com library pages for d3, d1, d1-omni, pplx-decider, kev, nimble-v3, nimble,
+strands-decider, clef-flash, clef, laya, tev1 (scraped 2026-11-03) · ollama.com/docs/capabilities/decision ·
+local <code>ollama show</code> / <code>/v1/systemone</code> / <code>/api/ps</code> on this Mac mini
+(M4 Pro, 24 GB, Ollama 0.40.13).<br>
+Every figure is quoted from the page it appears on. No benchmark was re-run here except the d3 latency and
+response probe. Benchmarks across publishers are not comparable.
+</footer>
+
+</div>
+<script>
+(function(){
+  var tb=document.querySelector('#mx tbody');
+  var ths=document.querySelectorAll('#mx thead th');
+  var dir={};
+  ths.forEach(function(th,i){
+    th.addEventListener('click',function(){
+      var k=+th.dataset.k, type=th.dataset.t;
+      dir[k]=!dir[k];
+      var rows=Array.prototype.slice.call(tb.querySelectorAll('tr'));
+      rows.sort(function(a,b){
+        var x=a.children[k], y=b.children[k];
+        var xv = type==='n' ? parseFloat(x.dataset.v||x.textContent.replace(/[^\d.]/g,'')) 
+                            : x.textContent.trim().toLowerCase();
+        var yv = type==='n' ? parseFloat(y.dataset.v||y.textContent.replace(/[^\d.]/g,'')) 
+                            : y.textContent.trim().toLowerCase();
+        if(type==='n'){ return dir[k] ? xv-yv : yv-xv; }
+        return dir[k] ? (xv>yv?1:xv<yv?-1:0) : (xv<yv?1:xv>yv?-1:0);
+      });
+      rows.forEach(function(r){tb.appendChild(r);});
+    });
+  });
+})();
+</script>
+</body>
+</html>
