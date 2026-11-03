@@ -13,16 +13,29 @@ Sources (no invented figures):
 """
 import pathlib, html
 
-OUT = pathlib.Path("/Volumes/Hiksemi 1TB/DevMini/targetpraks.github.io")
+import os as _os
 
-PURPLE = "#330072"
-CYAN   = "#10AEAA"
-LILAC  = "#E6DFED"
-MID    = "#5C348D"
-TEAL   = "#077169"
+OUT = pathlib.Path(_os.environ.get("PACK_OUT", "/Volumes/Hiksemi 1TB/DevMini/targetpraks.github.io"))
+
+# Palettes. "tlf" is the house system as shipped; the others are candidates for the
+# mushroom-brand look. Tokens keep the same roles: ink (bands/headings), accent
+# (numerals, kickers), paper (cards), mid (secondary text), deep (eyebrow/watch).
+PALETTES = {
+    # key:      ink (bands/headings)  accent      paper     mid       deep      soft (labels on band) lede       when
+    "tlf":    dict(ink="#330072", accent="#10AEAA", paper="#E6DFED", mid="#5C348D", deep="#077169",
+                   soft="#B9A9D6", lede="#D9CEEA", when="#C8B8E0"),
+    "mighty": dict(ink="#0A4A46", accent="#10AEAA", paper="#DDEFEC", mid="#2F6F68", deep="#0F5C56",
+                   soft="#9CC9C3", lede="#CDE7E3", when="#B7DAD5"),
+    "earth":  dict(ink="#23331F", accent="#C9A227", paper="#EFE9D8", mid="#5D6B4F", deep="#3F5233",
+                   soft="#A98FC7", lede="#DCD3E8", when="#C9BEDD"),
+}
+_pal = PALETTES[_os.environ.get("PACK_PALETTE", "mighty")]
+PURPLE, CYAN, LILAC, MID, TEAL = _pal["ink"], _pal["accent"], _pal["paper"], _pal["mid"], _pal["deep"]
+SOFT, LEDE, WHEN = _pal["soft"], _pal["lede"], _pal["when"]
 
 def _sub(css: str) -> str:
-    for k, v in (("%(P)s", PURPLE), ("%(C)s", CYAN), ("%(L)s", LILAC), ("%(M)s", MID), ("%(T)s", TEAL)):
+    for k, v in (("%(P)s", PURPLE), ("%(C)s", CYAN), ("%(L)s", LILAC), ("%(M)s", MID), ("%(T)s", TEAL),
+                 ("%(S)s", SOFT), ("%(E)s", LEDE), ("%(W)s", WHEN)):
         css = css.replace(k, v)
     return css.replace("%%", "%")
 
@@ -223,7 +236,7 @@ def svg_cycle():
     span = 14.0
     scale = (x1 - x0) / span
     def px(d): return x0 + d * scale
-    segs = [("Sow", 0, 1, CYAN, "#fff", "day 0"),
+    segs = [("Sow", 0, 1, CYAN, PURPLE, "day 0"),
             ("Blackout", 1, 4, MID, "#fff", "days 1–3, dark, stacked"),
             ("Light", 4, 14, LILAC, PURPLE, "day 4 to the cut, 12–16 h a day")]
     out = [f'<svg viewBox="0 0 {W} {H}" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" '
@@ -374,7 +387,7 @@ html, body { margin: 0; padding: 0; background: #fff; color: %(P)s;
 .band .kicker { font-size: 8pt; letter-spacing: .32em; text-transform: uppercase; color: %(C)s; font-weight: 700; }
 .band h1 { font-family: "American Typewriter", Georgia, serif; font-weight: 700; font-size: 52pt;
   line-height: .94; margin: 5mm 0 0; letter-spacing: -.02em; }
-.band .when { margin-top: 5mm; font-size: 13pt; color: #C8B8E0; }
+.band .when { margin-top: 5mm; font-size: 13pt; color: %(W)s; }
 .band .when b { color: %(C)s; font-weight: 700; }
 .band .num { position: absolute; right: 16mm; top: 10mm; font-family: "American Typewriter", Georgia, serif;
   font-size: 104pt; line-height: .8; color: %(C)s; font-weight: 700; }
@@ -463,7 +476,7 @@ def build_sheets():
     s1 = f'''<div class="body">
       <p style="font-size:12.5pt;line-height:1.5;max-width:200mm;margin:0 0 7mm">{("Five stages, eighteen steps, ten to fourteen days. One stage to a sheet, on the wall where the work happens, in the order it happens.")}</p>
       <div style="display:flex;gap:10mm;margin:0 0 8mm;padding:5mm 0;border-top:.4mm solid rgba(255,255,255,.3);border-bottom:.4mm solid rgba(255,255,255,.3)">
-        {''.join(f'<div style="flex:1"><div style="font-family:&quot;American Typewriter&quot;,Georgia,serif;font-size:23pt;color:{CYAN};font-weight:700;line-height:1;white-space:nowrap">{v}</div><div style="font-size:7.5pt;letter-spacing:.16em;text-transform:uppercase;color:#B9A9D6;margin-top:2mm">{k}</div></div>' for v,k in [("80","tray places"),("200–300 g","the model, a tray"),("136 g","the measured average"),("10–14","days to cut"),("5","stages")])}
+        {''.join(f'<div style="flex:1"><div style="font-family:&quot;American Typewriter&quot;,Georgia,serif;font-size:23pt;color:{CYAN};font-weight:700;line-height:1;white-space:nowrap">{v}</div><div style="font-size:7.5pt;letter-spacing:.16em;text-transform:uppercase;color:%(S)s;margin-top:2mm">{k}</div></div>' for v,k in [("80","tray places"),("200–300 g","the model, a tray"),("136 g","the measured average"),("10–14","days to cut"),("5","stages")])}
       </div>
       <div class="plate map">{svg_rack()}<p class="cap">Five racks, four tiers, four trays to a tier: eighty places. One tray in and one tray out every day, so the room turns over once every twelve to fifteen days.</p></div>
       <p class="note" style="font-size:9pt;margin-bottom:7mm"><b>One tray in, one tray out.</b> Eighty places divided by a twelve-day cycle is six or seven trays a day; by a fifteen-day cycle, five. The growth model runs two cycles a month — a hundred and sixty trays. The sow log is what settles it.</p>
@@ -503,7 +516,7 @@ def build_sheets():
         <div>
           <p class="eyebrow" style="font-size:7.5pt;letter-spacing:.28em;text-transform:uppercase;color:{TEAL};font-weight:700;margin:0 0 3mm">What a tray actually gives</p>
           <table><thead><tr><th>Green</th><th>Grams a tray</th><th></th></tr></thead><tbody>{ybars}</tbody></table>
-          <p class="note">Measured at Penn State over 14 to 28 cycles a tray, ten to fifteen grams of seed, two weeks, no supplemental light: <b>136 g average, 47 to 201 g</b>. Bar marked in cyan is over 150 g. The growth model carries 200–300 g a tray — that is the number to beat, not the number to plan on until the room has weighed fifty trays.</p>
+          <p class="note">Measured at Penn State over 14 to 28 cycles a tray, ten to fifteen grams of seed, two weeks, no supplemental light: <b>136 g average, 47 to 201 g</b>. A solid bar is over 150 g. The growth model carries 200–300 g a tray — that is the number to beat, not the number to plan on until the room has weighed fifty trays.</p>
         </div>
       </div>
     </div>'''
@@ -688,14 +701,14 @@ body { margin:0; background:#fff; color:var(--purple);
 .hero { background: var(--purple); color: var(--lilac); padding: 76px 0 54px; }
 .hero h1 { font-family: "American Typewriter", Georgia, serif; font-size: clamp(46px, 7.4vw, 92px); line-height: .94;
   letter-spacing: -.03em; margin: 0 0 26px; color: #fff; font-weight: 700; }
-.hero .lede { font-size: 20px; line-height: 1.45; max-width: 44ch; color: #D9CEEA; margin: 0 0 34px; }
+.hero .lede { font-size: 20px; line-height: 1.45; max-width: 44ch; color: %(E)s; margin: 0 0 34px; }
 .hero .meta { display:flex; flex-wrap:wrap; gap: 26px 40px; justify-content: space-between; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.28); }
-.hero .meta span { flex: 1 1 0; min-width: 140px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #B9A9D6; }
+.hero .meta span { flex: 1 1 0; min-width: 140px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: %(S)s; }
 .hero .meta b { display:block; font-family:"American Typewriter",Georgia,serif; font-size: 30px; letter-spacing:-.01em; color: var(--cyan); margin-bottom: 4px; }
 section { padding: 54px 0; }
 .eyebrow { font-size: 11px; letter-spacing:.3em; text-transform:uppercase; color: var(--teal); font-weight:700; margin:0 0 16px; }
 h2.big { font-family:"American Typewriter",Georgia,serif; font-size: clamp(28px,3.4vw,42px); line-height:1.06; margin:0 0 14px; letter-spacing:-.02em; }
-.sub { font-size: 17px; line-height:1.6; color:#4A3A66; max-width: 68ch; margin: 0 0 28px; }
+.sub { font-size: 17px; line-height:1.6; color:%(M)s; max-width: 68ch; margin: 0 0 28px; }
 .plate { border:1px solid rgba(51,0,114,.22); padding: 18px 20px 12px; background:#fff; }
 .plate svg { display:block; width:100%; height:auto; }
 .plate figcaption { font-size: 13px; color: var(--mid); margin-top: 10px; line-height:1.5; }
@@ -726,7 +739,7 @@ ol.steps { list-style:none; margin: 0; padding:0; }
   font-family:"American Typewriter",Georgia,serif; font-size: 21px; line-height:1.35; }
 .pack { background: var(--purple); color: var(--lilac); padding: 54px 0; }
 .pack h2 { color:#fff; font-family:"American Typewriter",Georgia,serif; font-size: 34px; margin:0 0 12px; }
-.pack p { color:#D9CEEA; font-size:16px; line-height:1.6; max-width: 70ch; }
+.pack p { color:%(E)s; font-size:16px; line-height:1.6; max-width: 70ch; }
 .pack a { color: var(--cyan); text-decoration:none; border-bottom:1px solid var(--cyan); }
 .foot { padding: 34px 0 60px; font-size: 13px; color: var(--mid); line-height:1.6; }
 .foot ul { margin: 10px 0 0; padding-left: 18px; }
