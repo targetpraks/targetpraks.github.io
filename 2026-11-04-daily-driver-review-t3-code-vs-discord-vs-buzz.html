@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T3 Code vs Discord vs Buzz — daily driver review</title>
+<style>
+  :root{
+    --t3: var(--chart-1, #5b8cff);
+    --dc: var(--chart-2, #5865F2);
+    --bz: var(--chart-3, #d9a13b);
+    --ink: var(--foreground, #14161a);
+    --soft: var(--muted-foreground, #6b7280);
+    --line: var(--border, #e3e6ec);
+    --surface: var(--card, #f6f7f9);
+    --acc: var(--accent, #b98a27);
+    --mono: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    --sans: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:transparent}
+  body{font-family:var(--sans);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--soft);font-weight:600}
+  h1{font-size:clamp(30px,4.4vw,46px);line-height:1.06;letter-spacing:-.03em;margin:14px 0 12px;font-weight:700}
+  .deck{font-size:16px;color:var(--soft);max-width:66ch;margin:0}
+  .rule{height:1px;background:var(--line);margin:26px 0}
+
+  .verdict{border:1px solid var(--line);border-radius:var(--radius,16px);padding:20px;background:color-mix(in srgb, var(--surface) 70%, transparent)}
+  .verdict .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);font-weight:700}
+  .verdict p{margin:8px 0 0;font-size:17px;line-height:1.5}
+  .verdict b{font-weight:650}
+
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:var(--radius,16px);padding:16px 16px 14px;background:color-mix(in srgb, var(--surface) 55%, transparent)}
+  .card .name{display:flex;align-items:center;gap:8px;font-weight:650;font-size:14px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .card .build{font-family:var(--mono);font-size:11px;color:var(--soft);margin-top:3px;min-height:2.6em}
+  .score{display:flex;align-items:baseline;gap:6px;margin:12px 0 4px}
+  .score .n{font-size:34px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .score .of{font-size:12px;color:var(--soft)}
+  .bars{display:grid;gap:6px;margin-top:10px}
+  .bar{display:grid;grid-template-columns:78px 1fr 22px;align-items:center;gap:8px;font-size:11px;color:var(--soft)}
+  .track{height:5px;border-radius:99px;background:color-mix(in srgb, var(--line) 80%, transparent);overflow:hidden}
+  .fill{height:100%;border-radius:99px}
+
+  .weights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px;padding:14px 16px;border:1px dashed var(--line);border-radius:var(--radius,16px)}
+  @media (max-width:760px){.weights{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .weights label{font-size:11px;color:var(--soft);display:grid;gap:4px}
+  .weights label span{display:flex;justify-content:space-between;font-weight:600;color:var(--ink)}
+  input[type=range]{width:100%;accent-color:var(--acc)}
+
+  h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin:34px 0 14px;font-weight:700}
+  .crit{border-top:1px solid var(--line);padding:16px 0}
+  .crit h3{margin:0 0 4px;font-size:17px;letter-spacing:-.01em;font-weight:650}
+  .crit .find{margin:0 0 12px;font-size:14px;color:var(--soft)}
+  .row{display:grid;grid-template-columns:104px 1fr;gap:12px;padding:7px 0;align-items:start;border-top:1px dashed color-mix(in srgb, var(--line) 70%, transparent)}
+  .row:first-of-type{border-top:0}
+  .row .who{font-size:12px;font-weight:650;display:flex;align-items:center;gap:6px}
+  .row .ev{font-size:13px}
+  code{font-family:var(--mono);font-size:11.5px;background:var(--code-background, color-mix(in srgb, var(--line) 40%, transparent));padding:1px 5px;border-radius:5px;white-space:nowrap}
+  .verdictline{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:650;padding:2px 7px;border-radius:99px;border:1px solid var(--line)}
+  .yes{color:var(--success,#15803d)} .no{color:var(--destructive,#b91c1c)} .part{color:var(--warning,#a16207)}
+
+  .pipeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:8px}
+  @media (max-width:760px){.pipeline{grid-template-columns:1fr}}
+  .stat{border:1px solid var(--line);border-radius:var(--radius,16px);padding:14px 16px}
+  .stat .big{font-size:28px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .stat .lbl{font-size:11px;color:var(--soft);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+  .stat .note{font-size:12px;color:var(--soft);margin-top:6px}
+
+  .ledger{display:grid;gap:10px;margin-top:6px}
+  .led{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:center;font-size:12px}
+  .led .track{height:9px}
+  .led .lab{font-weight:650;display:flex;gap:6px;align-items:center}
+  .led .num{font-family:var(--mono);font-size:11px;color:var(--soft);margin-left:6px}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+  @media (max-width:760px){.split{grid-template-columns:1fr}}
+  .step{display:grid;grid-template-columns:22px 1fr;gap:9px;font-size:13.5px;padding:7px 0}
+  .step .n{width:20px;height:20px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--soft)}
+  .caveat{border-left:3px solid var(--acc);padding:12px 14px;background:color-mix(in srgb, var(--surface) 60%, transparent);border-radius:0 var(--radius,12px) var(--radius,12px) 0;font-size:13px;color:var(--soft)}
+  details{border-top:1px solid var(--line);padding:10px 0}
+  summary{cursor:pointer;font-size:13px;font-weight:650}
+  pre{font-family:var(--mono);font-size:11px;line-height:1.6;overflow:auto;background:var(--code-background, color-mix(in srgb, var(--line) 35%, transparent));padding:12px;border-radius:10px;margin:10px 0 0;white-space:pre-wrap}
+  .foot{font-size:11.5px;color:var(--soft);margin-top:22px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Evidence review · 4 November 2026 · measured on this Mac</div>
+  <h1>Three chat surfaces, one machine, one honest answer</h1>
+  <p class="deck">T3 Code Nightly, Discord and Buzz were measured on the same Mac: installed builds, real voice-to-text timings, live agent wiring and actual message volume. No product marketing, no remembered opinions.</p>
+
+  <div class="rule"></div>
+
+  <div class="verdict">
+    <div class="k">Verdict</div>
+    <p><b>No single app wins all four criteria.</b> T3 Code wins depth and presentation; Discord wins mobile reach and is the only one whose voice notes already reach your agent today; Buzz has the richest voice stack but is a one-day-old preview with zero audio ever sent. The utility answer is a two-lane system: <b>T3 Code as the cockpit, Discord as the voice front door</b> — both point at the same Hermes fleet, so nothing is duplicated.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="name"><i class="dot" style="background:var(--t3)"></i>T3 Code</div>
+      <div class="build">0.1.8-nightly.20261104.4165 · 465 MB</div>
+      <div class="score"><span class="n" data-total="t3">6.9</span><span class="of">/ 10 weighted</span></div>
+      <div class="bars">
+        <div class="bar"><span>Mobile</span><div class="track"><div class="fill" style="width:90%;background:var(--t3)"></div></div><span>9</span></div>
+        <div class="bar"><span>Voice notes</span><div class="track"><div class="fill" style="width:10%;background:var(--t3)"></div></div><span>1</span></div>
+        <div class="bar"><span>Depth</span><div class="track"><div class="fill" style="width:100%;background:var(--t3)"></div></div><span>10</span></div>
+        <div class="bar"><span>Presentation</span><div class="track"><div class="fill" style="width:90%;background:var(--t3)"></div></div><span>9</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="name"><i class="dot" style="background:var(--dc)"></i>Discord</div>
+      <div class="build">0.0.420 · 514 MB · bot live as Adrianna AI#2851</div>
+      <div class="score"><span class="n" data-total="dc">7.3</span><span class="of">/ 10 weighted</span></div>
+      <div class="bars">
+        <div class="bar"><span>Mobile</span><div class="track"><div class="fill" style="width:100%;background:var(--dc)"></div></div><span>10</span></div>
+        <div class="bar"><span>Voice notes</span><div class="track"><div class="fill" style="width:80%;background:var(--dc)"></div></div><span>8</span></div>
+        <div class="bar"><span>Depth</span><div class="track"><div class="fill" style="width:70%;background:var(--dc)"></div></div><span>7</span></div>
+        <div class="bar"><span>Presentation</span><div class="track"><div class="fill" style="width:40%;background:var(--dc)"></div></div><span>4</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="name"><i class="dot" style="background:var(--bz)"></i>Buzz</div>
+      <div class="build">0.5.28 · 231 MB · relay + 7 agents up</div>
+      <div class="score"><span class="n" data-total="bz">6.5</span><span class="of">/ 10 weighted</span></div>
+      <div class="bars">
+        <div class="bar"><span>Mobile</span><div class="track"><div class="fill" style="width:50%;background:var(--bz)"></div></div><span>5</span></div>
+        <div class="bar"><span>Voice notes</span><div class="track"><div class="fill" style="width:90%;background:var(--bz)"></div></div><span>9</span></div>
+        <div class="bar"><span>Depth</span><div class="track"><div class="fill" style="width:40%;background:var(--bz)"></div></div><span>4</span></div>
+        <div class="bar"><span>Presentation</span><div class="track"><div class="fill" style="width:80%;background:var(--bz)"></div></div><span>8</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="weights">
+    <label><span>Voice notes <b data-w="voice">30</b></span><input type="range" min="0" max="60" value="30" data-weight="voice"></label>
+    <label><span>Depth <b data-w="depth">30</b></span><input type="range" min="0" max="60" value="30" data-weight="depth"></label>
+    <label><span>Mobile <b data-w="mobile">20</b></span><input type="range" min="0" max="60" value="20" data-weight="mobile"></label>
+    <label><span>Presentation <b data-w="present">20</b></span><input type="range" min="0" max="60" value="20" data-weight="present"></label>
+  </div>
+  <div class="foot" id="weightnote">Drag a weight to re-rank. Defaults reflect the brief: voice, depth, mobile, then looks.</div>
+
+  <h2>1 · Mobile app availability and performance</h2>
+  <div class="crit">
+    <h3>All three ship a phone app. Only two are shipping, not previewing.</h3>
+    <p class="find">T3 Code's phone app is a near-complete remote for the desktop; Discord's is a decade-mature client; Buzz's is a TestFlight beta with no Android build.</p>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--t3)"></i>T3 Code</div><div class="ev"><span class="verdictline yes">Best parity</span> iOS <code>T3 Code - Remote, Claude &amp; more</code> v2.2.0, 4.9★ / 178 ratings, 130.6 MB, iOS 18+; Android <code>com.t3tools.t3code</code>, 10K+ installs, updated 28 Oct 2026. Store copy: "pretty much the full power of the desktop app" — runs, diffs, PRs, terminal. Pairs by code over LAN, T3 Connect tunnel, or Tailscale. <b>Not paired on this Mac yet</b> — <code>~/.t3/pair</code> holds only a 22 Oct bookmark.</div></div>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--dc)"></i>Discord</div><div class="ev"><span class="verdictline yes">Most reliable</span> Native iOS + Android, no beta gate, no pairing step, no tunnel to maintain. The agent is simply already there: gateway log shows <code>[Discord] Connected as Adrianna AI#2851</code> plus <code>batman</code> and <code>splinter</code> profiles. Nothing to install on the phone beyond the app he already has.</div></div>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--bz)"></i>Buzz</div><div class="ev"><span class="verdictline part">Preview only</span> App Store v0.21, 4.2★ / 60 ratings, 67.4 MB, <b>iPhone only</b>; the shipping mobile path is public TestFlight <code>testflight.apple.com/join/ubPnpGUz</code>. No Android build exists. Pairing needs Tailscale on the phone and a desktop QR + six-digit confirmation, and the relay's own setup note calls this "Preview-grade … mobile in preview".</div></div>
+  </div>
+
+  <h2>2 · Voice notes</h2>
+  <div class="crit">
+    <h3>This is where the three genuinely separate — and where T3 Code is empty.</h3>
+    <p class="find">Measured local speech-to-text on this Mac; all three clients inspected for a recording path, not just an audio player.</p>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--t3)"></i>T3 Code</div><div class="ev"><span class="verdictline no">None</span> A full scan of the 465 MB bundle returns <b>no</b> voice-recording or transcription strings — every "voice" hit is a MIME table or a CSS property. 2.2.0 added "play audio inline", which is playback. Voice input means the OS keyboard mic (iOS/macOS dictation) typing into the composer: usable, but no audio file, no transcript echo, nothing for the agent to re-read.</div></div>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--dc)"></i>Discord</div><div class="ev"><span class="verdictline yes">Works today</span> Recording is native and <b>mobile-only by design</b> (Discord's own docs: voice messages "can only be sent through the mobile app"), up to 20 minutes, playable anywhere. Hermes catches it automatically: <code>_event_media_is_stt_input</code> routes <code>MessageType.VOICE</code> or any <code>audio/*</code> attachment into STT, transcribes, and echoes the transcript — with <code>stt.enabled: true</code>, local provider <code>superwhisper</code>. Replies can go back as native voice bubbles (<code>_VOICE_EXTS = .ogg/.opus</code>).</div></div>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--bz)"></i>Buzz</div><div class="ev"><span class="verdictline part">Deepest, unproven</span> Real native stack: <code>src/commands/media_voice_note.rs</code>, on-device STT via sherpa-onnx (Cohere Transcribe, Whisper, FireRedASR, Moonshine), formats <code>wav/m4a/mp3/ogg/oga</code>, input-size cap, agent text-to-speech with Pocket voices, and voice huddles with transcription. <b>But the relay has 0 audio attachments of 89 messages</b> — the path has never been exercised here.</div></div>
+  </div>
+
+  <div class="pipeline">
+    <div class="stat"><div class="lbl">10 s memo</div><div class="big">0.66 s</div><div class="note">local superwhisper, 25 words, exact transcript</div></div>
+    <div class="stat"><div class="lbl">20 s memo</div><div class="big">0.85 s</div><div class="note">second run 1.29 s — ~20× realtime</div></div>
+    <div class="stat"><div class="lbl">60 s memo</div><div class="big">2.79 s</div><div class="note">159 words; one cold start timed out at 90 s</div></div>
+  </div>
+  <div class="foot">Same pipeline serves Discord and Buzz today — the transcription is not the bottleneck, the client's recording button is.</div>
+
+  <h2>3 · Information representation and looks</h2>
+  <div class="crit">
+    <div class="row"><div class="who"><i class="dot" style="background:var(--t3)"></i>T3 Code</div><div class="ev"><span class="verdictline yes">Purpose-built</span> Diffs, PR summaries with live checks, file viewer, terminal, per-thread model and usage. A result is a rendered object, not a paragraph — and the phone app mirrors it (release notes: "on iPad, open threads and devices in a resizable inspector"). 335 threads and 6,047 messages live in <code>statev2.sqlite</code> (1.8 GB): this is the surface actually carrying the work.</div></div>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--dc)"></i>Discord</div><div class="ev"><span class="verdictline no">Chat-shaped ceiling</span> <code>MAX_MESSAGE_LENGTH = 2000</code> with a 1900-char split threshold in the adapter — long answers arrive as a burst of chunks, with flood limits acknowledged in the code. No diff view, no file tree, no terminal. Pretty for conversation, wrong for output; the answer is to link out to an artifact.</div></div>
+    <div class="row"><div class="who"><i class="dot" style="background:var(--bz)"></i>Buzz</div><div class="ev"><span class="verdictline yes">Best-looking room</span> Channels, threads, rich media with pinned frame comments, canvases, per-agent identity and audit trail. It reads like a designed workspace rather than a chat app — but its agents here run the <code>buzz-agent</code> harness on <code>mimo-v2.6-flash:cloud</code>, a thinner brain than the Hermes agent behind the other two.</div></div>
+  </div>
+
+  <h2>Usage ledger — what is actually carrying the work</h2>
+  <div class="ledger">
+    <div class="led"><div class="lab"><i class="dot" style="background:var(--t3)"></i>T3 Code</div><div class="track"><div class="fill" style="width:100%;background:var(--t3)"></div></div></div>
+    <div class="led"><div class="num" style="margin-left:0">335 threads · 764 runs · 6,047 messages · 54,528 turn items · 1.8 GB state</div></div>
+    <div class="led"><div class="lab"><i class="dot" style="background:var(--dc)"></i>Discord</div><div class="track"><div class="fill" style="width:72%;background:var(--dc)"></div></div></div>
+    <div class="led"><div class="num" style="margin-left:0">2,915 gateway lines on 31 Oct · 2,252 on 1 Nov · 8 on 4 Nov (fading as T3 took over)</div></div>
+    <div class="led"><div class="lab"><i class="dot" style="background:var(--bz)"></i>Buzz</div><div class="track"><div class="fill" style="width:6%;background:var(--bz)"></div></div></div>
+    <div class="led"><div class="num" style="margin-left:0">89 messages, all in 7 days, 13 authors, 0 audio, 0 images</div></div>
+  </div>
+
+  <h2>4 · Recommendation</h2>
+  <div class="crit">
+    <h3>Run two lanes, not three apps.</h3>
+    <p class="find">T3 Code for depth and the pretty surface, desktop and phone. Discord for the voice memo you record walking to the car. Buzz stays installed as a lab, not a driver.</p>
+  </div>
+  <div class="split">
+    <div class="card">
+      <div class="name">Already true — no work needed</div>
+      <div class="step"><span class="n">1</span><div>T3 Code is the work surface: 335 threads, full tool set, phone app rated 4.9 with near-desktop parity.</div></div>
+      <div class="step"><span class="n">2</span><div>Discord is connected to the same fleet (Adrianna, Bruce Wayne, Splinter) with local STT at ~20× realtime and transcript echo.</div></div>
+      <div class="step"><span class="n">3</span><div>Nothing sensitive goes in Buzz: no end-to-end encryption on that relay, per its own setup note.</div></div>
+    </div>
+    <div class="card">
+      <div class="name">Three steps to finish the setup</div>
+      <div class="step"><span class="n">1</span><div>Pair the phone to T3 Code: Settings → network access → <b>Pair devices</b>, then scan with the iOS app (or paste the pairing code). Tailscale already covers the away-from-home case.</div></div>
+      <div class="step"><span class="n">2</span><div>Use one Discord channel as the voice inbox: record there, let STT answer, and ask for the artifact link rather than the essay — that sidesteps the 2000-char ceiling.</div></div>
+      <div class="step"><span class="n">3</span><div>Re-test Buzz voice in a fortnight: if the relay logs its first audio attachment and the mobile beta lands, it becomes the single-app candidate — it is the only one whose voice stack is native end-to-end.</div></div>
+    </div>
+  </div>
+
+  <div class="caveat" style="margin-top:16px">
+    <b>What I did not test, so I am not claiming it.</b> No voice note was sent through Discord or Buzz during this review — the Discord result comes from the adapter code path plus the measured STT pipeline, not from a live memo. The T3 phone app was verified from its store listing and pairing machinery, not from a paired device. Buzz voice notes were verified from the shipped binary, since the relay holds zero audio events.
+  </div>
+
+  <h2>Evidence</h2>
+  <details>
+    <summary>Builds, ports and pairing state</summary>
+    <pre>T3 Code (Nightly)  ver=0.1.8-nightly.20261104.4165  size=465M  id=com.t3tools.t3code
+Buzz                ver=0.5.28  size=231M  id=xyz.block.buzz.app
+Discord             ver=0.0.420  size=514M  id=com.hnc.Discord
+
+lsof -iTCP -sTCP:LISTEN → T3 Code 127.0.0.1:3773 · buzz-desktop 127.0.0.1:60829
+~/.t3/pair → t3-mini-web.webloc (22 Oct) · pairing-code.txt mtime 22 Oct 22:06  → no phone paired
+tailscale serve: no T3 route published</pre>
+  </details>
+  <details>
+    <summary>Voice pipeline, measured</summary>
+    <pre>superwhisper-stt clip10.m4a  real=0.66s  words=25
+superwhisper-stt clip20.m4a  real=1.29s  words=51
+superwhisper-stt clip20.m4a  real=0.85s  words=51
+superwhisper-stt clip60.m4a  real=2.79s  words=159
+first cold call: 102.70s wall → "superwhisper-stt: no transcript after 90s"
+
+config: stt.enabled=true · provider=superwhisper · command=/Users/ricardomaio/.local/bin/superwhisper-stt {input_path}</pre>
+  </details>
+  <details>
+    <summary>Client capability scans</summary>
+    <pre>T3 app.asar, word-boundary "voice": 78 hits — all MIME tables (audio/x-voc, audio/vnd.lucent.voice)
+and CSS properties (voice-family, voice-rate). 0 recording/transcription symbols.
+
+Buzz buzz-desktop: src/commands/media_voice_note.rs present
+  "failed to prepare voice note" · "Voice note exceeds the maximum input size of … bytes"
+  sherpa_onnx::OfflineCohereTranscribe / Whisper / FireRedAsr / Moonshine
+  "Agent text to speech" · "Pocket TTS" · transcription_enabled · VoiceInputMode
+
+Hermes gateway: _event_media_is_stt_input → MessageType.VOICE or mime audio/*
+discord/adapter.py: MAX_MESSAGE_LENGTH = 2000 · _SPLIT_THRESHOLD = 1900</pre>
+  </details>
+  <details>
+    <summary>Store listings and live wiring</summary>
+    <pre>App Store id6787819824  T3 Code - Remote, Claude & more · 4.9 (178) · v2.2.0 · 130.6 MB · iOS 18+
+Play Store com.t3tools.t3code · 10K+ installs · 90 reviews · updated 28 Oct 2026
+App Store id6779728271  Buzz - chat with your hive · 4.2 (60) · v0.21 · 67.4 MB · iPhone only
+
+gateway.log: [Discord] Connected as Adrianna AI#2851 · ✓ discord connected (profiles batman, splinter)
+buzzctl status: relay ok · 7 agents ok (ACDC, Adrianna, Bruce Wayne, Infinity Brands, Papa Pasta, Personal, Local Farmer)
+SETUP.md: agents run the Buzz Agent harness on mimo-v2.6-flash:cloud · "Preview-grade: Buzz 0.5.x, desktop-only, mobile in preview"</pre>
+  </details>
+
+  <div class="foot">Every figure above came from a command run on this Mac on 4 November 2026. Scores are judgement applied to those facts; the weights are adjustable above so the ranking can be re-derived rather than taken on faith.</div>
+</div>
+
+<script>
+(function(){
+  var S = {
+    t3: {voice:1, depth:10, mobile:9, present:9},
+    dc: {voice:8, depth:7,  mobile:10, present:4},
+    bz: {voice:9, depth:4,  mobile:5,  present:8}
+  };
+  var inputs = [].slice.call(document.querySelectorAll('input[data-weight]'));
+  function recalc(){
+    var w = {}, sum = 0;
+    inputs.forEach(function(i){
+      var k = i.getAttribute('data-weight');
+      w[k] = Number(i.value); sum += Number(i.value);
+      var out = document.querySelector('[data-w="'+k+'"]');
+      if (out) out.textContent = i.value;
+    });
+    if (!sum) sum = 1;
+    Object.keys(S).forEach(function(p){
+      var t = 0;
+      Object.keys(w).forEach(function(k){ t += (S[p][k] || 0) * w[k]; });
+      var el = document.querySelector('[data-total="'+p+'"]');
+      if (el) el.textContent = (t / sum).toFixed(1);
+    });
+    var note = document.getElementById('weightnote');
+    if (note) note.textContent = sum === 100
+      ? 'Weights total 100 — drag any slider to re-rank, the totals above follow live.'
+      : 'Weights total ' + sum + ' (normalised). Drag any slider to re-rank, the totals above follow live.';
+  }
+  inputs.forEach(function(i){ i.addEventListener('input', recalc); });
+  recalc();
+})();
+</script>
+</body>
+</html>
