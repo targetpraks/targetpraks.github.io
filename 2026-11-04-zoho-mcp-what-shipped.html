@@ -166,26 +166,32 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>02:40 daily</td>
-<td><code>zoho_maintenance.sh backup</code></td>
+<td><code>zoho-backup.sh</code></td>
 <td><code>pg_dump</code> of Metamcp, gzip, 7-day retention — first run produced 3.2 MB</td>
 </tr>
 <tr>
 <td>03:10 daily</td>
-<td><code>zoho_maintenance.sh probe</code></td>
+<td><code>zoho-probe.sh</code></td>
 <td>real <code>tools/call</code> per server, rewrites auth state</td>
 </tr>
 <tr>
 <td>07:00 daily</td>
-<td><code>zoho_maintenance.sh dashboard</code></td>
+<td><code>zoho-dashboard.sh</code></td>
 <td>refreshes the status page</td>
 </tr>
 <tr>
 <td>04:00 Sunday</td>
-<td><code>zoho_maintenance.sh refresh</code></td>
+<td><code>zoho-refresh.sh</code></td>
 <td>probe → re-pack bins → re-warm caches</td>
+</tr>
+<tr>
+<td>every 10 min</td>
+<td><code>zoho-keepalive.sh</code></td>
+<td>keeps upstream Zoho sessions warm for all five namespaces</td>
 </tr>
 </tbody>
 </table>
+<p>Scheduling runs on the <strong>Hermes gateway scheduler</strong>, not crontab: macOS TCC blocks <code>cron</code> from writing to the external volume at all (verified — every write returned "Operation not permitted" while the job reported success). The gateway runs in the user session; the 16:10 keep-alive tick was observed returning exact counts (2,524 / 2,024 / 3,679 / 4,242 / 2,081) into <code>keepalive.log</code>. The old launchd keep-alive agent is retired (plist renamed <code>.disabled</code>, <code>launchctl bootout</code> exit 0).</p>
 <h3 id="4-bin-configuration-that-maintains-itself-apply_zoho_binspy">4. Bin configuration that maintains itself (<code>apply_zoho_bins.py</code>)</h3>
 <p>The 25 bins are now generated from <code>zoho_bins.json</code> into both Claude and Codex, idempotently, with the three-tool search server preserved. Two real defects were caught and fixed here: duplicated interpreter in the args (bins silently failed to start, Codex saw 0 tools) and a regex that deleted the search server along with the bins. After the fix, Codex counted <strong>14,553</strong> tools (14,550 bin tools + 3 search verbs).</p>
 <h2 id="measured-state-at-hand-off">Measured state at hand-off</h2>
@@ -242,7 +248,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h2 id="still-open">Still open</h2>
 <ol type="1">
 <li><strong>30 servers unauthorised — 6,102 tools.</strong> Heaviest: <code>crm-2/3/4</code>, <code>inventory</code> ×3, <code>site24x7</code> ×3, <code>books-3</code>, <code>mail</code>. Console work only; the nightly probe reports progress.</li>
-<li><strong>Keep-alive LaunchAgent</strong> still exits 78 (<code>EX_CONFIG</code>) because launchd cannot be bootstrapped from inside an agent session. The script is fixed; it needs one <code>launchctl bootout &amp;&amp; launchctl bootstrap</code> from a normal terminal, or the Sunday <code>refresh</code> job covers the same ground.</li>
+<li><strong>Keep-alive — solved, no action needed.</strong> The launchd agent was retired and replaced by a 10-minute Hermes cron job, verified live with exact counts. Helper scripts were moved out of the agent scratch directory (pruned after 24 h) to <code>~/.local/bin/zoho_tools/</code>, so the schedules survive.</li>
 <li><strong>Claude Code weekly limit</strong> blocked conversational verification until 2026-11-05 14:00; the bin connection and a live CRM call were verified before the limit hit.</li>
 <li><strong>Namespace consolidation</strong> (one namespace for all 95 servers) was not attempted: the five-way split is exact, and each measurement costs a full fan-out. Revisit only if the pool ceiling proves stable over a week of the new status page.</li>
 </ol>
