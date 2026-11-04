@@ -194,6 +194,57 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Scheduling runs on the <strong>Hermes gateway scheduler</strong>, not crontab: macOS TCC blocks <code>cron</code> from writing to the external volume at all (verified — every write returned "Operation not permitted" while the job reported success). The gateway runs in the user session; the 16:10 keep-alive tick was observed returning exact counts (2,524 / 2,024 / 3,679 / 4,242 / 2,081) into <code>keepalive.log</code>. The old launchd keep-alive agent is retired (plist renamed <code>.disabled</code>, <code>launchctl bootout</code> exit 0).</p>
 <h3 id="4-bin-configuration-that-maintains-itself-apply_zoho_binspy">4. Bin configuration that maintains itself (<code>apply_zoho_bins.py</code>)</h3>
 <p>The 25 bins are now generated from <code>zoho_bins.json</code> into both Claude and Codex, idempotently, with the three-tool search server preserved. Two real defects were caught and fixed here: duplicated interpreter in the args (bins silently failed to start, Codex saw 0 tools) and a regex that deleted the search server along with the bins. After the fix, Codex counted <strong>14,553</strong> tools (14,550 bin tools + 3 search verbs).</p>
+<h2 id="the-43-servers-zoho-will-not-connect--and-the-lane-that-does">The 43 servers Zoho will not connect — and the lane that does</h2>
+<p>A per-server check that fetches each server's <strong>own</strong> tool list and calls a tool it actually owns gives the honest split: <strong>48 answer, 43 return "Connection not authorised", 4 are blocked by the product itself</strong> (<code>sign</code> — "Zoho Sign MCP has been disabled", <code>site24x7</code> — "API is not supported for this pack", <code>endpointcentral-2/3</code>). The 43 are a Zoho-side connection cap, not a configuration fault, and they hold 6,151 of the 14,550 tools.</p>
+<p>So the estate does not depend on them. The <strong>API lane</strong> (<code>zoho_api_mcp.py</code>, its own grant, 98 scopes, already wired to Hermes, Claude and Codex as <code>zoho-api</code>) reaches those services over REST. Verified live today, with real HTTP codes:</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>REST call</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Projects</td>
+<td><code>GET /portals</code></td>
+<td><strong>200</strong> — real portals, while MCP says "not authorised"</td>
+</tr>
+<tr>
+<td>Desk</td>
+<td><code>GET /tickets</code></td>
+<td><strong>200</strong></td>
+</tr>
+<tr>
+<td>Calendar</td>
+<td><code>GET /calendars</code></td>
+<td><strong>200</strong></td>
+</tr>
+<tr>
+<td>Inventory</td>
+<td><code>GET /items</code></td>
+<td><strong>200</strong></td>
+</tr>
+<tr>
+<td>People</td>
+<td><code>GET /forms</code></td>
+<td><strong>200</strong></td>
+</tr>
+<tr>
+<td>CRM</td>
+<td><code>GET /Leads?fields=…</code></td>
+<td><strong>200</strong> (the API needs <code>fields</code>; the MCP shard does not)</td>
+</tr>
+<tr>
+<td>Books</td>
+<td><code>GET /organizations</code></td>
+<td><strong>200</strong> — "Infinity Brands"</td>
+</tr>
+</tbody>
+</table>
+<p>Still short on the API side, recorded rather than assumed: <code>sign</code> needs a re-grant with <code>ZohoSign.documents.READ</code> (403), <code>books /invoices</code> rejects <code>organization_id</code> as a query parameter (400), <code>mail</code> 404s on both known account paths, <code>workdrive</code> 405/415, <code>sheet</code> and <code>tables</code> 400 on the guessed paths. Each is a scope or path problem on a live connection — not a dead end.</p>
+<p>The lesson worth keeping: a server answering "not authorised" over MCP says nothing about whether its data is reachable. Projects proved that in one call.</p>
 <h2 id="measured-state-at-hand-off">Measured state at hand-off</h2>
 <table>
 <thead>
@@ -208,12 +259,16 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>14,550</strong> — exact, twice</td>
 </tr>
 <tr>
-<td>Servers authorised</td>
-<td><strong>65 / 95</strong> (was 51 at the start of the session)</td>
+<td>MCP servers answering</td>
+<td><strong>48 / 95</strong> — 43 capped by Zoho, 4 product-blocked</td>
 </tr>
 <tr>
-<td>Tools still dark</td>
-<td><strong>6,102</strong> across 30 servers</td>
+<td>Tools behind the cap</td>
+<td>6,151 (reachable through the API lane, service by service)</td>
+</tr>
+<tr>
+<td>API lane</td>
+<td>connected, 98 scopes, verified on 7 services</td>
 </tr>
 <tr>
 <td>Search index</td>
