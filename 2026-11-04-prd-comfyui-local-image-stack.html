@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD: ComfyUI Local Image Stack</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd--comfyui-local-image-stack-maio-fleet">PRD — ComfyUI Local Image Stack (Maio fleet)</h1>
+<p><strong>Version:</strong> 1.0 · <strong>Date:</strong> 2026-11-04 · <strong>Owner:</strong> Adrianna A (AI-stack family) · <strong>Approver:</strong> Ricardo (money, legal, external publication) <strong>Status:</strong> P0 delivered and verified on this Mac; P1 gated.</p>
+<hr />
+<h2 id="1-vision-and-problem">1. Vision and problem</h2>
+<p>Ricardo's words: <em>"comfy ui, please make sure it installed locally, full detailed plans and workflows and templates. I want it to be installed and working with hermes and deepseek harness and omp."</em></p>
+<p>Today this Mac can analyse and write, but it cannot <strong>make a picture</strong>. Every agent in the fleet — Hermes, the DeepSeek Harness, omp — has to reach a cloud image service (per-image cost, content leaving the machine) or come back empty. Brand and marketing work (campaign stills, social assets, concept frames, mock-up backgrounds) stalls at "we need an image".</p>
+<p><strong>Goal:</strong> one local image engine on this Mac, reachable as ordinary tools from all three harnesses, with templates that behave the same everywhere, and no per-image cost.</p>
+<p><strong>Success in one line:</strong> any of the three harnesses can be asked for an image in plain English and returns a real PNG path on AI-Drive in under 20 seconds (SD1.5) without a human touching a UI.</p>
+<hr />
+<h2 id="2-users-and-jobs-to-be-done">2. Users and jobs-to-be-done</h2>
+<table>
+<thead>
+<tr>
+<th>User</th>
+<th>Job</th>
+<th>Success looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ricardo</strong> (operator)</td>
+<td>"Make me a concept image / social asset" from Discord or a terminal</td>
+<td>image on AI-Drive within a minute, no UI fiddling</td>
+</tr>
+<tr>
+<td><strong>Hermes agents</strong> (Adrianna, Bruce Wayne, Splinter, Beast…)</td>
+<td>attach a visual to a report, a brief, a proposal</td>
+<td><code>comfy_generate</code> returns a path they can embed or file</td>
+</tr>
+<tr>
+<td><strong>dsh profiles</strong> (web, headless, superagent, desktop)</td>
+<td>generate during a long build or research run</td>
+<td>the tool appears in the profile's tool list like any other</td>
+</tr>
+<tr>
+<td><strong>omp</strong> (coding agent)</td>
+<td>produce a placeholder or asset while building an app</td>
+<td>stdio MCP tool call, no extra config</td>
+</tr>
+<tr>
+<td><strong>Brand/marketing lanes</strong></td>
+<td>consistent visual identity across stills</td>
+<td>a template + checkpoint pair that reproduces a look</td>
+</tr>
+</tbody>
+</table>
+<p>Non-user: nobody external. The server is loopback-only.</p>
+<hr />
+<h2 id="3-features">3. Features</h2>
+<p>Priorities: <strong>P0</strong> = required for "installed and working"; <strong>P1</strong> = next value; <strong>P2</strong> = later. Every P0 carries acceptance criteria and its verified evidence.</p>
+<h3 id="p0-1--comfyui-installed-and-serving-locally">P0-1 — ComfyUI installed and serving locally</h3>
+<p>ComfyUI 0.44.0 from git at <code>~/AI Hub/ComfyUI</code>, Python 3.12.14 venv, torch 2.15.0 with MPS, bound to <code>127.0.0.1:8188</code>.</p>
+<p><strong>Acceptance:</strong> <code>/system_stats</code> returns 200 with <code>comfyui_version</code> and a device of type <code>mps</code>; the web UI loads on the same port. <strong>Evidence:</strong> <code>READY after 13s</code>; <code>comfyui_version 0.44.0</code>, <code>device mps</code>, <code>pytorch_version 2.15.0</code>, <code>ram_total 25769803776</code>.</p>
+<h3 id="p0-2--model-set-that-covers-drafts-and-finals">P0-2 — Model set that covers drafts and finals</h3>
+<p>SD1.5 fp16 (2.0 GB), SDXL base 1.0 (6.1 GB), SDXL VAE fp16-fix (0.3 GB), 4x-UltraSharp (64 MB) in the canonical store <code>~/AI Hub/models</code>.</p>
+<p><strong>Acceptance:</strong> each renders or upscales successfully; total under 10 GB; ComfyUI lists them through its loader nodes. <strong>Evidence:</strong> SD1.5 512×512 in 14.6 s; SDXL 1024×1024 in 82.3 s cold; <code>comfy_models upscale_models → ["4x-UltraSharp.pth"]</code>.</p>
+<h3 id="p0-3--one-mcp-server-three-harnesses">P0-3 — One MCP server, three harnesses</h3>
+<p><code>comfy_mcp.py</code> v1.1.0: stdlib-only stdio JSON-RPC with 10 tools, spawned by Hermes, dsh (7 profiles) and omp.</p>
+<p><strong>Acceptance:</strong> each harness lists the tools <strong>and</strong> has executed at least one render. <strong>Evidence:</strong></p>
+<ul>
+<li>Hermes — <code>hermes mcp test comfyui</code> → connected 396 ms, 8 tools at the time, now 10; config <code>enabled: true</code>.</li>
+<li>dsh — real headless run: reported <code>comfyui_version 0.44.0</code>, <code>device mps</code>, rendered <code>render_00002_.png</code>, 14.7 s, verified the file on disk.</li>
+<li>omp — real <code>-p</code> run: <code>comfy_status</code> returned version/device, <code>comfy_generate</code> returned <code>status: success</code>, 512×512 PNG confirmed.</li>
+<li>dsh config check: <code>dsh --profile web|headless|superagent --dump-config | grep comfyui</code> → <code>mcp-comfyui</code> present in all three.</li>
+</ul>
+<h3 id="p0-4--workflow-templates-txt2img-img2img-upscale">P0-4 — Workflow templates (txt2img, img2img, upscale)</h3>
+<p>Four API-format templates with typed token substitution; profiles <code>sd15</code>, <code>sdxl</code>, <code>sd15_img2img</code>, <code>upscale</code>.</p>
+<p><strong>Acceptance:</strong> each template renders through the MCP server; checkpoint overridable per call; a missing template or model returns a named error. <strong>Evidence:</strong> upscale 512→2048 in 11.5 s (<code>dims 2048×2048</code>); img2img denoise 0.75 in 10.6 s; text-to-image on both checkpoints.</p>
+<h3 id="p0-5--durable-running-keepalive--start-at-login-path">P0-5 — Durable running (keepalive + start-at-login path)</h3>
+<p>Launcher script that is idempotent and volume-aware; Hermes cron keepalive every 15 minutes; LaunchAgent written for a one-time human bootstrap.</p>
+<p><strong>Acceptance:</strong> killing the server is recovered without human action; the fallback output path engages when the external SSD is absent. <strong>Evidence:</strong> killed pid 93839 → <code>before: 000</code> → keepalive exit 0 → <code>after: version 0.44.0, device mps</code>; log line <code>comfyui up</code>. Cron job <code>322e362fc496</code>.</p>
+<h3 id="p0-6--output-and-observability">P0-6 — Output and observability</h3>
+<p>Images on AI-Drive under <code>Agent-Output/comfyui/images</code>; server, keepalive and launchd logs under <code>comfyui-ops/logs</code>; <code>comfy_outputs</code> lists recent files.</p>
+<p><strong>Acceptance:</strong> every render returns an absolute path that exists; logs rotate by file, not by deletion. <strong>Evidence:</strong> <code>render_00001..3_.png</code>, <code>img2img_00001_.png</code>, <code>upscale_00001_.png</code> on AI-Drive; <code>comfy_outputs</code> → 3 most recent.</p>
+<h3 id="p1-1--controlnet--lora-tooling-gate-next_lane--c-p079">P1-1 — ControlNet + LoRA tooling <em>(gate: <code>next_lane</code> → C, p=0.79)</em></h3>
+<p>Composition control (pose/depth/edge) and brand-style LoRA loading on the models already installed, ~2 GB. <strong>Acceptance:</strong> a ControlNet template renders with a reference image; a LoRA applies at a settable strength; both exposed as profiles, no new harness config.</p>
+<h3 id="p1-2--batch-and-seed-sweeps">P1-2 — Batch and seed sweeps</h3>
+<p><code>comfy_generate</code> accepts <code>count</code> and a seed list; returns all paths in one response. Needed for picking a hero image instead of generating one at a time.</p>
+<h3 id="p1-3--prompt-presets-per-brand">P1-3 — Prompt presets per brand</h3>
+<p>Named prompt fragments (<code>brand: infinity</code>, <code>brand: top8</code>) resolved server-side so all three harnesses produce on-brand output without re-typing a style block.</p>
+<h3 id="p2-1--flux1-dev-fp8-on-the-cold-store-deferred-12-gb-disk-is-at-37-gb-free">P2-1 — Flux.1 dev (fp8) on the cold store <em>(deferred: 12 GB, disk is at 37 GB free)</em></h3>
+<h3 id="p2-2--video-lane-wan-2x--animatediff--long-renders-needs-the-async-pattern-end-to-end">P2-2 — Video lane (Wan 2.x / AnimateDiff) — long renders, needs the async pattern end to end</h3>
+<h3 id="p2-3--tailnet-exposure-with-auth--explicitly-not-scheduled-loopback-is-a-feature">P2-3 — Tailnet exposure with auth — explicitly <strong>not</strong> scheduled; loopback is a feature</h3>
+<hr />
+<h2 id="4-application-structure">4. Application structure</h2>
+<pre><code>Harness layer      Hermes Agent      dsh (7 profiles)      omp
+                        │                  │                 │
+                        └──────── stdio JSON-RPC ────────────┘
+                                         │
+Tool layer         ~/AI Hub/comfyui-ops/comfy_mcp.py  (stdlib, 10 tools)
+                        │  reads templates, stages inputs, polls history
+Template layer     workflows/{sd15,sdxl}_txt2img.json
+                            sd15_img2img.json · upscale_4x.json
+                                         │
+Engine             ComfyUI 0.44.0 @ 127.0.0.1:8188  (POST /prompt, GET /history, /view)
+                                         │
+Model layer        ~/AI Hub/models (canonical)  ← extra_model_paths.yaml → cold store on SSD
+                                         │
+Output             /Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/comfyui/images</code></pre>
+<p><strong>Data model (files, not tables).</strong> A <em>render</em> is <code>{prompt_id, status, seconds, images[]}</code> where each image is <code>{filename, subfolder, path, exists, dims, url}</code>. <code>prompt_id</code> is ComfyUI's UUID and the only join key an agent needs between <code>comfy_submit</code> and <code>comfy_result</code>.</p>
+<p><strong>Integration boundaries.</strong></p>
+<ul>
+<li>Harness → MCP: newline-delimited JSON-RPC on stdio, protocol <code>2024-11-05</code>.</li>
+<li>MCP → ComfyUI: HTTP on loopback, no auth, no retries beyond the caller's.</li>
+<li>MCP → disk: reads templates and models; <strong>writes only</strong> staged inputs under <code>ComfyUI/input</code> and never outside the configured output root.</li>
+</ul>
+<p><strong>Seams (where this is meant to change).</strong> New capability = new template file + one profile line. New harness = one config entry pointing at the same script. New model = a file in the canonical store.</p>
+<hr />
+<h2 id="5-ux-flows">5. UX flows</h2>
+<p>The product has two faces: the <strong>agent surface</strong> (tool calls) and the <strong>human surface</strong> (ComfyUI's own web UI, unchanged).</p>
+<p><strong>F1 — Ask an agent for an image (primary).</strong></p>
+<ol type="1">
+<li>User: "render a hero image of a brass diving helmet on a workbench".</li>
+<li>Harness picks <code>comfy_generate</code> with <code>profile: sd15</code> (or <code>sdxl</code> for a final).</li>
+<li>Server builds the graph from the template, submits, waits up to <code>wait_s</code>.</li>
+<li>Returns <code>status: success</code>, <code>seconds</code>, and an absolute path.</li>
+<li>Harness embeds the path or files the image with the document.</li>
+</ol>
+<p><strong>F2 — Render outlives the tool timeout.</strong> <code>comfy_generate</code> returns <code>status: running</code> + <code>prompt_id</code> → harness calls <code>comfy_result</code> once → path. (This is why no harness needs a raised timeout.)</p>
+<p><strong>F3 — Improve an existing picture.</strong> <code>comfy_img2img</code> with <code>denoise 0.3–0.5</code> keeps composition; <code>0.7–0.9</code> reimagines. Then <code>comfy_upscale</code> for print size.</p>
+<p><strong>F4 — Something is wrong.</strong> <code>comfy_status</code> separates "server down" (with the exact start command) from "bad workflow" (ComfyUI's node-level rejection text passed through verbatim).</p>
+<p><strong>Screen inventory.</strong> Human surface is the stock ComfyUI graph editor and template library at <code>127.0.0.1:8188</code> — no custom screens, deliberately: building a second UI would be a second product to maintain. Agent surface has no screens; its "interface" is the tool schema set in §6.</p>
+<p><strong>Error and empty states (agent surface).</strong></p>
+<ul>
+<li>Server down: <code>ComfyUI is not answering at http://127.0.0.1:8188 (…). Start it with: bash '…/start-comfyui.sh'</code>.</li>
+<li>Bad model name: ComfyUI's <code>value_not_in_list</code> detail, naming the field and the file.</li>
+<li>No upscale model installed: <code>no upscale model installed under ~/AI Hub/models/upscale_models</code>.</li>
+<li>Nothing queued: <code>comfy_queue</code> returns <code>depth: 0</code>, not an error.</li>
+</ul>
+<hr />
+<h2 id="6-interface-design-the-agent-facing-ui-system">6. Interface design (the agent-facing "UI system")</h2>
+<p>For an infrastructure product the design system is the <strong>tool contract</strong>: names, schemas, defaults, return shapes and error voice. Rules applied:</p>
+<ul>
+<li><strong>Names are verbs on an object</strong> — <code>comfy_generate</code>, <code>comfy_upscale</code>, <code>comfy_result</code>.</li>
+<li><strong>Defaults are safe and fast</strong> — <code>profile: sd15</code>, <code>wait_s: 30</code>, <code>seed: -1</code> (random), a house negative prompt; a caller who says nothing gets a usable image in ~15 s.</li>
+<li><strong>Every schema is closed</strong> — <code>additionalProperties: false</code>, enums for profiles, ranges on width/height/steps/cfg. A model cannot invent an argument that silently does nothing.</li>
+<li><strong>Returns are one JSON object as text</strong> — no images inline, no binary over stdio; paths and dimensions instead.</li>
+<li><strong>Errors are sentences with the next action</strong>, and they say <em>who</em> is down and <em>what command</em> fixes it.</li>
+<li><strong>Two-step escape hatch is first class</strong> — <code>comfy_submit</code>/<code>comfy_result</code> for long renders.</li>
+<li><strong>Voice</strong>: house English, no exclamation, no emoji, no "Oops".</li>
+</ul>
+<p>Browser UI: stock ComfyUI (dark, node graph). No theming work; the tokens of this product are the JSON above.</p>
+<hr />
+<h2 id="7-non-functional-requirements">7. Non-functional requirements</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Requirement</th>
+<th>Verified</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Performance</td>
+<td>SD1.5 512×512 ≤ 25 s; SDXL 1024×1024 ≤ 120 s cold; upscale ≤ 20 s</td>
+<td>14.6 s · 82.3 s · 11.5 s</td>
+</tr>
+<tr>
+<td>Resource</td>
+<td>≤ 12 GB on the system disk; ≤ 9 GB RAM with SDXL loaded</td>
+<td>10.9 GB disk; RAM guard unloads Ollama models at 85 %</td>
+</tr>
+<tr>
+<td>Availability</td>
+<td>server recovers without human action within 15 min</td>
+<td>keepalive cron, tested by killing the process</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>loopback only, no auth token to leak, no outbound calls</td>
+<td><code>--listen 127.0.0.1</code>; no cloud endpoint in the code path</td>
+</tr>
+<tr>
+<td>Privacy</td>
+<td>prompts and images never leave the Mac</td>
+<td>local engine, local weights</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>MCP cannot install nodes, download models, delete files, or write outside the output root</td>
+<td>code: allow-listed tools, path containment check on every image</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>every render leaves a path + seconds; server/keepalive logs on disk</td>
+<td><code>logs/server.log</code>, <code>logs/keepalive.log</code></td>
+</tr>
+<tr>
+<td>Determinism</td>
+<td>same seed + template + checkpoint → same image</td>
+<td>seed is an explicit int in every graph</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>zero marginal cost per image</td>
+<td>no metered API anywhere in the path</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-testing-strategy">8. Testing strategy</h2>
+<ol type="1">
+<li><strong>Direct API smoke</strong> (<code>tests/smoke.py</code>) — builds the graph, POSTs <code>/prompt</code>, polls <code>/history</code>, prints the image name. Proves the engine, not the wrapper.</li>
+<li><strong>MCP acceptance</strong> (<code>tests/mcp_acceptance.py</code>) — handshake, <code>tools/list</code>, <code>comfy_status</code>, <code>comfy_generate</code>, <code>comfy_outputs</code>; exits non-zero on failure. This is the contract test every harness change must keep green.</li>
+<li><strong>Per-harness live runs</strong> — one real prompt through Hermes, dsh and omp, each required to return a path that exists on disk. Registration alone is not green.</li>
+<li><strong>Recovery test</strong> — kill the server, run the keepalive, require <code>/system_stats</code> 200 and the correct device afterwards.</li>
+<li><strong>Regression rule</strong> — a template change re-runs (2) and the affected harness run before it is called done.</li>
+</ol>
+<p>Not tested here: visual quality scoring (a human judgement), and multi-user concurrency (single user by design).</p>
+<hr />
+<h2 id="9-out-of-scope-assumptions-risks">9. Out of scope, assumptions, risks</h2>
+<p><strong>Out of scope now:</strong> Flux/video weights (disk), ComfyUI custom-node marketplace installs, a second custom UI, tailnet/public exposure, automatic image deletion, training a LoRA on Ricardo's own images.</p>
+<p><strong>Assumptions:</strong> macOS 27.2 on Apple silicon with MPS (true here); the Hiksemi SSD is usually mounted; one person uses the Mac at a time; <code>uv</code> available for future Python work.</p>
+<p><strong>Risks and mitigations</strong></p>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>System disk is at 92 % (37 GB free)</td>
+<td>a Flux download would hurt</td>
+<td>cold store on the SSD; 12 GB+ downloads need Ricardo's word</td>
+</tr>
+<tr>
+<td>RAM pressure with SDXL + Ollama loaded</td>
+<td>swap, slow renders</td>
+<td>RAM guard unloads Ollama models; ComfyUI stopped when idle is acceptable</td>
+</tr>
+<tr>
+<td>Harness upgrades change MCP wiring</td>
+<td>tools vanish silently</td>
+<td>acceptance test + <code>dsh --dump-config</code> check in the runbook</td>
+</tr>
+<tr>
+<td>LaunchAgent not bootstrapped</td>
+<td>no start-at-login until a human acts</td>
+<td>documented one-liner; cron covers the gap</td>
+</tr>
+<tr>
+<td>Hand-rolled JSON-RPC drifts from the MCP spec</td>
+<td>client rejects the server</td>
+<td>minimal surface; re-test on spec changes</td>
+</tr>
+<tr>
+<td>ComfyUI upstream changes node schemas</td>
+<td>templates break</td>
+<td>templates use only core nodes; errors name the failing node</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-decision-log-and-verification-evidence">10. Decision log and verification evidence</h2>
+<p>Decision log: <code>docs/decisions.md</code> (D1–D9), ADRs <code>docs/adr/0001–0004</code>, gate rows in <code>Agent-Output/adrianna/gates.csv</code>, council run <code>f1230597e0cd</code>.</p>
+<p><strong>Live verification performed for this PRD (2026-11-04):</strong></p>
+<pre><code>system_stats       200 · comfyui 0.44.0 · pytorch 2.15.0 · device mps
+hermes             mcp test comfyui → connected 396 ms, 10 tools
+dsh headless       comfy_status + comfy_generate → render_00002_.png, 14.7 s
+omp -p             comfy_status + comfy_generate → success, 512×512 PNG on disk
+dsh dump-config    mcp-comfyui present in web, headless, superagent
+mcp acceptance     PASS (10 tools, render 14.6 s)
+upscale            512 → 2048 in 11.5 s
+img2img            denoise 0.75 in 10.6 s
+keepalive          killed server → recovered to 0.44.0 / mps</code></pre>
+<hr />
+<h2 id="appendix-a--file-map">Appendix A — File map</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>~/AI Hub/ComfyUI</code></td>
+<td>engine (git, 0.44.0)</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/ComfyUI/.venv</code></td>
+<td>Python 3.12.14 + torch 2.15.0</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/ComfyUI/extra_model_paths.yaml</code></td>
+<td>canonical + cold model stores</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/models</code></td>
+<td>one home for every model file</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/comfyui-ops/comfy_mcp.py</code></td>
+<td>the MCP server (10 tools)</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/comfyui-ops/workflows/*.json</code></td>
+<td>4 templates</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/comfyui-ops/start-comfyui.sh</code></td>
+<td>launcher (idempotent, volume-aware)</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/comfyui-ops/tests/</code></td>
+<td>smoke + MCP acceptance</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/comfyui-ops/README.md</code></td>
+<td>operations runbook</td>
+</tr>
+<tr>
+<td><code>~/.hermes/scripts/comfyui-keepalive.sh</code></td>
+<td>cron health script</td>
+</tr>
+<tr>
+<td><code>~/Library/LaunchAgents/com.maio.comfyui.plist</code></td>
+<td>start-at-login (needs one human bootstrap)</td>
+</tr>
+<tr>
+<td><code>~/.dsh/profiles/*/cordis.patch.yml</code></td>
+<td>dsh wiring (<code>mcp-comfyui</code>)</td>
+</tr>
+<tr>
+<td><code>~/.omp/agent/mcp.json</code></td>
+<td>omp wiring (<code>comfyui</code>)</td>
+</tr>
+<tr>
+<td><code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/comfyui/images</code></td>
+<td>renders</td>
+</tr>
+</tbody>
+</table>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
