@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Zoho API connection — zoho-cc (Claude Code + Codex)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="zoho-api-connection--zoho-cc-claude-code--codex">Zoho API connection — <code>zoho-cc</code> (Claude Code + Codex)</h1>
+<p><strong>One separate Zoho connection, shared by both coding CLIs.</strong> It has its own OAuth grant and its own refresh token, so revoking it kills Claude and Codex access and leaves every Hermes agent, the 25 MCP shards and the fleet's <code>zoho-all</code> lane untouched.</p>
+<p>Built 2026-11-04. Verified against live Zoho data, not assumed.</p>
+<hr />
+<h2 id="1-what-separate-means-here">1. What "separate" means here</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>This connection (<code>zoho-cc</code>)</th>
+<th>Fleet lane (untouched)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OAuth grant</td>
+<td>own grant, granted 2026-11-04</td>
+<td>granted earlier</td>
+</tr>
+<tr>
+<td>Refresh token</td>
+<td><code>ZOHO_CC_REFRESH_TOKEN</code></td>
+<td><code>ZOHO_ALL_REFRESH_TOKEN</code></td>
+</tr>
+<tr>
+<td>Scopes</td>
+<td>own scope pack, 98 scopes</td>
+<td>98 scopes</td>
+</tr>
+<tr>
+<td>Revocation</td>
+<td>revoke this token alone</td>
+<td>revoke kills agents</td>
+</tr>
+<tr>
+<td>Client ID / Secret</td>
+<td>shared</td>
+<td>shared</td>
+</tr>
+<tr>
+<td>Entry point</td>
+<td><code>zoho-api</code> MCP gateway</td>
+<td><code>zoho-p01…p25</code> MCP shards</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the client ID is shared:</strong> Zoho permits exactly one Self Client per account, and the alternative — a new Server-based Application — means accepting fresh developer terms in the console. That acceptance is Ricardo's, not an agent's. A new client app can be added later on his word; the token, scopes and revocation would still be separate today.</p>
+<h2 id="2-credentials">2. Credentials</h2>
+<p>Stored in the one canonical 0600 store — <code>/Users/ricardomaio/.config/maio-stack/secrets.env</code>. No secret value appears in this document, in a ticket, or in a chat.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ZOHO_CC_REFRESH_TOKEN</code></td>
+<td><strong>the separate grant</strong> — read only by this connection</td>
+</tr>
+<tr>
+<td><code>ZOHO_CLIENT_ID</code></td>
+<td>Self Client id (shared, suffix <code>CANX</code>)</td>
+</tr>
+<tr>
+<td><code>ZOHO_CLIENT_SECRET</code></td>
+<td>Self Client secret (shared)</td>
+</tr>
+<tr>
+<td><code>ZOHO_ACCOUNTS_HOST</code></td>
+<td><code>accounts.zoho.com</code></td>
+</tr>
+</tbody>
+</table>
+<p>The access token is minted on demand and cached at <code>~/.cache/zoho-cc/token.json</code> (0600, ~50 min TTL). It is never returned to the client — tools return data, never credentials.</p>
+<h2 id="3-the-gateway">3. The gateway</h2>
+<p><code>/Users/ricardomaio/.local/bin/zoho_api_mcp.py</code> — stdio MCP server, stdlib only, no dependencies.</p>
+<p>Four tools, instead of the thousands of per-product shard schemas:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zoho_call</code></td>
+<td>any Zoho REST endpoint — <code>service</code> + <code>path</code> (or absolute <code>url</code>), <code>params</code>, <code>json_body</code>, <code>form_body</code>, <code>headers</code>, <code>save_to</code></td>
+</tr>
+<tr>
+<td><code>zoho_services</code></td>
+<td>service → base URL map, scope count</td>
+</tr>
+<tr>
+<td><code>zoho_connection</code></td>
+<td>which connection this is, token mints or not, TTL. Never returns secrets</td>
+</tr>
+<tr>
+<td><code>zoho_scopes</code></td>
+<td>the 98 granted scopes, to separate "missing permission" from "wrong endpoint"</td>
+</tr>
+</tbody>
+</table>
+<p>Service bases: <code>crm</code>, <code>projects</code>, <code>projects_rest</code>, <code>workdrive</code>, <code>sheet</code>, <code>books</code>, <code>invoice</code>, <code>inventory</code>, <code>expense</code>, <code>mail</code>, <code>calendar</code>, <code>desk</code>, <code>people</code>, <code>analytics</code>, <code>tables</code>, <code>creator</code>, <code>cliq</code>, <code>writer</code>, <code>sign</code>.</p>
+<p>CLI checks:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> ~/.local/bin/zoho_api_mcp.py <span class="at">--check</span>    <span class="co"># connection health, JSON</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> ~/.local/bin/zoho_api_mcp.py <span class="at">--scopes</span>   <span class="co"># granted scopes</span></span></code></pre></div>
+<h2 id="4-configuration--claude-code">4. Configuration — Claude Code</h2>
+<p><code>~/.claude.json</code>, scope <strong>user</strong> (all projects):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mcpServers&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;zoho-api&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;stdio&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;/usr/bin/python3&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;args&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;/Users/ricardomaio/.local/bin/zoho_api_mcp.py&quot;</span><span class="ot">]</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Added with the CLI, which is the only safe way — the Claude app rewrites <code>~/.claude.json</code> and silently drops hand-edited entries:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> mcp add zoho-api <span class="at">--scope</span> user <span class="at">--</span> /usr/bin/python3 /Users/ricardomaio/.local/bin/zoho_api_mcp.py</span></code></pre></div>
+<p>Live status: <code>claude mcp get zoho-api</code> → <strong>Status: ✔ Connected</strong>.</p>
+<h2 id="5-configuration--codex">5. Configuration — Codex</h2>
+<p><code>~/.codex/config.toml</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[mcp_servers.zoho-api]</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">command</span> <span class="op">=</span> <span class="st">&quot;/usr/bin/python3&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">args</span> <span class="op">=</span> <span class="op">[</span><span class="st">&quot;/Users/ricardomaio/.local/bin/zoho_api_mcp.py&quot;</span><span class="op">]</span></span></code></pre></div>
+<p>Added with the CLI for the same reason — the Codex app rewrites <code>config.toml</code> and dropped a hand-appended block within the hour:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">codex</span> mcp add zoho-api <span class="at">--</span> /usr/bin/python3 /Users/ricardomaio/.local/bin/zoho_api_mcp.py</span></code></pre></div>
+<p>Live status: <code>codex mcp get zoho-api</code> → <strong>enabled: true, transport: stdio</strong>.</p>
+<h2 id="6-evidence-from-the-live-run">6. Evidence from the live run</h2>
+<p>Grant exchange, every service probed on the new token:</p>
+<pre><code>CRM leads 200 · Books orgs 200 · Invoice orgs 200 · Expense orgs 200 · Inventory orgs 200
+Procurement orgs 200 · Projects portals 200 · Desk tickets 200 · People forms 200
+WorkDrive teams 200 · Calendar 200 · Analytics workspaces 200 · Cliq users 200
+Tables portals 200 · Sign folders 200 · Writer docs 200 · Creator apps 200
+Connect networks 200 · Sheet workbooks 200</code></pre>
+<p>Through the gateway, real data:</p>
+<ul>
+<li><code>crm</code> <code>/org</code> → 200, <strong>Infinity Brands</strong>, zgid <code>659370479</code></li>
+<li><code>sheet</code> <code>/workbooks?method=workbook.list</code> → 200, <code>Papa Pasta Funding Enquiries Tracker</code>, <code>TLF_Chart_of_Accounts_Zoho_Books</code>, <code>JARVIS Sheet Capability Audit 2026-09-10</code></li>
+<li><code>projects</code> <code>/portals</code> → 200 · <code>workdrive</code> <code>/teams</code> → 200</li>
+<li><code>zoho_connection</code> → <code>ok: true</code>, 98 scopes, TTL 2970 s</li>
+</ul>
+<h2 id="7-revoking-just-this-connection">7. Revoking just this connection</h2>
+<p>Console → <a href="https://api-console.zoho.com">api-console.zoho.com</a> → Self Client → the token issued 2026-11-04 for <em>"Claude Codex separate Zoho API connection"</em> → revoke. Then, on this machine:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-f</span> ~/.cache/zoho-cc/token.json</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> mcp remove zoho-api <span class="at">-s</span> user</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">codex</span> mcp remove zoho-api</span></code></pre></div>
+<p>Agents keep working — they never use this token.</p>
+<h2 id="8-standing-rules-for-the-two-tools-using-it">8. Standing rules for the two tools using it</h2>
+<ul>
+<li>Writes to live business data (tickets, invoices, CRM records, mail) still need Ricardo's go. Read freely.</li>
+<li>Never paste a Zoho secret, client secret or refresh token into a prompt, a ticket or a report.</li>
+<li><code>ZohoCreator</code> answers status 200 with <code>code=3000</code> on a bare probe — that is a normal "no apps in context" reply, not an auth failure.</li>
+</ul>
+<h2 id="sources">Sources</h2>
+<ul>
+<li><a href="https://www.zoho.com/accounts/protocol/oauth/self-client.html">Zoho OAuth — Self Client and grant codes</a></li>
+<li><a href="https://www.zoho.com/accounts/protocol/oauth/use-refresh-token.html">Zoho OAuth — refresh token flow</a></li>
+<li><a href="https://api-console.zoho.com">Zoho API Console</a></li>
+<li><a href="https://docs.claude.com/en/docs/claude-code/mcp">Claude Code MCP configuration</a></li>
+<li><a href="https://github.com/openai/codex">Codex CLI MCP configuration</a></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
