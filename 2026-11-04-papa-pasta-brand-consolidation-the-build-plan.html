@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Papa Pasta — Brand Consolidation: the build plan</title>
+<style>
+  :root{
+    --ink:#0a0a0a; --panel:#141414; --panel-2:#1b1b1b; --line:#2a2a2a;
+    --paper:#f4f2ee; --muted:#9a9a93; --lime:#C9F034; --red:#ff5a4d; --amber:#ffb84d;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--ink); color:var(--paper);
+    font-family:"Helvetica Neue",Inter,system-ui,-apple-system,sans-serif;
+    font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 32px}
+  a{color:var(--lime);text-decoration:none;border-bottom:1px solid rgba(201,240,52,.35)}
+  a:hover{border-bottom-color:var(--lime)}
+  code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.83em;color:#cfcfc4;
+       background:#1d1d1d;padding:1px 5px;border-radius:3px;word-break:break-word}
+  /* hero */
+  header{border-bottom:1px solid var(--line);padding:88px 0 56px;
+         background:radial-gradient(ellipse at 15% 0%,rgba(201,240,52,.10),transparent 55%)}
+  .kicker{font-family:ui-monospace,monospace;font-size:11.5px;letter-spacing:.22em;
+          text-transform:uppercase;color:var(--lime);margin:0 0 22px}
+  h1{font-size:clamp(38px,6vw,68px);line-height:1.02;letter-spacing:-.03em;
+     margin:0 0 20px;font-weight:800;text-transform:uppercase}
+  h1 em{font-style:normal;color:var(--lime)}
+  .lede{font-size:20px;color:#c9c9c0;max-width:60ch;margin:0 0 36px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+         border:1px solid var(--line)}
+  .stat{background:var(--panel);padding:20px 18px}
+  .stat b{display:block;font-size:30px;line-height:1;font-weight:800;color:var(--lime);
+          letter-spacing:-.02em;margin-bottom:8px}
+  .stat span{font-size:12px;color:var(--muted);letter-spacing:.04em}
+  /* nav */
+  nav{position:sticky;top:0;background:rgba(10,10,10,.94);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);z-index:20}
+  nav .wrap{display:flex;gap:22px;overflow-x:auto;padding-top:13px;padding-bottom:13px}
+  nav a{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.12em;
+        text-transform:uppercase;color:var(--muted);border:0;white-space:nowrap}
+  nav a:hover{color:var(--lime)}
+  /* sections */
+  section{padding:64px 0;border-bottom:1px solid var(--line)}
+  .sec-num{font-family:ui-monospace,monospace;font-size:11.5px;letter-spacing:.22em;
+           color:var(--muted);display:block;margin-bottom:12px}
+  h2{font-size:clamp(26px,3.4vw,38px);line-height:1.1;letter-spacing:-.02em;
+     margin:0 0 14px;font-weight:800}
+  h2 .tag{color:var(--lime)}
+  .sub{color:#b9b9b0;max-width:68ch;margin:0 0 34px;font-size:17.5px}
+  /* decision table */
+  table{width:100%;border-collapse:collapse;font-size:15px;margin:0 0 12px}
+  th{text-align:left;font-family:ui-monospace,monospace;font-size:10.5px;letter-spacing:.16em;
+     text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
+     padding:0 14px 10px 0;font-weight:400}
+  td{padding:16px 14px 16px 0;border-bottom:1px solid #1e1e1e;vertical-align:top;color:#dcdcd3}
+  td.n{font-family:ui-monospace,monospace;color:var(--lime);font-size:16px;width:38px}
+  td b{color:var(--paper);font-weight:600}
+  .blocks{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--amber);
+          letter-spacing:.03em}
+  /* stage cards */
+  .stage{background:var(--panel);border:1px solid var(--line);margin:0 0 18px;
+         display:grid;grid-template-columns:96px 1fr;overflow:hidden}
+  .stage .rail{background:var(--panel-2);border-right:1px solid var(--line);
+               padding:22px 0;text-align:center;
+               font-family:ui-monospace,monospace;font-size:26px;font-weight:700;color:var(--lime)}
+  .stage .rail small{display:block;font-size:9.5px;letter-spacing:.16em;color:var(--muted);
+                     margin-top:6px;font-weight:400}
+  .stage .body{padding:22px 26px 24px}
+  .stage h3{margin:0 0 8px;font-size:21px;letter-spacing:-.01em;font-weight:700}
+  .stage .why{color:#a9a9a0;font-size:15px;margin:0 0 18px;max-width:66ch}
+  ul.tasks{list-style:none;margin:0 0 18px;padding:0}
+  ul.tasks li{position:relative;padding:0 0 9px 26px;font-size:15.4px;color:#e2e2d9}
+  ul.tasks li:before{content:"";position:absolute;left:0;top:.42em;width:12px;height:12px;
+                     border:1.5px solid #4a4a42;border-radius:2px}
+  ul.tasks li b{font-weight:600;color:#fff}
+  ul.tasks li .hint{color:var(--muted);font-size:13.5px}
+  .exit{border-left:2px solid var(--lime);padding:10px 0 10px 14px;font-size:14px;
+        color:#cfcfc5;background:linear-gradient(90deg,rgba(201,240,52,.05),transparent 70%)}
+  .exit b{color:var(--lime);font-family:ui-monospace,monospace;font-size:10.5px;
+          letter-spacing:.16em;text-transform:uppercase;display:block;margin-bottom:5px;font-weight:400}
+  /* panels */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px}
+  .card{background:var(--panel);border:1px solid var(--line);padding:22px 24px}
+  .card h4{margin:0 0 12px;font-size:15px;letter-spacing:.02em;text-transform:uppercase;
+           font-family:ui-monospace,monospace;font-weight:400;color:var(--lime)}
+  .card.have h4{color:var(--lime)} .card.miss h4{color:var(--red)}
+  .card ul{margin:0;padding-left:18px;font-size:14.6px;color:#d5d5cc}
+  .card li{margin-bottom:7px}
+  .warn{border:1px solid rgba(255,90,77,.35);background:rgba(255,90,77,.06);
+        padding:20px 24px;margin:0 0 26px}
+  .warn h4{margin:0 0 10px;color:var(--red);font-size:13px;letter-spacing:.14em;
+           text-transform:uppercase;font-family:ui-monospace,monospace;font-weight:400}
+  .warn p{margin:0 0 10px;font-size:15.4px;color:#e6e6dd}
+  .warn p:last-child{margin:0}
+  footer{padding:56px 0 88px;color:var(--muted);font-size:13.5px}
+  footer a{color:#c9c9c0;border-bottom-color:#3a3a32}
+  .src{font-family:ui-monospace,monospace;font-size:11.5px;color:#7e7e75}
+  @media(max-width:760px){
+    .wrap{padding:0 20px} .stats{grid-template-columns:1fr 1fr} .two{grid-template-columns:1fr}
+    .stage{grid-template-columns:1fr} .stage .rail{border-right:0;border-bottom:1px solid var(--line);
+      padding:12px;font-size:15px;text-align:left}
+    .stage .rail small{display:inline;margin-left:8px}
+    header{padding:52px 0 36px} section{padding:44px 0}
+    td,th{font-size:13.6px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">Papa Pasta Holdings · Brand Consolidation · 4 November 2026</p>
+    <h1>Everything, in the order<br>that <em>unblocks everything</em></h1>
+    <p class="lede">Nine workstreams, one repository, six decisions. Staged by dependency — each stage opens
+    the door to the next, and no stage ends on a date. It ends when its exit condition is true.</p>
+    <div class="stats">
+      <div class="stat"><b>10</b><span>STAGES, DEPENDENCY-ORDERED</span></div>
+      <div class="stat"><b>55</b><span>TASKS, CAPTURED IN TODOIST</span></div>
+      <div class="stat"><b>6</b><span>DECISIONS ONLY RICARDO CAN MAKE</span></div>
+      <div class="stat"><b>5</b><span>CONFLICTS IN THE RECORD TODAY</span></div>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#first">Read first</a>
+  <a href="#decisions">The six decisions</a>
+  <a href="#stages">The ten stages</a>
+  <a href="#evidence">What exists</a>
+  <a href="#missing">What doesn't</a>
+  <a href="#sources">Sources</a>
+</div></nav>
+
+<section id="first">
+  <div class="wrap">
+    <span class="sec-num">00 — READ FIRST</span>
+    <h2>Three collisions that cost money <span class="tag">before a single task moves</span></h2>
+    <p class="sub">These are not brand-tidiness problems. Each one is currently printing, publishing or
+    pricing something that contradicts itself — and every downstream deliverable in this plan inherits
+    whichever answer is chosen. They are decisions, not work.</p>
+
+    <div class="warn">
+      <h4>Collision 1 · The fee schedule is withdrawn but still published</h4>
+      <p>The zone fee was restructured on 4 September 2026 from R1.5&nbsp;m to <b>R80,000 per zone</b>,
+      withdrawing five tiers from R800,000 to R4,500,000. The Prospectus and the draft FDD still print the
+      withdrawn schedule — a price <b>10 to 56 times</b> what will actually be charged.</p>
+      <p>Two further fee models sit alongside it as current: per-unit at R350,000 plus 6%+2%, and
+      R250,000 for five years at 4%+3%. The operating models run 5.0% royalty and 1.0% levy swept monthly.
+      <b>Nothing is averaged here and nothing is changed</b> — this is disclosure and legal territory, and it is Ricardo's to rule.</p>
+    </div>
+
+    <div class="warn">
+      <h4>Collision 2 · The portion standard disagrees by 37%</h4>
+      <p>The recipe manual yields 70 servings from a 10&nbsp;kg batch — 190&nbsp;g each. The menu and costing model
+      was rebuilt at a <b>140&nbsp;g</b> standard on the CFO's 3 September call, about 94 servings from the same batch.
+      The opening stock model was built on <b>120&nbsp;g</b> and is short 105.6&nbsp;kg against 140&nbsp;g.</p>
+      <p>That is a 37% swing in the pasta cost of every plate, and it means the menu cannot be priced until one number is ruled.</p>
+    </div>
+
+    <div class="warn">
+      <h4>Collision 3 · A retired tagline still sits inside the logo</h4>
+      <p>Brand Manual v2.0 demotes <i>Fresh. Seasonal. Quality.</i> to a quality seal and makes
+      <b>LEVEL UP YOUR HUNGER.</b> primary. Every logo master, the franchise wiki front page and the Brand GM
+      knowledge base still carry the retired line as fixed. Any fascia, bag or menu printed this month is wrong on one side or the other.</p>
+    </div>
+  </div>
+</section>
+
+<section id="decisions">
+  <div class="wrap">
+    <span class="sec-num">01 — THE SIX DECISIONS</span>
+    <h2>Six rulings, and <span class="tag">eleven deliverables stop waiting</span></h2>
+    <p class="sub">The first four cost nothing but a decision. Each is filed in Todoist under
+    <b>Waiting on Ricardo</b>, each names exactly what it releases.</p>
+
+    <table>
+      <thead><tr><th>#</th><th>Decision</th><th>What it releases</th><th>Blocks</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="n">01</td>
+          <td><b>The tagline.</b> LEVEL UP YOUR HUNGER as primary, or keep FRESH · SEASONAL · QUALITY.</td>
+          <td>Every fascia, bag, menu, and the logo file set.</td>
+          <td class="blocks">6 items</td>
+        </tr>
+        <tr>
+          <td class="n">02</td>
+          <td><b>The portion standard.</b> 190&nbsp;g, 140&nbsp;g or 120&nbsp;g. One number, ruled.</td>
+          <td>Costing, menu pricing, opening stock, unit economics in the deck.</td>
+          <td class="blocks">5 items</td>
+        </tr>
+        <tr>
+          <td class="n">03</td>
+          <td><b>The fee architecture.</b> Zone, per-unit or five-year; and the 5.0% / 1.0% operating split.</td>
+          <td>Both financial models, the prospectus, the FDD, the franchise pitch.</td>
+          <td class="blocks">7 items</td>
+        </tr>
+        <tr>
+          <td class="n">04</td>
+          <td><b>The price list and SKU set.</b> Final menu prices in the R92–R125 band, pack sizes, collectibles call.</td>
+          <td>Menu boards, packaging labels, campaign pricing, deck economics.</td>
+          <td class="blocks">6 items</td>
+        </tr>
+        <tr>
+          <td class="n">05</td>
+          <td><b>Commission the six logo marks.</b> Primary Crest, Simplified Crest, Field Mark, Avatar, Living Crest, Arena. None exist.</td>
+          <td>Manual Part 3, every manual version, every campaign.</td>
+          <td class="blocks">all visual</td>
+        </tr>
+        <tr>
+          <td class="n">06</td>
+          <td><b>Name the one asset library home</b> and approve the duplicate list. 5.0&nbsp;GB sits across four locations today.</td>
+          <td>The repository, and the delete list for four superseded manuals.</td>
+          <td class="blocks">filing</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="stages">
+  <div class="wrap">
+    <span class="sec-num">02 — THE TEN STAGES</span>
+    <h2>The build, in <span class="tag">dependency order</span></h2>
+    <p class="sub">No stage carries a duration. Each ends on a boolean: the thing is true, or the stage is
+    still open. Stages 3 and 4 can run in parallel once the decisions land; everything else is a chain.</p>
+
+    <div class="stage">
+      <div class="rail">01<small>FOUNDATION</small></div>
+      <div class="body">
+        <h3>The repository spine — one master Zoho table</h3>
+        <p class="why">Nothing gets linked to a repository that does not yet hold a row per document. The
+        3 November audit already scanned 872 files; that scan becomes the first load.</p>
+        <ul class="tasks">
+          <li><b>Build the master register table</b> in Zoho — one row per document: brand, document, version, status, owner, WorkDrive link, local path. <span class="hint">Brand root: <a href="https://workdrive.zoho.com/folder/5428l96163c9c536242f3abfb07741d818b2e">ZOR BU 2 WorkDrive</a></span></li>
+          <li><b>Seed the register</b> with the 872-file audit register.</li>
+          <li><b>Declare Brand Manual v2.0 canonical</b> and retire the four other copies to Archive — five PDFs, three editions, no owner today.</li>
+          <li><b>Rewrite the franchise wiki front page</b> and the Brand GM knowledge base to v2.0. This is the fix for three competing palettes.</li>
+          <li><b>Re-export the manual as searchable text.</b> The current text layer is broken: 155 pages extract as 5,032 lines with no body paragraphs.</li>
+          <li><b>Link every brand folder</b> — Papa Pasta, The Local Farmer, Divorced Dads, ACDC Express, Infinity Brands, Nova Property — to its register row.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>Every document in the audit has a row. Every row resolves to a live WorkDrive link. Zero duplicate canonicals. The manual can be searched and quoted.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">02<small>TEMPLATE</small></div>
+      <div class="body">
+        <h3>The Super Doc — one master, every brand derived from it</h3>
+        <p class="why">The 12-section marketing template master already exists as a spine. The Papa Pasta
+        Super Human document is consolidated into it, and every campaign then starts from a filled template
+        instead of a blank page.</p>
+        <ul class="tasks">
+          <li><b>Consolidate the Papa Pasta Super Human document</b> into the 12-section master: foundation, brand facts, locations, offerings, audiences, pain points, value props, proof, objections, touchpoints, competitors.</li>
+          <li><b>Fill all twelve sections from the manual</b> with page citations, so every claim is traceable.</li>
+          <li><b>Define the three template variants</b> — black, white, super colour — as the manual's Part 5 colour architecture requires.</li>
+          <li><b>Derive one Super Doc per brand</b> from the master: Papa Pasta, The Local Farmer, Divorced Dads, ACDC Express, Infinity Brands.</li>
+          <li><b>Register the six documents</b> against their rows in the master table.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>The master has zero TBD fields. Six brand Super Docs exist, each derived from the master and each linked in the register.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">03<small>PRODUCT TRUTH</small></div>
+      <div class="body">
+        <h3>Recipes, costing and menu pricing — concluded</h3>
+        <p class="why">Four near-identical costing workbooks sit in the Pricing folder. One number for the
+        portion turns them into one model, and that model prices the menu.</p>
+        <ul class="tasks">
+          <li><b>Consolidate the four menu costing workbooks</b> into a single model with one input sheet.</li>
+          <li><b>Rebuild the costing on the ruled portion standard.</b> <span class="hint">Until decision 02 lands this card waits.</span></li>
+          <li><b>Conclude the recipe set</b> from the Top 4 franchise recipes and the kitchen manual — every yield stated in grams per portion.</li>
+          <li><b>Conclude menu prices</b> and lock the price list to the ruled SKU set.</li>
+          <li><b>Reconcile the opening stock model</b> to the ruled portion. <span class="hint">At 140 g it is short 105.6 kg of pasta.</span></li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>One workbook, one recipe set, one price list — agreeing to the gram and the cent, and signed by Ricardo.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">04<small>CAPEX</small></div>
+      <div class="body">
+        <h3>Kitchen equipment list, concluded with China costing</h3>
+        <p class="why">Eight China supplier pages already sit in research — mixer, cold room, blast freezer,
+        dishwasher, freeze dryer, fresh pasta machine, MAP packaging, pasta cooker. What does not exist is the
+        list that turns them into a number.</p>
+        <ul class="tasks">
+          <li><b>Build the kitchen equipment list</b> station by station, central kitchen and store.</li>
+          <li><b>Map the eight existing supplier pages</b> to list lines and mark have / costed / missing.</li>
+          <li><b>Identify every missing line</b> and source three China quotes for each.</li>
+          <li><b>Land the costs</b> — FOB, freight, duty, VAT — into the capex sheet.</li>
+          <li><b>Reconcile the capex total</b> against the franchisee model before it is published.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>Every line has a supplier, a landed cost and a lead time. Zero blank cells. The total reconciles to the financial model.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">05<small>DESIGN</small></div>
+      <div class="body">
+        <h3>King Proteo Design — upstairs central kitchen and concept store</h3>
+        <p class="why">The Central Kitchen folder holds a single PNG. The store design work has twelve
+        Enscape views and a 2D plan, but no specification drawings, no millwork package and no signage
+        technicals. "Finalized" is therefore a drawing set, reviewed and signed — not a render.</p>
+        <ul class="tasks">
+          <li><b>Issue KPD the drawing-set brief</b> for the upstairs central kitchen and the concept store, referenced to manual Part 7: lighting specification, the eight-zone plan, fascia and glazing.</li>
+          <li><b>Receive and file KPD's drawing set</b> — layout, millwork, signage technicals, services coordination.</li>
+          <li><b>Review against the equipment list</b> so every machine has a home, a power point and a drain.</li>
+          <li><b>Sign off the design</b> with Julie.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>A complete drawing set is filed and registered, reviewed against the equipment list and the eight-zone plan, and signed. Nothing is outstanding with KPD.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">06<small>IDENTITY</small></div>
+      <div class="body">
+        <h3>Brand manuals — black, white and super colour, every brand</h3>
+        <p class="why">Part 5 of the manual makes black and white the brand and colour the exception, so the
+        three versions are not decoration — they are the delivery format. The Local Farmer and Divorced Dads
+        need their base manuals authored before their three versions can exist.</p>
+        <ul class="tasks">
+          <li><b>Author the base manual</b> for The Local Farmer and for Divorced Dads.</li>
+          <li><b>Build the black version</b> for all five brands.</li>
+          <li><b>Build the white version</b> for all five brands.</li>
+          <li><b>Build the super colour version</b> for all five brands.</li>
+          <li><b>Register all fifteen documents</b> and confirm each derives from one source.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>Fifteen manuals exist — five brands × three versions — each registered, each derived from a single canonical source.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">07<small>MONEY &amp; PITCH</small></div>
+      <div class="body">
+        <h3>Financials for franchisor and franchisee, and the four documents that sell them</h3>
+        <p class="why">There is currently <b>no deck anywhere</b> — zero .pptx, .key or .odp files in the whole
+        estate, for any company. The prospectus prints a fee schedule that has been withdrawn. Both problems
+        close here.</p>
+        <ul class="tasks">
+          <li><b>Build the franchisor model</b> — zone fee, royalty, levy, support cost, P&amp;L.</li>
+          <li><b>Build the franchisee model</b> — capex from stage 04, COGS from stage 03, unit economics, payback.</li>
+          <li><b>Withdraw and reissue the prospectus</b> with the ruled fee architecture.</li>
+          <li><b>Correct the FDD fee schedule.</b></li>
+          <li><b>Build the brand presentation</b> — 12–16 slides drawn from Parts 1–3: who we are, the manifesto, the identity system, the store, the model.</li>
+          <li><b>Build the shop build presentation</b> from the KPD drawing set and the equipment list.</li>
+          <li><b>Update the landlord pack</b> so every printed price and tagline matches the rulings.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>The two models reconcile to one fee architecture. Four documents exist as finished decks or PDFs. Every printed price matches the ruled model.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">08<small>DEMAND</small></div>
+      <div class="body">
+        <h3>Campaigns for Papa Pasta and Divorced Dads, and branded AI video</h3>
+        <p class="why">Both campaigns are built on the Super Doc, never from scratch — that is the constraint,
+        and it is the reason stage 02 comes first.</p>
+        <ul class="tasks">
+          <li><b>Build the Papa Pasta campaign</b> from its Super Doc, with the ruled tagline and prices.</li>
+          <li><b>Build the Divorced Dads campaign</b> from its Super Doc.</li>
+          <li><b>Produce the AI-generated branded video</b>, checked against Part 3 motion and the three-treatment ceiling.</li>
+          <li><b>Register both campaigns</b> against the brand rows in the master table.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>Both campaigns are publish-ready, each traceable to its Super Doc, and the video passes a brand check against Part 3.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">09<small>PRODUCTION</small></div>
+      <div class="body">
+        <h3>Canva branding — The Local Farmer, Papa Pasta, ACDC Express, Infinity Brands</h3>
+        <p class="why">Canva is where the staff and franchisees actually produce work. If the brand kit there
+        disagrees with the manual, the manual loses every time.</p>
+        <ul class="tasks">
+          <li><b>Audit all four Canva brand kits</b> against their current manuals — colours, type, lockups, templates.</li>
+          <li><b>Update The Local Farmer</b> kit.</li>
+          <li><b>Update Papa Pasta</b> kit — new tagline, lime, six-mark suite.</li>
+          <li><b>Update ACDC Express</b> and <b>Infinity Brands</b> kits.</li>
+          <li><b>Retire superseded assets</b> so nothing wrong is one click from a menu board.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>Four Canva brand kits are current, no retired asset is marked current, and each kit links to its manual.</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="rail">10<small>CLOSE-OUT</small></div>
+      <div class="body">
+        <h3>Score the brand, fill the gaps, publish the register</h3>
+        <p class="why">The audit scored Papa Pasta against the 24 assets a franchised QSR needs. This stage is
+        the second pass, run against the finished work rather than the empty shelf.</p>
+        <ul class="tasks">
+          <li><b>Re-score against the 24-asset brand kit scorecard.</b></li>
+          <li><b>Fill every remaining gap</b> or move it to a named archive decision.</li>
+          <li><b>Publish the completed register</b> as the single link a franchisee, landlord or designer is sent.</li>
+        </ul>
+        <div class="exit"><b>Exit condition</b>No asset required to open a store is scored Missing. The register is published and linked from the brand root.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="evidence">
+  <div class="wrap">
+    <span class="sec-num">03 — EVIDENCE</span>
+    <h2>What is actually there <span class="tag">this morning</span></h2>
+    <p class="sub">Checked directly, not assumed. The plan above is ordered against these facts.</p>
+    <div class="two">
+      <div class="card have">
+        <h4>Exists, and is strong</h4>
+        <ul>
+          <li><b>Brand Manual v2.0</b> — 155 pages, PP-BM-002, seven parts and four appendices. The best asset the brand owns.</li>
+          <li><b>Super Doc template master</b> — a 12-section spine ready to receive content.</li>
+          <li><b>China supplier research</b> — eight machine pages already captured.</li>
+          <li><b>Store design</b> — 2D plan, retail space PDF, twelve Enscape views, a 10-render upscale set, a 7-second clip.</li>
+          <li><b>Landlord pack</b> — exists, PDF only.</li>
+          <li><b>Papa Pasta Concept Build</b> — 304 governed documents.</li>
+          <li><b>Menu costing workbooks</b> — four of them, in the Pricing folder.</li>
+        </ul>
+      </div>
+      <div class="card miss">
+        <h4>Does not exist</h4>
+        <ul>
+          <li><b>Any presentation deck.</b> Zero .pptx, .key or .odp files exist for any company in the estate.</li>
+          <li><b>The six logo marks</b> the manual defines. None are drawn.</li>
+          <li><b>Specification drawings</b> — no millwork package, no signage technicals.</li>
+          <li><b>A readable manual</b> — the text layer is broken across all 155 pages.</li>
+          <li><b>A kitchen equipment list</b> with landed costs.</li>
+          <li><b>Real photography</b> — all 757 images are generated or rendered.</li>
+          <li><b>A trademark register</b>, though the manual has a section governing one.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="missing">
+  <div class="wrap">
+    <span class="sec-num">04 — WHAT I ADDED</span>
+    <h2>Beyond the brief, <span class="tag">because the brief has holes</span></h2>
+    <p class="sub">Four things were not in the goal as stated, and the plan cannot finish honestly without them.</p>
+    <div class="two">
+      <div class="card">
+        <h4>1 · A canonical ruling before the manuals</h4>
+        <ul><li>Three palettes and three type systems are all marked current. Building fifteen manuals on three
+        different foundations produces fifteen wrong manuals. One ruling, then produce.</li></ul>
+      </div>
+      <div class="card">
+        <h4>2 · Searchable text for the manual</h4>
+        <ul><li>Every agent, franchisee and designer is meant to read this document. It cannot be copied,
+        searched or quoted today — so in practice nobody reads it.</li></ul>
+      </div>
+      <div class="card">
+        <h4>3 · A withdrawal notice on the prospectus</h4>
+        <ul><li>Until the fee architecture is ruled, the published prospectus carries a schedule withdrawn in
+        September. Legal, not brand — flagged, not touched.</li></ul>
+      </div>
+      <div class="card">
+        <h4>4 · Real photography, scheduled</h4>
+        <ul><li>The manual bans untreated stock and there is not one photograph of a real plate anywhere in the
+        brand. Campaigns built on renders will read as renders.</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="sources">
+  <div class="wrap">
+    <p class="src">SOURCES AND LIVE SYSTEMS</p>
+    <p>
+      <a href="https://targetpraks.github.io/2026-11-03-papa-pasta-brand-vault-the-complete-document-register-and-2.html">Papa Pasta — Brand Vault: the complete document register and gap audit</a> (3 November 2026 — the 872-file scan this plan is built on) ·
+      <a href="https://workdrive.zoho.com/folder/5428l96163c9c536242f3abfb07741d818b2e">Papa Pasta brand root in Zoho WorkDrive</a> ·
+      <a href="https://projects.zoho.com">Zoho Projects portal</a> ·
+      <a href="https://www.canva.com">Canva</a> ·
+      <a href="https://www.alibaba.com">Alibaba</a> and
+      <a href="https://www.made-in-china.com">Made-in-China</a> (China supplier costing) ·
+      <a href="https://todoist.com">Todoist</a> (where the 47 tasks live).
+    </p>
+    <p class="src" style="margin-top:26px">
+      Local working files: <code>/Volumes/Hiksemi 1TB/AI-Drive/Work/Papa Pasta</code> ·
+      <code>Brand Assets/Papa Pasta Brand Manual.pdf</code> (canonical) ·
+      <code>Pricing/Papa_Pasta_Menu_Costing_Model*.xlsx</code> ·
+      <code>China-Supplier-Research/</code> ·
+      <code>Store Design/Papa Pasta 2d plan.pdf</code>
+    </p>
+    <p style="margin-top:26px;color:#8a8a82">
+      Prepared by Bruce Wayne for Ricardo · 4 November 2026 · nothing in any live business system was
+      changed, sent, filed or deleted to produce this plan.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
