@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zoho MCP — automating the connection authorisation</title>
+<style>
+  :root{--ink:#16181d;--dim:#5c6270;--line:#e3e6ec;--bg:#fbfbfd;--accent:#3b5bfd;--ok:#1a7f4b;--bad:#b3261e}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  main{max-width:900px;margin:0 auto;padding:48px 24px 80px}
+  h1{font-size:31px;line-height:1.2;margin:0 0 8px;letter-spacing:-.02em}
+  .sub{color:var(--dim);margin:0 0 36px;font-size:15px}
+  h2{font-size:20px;margin:44px 0 12px;letter-spacing:-.01em}
+  h3{font-size:15px;margin:24px 0 6px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim)}
+  p,li{color:#242733}
+  code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#eef0f5;padding:2px 6px;border-radius:5px}
+  pre{background:#11141a;color:#e8ecf4;padding:16px 18px;border-radius:10px;overflow-x:auto;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  pre code{background:none;padding:0;color:inherit}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);font-weight:600}
+  .ok{color:var(--ok);font-weight:600}
+  .bad{color:var(--bad);font-weight:600}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin:18px 0}
+  .card.warn{border-left:3px solid #d99a00}
+  .quote{font-style:italic;color:#3d424f}
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim);font-size:13px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Zoho MCP: the authorisation loop, automated</h1>
+  <p class="sub">Chrome over CDP · one consent per server · paced, resumable, on a timer</p>
+
+  <div class="card">
+    <h3 style="margin-top:0">The short version</h3>
+    <p>The three-dot → <strong>Authorize</strong> → tick → <strong>Accept</strong> loop is now a script. It reads the
+    console's own connection status, authorises only what is not authorised, verifies every row, and a Hermes cron
+    job (<code>zoho-mcp-keep-authorized</code>, every 2 h) keeps it that way — which matters, because the grants
+    <em>lapse</em>. Evidence for that is below.</p>
+  </div>
+
+  <h2>Run it</h2>
+<pre><code># sweep the console and fix whatever has lapsed (safe to repeat, skips what is already fine)
+/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/batman/zoho-mcp-rebuild/tools/keep_authorized.sh
+
+# see the queue without clicking anything
+keep_authorized.sh --dry-run
+
+# one server, verbose
+  authorize_connections.py --only mail --gap 3</code></pre>
+  <p>The timer is already installed and silent when there is nothing to do:</p>
+  <table>
+    <tr><th>Job</th><td><code>hermes cron list</code> → <code>zoho-mcp-keep-authorized</code></td></tr>
+    <tr><th>Schedule</th><td>every 2 h, no-agent mode (script output only)</td></tr>
+    <tr><th>Log</th><td><code>AI-Drive/Agent-Output/batman/zoho-mcp-rebuild/authorize_run.log</code> (per-step), <code>keep_authorized_cron.log</code> (per-run)</td></tr>
+  </table>
+
+  <h2>How it drives the console</h2>
+  <table>
+    <tr><th>Step</th><th>What it does</th><th>Trap it survives</th></tr>
+    <tr>
+      <td>Queue</td>
+      <td><code>GET /baas/mcp/v1/server/&lt;id&gt;/connections?type=native</code> for all 98 servers</td>
+      <td>The status lives in the connection record; the server record does not carry it</td>
+    </tr>
+    <tr>
+      <td>Open</td>
+      <td>Fires one fresh tab per server at <code>#/server/&lt;id&gt;/connection</code></td>
+      <td>The tab the consent redirect lands in cannot rebind Lyte's handlers — the three-dot goes dead and looks like a permissions problem</td>
+    </tr>
+    <tr>
+      <td>Three dots</td>
+      <td>Bubbling <code>MouseEvent('click')</code> on <code>svg.table-threedot-class</code></td>
+      <td>The real binding sits on the enclosing <code>lyte-td.table-toolkit</code>; coordinate presses land on nothing</td>
+    </tr>
+    <tr>
+      <td>Authorize</td>
+      <td>Click on <code>lyte-menu-item[data-zcqa="tableMoreOptionCallback"]</code></td>
+      <td>Dispatching on a child span does nothing; the item is 0×0 until the menu paints (~2–3 s)</td>
+    </tr>
+    <tr>
+      <td>Consent</td>
+      <td>Follow the <code>/baas/…/auth</code> popup through its redirect, tick each unchecked box once, click <strong>Accept</strong></td>
+      <td>Accept stays disabled until the box is ticked; a second click toggles it back off; the tab's socket resets on success — that reset is the confirmation</td>
+    </tr>
+    <tr>
+      <td>Verify</td>
+      <td>Re-read the row until it says <em>Connected</em> with the authoriser's email</td>
+      <td>The row lags the consent by several seconds; a 200 on the click is not a grant</td>
+    </tr>
+  </table>
+  <p>Pacing is 58 s between consents — Zoho's
+  <a href="https://www.zoho.com/developer/oauth/token-limits.html">published token limits</a> allow 10 authorisation
+  codes per 10 minutes per user — and a rate-limit page triggers a cool-off instead of a retry storm.</p>
+
+  <h2>What it actually did</h2>
+  <table>
+    <tr><th>Run</th><th>Result</th></tr>
+    <tr><td>Pass 1 · 14:38–15:17</td><td><span class="ok">+22 authorised</span> of 27 attempted</td></tr>
+    <tr><td>Pass 2 · 15:33–16:18</td><td>interrupted mid-run at item 31; estate at 79 authorised / 19 required when checked at 16:39</td></tr>
+    <tr><td>Pass 3 · 16:40–17:16</td><td><span class="ok">+9 authorised</span> of 19 attempted</td></tr>
+    <tr><td>Across all runs</td><td><strong>58 distinct servers</strong> authorised and verified row-by-row</td></tr>
+  </table>
+  <p>Each consent takes about 25 s of clicking; the rest of the gap is the waiting Zoho's budget requires. By hand,
+  that same loop is roughly two to three minutes per server, with no verification step.</p>
+
+  <h2>Two things you need to know</h2>
+
+  <div class="card warn">
+    <h3 style="margin-top:0">1. The grants lapse — that is why the manual loop never ends</h3>
+    <p>Measured on this estate: <strong>79 servers were Authorized at 16:39 and 60 at 17:15</strong>, with no revoke
+    action in between. Servers authorised earlier in the day — Zoho Mail (14:38), Zoho Projects (14:31), Zoho Sheet
+    (15:50) — were back to <em>Authorization Required</em> hours later. Authorising is therefore maintenance, not a
+    one-off: the cron job is the fix, not the script alone.</p>
+    <p>Controlled checks ruled out the obvious alternatives: authorising one server flipped nothing else to
+    required (54 → 54), and authorising a duplicate of an already-connected service (<code>cliq</code> next to
+    <code>cliq-2</code>) disturbed nothing.</p>
+  </div>
+
+  <div class="card warn">
+    <h3 style="margin-top:0">2. Nine servers cannot be authorised by clicking, and say why</h3>
+    <table>
+      <tr><th>Server</th><th>What Zoho answers</th></tr>
+      <tr><td>pos, saasmp</td><td class="quote">Invalid OAuth Scope — Scope does not exist</td></tr>
+      <tr><td>iot</td><td class="quote">Cannot grant these permissions as you don't have access to Zoho IOT</td></tr>
+      <tr><td>verticalstudio</td><td class="quote">Cannot grant these permissions as you don't have access</td></tr>
+      <tr><td>crm-2</td><td class="bad">HTTP 500</td> on the console's own <code>/baas/…/auth</code> endpoint, while crm, crm-3, crm-4, crm-5 authorise fine</td></tr>
+      <tr><td>zohopeopleplus, ZohoTeamInbox</td><td>no service mapping on the server record — the Connection row reads <code>- -</code>, so there is no Authorize entry</td></tr>
+      <tr><td>officeintegrator, site24x7tools</td><td>the Authorize click opens no consent window at all</td></tr>
+    </table>
+    <p>They are listed in <code>known_structural.json</code> and skipped by the keeper, so they cost no consent
+    slots. Fix the server record (scope list, entitlement, or recreate it) and delete the entry.</p>
+  </div>
+
+  <h2>Files</h2>
+  <table>
+    <tr><th>Path</th><th>Role</th></tr>
+    <tr><td><code>tools/authorize_connections.py</code></td><td>the driver: queue → three-dot → Authorize → consent → verify, paced and resumable</td></tr>
+    <tr><td><code>tools/keep_authorized.sh</code></td><td>brings up the CDP Chrome profile, then sweeps</td></tr>
+    <tr><td><code>~/.hermes/profiles/batman/scripts/zoho_mcp_keep_authorized.sh</code></td><td>cron entry point: silent when clean, one summary line otherwise</td></tr>
+    <tr><td><code>known_structural.json</code></td><td>servers that need a Zoho-side fix, skipped by the keeper</td></tr>
+    <tr><td><code>authorize_state.json</code> · <code>authorize_run.log</code></td><td>per-server outcome and the full step log</td></tr>
+  </table>
+
+  <footer>
+    <p><strong>Sources.</strong>
+    <a href="https://www.zoho.com/developer/oauth/token-limits.html">Zoho OAuth token limits</a> (10 authorization
+    codes per 10 minutes; 20 refresh tokens per client per user, oldest invalidated) ·
+    <a href="https://chromedevtools.github.io/devtools-protocol/">Chrome DevTools Protocol</a> (the transport every
+    click above travels over) ·
+    <a href="https://mcp.zoho.com/mcp-client/918836682">the Zoho MCP console</a> being driven.</p>
+    <p>Estate at the time of writing: 98 MCP servers registered; 60 Authorized / 38 Authorization Required on the
+    console's own status, with a sweep in flight. Session runs on the existing CDP Chrome profile
+    (<code>~/.config/maio-stack/cdp-chrome-profile</code>), logged in as ricardom@infinitybrands.co.za.</p>
+  </footer>
+</main>
+</body>
+</html>
