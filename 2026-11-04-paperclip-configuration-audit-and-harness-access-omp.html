@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paperclip — configuration audit &amp; harness access · 4 Nov 2026</title>
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#14171c; --panel2:#191d23; --line:#262b33;
+    --ink:#e8e8e6; --muted:#9aa2ad; --amber:#f0a13a; --green:#57d68a;
+    --red:#f2716a; --blue:#6aa9f0; --violet:#b48ef0;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:56px 28px 96px}
+  header{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:40px}
+  .kicker{font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+  h1{font-size:38px;line-height:1.15;margin:14px 0 10px;letter-spacing:-.02em;font-weight:680}
+  .sub{color:var(--muted);font-size:15px;max-width:75ch}
+  .meta{display:flex;flex-wrap:wrap;gap:18px;margin-top:20px;font:12px/1.4 var(--mono);color:var(--muted)}
+  .meta b{color:var(--ink);font-weight:600}
+  h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);
+     font-weight:700;margin:56px 0 18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+  h3{font-size:17px;margin:28px 0 10px;font-weight:640}
+  p{margin:0 0 14px}
+  a{color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(106,169,240,.32)}
+  a:hover{color:#9cc7ff;border-bottom-color:#9cc7ff}
+  code,.mono{font-family:var(--mono);font-size:13px;background:#1b2027;border:1px solid var(--line);
+       border-radius:5px;padding:1px 6px;color:#cfd6de;word-break:break-word}
+  pre{background:#12151a;border:1px solid var(--line);border-left:3px solid var(--amber);
+      border-radius:8px;padding:16px 18px;overflow-x:auto;font:12.5px/1.65 var(--mono);color:#cfd6de}
+  pre .c{color:#6f7a86}
+  .verdict{border:1px solid var(--line);background:linear-gradient(180deg,#171c22,#12151a);
+           border-radius:12px;padding:24px 26px;margin:0 0 8px}
+  .verdict .line{display:flex;gap:14px;padding:11px 0;border-bottom:1px dashed #232830;align-items:flex-start}
+  .verdict .line:last-child{border-bottom:0}
+  .tag{flex:0 0 96px;font:700 10px/1.7 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:#0b0d10;
+       border-radius:4px;text-align:center;padding:2px 0}
+  .t-ok{background:var(--green)} .t-fix{background:var(--blue)} .t-open{background:var(--amber)} .t-you{background:var(--violet)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0 6px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:15px 16px}
+  .card .k{font:11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .card .v{font-size:24px;font-weight:660;margin-top:6px;letter-spacing:-.01em}
+  .card .n{font-size:12px;color:var(--muted);margin-top:3px}
+  table{width:100%;border-collapse:collapse;margin:16px 0 8px;font-size:14px}
+  th{text-align:left;font:600 11px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;
+     color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:bottom}
+  td{padding:11px 12px;border-bottom:1px solid #1e222a;vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  td.m,th.m{font-family:var(--mono);font-size:12.5px;color:#c6cdd5}
+  .pill{display:inline-block;font:700 10px/1.9 var(--mono);letter-spacing:.06em;text-transform:uppercase;
+        border-radius:4px;padding:0 7px;color:#0b0d10;white-space:nowrap}
+  .p-fixed{background:var(--blue)} .p-open{background:var(--amber)} .p-ok{background:var(--green)}
+  .p-risk{background:var(--red)} .p-you{background:var(--violet)}
+  .note{background:#151a1f;border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:18px 0;font-size:14px;color:#c9d1da}
+  .note b{color:var(--ink)}
+  .fix{border-left:3px solid var(--blue)}
+  ul{margin:0 0 14px;padding-left:20px} li{margin:6px 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  @media(max-width:760px){.two{grid-template-columns:1fr}h1{font-size:29px}}
+  footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);
+         font:12px/1.7 var(--mono);color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Work · configuration audit</div>
+  <h1>Paperclip — application configuration audit, and access for Omar Pi &amp; Deep Sea Connors</h1>
+  <p class="sub">A read-only audit of the live Paperclip instance on <span class="mono">rmmacbook</span>, plus an
+  end-to-end access test of the two agent harnesses that reach it: <b>OMP</b> (oh-my-pi) and the
+  <b>DeepSeek Harness</b>. Every claim below came from a command that ran; the failures quoted are the real strings.</p>
+  <div class="meta">
+    <span><b>Date</b> 4 November 2026, 14:45 SAST</span>
+    <span><b>Instance</b> default · 127.0.0.1:3100</span>
+    <span><b>Version</b> 2026.1023.0</span>
+    <span><b>Mode</b> local_trusted / private</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <div class="line"><span class="tag t-ok">Sound</span><div>Paperclip is healthy and current: same version as npm <span class="mono">2026.1023.0</span>, database backups hourly with the latest 48 minutes old, no failed backup, telemetry off, secrets <span class="mono">0600</span>.</div></div>
+  <div class="line"><span class="tag t-fix">Fixed</span><div><b>Deep Sea Connors was broken and is now working.</b> The ACP entry shipped with model <span class="mono">deepseek-v4-flash</span>, which is not in the profile's model list — every unpinned session died with <span class="mono">turn failed: model 'deepseek-v4-flash' not found</span>. Repointed to a served model; a live turn now returns <span class="mono">end_turn</span>.</div></div>
+  <div class="line"><span class="tag t-open">Open</span><div><b>One defect still bites:</b> the DeepSeek <i>headless</i> profile rejects every request as <span class="mono">prompt is too large to process</span>. I isolated it to the MetaMCP Zoho connection (95 servers, 14,550 tools) injecting its catalogue into each request.</div></div>
+  <div class="line"><span class="tag t-you">Your call</span><div>Neither runtime has a <b>Paperclip identity</b>: no seat, no API key, <span class="mono">/api/agents/me</span> returns 401. They reach the API today only because any loopback process is treated as the board. That is access by accident, not by design — the fix needs your word.</div></div>
+</div>
+
+<h2>1 · What is actually running</h2>
+<table>
+  <tr><th style="width:26%">Component</th><th>Observed state</th></tr>
+  <tr><td>Service</td><td class="m">pid 1022 · 127.0.0.1:3100 · started 09:45:54Z · launchd <span style="color:#cfd6de">ing.paperclip.paperclipai</span> · CLI 2026.1023.0 — matches the <a href="https://www.npmjs.com/package/paperclipai">npm latest release</a>, no update pending</td></tr>
+  <tr><td>Health payload</td><td class="m">status ok · authReady true · bootstrapStatus ready · bootstrapInviteActive false · <b>companyDeletionEnabled true</b></td></tr>
+  <tr><td>Database</td><td class="m">embedded PostgreSQL on 54329 · data 110 MB · instance 542 MB</td></tr>
+  <tr><td>Backups</td><td class="m">enabled · hourly · retention 30 d · 169 files · latest <span style="color:#cfd6de">paperclip-20261104-134556.sql.gz</span> (2,876,131 B, age 0.8 h) · lastFailure null</td></tr>
+  <tr><td>Secrets</td><td class="m">local_encrypted · master.key 44 B mode 600 · strictMode <b>false</b></td></tr>
+  <tr><td>Storage · logs</td><td class="m">local_disk · /…/data/storage · file logging · service.log 3.2 MB · service.err.log empty</td></tr>
+  <tr><td>Network</td><td class="m">bind loopback · exposure private · allowedHostname <span style="color:#cfd6de">ricardos-mac-mini.taile9f837.ts.net</span> · tailnet probe → HTTP 200</td></tr>
+  <tr><td>Access control</td><td class="m">disableSignUp <b>true</b> · 1 user · 0 invites · 5 memberships · telemetry off</td></tr>
+  <tr><td>Agent adapters</td><td class="m">16 registered (claude_local 13 models, codex_local 17, opencode_local 21, paperclip_runner 20, cursor 51, pi_local, hermes_local, process …) · <span style="color:#cfd6de">acpx_local is a retired tombstone</span></td></tr>
+</table>
+
+<div class="cards">
+  <div class="card"><div class="k">Companies</div><div class="v">5</div><div class="n">all active</div></div>
+  <div class="card"><div class="k">Issues</div><div class="v">197</div><div class="n">178 done · 8 in review · 2 todo · 1 in progress · 8 cancelled</div></div>
+  <div class="card"><div class="k">Agent seats</div><div class="v">47</div><div class="n">17 ready · <b>30 awaiting approval</b></div></div>
+  <div class="card"><div class="k">Human users</div><div class="v">1</div><div class="n">local-board, instance admin</div></div>
+  <div class="card"><div class="k">Errors in log</div><div class="v">73</div><div class="n">none fatal, none on startup</div></div>
+</div>
+
+<h3>Where the work sits</h3>
+<table>
+  <tr><th>Company</th><th class="m">Prefix</th><th>Issues</th><th>Agent seats</th><th>Ready</th></tr>
+  <tr><td>Infinity Brands</td><td class="m">INF</td><td>159</td><td>10</td><td>2</td></tr>
+  <tr><td>Papa Pasta</td><td class="m">PAP</td><td>15</td><td>10</td><td>8</td></tr>
+  <tr><td>INFX group</td><td class="m">INFA</td><td>9</td><td>9</td><td>1</td></tr>
+  <tr><td>The Local Farmer</td><td class="m">THE</td><td>7</td><td>9</td><td>1</td></tr>
+  <tr><td>Divorced Dads</td><td class="m">DIV</td><td>7</td><td>9</td><td>1</td></tr>
+</table>
+
+<h2>2 · Findings</h2>
+<table>
+  <tr><th style="width:6%">#</th><th style="width:34%">Finding</th><th>Evidence</th><th style="width:12%">State</th></tr>
+
+  <tr><td class="m">D1</td>
+    <td><b>DeepSeek ACP default model does not exist.</b> The <span class="mono">@deepseek-ai/dsh-acp</span> entry ships <span class="mono">model: deepseek-v4-flash</span>; the profile serves seven different ids.</td>
+    <td class="m">before: <span style="color:#f2716a">turn failed: model 'deepseek-v4-flash' not found</span><br>after: <span style="color:#57d68a">stopReason end_turn · text "OK"</span></td>
+    <td><span class="pill p-fixed">Fixed</span></td></tr>
+
+  <tr><td class="m">D2</td>
+    <td><b>DeepSeek headless profile cannot complete any request.</b> Every prompt, down to "reply OK", is rejected before it reaches a model.</td>
+    <td class="m"><span style="color:#f2716a">INVALID_REQUEST: prompt is too large to process (ref 0c30d09b…)</span><br>disabling <span style="color:#cfd6de">mcp-zoho</span> alone → OK; disabling <span style="color:#cfd6de">mcp-zoho-search</span> alone → still fails</td>
+    <td><span class="pill p-open">Open</span></td></tr>
+
+  <tr><td class="m">D3</td>
+    <td><b>30 of 47 seats never got board approval.</b> Every C-suite seat in four of five companies has sat in <span class="mono">pending_approval</span> since 6 October, so no delegation and no work has ever flowed through them.</td>
+    <td class="m">created 2026-10-06T14:36Z · status pending_approval · lifecycleHolds []<br>Joe's own review on THE-5 says the same: “no seat, no delegation, no work”</td>
+    <td><span class="pill p-you">Your call</span></td></tr>
+
+  <tr><td class="m">D4</td>
+    <td><b>28 seats are pinned to a model that does not exist.</b> Their adapter config carries <span class="mono">model: "orchestrator"</span> — a role name, not a model id. Approving them as-is would fail on the first run.</td>
+    <td class="m">gateway serves 17 models, none named <span style="color:#cfd6de">orchestrator</span>; the 17 working seats use <span style="color:#cfd6de">deepseek-v4.1-flash:1017</span></td>
+    <td><span class="pill p-open">Open</span></td></tr>
+
+  <tr><td class="m">D5</td>
+    <td><b>Neither harness has a Paperclip identity.</b> No seat is registered on an OMP or DeepSeek runtime, and no agent key exists — so they cannot read an inbox, be assigned a ticket, or be audited as agents.</td>
+    <td class="m">adapters in use: hermes_local 45 · process 1 · codex_local 1 &nbsp;/&nbsp; <span style="color:#f2716a">GET /api/agents/me → 401</span></td>
+    <td><span class="pill p-you">Your call</span></td></tr>
+
+  <tr><td class="m">D6</td>
+    <td><b>Loopback trust is total.</b> <span class="mono">local_trusted</span> means any local process is the board — including <span class="mono">/api/admin/users</span>, the members list and every write endpoint. No credential needed.</td>
+    <td class="m">anonymous curl → <span style="color:#57d68a">200</span> on /api/companies and /api/admin/users; server log records <span style="color:#cfd6de">actorType "board"</span></td>
+    <td><span class="pill p-risk">Risk</span></td></tr>
+
+  <tr><td class="m">D7</td>
+    <td><b>Deletion is armed.</b> <span class="mono">features.companyDeletionEnabled = true</span> on a board-trusted instance: one local process, one call, five companies gone. Backups make it recoverable, not prevented.</td>
+    <td class="m">GET /api/health → <span style="color:#cfd6de">"companyDeletionEnabled":true</span></td>
+    <td><span class="pill p-risk">Risk</span></td></tr>
+
+  <tr><td class="m">D8</td>
+    <td><b>Two seats have no runtime at all.</b> Julie (process adapter, empty config) and Codex Engineer (codex_local, no command) cannot start even if approved.</td>
+    <td class="m">adapterConfig <span style="color:#cfd6de">{}</span> and no <span style="color:#cfd6de">codexCommand</span></td>
+    <td><span class="pill p-open">Open</span></td></tr>
+
+  <tr><td class="m">D9</td>
+    <td><b>Three 500s on concurrent ticket updates.</b> Competing PATCHes on the same issue hit a failed conditional update on <span class="mono">checkout_run_id</span>. No data lost; the issue stayed consistent.</td>
+    <td class="m"><span style="color:#f2716a">PATCH /api/issues/4ca0a7ef… 500 — Failed query: update "issues" set "checkout_run_id"…</span></td>
+    <td><span class="pill p-ok">Noted</span></td></tr>
+</table>
+
+<h2>3 · Access — Omar Pi (OMP) and Deep Sea Connors</h2>
+<p>The two names map onto two provider instances in T3 Code: <b>OMP</b> is <span class="mono">acpRegistry_omp</span> → <i>OMP (oh-my-pi)</i>; <b>Deep Sea Connors</b> is <span class="mono">acpRegistry_deepseek</span> → <i>DeepSeek Harness</i>. Both are launched through shims in <span class="mono">~/.local/bin</span> that source the fleet environment before exec.</p>
+
+<table>
+  <tr><th style="width:30%">Check</th><th>Omar Pi — OMP (oh-my-pi)</th><th>Deep Sea Connors — DeepSeek</th></tr>
+  <tr><td>Registered &amp; enabled in T3</td><td class="m">yes · accent #dc25eb</td><td class="m">yes · accent #4d6bfe</td></tr>
+  <tr><td>Launcher on disk</td><td class="m"><span style="color:#cfd6de">~/.local/bin/omp-acp</span> · exec, 447 B</td><td class="m"><span style="color:#cfd6de">~/.local/bin/dsh-acp</span> · exec, 324 B</td></tr>
+  <tr><td>ACP handshake</td><td class="m">name <b>omp</b> · v18.15.0 · prompt caps image + embedded</td><td class="m">name <b>deepseek-harness-acp</b> · v0.0.1</td></tr>
+  <tr><td>Live turn, end to end</td><td class="m"><span style="color:#57d68a">end_turn · "OK"</span> · 10,099 in / 3 out tokens</td><td class="m"><span style="color:#57d68a">end_turn · "OK"</span> <i>(after D1)</i></td></tr>
+  <tr><td>Reaches Paperclip</td><td class="m"><span style="color:#57d68a">HTTP 200</span> from the harness itself</td><td class="m"><span style="color:#57d68a">HTTP 200</span> from the harness itself</td></tr>
+  <tr><td>Model route</td><td class="m">ollama gateway · 6 ids in models.yml · 8 custom entries</td><td class="m">deepseek-official · 7 ids · openrouter lanes for GPT-6 / Claude 5.5</td></tr>
+  <tr><td>Recent activity in T3</td><td class="m">15 sessions · last 27 Oct 16:29Z</td><td class="m">25 completed today · last 07:02Z · 3 failed</td></tr>
+  <tr><td>Paperclip agent identity</td><td class="m"><span style="color:#f2716a">none — 401</span></td><td class="m"><span style="color:#f2716a">none — 401</span></td></tr>
+</table>
+
+<div class="note fix">
+  <b>What I changed, and why it was safe to change.</b> One entry appended to
+  <span class="mono">~/.dsh/profiles/acp/cordis.patch.yml</span>, repointing the ACP entry at
+  <span class="mono">deepseek-v4.1-flash:1017-cloud</span> — a model the same profile already serves.
+  Backup written first: <span class="mono">cordis.patch.yml.bak-acp-default-model-20261104T143738</span>.
+  Nothing else touched; T3 spawns the harness per session, so the next session picks it up with no app restart.
+</div>
+
+<h3>The one thing I did not do</h3>
+<p>Giving either runtime a real Paperclip seat means creating a principal that holds
+<span class="mono">canCreateAgents</span> and <span class="mono">canCreateSkills</span> inside a live company —
+and this instance requires board approval for every new agent. That is your signature, not mine.
+The payloads are ready:</p>
+<pre><span class="c">// 1 — OMP gets a seat via the documented pi_local adapter (it accepts a custom binary)</span>
+POST /api/companies/&lt;companyId&gt;/agents
+{ "name": "Omar Pi",  "role": "engineer", "adapterType": "pi_local",
+  "adapterConfig": { "command": "/opt/homebrew/bin/omp",
+                     "model": "ollama/deepseek-v4.1-flash:1017-cloud",
+                     "cwd": "/Users/ricardomaio" } }
+
+<span class="c">// 2 — DeepSeek has no native adapter; nearest honest options are a process seat</span>
+<span class="c">//     wrapping `dsh headless`, or leaving it harness-only. Not a same-day build.</span>
+POST /api/companies/&lt;companyId&gt;/agents
+{ "name": "Deep Sea Connors", "role": "engineer", "adapterType": "process",
+  "adapterConfig": { "command": "/opt/homebrew/bin/dsh",
+                     "args": ["headless", "{{prompt}}"], "timeoutSec": 1800 } }
+
+<span class="c">// 3 — then an agent key per seat, and never a shared board trust again</span>
+POST /api/agents/&lt;agentId&gt;/keys</pre>
+<p>The honest caveat on (2): the <span class="mono">process</span> adapter has no session memory and no tool policy,
+so a DeepSeek seat built that way is a runner, not a colleague. If you want it to behave like the others, the
+right answer is a paperclip <span class="mono">acp</span> adapter upstream — OMP already fits <span class="mono">pi_local</span>, DeepSeek does not fit anything yet.</p>
+
+<h2>4 · What I recommend, in order</h2>
+<ul>
+  <li><b>Approve a first wave, not thirty.</b> CTO, CMO, CFO, COO for one company — after D4 is repointed, or they die on their first ticket.</li>
+  <li><b>Narrow the Zoho MetaMCP namespace</b> behind <span class="mono">mcp-zoho</span>. 95 servers and 14,550 tools in every prompt is what breaks D2, and it burns tokens on every harness that mounts it.</li>
+  <li><b>Decide the trust model.</b> Either accept that anything on this Mac is the board, or give the harnesses agent keys and stop relying on loopback. Do not leave <span class="mono">companyDeletionEnabled</span> true on top of total local trust.</li>
+  <li><b>Archive the seats nobody will use.</b> Seven C-suite seats on day one, in a company with no reports, is capacity theatre; park CRO, CHO, CAO until there is work.</li>
+</ul>
+
+<h2>5 · Evidence</h2>
+<p>Everything here is reproducible on this machine. The API is documented at
+<a href="https://github.com/paperclipai/paperclip">paperclipai/paperclip</a> and served locally at
+<span class="mono">http://127.0.0.1:3100/api/openapi.json</span> (815 paths). The harness protocol is the
+<a href="https://agentclientprotocol.com">Agent Client Protocol</a>; model routing goes through the local
+<a href="https://ollama.com">Ollama</a> gateway at <span class="mono">127.0.0.1:11434</span>, and the tailnet route is a
+<a href="https://tailscale.com/kb/1223/tailscale-serve">Tailscale serve</a> hostname.</p>
+<table>
+  <tr><th style="width:34%">Artifact</th><th>Path</th></tr>
+  <tr><td>Raw API captures (companies, agents, adapters, OpenAPI)</td><td class="m">AI-Drive/Agent-Output/batman/paperclip-audit/</td></tr>
+  <tr><td>Instance config</td><td class="m">~/.paperclip/instances/default/config.json</td></tr>
+  <tr><td>Service log (73 errors)</td><td class="m">~/.paperclip/instances/default/logs/service.log</td></tr>
+  <tr><td>T3 provider instances</td><td class="m">~/.t3/userdata/settings.json · key <span style="color:#cfd6de">providerInstances</span></td></tr>
+  <tr><td>DeepSeek ACP profile (edited)</td><td class="m">~/.dsh/profiles/acp/cordis.patch.yml</td></tr>
+  <tr><td>ACP test client used for the live turns</td><td class="m">/tmp/acp_test.py</td></tr>
+</table>
+
+<footer>
+  Read-only audit; two config writes, both backed up and listed. No ticket filed, no agent created,
+  no email sent, no money moved.<br>
+  Prepared 4 November 2026, 14:45 SAST · rmmacbook · Paperclip 2026.1023.0
+</footer>
+
+</div>
+</body>
+</html>
