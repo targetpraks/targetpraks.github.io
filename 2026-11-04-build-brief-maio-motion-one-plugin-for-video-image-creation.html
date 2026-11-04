@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Build Brief — maio-motion: one plugin for video + image creation across all four harnesses</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="build-brief--maio-motion-one-plugin-for-video--image-creation-across-all-four-harnesses">Build Brief — <code>maio-motion</code>: one plugin for video + image creation across all four harnesses</h1>
+<p><strong>Give this file to the builder.</strong> Everything in "Verified today" was measured on this Mac on 2026-11-04 — the builder must not re-derive it, re-install it, or "improve" it. The job is to <strong>wrap</strong> what exists into one installable plugin that Hermes, Claude Code, omp and dsh all pick up.</p>
+<hr />
+<h2 id="the-one-paragraph-ask">The one-paragraph ask</h2>
+<p>Build a single installable plugin — working name <strong><code>maio-motion</code></strong> — that gives every harness on this Mac one consistent way to (a) create video from code, (b) create and process images, (c) post-process footage, and (d) machine-check the result before it is shown to anyone. It must install from one repo into four harnesses whose plugin systems differ, sharing one skill set and one set of command wrappers so the same brief produces the same output regardless of which agent runs it. Zero recurring cost, no hosted service required, no paid API, no secrets in the repo.</p>
+<hr />
+<h2 id="non-negotiables">Non-negotiables</h2>
+<ol type="1">
+<li><strong>Free and local.</strong> No paid API, no stock library, no render farm, no hosted video model. If a feature needs one, it ships as an optional adapter and <strong>Ricardo decides</strong> whether to enable it — the builder does not.</li>
+<li><strong>No new MCP servers.</strong> The plugin's capability must come from local binaries and skills. Blender-MCP, ComfyUI-MCP and friends stay out unless Ricardo explicitly approves one.</li>
+<li><strong>No credentials in the repo</strong>, ever — no keys, tokens or passwords in code, manifests, examples or tests.</li>
+<li><strong>Do not touch the vault.</strong> Vault writes go through Beast via the existing handoff; the plugin is read-only toward <code>~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Maio Hub</code>.</li>
+<li><strong>Do not shadow <code>ffmpeg</code>.</strong> The stock <code>ffmpeg</code> stays first-class for ordinary work; the full build is a separate name.</li>
+</ol>
+<hr />
+<h2 id="verified-today--wrap-this-do-not-rebuild-it">Verified today — wrap this, do not rebuild it</h2>
+<p>All of the following runs on this Mac right now. Versions are what <code>--version</code> returned.</p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Binary / entrypoint</th>
+<th>Version</th>
+<th>Proof produced today</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTML → video</td>
+<td><code>hyperframes</code></td>
+<td>0.9.9</td>
+<td>3.0 s / 90-frame title card, rendered in 6–8 s</td>
+</tr>
+<tr>
+<td>React → video</td>
+<td><code>remotion</code></td>
+<td>4.0.540</td>
+<td>real render, 1280×720, 90 frames → <code>remotion-proof.mp4</code></td>
+</tr>
+<tr>
+<td>3D offline</td>
+<td><code>blender</code></td>
+<td>5.2.3 LTS</td>
+<td>24 headless workbench frames → h264 <code>blender-proof.mp4</code></td>
+</tr>
+<tr>
+<td>Export / mux / text</td>
+<td><code>ffmpeg-full</code>, <code>ffprobe-full</code></td>
+<td>9.0.2</td>
+<td>film with burned-in captions, −15.19 LUFS</td>
+</tr>
+<tr>
+<td>Shot detection</td>
+<td><code>scenedetect</code></td>
+<td>0.7.2</td>
+<td>4 scenes detected, cut points exact</td>
+</tr>
+<tr>
+<td>Dead-air cut</td>
+<td><code>auto-editor</code></td>
+<td>29.3.1</td>
+<td>24.00 s → 21.07 s in 3.3 s</td>
+</tr>
+<tr>
+<td>Stabilise</td>
+<td><code>ffmpeg-full</code> vid.stab 2-pass</td>
+<td>9.0.2</td>
+<td>inter-frame motion 4.42 px → 0.42 px</td>
+</tr>
+<tr>
+<td>Colour grade</td>
+<td><code>color-matcher</code></td>
+<td>0.6.0</td>
+<td>95 % of colour gap closed to reference</td>
+</tr>
+<tr>
+<td>Cutout / matte</td>
+<td><code>rembg</code></td>
+<td>2.0.86</td>
+<td>82.7 % of frame matted, no green screen</td>
+</tr>
+<tr>
+<td>Slow motion</td>
+<td><code>rife-ncnn-vulkan</code></td>
+<td>20221029</td>
+<td>30 → 60 frames, 1.7 % duplicate pairs</td>
+</tr>
+<tr>
+<td>Upscale ×4</td>
+<td><code>realesrgan-ncnn-vulkan</code></td>
+<td>20220424</td>
+<td>320×180 → 1280×720</td>
+</tr>
+<tr>
+<td>Stems</td>
+<td><code>demucs</code></td>
+<td>4.1.0</td>
+<td>vocals + no_vocals, 8.25× realtime</td>
+</tr>
+<tr>
+<td>Beat grid</td>
+<td><code>librosa</code> (venv)</td>
+<td>1.0.0</td>
+<td>60.1 BPM, 17 beats</td>
+</tr>
+<tr>
+<td>Captions</td>
+<td><code>whisper</code></td>
+<td>faster-whisper 1.2.1</td>
+<td>real speech transcribed in 1.3 s, offline</td>
+</tr>
+<tr>
+<td>QC gate</td>
+<td><code>render-qc</code></td>
+<td>—</td>
+<td><code>RESULT: PASS</code> / frozen frames + loudness</td>
+</tr>
+</tbody>
+</table>
+<p>Supporting libraries already installed and smoke-tested (<code>motion-studio/smoke.mjs</code>, 15/16 + headless WebGL2): GSAP 3.15, three.js, tone.js 15.1.22, animejs, mojs, theatre, d3, babylon, react-three-fiber, puppeteer; plus scipy 1.18.1, pyloudnorm, pedalboard, Pillow, opencv 5.0.</p>
+<p><strong>Known hardware limits the plugin must encode, not hide:</strong></p>
+<ul>
+<li>This Blender build has <strong>no <code>FFMPEG</code> output</strong> — render a PNG sequence, encode with ffmpeg.</li>
+<li>This <code>ffmpeg</code> 9.0.2 (<code>/opt/homebrew/bin</code>) has <strong>no <code>drawtext</code>/<code>subtitles</code>/<code>vidstab</code></strong>. Text and stabilising must call <code>ffmpeg-full</code>. (<code>ffmpeg-full</code> is keg-only at <code>/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg</code>.)</li>
+<li><strong>No image-generation engine is installed.</strong> See "The image lane" below.</li>
+</ul>
+<hr />
+<h2 id="the-image-lane--read-this-before-promising-image-generation">The image lane — read this before promising image generation</h2>
+<p>Today the machine can <strong>process</strong> images but cannot <strong>generate</strong> them. No ComfyUI, no <code>diffusers</code>, no image model in Ollama, no <code>imagegen</code> binary — verified 2026-11-04.</p>
+<p><strong>Ships in v1 (all local, all free):</strong></p>
+<ul>
+<li>background removal / matting (rembg, bria-rmbg-2.0)</li>
+<li>upscale ×2/×3/×4 (Real-ESRGAN <code>x4plus</code>, plus <code>spandrel</code> 0.4.2 for ESRGAN-family checkpoints on torch 2.15 MPS)</li>
+<li>composition, colour and contact sheets (Pillow + opencv)</li>
+<li>stills from any video at frame accuracy (ffmpeg)</li>
+<li>HTML/Canvas/SVG → PNG (headless Chrome via puppeteer, already verified)</li>
+</ul>
+<p><strong>Ships as a disabled adapter, Ricardo's call:</strong> image <em>generation</em>. Two honest options — (a) ComfyUI locally, stills only (Apple-MPS video is not production-viable), or (b) an API the user already holds. The adapter must be inert until a human enables it, and must never ship a key.</p>
+<hr />
+<h2 id="architecture--one-repo-one-skill-set-four-thin-adapters">Architecture — one repo, one skill set, four thin adapters</h2>
+<pre><code>maio-motion/
+├── .claude-plugin/plugin.json        # Claude Code + omp read this
+├── skills/                           # the single source of truth (SKILL.md format)
+│   ├── motion-lane/SKILL.md          # which engine for which brief
+│   ├── video-editor-lane/SKILL.md    # the 11-repo post-production lane
+│   ├── image-lane/SKILL.md           # process today, generate via adapter
+│   └── render-contract/SKILL.md      # what &quot;finished&quot; means + the QC gate
+├── bin/                              # wrappers, all resolve to absolute paths
+│   ├── motion-*                      # one verb per job (see command surface)
+│   └── (symlinks into ~/.local/bin AND /opt/homebrew/bin)
+├── hermes/plugin.yaml                # Hermes adapter
+├── dsh/package.json + cordis.patch.yml  # dsh adapter
+├── tools/                            # python/JS helpers the skills call
+├── tests/acceptance.sh               # the gate — see below
+└── README.md</code></pre>
+<p><strong>One rule that is not negotiable:</strong> the skills and the <code>bin/</code> wrappers are the product. Each harness adapter is a few lines of manifest that points at them. Do not fork skill text per harness — a fix must land in one place or the four harnesses drift apart.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TB</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">one</span>[<span class="st">&quot;one repo: maio-motion&quot;</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">S</span>[<span class="st">&quot;skills/ — SKILL.md, single source of truth&quot;</span>]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">B</span>[<span class="st">&quot;bin/ — motion-</span><span class="sc">*</span> <span class="st">wrappers, PATH pinned&quot;</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">T</span>[<span class="st">&quot;tools/ — python + JS helpers&quot;</span>]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">harness</span>[<span class="st">&quot;four harnesses, four thin adapters&quot;</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">H</span>[<span class="st">&quot;Hermes</span><span class="sc">&lt;br/&gt;</span><span class="st">plugin.yaml&quot;</span>]</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">C</span>[<span class="st">&quot;Claude Code</span><span class="sc">&lt;br/&gt;</span><span class="st">.claude-plugin/plugin.json&quot;</span>]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="dt">O</span>[<span class="st">&quot;omp</span><span class="sc">&lt;br/&gt;</span><span class="st">~/.agents/skills + marketplace&quot;</span>]</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="dt">D</span>[<span class="st">&quot;dsh</span><span class="sc">&lt;br/&gt;</span><span class="st">package.json bundles + cordis.patch.yml&quot;</span>]</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">path</span>[<span class="st">&quot;both PATH roots — the audit&#39;s real bug&quot;</span>]</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">P1</span>[<span class="st">&quot;~/.local/bin</span><span class="sc">&lt;br/&gt;</span><span class="st">(terminal shells)&quot;</span>]</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">P2</span>[<span class="st">&quot;/opt/homebrew/bin</span><span class="sc">&lt;br/&gt;</span><span class="st">(GUI-launched apps)&quot;</span>]</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">H</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">C</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">O</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">D</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">P1</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">P2</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="dt">P1</span> <span class="pp">--&gt;</span> <span class="dt">ENG</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">P2</span> <span class="pp">--&gt;</span> <span class="dt">ENG</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">eng</span>[<span class="st">&quot;local engines — all verified 2026-11-04&quot;</span>]</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        <span class="dt">E1</span>[<span class="st">&quot;hyperframes · remotion · blender&quot;</span>]</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        <span class="dt">E2</span>[<span class="st">&quot;ffmpeg-full · scenedetect · auto-editor&quot;</span>]</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>        <span class="dt">E3</span>[<span class="st">&quot;rembg · rife · realesrgan · demucs · whisper&quot;</span>]</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>        <span class="dt">E4</span>[<span class="st">&quot;render-qc — the gate every render must pass&quot;</span>]</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span></code></pre></div>
+<hr />
+<h2 id="per-harness-install-mechanics-formats-read-off-this-mac-not-guessed">Per-harness install mechanics (formats read off this Mac, not guessed)</h2>
+<p><strong>Claude Code</strong> — <code>.claude-plugin/plugin.json</code> inside the plugin dir:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;maio-motion&quot;</span><span class="fu">,</span> <span class="dt">&quot;version&quot;</span><span class="fu">:</span> <span class="st">&quot;1.0.0&quot;</span><span class="fu">,</span> <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;…&quot;</span><span class="fu">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Adrianna A&quot;</span> <span class="fu">},</span> <span class="dt">&quot;keywords&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;video&quot;</span><span class="ot">,</span><span class="st">&quot;image&quot;</span><span class="ot">,</span><span class="st">&quot;render&quot;</span><span class="ot">,</span><span class="st">&quot;ffmpeg&quot;</span><span class="ot">,</span><span class="st">&quot;hyperframes&quot;</span><span class="ot">]</span> <span class="fu">}</span></span></code></pre></div>
+<p>Install target <code>~/.claude/skills/</code> for the skills, and a marketplace entry so <code>claude plugin install</code> works.</p>
+<p><strong>omp</strong> — reads the <strong>shared cross-harness store <code>~/.agents/skills/</code></strong> and consumes Claude plugin marketplaces listed in <code>~/.omp/marketplaces.json</code>. It does <strong>not</strong> read <code>~/.claude/skills</code>. Install = copy/symlink skills into <code>~/.agents/skills/</code>, and verify with:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">omp</span> skill list . <span class="at">--json</span>     <span class="co"># each record&#39;s filePath names the root it resolved from</span></span></code></pre></div>
+<p><strong>Hermes</strong> — <code>plugin.yaml</code> with <code>manifest_version: 2</code>, <code>provides_tools</code>, <code>provides_hooks</code>, <code>python_dependencies</code>, <code>config_schema</code>, plus a <code>skills/</code> directory and optional <code>.hermes-catalog.json</code>. Install target <code>~/.hermes/plugins/maio-motion/</code>. Note Hermes skills are <strong>per profile</strong> — the plugin should install into every profile that needs it, or expose one tool that any profile can call.</p>
+<p><strong>dsh</strong> — has no skill system at all. Its adapter is an npm package with <code>"dsh": { "profile": { "bundles": [...] } }</code> in <code>package.json</code> plus loader entries in <code>cordis.patch.yml</code> (<code>- id: &lt;name&gt;</code>, <code>name: "@deepseek-ai/dsh-…"</code>, <code>config: {...}</code>). <strong>If dsh cannot load skills, the honest minimum is a <code>motion</code> tool plus a one-paragraph cheatsheet injected into the profile patch</strong> — do not pretend dsh has skill parity it does not have.</p>
+<hr />
+<h2 id="the-path-rule--the-bug-this-audit-actually-found">The PATH rule — the bug this audit actually found</h2>
+<p><code>~/.local/bin</code> is <strong>not</strong> on the PATH a GUI-launched harness receives. launchd hands apps only <code>/usr/local/bin … /opt/homebrew/bin</code>. Proof: <code>env -i /bin/bash -lc 'command -v scenedetect'</code> → <code>MISSING</code>.</p>
+<p>So every wrapper must be reachable from <strong>both</strong>:</p>
+<ul>
+<li><code>~/.local/bin/</code> (terminal shells)</li>
+<li><code>/opt/homebrew/bin/</code> (GUI-launched Hermes desktop, omp, dsh, T3 Code) — user-writable, no sudo</li>
+</ul>
+<p>And each wrapper must pin its own PATH, because a GUI-launched process cannot be trusted to supply one:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="st">&quot;/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:</span><span class="va">${PATH</span><span class="op">:-</span><span class="va">}</span><span class="st">&quot;</span></span></code></pre></div>
+<p><code>render-qc</code> already does this correctly — copy its pattern. Verify any new wrapper under <code>env -i HOME="$HOME" PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin"</code>.</p>
+<hr />
+<h2 id="command-surface-the-plugin-must-expose">Command surface the plugin must expose</h2>
+<p>One verb per job, stable names, <code>--json</code> on everything so agents parse instead of scraping:</p>
+<table>
+<thead>
+<tr>
+<th>Verb</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>motion new &lt;dir&gt;</code></td>
+<td>scaffold a project (HyperFrames or Remotion, chosen by flag)</td>
+</tr>
+<tr>
+<td><code>motion render &lt;project&gt;</code></td>
+<td>render to MP4, then run the QC gate automatically</td>
+</tr>
+<tr>
+<td><code>motion qc &lt;file&gt;</code></td>
+<td>the gate: frozen frames, loudness, black/torn frames, contact sheet</td>
+</tr>
+<tr>
+<td><code>motion caption &lt;media&gt;</code></td>
+<td>local transcription → SRT/VTT + burn-in option</td>
+</tr>
+<tr>
+<td><code>motion edit &lt;media&gt;</code></td>
+<td>the post lane: <code>--cut --stabilise --grade --slowmo --upscale --stems</code></td>
+</tr>
+<tr>
+<td><code>motion image &lt;verb&gt;</code></td>
+<td><code>matte</code>, <code>upscale</code>, <code>sheet</code>, <code>still</code>, <code>compose</code>, <code>svg2png</code></td>
+</tr>
+<tr>
+<td><code>motion audio &lt;verb&gt;</code></td>
+<td><code>stems</code>, <code>beat</code>, <code>loudness</code>, <code>mix</code></td>
+</tr>
+<tr>
+<td><code>motion doctor</code></td>
+<td>prints what is installed, what version, what is knowingly absent</td>
+</tr>
+</tbody>
+</table>
+<p><code>motion doctor</code> is the acceptance instrument: it must report the table above truthfully, including the deliberate absences, so no agent ever claims a capability the machine does not have.</p>
+<hr />
+<h2 id="acceptance-tests-the-builder-must-show-real-output-not-claims">Acceptance tests (the builder must show real output, not claims)</h2>
+<p><code>tests/acceptance.sh</code> runs these and fails loudly. Each is a command, an expected shape of output, and a non-zero exit on mismatch:</p>
+<ol type="1">
+<li><code>motion doctor --json</code> lists every row of the verified table with a real version string.</li>
+<li>Scaffold → render → <strong><code>motion qc</code> returns PASS</strong> on a 3-second piece with audio. (A video-only render must FAIL the gate — that is the gate working, and the test asserts the failure.)</li>
+<li><code>motion caption</code> on a spoken sample returns at least one segment with words in it.</li>
+<li><code>motion edit --slowmo</code> doubles the frame count and <strong>near-duplicate pairs stay under 5 %</strong> (proves interpolation, not frame doubling).</li>
+<li><code>motion edit --stabilise</code> reduces measured inter-frame motion by at least 50 %.</li>
+<li><code>motion image upscale -s 4</code> returns exactly 4× the input dimensions.</li>
+<li>Every wrapper resolves and executes under the <strong>GUI environment</strong> (the <code>env -i</code> line above).</li>
+<li><code>omp skill list . --json</code> shows all the plugin's skills; <code>ls ~/.claude/skills</code> shows them; a Hermes profile can load them.</li>
+<li>No secret-shaped string anywhere in the repo (<code>gitleaks</code> or equivalent).</li>
+</ol>
+<hr />
+<h2 id="rollout-and-rollback">Rollout and rollback</h2>
+<ul>
+<li>Install is additive only: new symlinks, new skill dirs, new manifests. <strong>Nothing is overwritten</strong>; existing <code>~/.local/bin</code> and <code>/opt/homebrew/bin</code> entries are left alone.</li>
+<li>Keep an uninstall path: one <code>make uninstall</code> that removes exactly the symlinks and skill dirs it created, recorded in an install manifest.</li>
+<li>If a harness rejects the plugin, that harness must degrade to "tools available by name, no skill" — never to "tools missing".</li>
+</ul>
+<h2 id="definition-of-done">Definition of done</h2>
+<p>Ricardo can open any of the four harnesses, say <em>"make me a 30-second vertical clip about X with captions"</em>, and get back an MP4 that <strong>passes <code>motion qc</code></strong> — with the same answer from all four, and no new spend.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
