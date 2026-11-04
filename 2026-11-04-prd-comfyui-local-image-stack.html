@@ -125,7 +125,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <body><main>
 
 <h1 id="prd--comfyui-local-image-stack-maio-fleet">PRD — ComfyUI Local Image Stack (Maio fleet)</h1>
-<p><strong>Version:</strong> 1.0 · <strong>Date:</strong> 2026-11-04 · <strong>Owner:</strong> Adrianna A (AI-stack family) · <strong>Approver:</strong> Ricardo (money, legal, external publication) <strong>Status:</strong> P0 delivered and verified on this Mac; P1 gated.</p>
+<p><strong>Version:</strong> 1.1 · <strong>Date:</strong> 2026-11-04 · <strong>Owner:</strong> Adrianna A (AI-stack family) · <strong>Approver:</strong> Ricardo (money, legal, external publication) <strong>Status:</strong> P0 delivered and verified on this Mac, including the cloud lane; P1 gated.</p>
 <hr />
 <h2 id="1-vision-and-problem">1. Vision and problem</h2>
 <p>Ricardo's words: <em>"comfy ui, please make sure it installed locally, full detailed plans and workflows and templates. I want it to be installed and working with hermes and deepseek harness and omp."</em></p>
@@ -198,6 +198,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h3 id="p0-6--output-and-observability">P0-6 — Output and observability</h3>
 <p>Images on AI-Drive under <code>Agent-Output/comfyui/images</code>; server, keepalive and launchd logs under <code>comfyui-ops/logs</code>; <code>comfy_outputs</code> lists recent files.</p>
 <p><strong>Acceptance:</strong> every render returns an absolute path that exists; logs rotate by file, not by deletion. <strong>Evidence:</strong> <code>render_00001..3_.png</code>, <code>img2img_00001_.png</code>, <code>upscale_00001_.png</code> on AI-Drive; <code>comfy_outputs</code> → 3 most recent.</p>
+<h3 id="p0-7--cloud-lane-chatgpt-image-models--magnific-on-the-plan-already-paid-for">P0-7 — Cloud lane: ChatGPT image models + Magnific, on the plan already paid for</h3>
+<p>Ricardo asked for ComfyUI to also reach <em>"ChatGPT image creator and magnific"</em>. ComfyUI 0.44 ships partner nodes for both (<code>comfy_api_nodes/nodes_openai.py</code>, <code>nodes_magnific.py</code>), but they authenticate with <code>api_key_comfy_org</code> — they spend Comfy.org credits, and there is no Comfy account on this Mac. Magnific's own catalog already carries the ChatGPT image models (<code>gpt-2</code>, <code>gpt-2-mini</code>), so one credential he already pays for serves both lanes, with no second vendor.</p>
+<p><strong>Built:</strong> <code>magnific_bridge.py</code> (stdlib MCP client for the loopback proxy <code>:8803</code>) and a custom node pack <code>ComfyUI-Maio-Cloud</code> under the <code>maio/cloud</code> category — <em>Generate (ChatGPT · Magnific)</em>, <em>Magnific Upscale</em>, <em>Models</em>. Four tools were added to the same server — <code>comfy_cloud_models</code>, <code>comfy_cloud_cost</code>, <code>comfy_cloud_generate</code>, <code>comfy_cloud_upscale</code> — so all three harnesses get the lane with no new config entry.</p>
+<p><strong>Cost, stated plainly:</strong> gpt-2 1:1 1k = 85 credits, gpt-2-mini = 40, creative 2× upscale of a 512 square = 90. The whole build moved the balance 452,575 → 452,315 (260 credits). <code>comfy_cloud_cost</code> estimates without spending; the local <code>comfy_generate</code> engine stays free.</p>
+<p><strong>Acceptance:</strong> a ComfyUI graph chains Generate → Upscale → SaveImage and writes a 2048×2048 PNG. <strong>Evidence:</strong> prompt <code>59b152fb-8a85-4d0d-b689-87e52d9adba0</code>, <code>status_str: success</code>, <code>maio_cloud/graph_00001_.png</code> — 2048×2048, 4.9 MB on AI-Drive.</p>
 <h3 id="p1-1--controlnet--lora-tooling-gate-next_lane--c-p079">P1-1 — ControlNet + LoRA tooling <em>(gate: <code>next_lane</code> → C, p=0.79)</em></h3>
 <p>Composition control (pose/depth/edge) and brand-style LoRA loading on the models already installed, ~2 GB. <strong>Acceptance:</strong> a ControlNet template renders with a reference image; a LoRA applies at a settable strength; both exposed as profiles, no new harness config.</p>
 <h3 id="p1-2--batch-and-seed-sweeps">P1-2 — Batch and seed sweeps</h3>
@@ -311,7 +316,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
   <!-- footer note -->
 
-<p><text x="40" y="490" font-size="10.5" fill="#8a93a0">One server, three harnesses, four templates: a new capability is a template file plus one config line. Magnific (266 hosted tools, :8803) sits beside this stack as the cloud lane.</text> </svg></p>
+<p><text x="40" y="490" font-size="10.5" fill="#8a93a0">One server, three harnesses, four templates. The cloud lane rides the same proxy: maio/cloud nodes and comfy_cloud_* tools put ChatGPT's image models (gpt-2, gpt-2-mini) and Magnific upscale inside this stack, on the plan already paid for.</text> </svg></p>
 <figcaption><strong>Figure 1 —</strong> The local image stack: three harnesses, one stdlib MCP server, one loopback engine, one canonical model store, one output root.</figcaption>
 </figure>
 
@@ -498,7 +503,13 @@ dsh dump-config    mcp-comfyui present in web, headless, superagent
 mcp acceptance     PASS (10 tools, render 14.6 s)
 upscale            512 → 2048 in 11.5 s
 img2img            denoise 0.75 in 10.6 s
-keepalive          killed server → recovered to 0.44.0 / mps</code></pre>
+keepalive          killed server → recovered to 0.44.0 / mps
+cloud models       51 slugs live, incl. gpt-2 and gpt-2-mini (ChatGPT image)
+cloud upload       512px PNG → creation fHRHH29CDY (proxyUploadUrl + finalize)
+cloud upscale      creative 2x → 1024×1024, 90 credits, local file
+cloud generate     gpt-2-mini 1:1 1k → 1024×1024 PNG, 40 credits
+comfy graph        Generate → Upscale → SaveImage → success, 2048×2048 (260 credits total)
+mcp tools          14 (10 local + 4 cloud) · omp sees 333 across 7 servers</code></pre>
 <hr />
 <h2 id="appendix-a--file-map">Appendix A — File map</h2>
 <table>
@@ -527,7 +538,19 @@ keepalive          killed server → recovered to 0.44.0 / mps</code></pre>
 </tr>
 <tr>
 <td><code>~/AI Hub/comfyui-ops/comfy_mcp.py</code></td>
-<td>the MCP server (10 tools)</td>
+<td>the MCP server (14 tools: 10 local + 4 cloud)</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/comfyui-ops/magnific_bridge.py</code></td>
+<td>Magnific MCP client (stdlib) shared by nodes + server</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/comfyui-ops/cloud-cache/</code></td>
+<td>cloud lane outputs (ChatGPT/Magnific renders)</td>
+</tr>
+<tr>
+<td><code>~/AI Hub/ComfyUI/custom_nodes/ComfyUI-Maio-Cloud/</code></td>
+<td><code>maio/cloud</code> nodes: Generate, Upscale, Models</td>
 </tr>
 <tr>
 <td><code>~/AI Hub/comfyui-ops/workflows/*.json</code></td>
