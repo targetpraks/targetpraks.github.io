@@ -127,6 +127,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h1 id="zoho-api-connection--zoho-cc-claude-code--codex">Zoho API connection — <code>zoho-cc</code> (Claude Code + Codex)</h1>
 <p><strong>One separate Zoho connection, shared by both coding CLIs.</strong> It has its own OAuth grant and its own refresh token, so revoking it kills Claude and Codex access and leaves every Hermes agent, the 25 MCP shards and the fleet's <code>zoho-all</code> lane untouched.</p>
 <p>Built 2026-11-04. Verified against live Zoho data, not assumed.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CC</span>[<span class="st">&quot;Claude Code</span><span class="sc">&lt;br/&gt;</span><span class="st">~/.claude.json&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">GW</span>[<span class="st">&quot;zoho-api gateway</span><span class="sc">&lt;br/&gt;</span><span class="st">stdio MCP · 4 tools&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CX</span>[<span class="st">&quot;Codex</span><span class="sc">&lt;br/&gt;</span><span class="st">~/.codex/config.toml&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">GW</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">GW</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;ZOHO_CC_REFRESH_TOKEN</span><span class="sc">&lt;br/&gt;</span><span class="st">(own grant)&quot;</span><span class="vs">|</span> <span class="dt">OA</span>[<span class="st">&quot;Zoho OAuth</span><span class="sc">&lt;br/&gt;</span><span class="st">accounts.zoho.com&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">OA</span> <span class="pp">--&gt;</span> <span class="dt">S</span>[<span class="st">&quot;CRM · Projects · WorkDrive · Sheet</span><span class="sc">&lt;br/&gt;</span><span class="st">Books · Desk · Calendar · Analytics …&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">AG</span>[<span class="st">&quot;Hermes agents</span><span class="sc">&lt;br/&gt;</span><span class="st">fleet lane&quot;</span>] <span class="pp">-.-&gt;</span><span class="vs">|</span><span class="st">&quot;ZOHO_ALL_REFRESH_TOKEN&quot;</span><span class="vs">|</span> <span class="dt">OA</span></span></code></pre></div>
 <hr />
 <h2 id="1-what-separate-means-here">1. What "separate" means here</h2>
 <table>
@@ -231,29 +237,29 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </table>
 <p>Service bases: <code>crm</code>, <code>projects</code>, <code>projects_rest</code>, <code>workdrive</code>, <code>sheet</code>, <code>books</code>, <code>invoice</code>, <code>inventory</code>, <code>expense</code>, <code>mail</code>, <code>calendar</code>, <code>desk</code>, <code>people</code>, <code>analytics</code>, <code>tables</code>, <code>creator</code>, <code>cliq</code>, <code>writer</code>, <code>sign</code>.</p>
 <p>CLI checks:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> ~/.local/bin/zoho_api_mcp.py <span class="at">--check</span>    <span class="co"># connection health, JSON</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> ~/.local/bin/zoho_api_mcp.py <span class="at">--scopes</span>   <span class="co"># granted scopes</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> ~/.local/bin/zoho_api_mcp.py <span class="at">--check</span>    <span class="co"># connection health, JSON</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> ~/.local/bin/zoho_api_mcp.py <span class="at">--scopes</span>   <span class="co"># granted scopes</span></span></code></pre></div>
 <h2 id="4-configuration--claude-code">4. Configuration — Claude Code</h2>
 <p><code>~/.claude.json</code>, scope <strong>user</strong> (all projects):</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mcpServers&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;zoho-api&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;stdio&quot;</span><span class="fu">,</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;/usr/bin/python3&quot;</span><span class="fu">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;args&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;/Users/ricardomaio/.local/bin/zoho_api_mcp.py&quot;</span><span class="ot">]</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mcpServers&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;zoho-api&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;stdio&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;command&quot;</span><span class="fu">:</span> <span class="st">&quot;/usr/bin/python3&quot;</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;args&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;/Users/ricardomaio/.local/bin/zoho_api_mcp.py&quot;</span><span class="ot">]</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <p>Added with the CLI, which is the only safe way — the Claude app rewrites <code>~/.claude.json</code> and silently drops hand-edited entries:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> mcp add zoho-api <span class="at">--scope</span> user <span class="at">--</span> /usr/bin/python3 /Users/ricardomaio/.local/bin/zoho_api_mcp.py</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> mcp add zoho-api <span class="at">--scope</span> user <span class="at">--</span> /usr/bin/python3 /Users/ricardomaio/.local/bin/zoho_api_mcp.py</span></code></pre></div>
 <p>Live status: <code>claude mcp get zoho-api</code> → <strong>Status: ✔ Connected</strong>.</p>
 <h2 id="5-configuration--codex">5. Configuration — Codex</h2>
 <p><code>~/.codex/config.toml</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode toml"><code class="sourceCode toml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[mcp_servers.zoho-api]</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">command</span> <span class="op">=</span> <span class="st">&quot;/usr/bin/python3&quot;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">args</span> <span class="op">=</span> <span class="op">[</span><span class="st">&quot;/Users/ricardomaio/.local/bin/zoho_api_mcp.py&quot;</span><span class="op">]</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode toml"><code class="sourceCode toml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[mcp_servers.zoho-api]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="dt">command</span> <span class="op">=</span> <span class="st">&quot;/usr/bin/python3&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="dt">args</span> <span class="op">=</span> <span class="op">[</span><span class="st">&quot;/Users/ricardomaio/.local/bin/zoho_api_mcp.py&quot;</span><span class="op">]</span></span></code></pre></div>
 <p>Added with the CLI for the same reason — the Codex app rewrites <code>config.toml</code> and dropped a hand-appended block within the hour:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">codex</span> mcp add zoho-api <span class="at">--</span> /usr/bin/python3 /Users/ricardomaio/.local/bin/zoho_api_mcp.py</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">codex</span> mcp add zoho-api <span class="at">--</span> /usr/bin/python3 /Users/ricardomaio/.local/bin/zoho_api_mcp.py</span></code></pre></div>
 <p>Live status: <code>codex mcp get zoho-api</code> → <strong>enabled: true, transport: stdio</strong>.</p>
 <h2 id="6-evidence-from-the-live-run">6. Evidence from the live run</h2>
 <p>Grant exchange, every service probed on the new token:</p>
@@ -271,9 +277,9 @@ Connect networks 200 · Sheet workbooks 200</code></pre>
 </ul>
 <h2 id="7-revoking-just-this-connection">7. Revoking just this connection</h2>
 <p>Console → <a href="https://api-console.zoho.com">api-console.zoho.com</a> → Self Client → the token issued 2026-11-04 for <em>"Claude Codex separate Zoho API connection"</em> → revoke. Then, on this machine:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-f</span> ~/.cache/zoho-cc/token.json</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> mcp remove zoho-api <span class="at">-s</span> user</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">codex</span> mcp remove zoho-api</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-f</span> ~/.cache/zoho-cc/token.json</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> mcp remove zoho-api <span class="at">-s</span> user</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">codex</span> mcp remove zoho-api</span></code></pre></div>
 <p>Agents keep working — they never use this token.</p>
 <h2 id="8-standing-rules-for-the-two-tools-using-it">8. Standing rules for the two tools using it</h2>
 <ul>
