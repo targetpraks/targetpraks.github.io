@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zoho MCP Rebuild</title>
+<style>:root{--paper:#faf7f2;--ink:#1c1a17;--muted:#6b6157;--rule:#d9d2c5;--gold:#b08d3f;--wash:#f2ece1;
+ --bad:#f6e3e0;--good:#e6efe4;--src:#e8eef5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+ font:16.5px/1.62 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:920px;margin:0 auto;padding:60px 30px 110px}
+.head{border-bottom:2px solid var(--ink);padding-bottom:26px;margin-bottom:34px}
+.kicker{font:11px/1.4 ui-sans-serif,-apple-system,sans-serif;text-transform:uppercase;
+ letter-spacing:.14em;color:var(--gold);margin:0 0 12px}
+h1{font-size:2.7rem;line-height:1.06;margin:0 0 .45rem;letter-spacing:-.025em;font-weight:600}
+.sub{color:var(--muted);font-size:1.1rem;margin:0;font-style:italic;max-width:44em}
+h2{font-size:1.34rem;margin:3rem 0 .8rem;padding-bottom:.42rem;border-bottom:1px solid var(--rule);
+ letter-spacing:-.01em}
+h3{font-size:1.06rem;margin:1.9rem 0 .5rem}
+p{margin:.75rem 0}
+ul,ol{padding-left:1.35rem}
+li{margin:.42rem 0}
+a{color:#7a5c16;text-decoration:none;border-bottom:1px solid rgba(176,141,63,.45)}
+a:hover{border-bottom-color:var(--gold);background:#fbf4e2}
+strong{font-weight:600}
+em{font-style:italic}
+hr{border:0;border-top:1px solid var(--rule);margin:2.6rem 0}
+.band{display:flex;flex-wrap:wrap;gap:1px;background:var(--rule);border:1px solid var(--rule);
+ margin:0 0 2.6rem}
+.band div{flex:1 1 150px;background:var(--wash);padding:16px 18px}
+.band b{display:block;font-size:1.7rem;line-height:1.1;letter-spacing:-.02em}
+.band span{display:block;font:10.5px/1.4 ui-sans-serif,-apple-system,sans-serif;text-transform:uppercase;
+ letter-spacing:.09em;color:var(--muted);margin-top:.4rem}
+table{width:100%;border-collapse:collapse;margin:1.3rem 0 1.8rem;font-size:.92rem;
+ display:block;overflow-x:auto;table-layout:auto}
+th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font:10.5px/1.4 ui-sans-serif,-apple-system,sans-serif;text-transform:uppercase;
+ letter-spacing:.08em;color:var(--muted);border-bottom:1.5px solid #c3baa8;background:#f6f1e6}
+tbody tr:hover{background:#f7f2e8}
+tbody td:first-child,thead th:first-child{white-space:nowrap}
+.callout{border:1px solid var(--gold);border-left:4px solid var(--gold);background:#fbf6ea;
+ padding:15px 21px;margin:1.9rem 0;border-radius:2px}
+.callout p{margin:.4rem 0}
+.callout p:first-child{font:10.5px/1.4 ui-sans-serif,-apple-system,sans-serif;text-transform:uppercase;
+ letter-spacing:.1em;color:#8a6c22}
+.fig{margin:2.1rem 0;padding:22px 20px;background:#f6f1e6;border:1px solid var(--rule);border-radius:2px}
+.fig figcaption{font:10.5px/1.5 ui-sans-serif,-apple-system,sans-serif;text-transform:uppercase;
+ letter-spacing:.08em;color:var(--muted);margin-bottom:18px}
+.fignum{color:var(--gold);font-weight:700;margin-right:.5rem}
+.lane{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:7px 0}
+.chip{font:12.5px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;padding:6px 11px;
+ border:1px solid var(--rule);border-radius:3px;background:#fff;white-space:nowrap}
+.chip.bad{background:var(--bad)}
+.chip.good{background:var(--good)}
+.chip.src{background:var(--src)}
+.chip.mute{background:#ece5d6;color:#4a423a}
+.chip.ink{background:var(--ink);color:#f6f1e6;border-color:var(--ink)}
+.sep{color:var(--muted);font-size:12px}
+.arrowdown{font:10.5px/1.4 ui-sans-serif,sans-serif;letter-spacing:.09em;text-transform:uppercase;
+ color:var(--muted);margin:10px 0 10px 3px}
+.figcap{font-size:.85rem;color:var(--muted);font-style:italic;margin:18px 0 0}
+.cols{display:flex;gap:16px;flex-wrap:wrap}
+.col{flex:1 1 210px}
+.col.mid{flex:1 1 235px}
+.colhead{font:10px/1.4 ui-sans-serif,sans-serif;text-transform:uppercase;letter-spacing:.11em;
+ color:var(--gold);margin-bottom:9px}
+.tiny{font-size:.76rem;color:var(--muted);margin:6px 0 0;line-height:1.45}
+code{font:.86em ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--wash);
+ padding:1.5px 5px;border-radius:2px;color:#4c4337}
+#s-TOC{background:var(--wash);border:1px solid var(--rule);padding:18px 24px;margin:2rem 0 1rem;
+ font:12.5px/1.95 ui-sans-serif,-apple-system,sans-serif}
+#s-TOC ul{list-style:none;padding-left:0;margin:0}
+#s-TOC>ul>li>ul{padding-left:1.1rem}
+#s-TOC::before{content:"Contents";display:block;font-size:10px;letter-spacing:.11em;
+ text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+@media(max-width:640px){.wrap{padding:34px 16px 70px}h1{font-size:2rem}h2{font-size:1.2rem}}
+@media print{body{background:#fff}.wrap{max-width:100%;padding:0}#s-TOC{break-after:page}}
+.lead{font-size:1.12rem;line-height:1.55;color:#3a332b;border-left:3px solid var(--gold);
+ padding:2px 0 2px 18px;margin:0 0 2rem;max-width:46em}
+.lead strong{font-weight:600;color:var(--ink)}
+</style>
+</head><body><div class="wrap">
+<header class="head">
+  <p class="kicker">Product requirements · Zoho MCP</p>
+  <h1>Zoho MCP Rebuild</h1>
+  <p class="sub">One server per Zoho app, every action exposed exactly once</p>
+</header>
+<p class="lead"><strong>A complete, deduplicated Zoho MCP fleet — one server per
+application, sharded where an app exceeds the 300-tool ceiling, with a
+manifest that proves coverage.</strong></p>
+<div class="band">
+  <div><b>22</b><span>servers in the console</span></div>
+  <div><b>5,566</b><span>tool slots</span></div>
+  <div><b>4,152</b><span>distinct tools</span></div>
+  <div><b>1,414</b><span>duplicate slots</span></div>
+  <div><b>41</b><span>app families mixed</span></div>
+</div>
+
+
+<nav id="s-TOC" role="doc-toc">
+<ul>
+<li><a href="#s-summary" id="s-toc-summary">Summary</a></li>
+<li><a href="#s-1-what-is-broken--measured-not-assumed"
+id="s-toc-1-what-is-broken--measured-not-assumed">1. What is broken —
+measured, not assumed</a></li>
+<li><a href="#s-2-what-all-zoho-applications-means"
+id="s-toc-2-what-all-zoho-applications-means">2. What "all Zoho
+applications" means</a></li>
+<li><a href="#s-3-target-architecture"
+id="s-toc-3-target-architecture">3. Target architecture</a></li>
+<li><a href="#s-4-build-stages-and-exit-tests"
+id="s-toc-4-build-stages-and-exit-tests">4. Build stages and exit
+tests</a></li>
+<li><a href="#s-5-verification--what-proof-looks-like"
+id="s-toc-5-verification--what-proof-looks-like">5. Verification — what
+proof looks like</a></li>
+<li><a href="#s-6-risks-and-the-answer-to-each"
+id="s-toc-6-risks-and-the-answer-to-each">6. Risks, and the answer to
+each</a></li>
+<li><a href="#s-7-what-i-need-from-you"
+id="s-toc-7-what-i-need-from-you">7. What I need from you</a></li>
+<li><a href="#s-evidence" id="s-toc-evidence">Evidence</a></li>
+<li><a href="#s-related" id="s-toc-related">Related</a></li>
+</ul>
+</nav>
+
+<h2 id="s-summary">Summary</h2>
+<p>The Zoho MCP console today holds 22 servers. Twenty of them answer,
+and between them they carry <strong>5,566 tool slots holding only 4,152
+distinct tools</strong> — 1,414 slots, a quarter of the fleet, are
+duplicates. Worse, they are not organised by application: the server
+named <code>zoho-calendar</code> contains Calendar, Show, Notebook,
+Survey, Forms, Assist, Meeting, Webinar, Lens, Bookings and Social, and
+<strong>zero tools that exist nowhere else</strong>. The server named
+<code>zoho-sign</code> is 90% other apps' tools.</p>
+<p>That is what a fill-to-the-cap build looks like. Eleven servers sit
+at exactly 285 tools, which is not a fact about Zoho's apps — it is the
+point where an automated fill stopped. So nobody currently knows how
+many actions Zoho People actually has, or whether Cliq is complete.</p>
+<p>This PRD replaces the fleet with a designed one: <strong>one
+application per server, no mixing, shards numbered when the app needs
+more than one, and a coverage ledger that names the server for every
+single tool.</strong> Sharding is not optional — Zoho Inventory alone
+measured <strong>394 distinct tools</strong> across the two servers that
+carry it, which proves a single app can exceed one server.</p>
+<div class="callout summary">
+<p><strong>The one-line version</strong></p>
+<p>We are not adding servers. We are building a manifest that proves
+every Zoho action in the org lives on exactly one server, and that
+nothing else is exposed.</p>
+</div>
+<h2 id="s-1-what-is-broken--measured-not-assumed">1. What is broken —
+measured, not assumed</h2>
+<p>I pulled <code>tools/list</code> from all twenty direct product
+endpoints on this Mac. The numbers below are the output, not an
+estimate.</p>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Servers created in the console</td>
+<td>22</td>
+</tr>
+<tr>
+<td>Servers with a live, answering endpoint</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Total tool slots across them</td>
+<td>5,566</td>
+</tr>
+<tr>
+<td>Distinct tool names</td>
+<td>4,152</td>
+</tr>
+<tr>
+<td>Duplicate slots (waste)</td>
+<td>1,414 (25.4%)</td>
+</tr>
+<tr>
+<td>Distinct Zoho app families present</td>
+<td>41</td>
+</tr>
+<tr>
+<td>Servers parked at exactly 285 tools</td>
+<td>11</td>
+</tr>
+<tr>
+<td>Largest single server</td>
+<td>289 (<code>zoho-tables</code>)</td>
+</tr>
+<tr>
+<td>Smallest single server</td>
+<td>179 (<code>zoho-crm</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Four failures, in order of damage.</p>
+<p><strong>Fail 1 — the servers are not per-application.</strong>
+<code>zoho-calendar</code> carries twelve different apps and no unique
+tool. <code>zoho-sign</code> carries thirteen apps; only 29 of its 285
+tools are actually Zoho Sign. An agent asking for "signing" lands on a
+server that is 90% noise, and the model has to discriminate 285 tools to
+find the 29 that matter.</p>
+<p><strong>Fail 2 — a quarter of the fleet is duplicated.</strong> The
+same tool sits on two or more servers 1,414 times. Two servers with
+different names can return different tool lists for the same call, so a
+"fix" applied to one looks broken from the other.</p>
+<p><strong>Fail 3 — nothing is complete.</strong> Eleven servers stop
+dead at 285. Across eleven different apps that is not a coincidence of
+catalogue sizes; it is a fill ceiling. Which means
+<code>zoho-people</code> at 285 is a slice of People, not People. You
+told me People has more than 300 tools — the fleet has no way to confirm
+or refute that today.</p>
+<p><strong>Fail 4 — one app demonstrably needs two servers
+already.</strong> Zoho Inventory measures 394 distinct tools across
+<code>zoho-inventory</code> and <code>zoho-procurement</code>. The 300
+cap is real and it bites. The console states it plainly: <em>"Only 300
+native actions can be configured per MCP server."</em></p>
+<p>And underneath all of it: <strong>the MetaMCP layer that fans these
+servers out to the agents is crash-looping right now</strong> —
+<code>password authentication failed for user "metamcp_user"</code>.
+Nothing reaches a profile namespace until that is repaired.</p>
+<figure class="fig">
+  <figcaption><span class="fignum">Figure 1</span> Today — 20 servers, a dozen apps each, a quarter of the tools duplicated</figcaption>
+  <div class="lane"><span class="chip bad">zoho-calendar</span><span class="sep">&nbsp;·&nbsp;</span><span class="chip mute">285 tools · 12 apps</span><span class="sep">&nbsp;·&nbsp;</span><span class="chip bad">0 unique</span></div>
+  <div class="lane"><span class="chip bad">zoho-sign</span><span class="sep">&nbsp;·&nbsp;</span><span class="chip mute">285 tools · 13 apps</span><span class="sep">&nbsp;·&nbsp;</span><span class="chip bad">29 unique</span></div>
+  <div class="lane"><span class="chip bad">zoho-people</span><span class="sep">&nbsp;·&nbsp;</span><span class="chip mute">285 tools</span><span class="sep">&nbsp;·&nbsp;</span><span class="chip bad">a slice, not the app</span></div>
+  <div class="arrowdown">↓ &nbsp;the same tool lands on two or more servers</div>
+  <div class="lane"><span class="chip bad">1,414 duplicate tool slots</span><span class="sep">&nbsp;in&nbsp;</span><span class="chip mute">25.4% of the fleet</span></div>
+  <div class="arrowdown">↓</div>
+  <div class="lane"><span class="chip src">the agent has to guess which server is the real one</span></div>
+  <p class="figcap">The 285 ceiling is where an automated fill stopped — not a fact about Zoho's apps.</p>
+</figure>
+
+<h2 id="s-2-what-all-zoho-applications-means">2. What "all Zoho
+applications" means</h2>
+<p>The authority is the console's own app picker plus the org's Zoho One
+plan — not a list I invent. Stage 1 enumerates it. What I measured today
+seeds it: <strong>41 app families</strong>, listed with the tool count
+we can currently see.</p>
+<table>
+<thead>
+<tr>
+<th>App family</th>
+<th>Distinct tools seen</th>
+<th>Shards at 300</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zoho Inventory</td>
+<td>394</td>
+<td>2</td>
+<td>proven to exceed one server</td>
+</tr>
+<tr>
+<td>Zoho Desk</td>
+<td>285</td>
+<td>1+</td>
+<td>at fill ceiling — true count unknown</td>
+</tr>
+<tr>
+<td>Zoho Cliq</td>
+<td>285</td>
+<td>1+</td>
+<td>at fill ceiling</td>
+</tr>
+<tr>
+<td>Zoho People</td>
+<td>285</td>
+<td>1+</td>
+<td>at fill ceiling — you expect 2</td>
+</tr>
+<tr>
+<td>Zoho Books</td>
+<td>284</td>
+<td>1+</td>
+<td>at fill ceiling</td>
+</tr>
+<tr>
+<td>Zoho Connect</td>
+<td>283</td>
+<td>1+</td>
+<td>at fill ceiling</td>
+</tr>
+<tr>
+<td>Zoho Invoice</td>
+<td>263</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>Zoho Projects</td>
+<td>198</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>Zoho Expense</td>
+<td>184</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>Zoho Mail</td>
+<td>181</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>Zoho CRM</td>
+<td>179</td>
+<td>1+</td>
+<td>prior fleet ran CRM-1…5</td>
+</tr>
+<tr>
+<td>Zoho WorkDrive</td>
+<td>156</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>Zoho Sheet</td>
+<td>105</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>Zoho Billing</td>
+<td>101</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>27 further families</td>
+<td>3–77 each</td>
+<td>1 each</td>
+<td>full table in <code>projection.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Two readings matter. First, <strong>42 is the floor, not the
+target</strong> — every app marked "at fill ceiling" will grow once its
+full catalogue is read. Second, the September fleet was already built
+this way, at <strong>96 servers</strong>, with shards named
+<code>Zoho-Books-1…5</code>, <code>Zoho-CRM-1…5</code>,
+<code>Zoho-Desk-1…3</code>, <code>Zoho-Inventory-1…4</code>,
+<code>Zoho-People-1…2</code>. The pattern is proven here; it was
+replaced by the current mixed build, which lost the organisation.</p>
+<p><strong>Scope boundary to settle:</strong> that September fleet also
+carried non-core suites — Site24x7, MDM, Endpoint Central, Log360 Cloud,
+Cloud Spend, Qntrl, SDP, Bigin, Catalyst. They are Zoho-adjacent, not
+Zoho One. They belong in this fleet or a sibling one, but not silently
+in both.</p>
+<h2 id="s-3-target-architecture">3. Target architecture</h2>
+<p><strong>Rule 1 — one application per server.</strong> A server
+carries its own app's tools and nothing else. Name matches the app:
+<code>zoho-people</code>, <code>zoho-books</code>.</p>
+<p><strong>Rule 2 — shard by function, never by alphabet.</strong> When
+an app exceeds 300 tools it gets <code>-2</code>, <code>-3</code>. The
+split is by functional cluster so that a task's tools travel together:
+for People, shard one carries core HR (employees, departments,
+designations, org structure) and shard two carries time and talent
+(attendance, leave, shifts, recruitment, performance, benefits). An
+alphabetical split puts <code>getEmployee</code> and
+<code>updateEmployee</code> on different servers — that is how a rebuild
+fails in a month.</p>
+<p><strong>Rule 3 — an app's shard count comes from its measured
+catalogue</strong>, <code>ceil(tools / 300)</code>, then adjusted by
+hand so no shard is at 299 with a cluster split across the line.</p>
+<p><strong>Rule 4 — the coverage ledger is the product.</strong> A
+generated <code>zoho-mcp-manifest.json</code> maps every tool name to
+exactly one server, with the build timestamp and a hash. It is how we
+prove no duplicates and no gaps, and how a future agent finds a tool
+without guessing a shard. Regenerating it is a cheap daily check.</p>
+<p><strong>Rule 5 — auth via Connection, not per-user consent.</strong>
+Authorization on Demand means every user consents per app, and each
+re-consent burns one of the twenty refresh tokens a client may hold per
+user. Authorization via Connection shares the Super Admin's grant, and
+the documented position is that there is no threshold on how many MCP
+servers may be created.</p>
+<p><strong>Rule 6 — read by default, write by allowlist.</strong>
+Attaching a server to a MetaMCP namespace activates <em>every</em> tool
+on it, including delete, send, share and sign. Every namespace gets a
+lockdown pass after attach; write tools are enabled per role,
+deliberately, by name.</p>
+<figure class="fig">
+  <figcaption><span class="fignum">Figure 2</span> Target — one app per server, sharded by function, proved by a ledger</figcaption>
+  <div class="cols">
+    <div class="col">
+      <div class="colhead">Servers</div>
+      <div class="lane"><span class="chip good">zoho-people</span><span class="chip mute">core HR</span></div>
+      <div class="lane"><span class="chip good">zoho-people-2</span><span class="chip mute">time + talent</span></div>
+      <div class="lane"><span class="chip good">zoho-books</span><span class="chip mute">whole app</span></div>
+      <div class="lane"><span class="chip good">zoho-inventory</span><span class="chip mute">stock</span></div>
+      <div class="lane"><span class="chip good">zoho-inventory-2</span><span class="chip mute">orders + procurement</span></div>
+    </div>
+    <div class="col mid">
+      <div class="colhead">Ledger</div>
+      <div class="lane"><span class="chip src">zoho-mcp-manifest.json</span></div>
+      <p class="tiny">every tool → exactly one server, hashed, regenerated on demand</p>
+    </div>
+    <div class="col">
+      <div class="colhead">Agents</div>
+      <div class="lane"><span class="chip ink">MetaMCP namespace</span></div>
+      <div class="lane"><span class="chip mute">read-only union</span></div>
+      <div class="lane"><span class="chip bad">write by allowlist</span></div>
+    </div>
+  </div>
+  <p class="figcap">The ledger is the product: it proves coverage and tells any agent where a tool lives.</p>
+</figure>
+
+<h2 id="s-4-build-stages-and-exit-tests">4. Build stages and exit
+tests</h2>
+<p>No calendar. Each stage ends on a boolean, and the next door does not
+open until it is true.</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Work</th>
+<th>Exit condition (boolean)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 · Repair</td>
+<td>Fix the MetaMCP Postgres auth mismatch; bring the container up;
+confirm the stack stays up</td>
+<td><code>metamcp</code> container <code>Up</code> without restarts for
+10 minutes <strong>and</strong> a <code>tools/list</code> through
+<code>metamcp/batman/mcp</code> returns 200</td>
+</tr>
+<tr>
+<td>1 · Discover</td>
+<td>Logged-in console session; enumerate every app in the plan and every
+tool in each, into <code>catalogue.json</code></td>
+<td>Every in-scope app has a count &gt; 0, the file is saved, and each
+count is read from the console — not inferred</td>
+</tr>
+<tr>
+<td>2 · Plan</td>
+<td>Compute shards from the catalogue with the functional-cluster rule;
+generate names; you approve count and names</td>
+<td>Plan covers every catalogue tool exactly once; you have said go</td>
+</tr>
+<tr>
+<td>3 · Build</td>
+<td>Create each server, add its tools, set auth via Connection, complete
+consent, record its URL</td>
+<td>For every server: <code>tools/list</code> count equals its plan
+count <strong>and</strong> one real <code>tools/call</code>
+succeeds</td>
+</tr>
+<tr>
+<td>4 · Prove</td>
+<td>Regenerate the manifest from the live endpoints and diff it against
+the catalogue</td>
+<td>Zero tools on two servers; union equals catalogue; both diffs
+empty</td>
+</tr>
+<tr>
+<td>5 · Wire</td>
+<td>Attach servers to namespaces, lockdown each, set write allowlists
+per role</td>
+<td>Each profile's namespace exposes exactly its expected read set, and
+a blocked write returns an error rather than succeeding</td>
+</tr>
+<tr>
+<td>6 · Retire</td>
+<td>Point every config at the new URLs; disable the 22 legacy
+servers</td>
+<td>No config or skill references a legacy URL; you have signed the
+disable list</td>
+</tr>
+<tr>
+<td>7 · Handover</td>
+<td>Skill update, secrets registry, runbook, manifest check as a cron
+job</td>
+<td>A fresh agent can find any tool from the manifest alone, with no
+console access</td>
+</tr>
+</tbody>
+</table>
+<p>Stage 0 is deliberately first and cheap: while MetaMCP is down, every
+downstream proof is unobservable.</p>
+<h2 id="s-5-verification--what-proof-looks-like">5. Verification — what
+proof looks like</h2>
+<p>Four checks, all of them mechanical, all of them run before I say a
+stage is done.</p>
+<ol type="1">
+<li><strong>Count match.</strong> For each server,
+<code>tools/list</code> length equals the shard's planned length. A
+short server is a failed build, not a rounding error.</li>
+<li><strong>A real call per shard.</strong> The console showing
+"Authorized" is not proof — the fleet already learned that lesson: a
+green server can fail every call. One genuine <code>tools/call</code>
+per shard, with the response recorded.</li>
+<li><strong>Manifest diff.</strong> Union of all servers equals the
+catalogue, with no overlap. Two empty diffs, or the build is not
+finished.</li>
+<li><strong>Namespace audit.</strong> Per profile: count the tools the
+namespace actually exposes, and confirm the write set is empty except
+where a role was granted one by name.</li>
+</ol>
+<h2 id="s-6-risks-and-the-answer-to-each">6. Risks, and the answer to
+each</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>What it does</th>
+<th>Answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Consent rate limiting</td>
+<td>Console refuses consent for 15–25 minutes after a burst</td>
+<td>Pace the build; batch consent, then verify in a pause</td>
+</tr>
+<tr>
+<td>20 refresh tokens per client per user</td>
+<td>Re-consenting rotates grants and can invalidate a live server</td>
+<td>Authorization via Connection, Super Admin grant shared once</td>
+</tr>
+<tr>
+<td>URL rotates on auth switch</td>
+<td>Any stored URL silently starts returning
+<code>Invalid API Key</code></td>
+<td>Write the new URL into the ledger the moment it rotates; never
+hand-copy</td>
+</tr>
+<tr>
+<td>Stale grant</td>
+<td>Server reads "via Connection" and still refuses calls</td>
+<td>Toggle via Connection → On Demand → via Connection to force a fresh
+grant</td>
+</tr>
+<tr>
+<td>Write tools auto-activate</td>
+<td>Attaching a server exposes delete / send / sign / share</td>
+<td>Lockdown pass on every attach; write allowlist by name, per
+role</td>
+</tr>
+<tr>
+<td>Plan gating</td>
+<td>Some suites cannot be granted at all — Zoho Verticals failed
+outright</td>
+<td>Record as out of scope with the console's own error, do not fight
+it</td>
+</tr>
+<tr>
+<td>300-tool cap</td>
+<td>An app's catalogue can exceed one server</td>
+<td>Shard by function; the cap is designed around, not worked
+around</td>
+</tr>
+<tr>
+<td>Legacy cutover</td>
+<td>Old and new fleets answering at once confuses agents</td>
+<td>Retire only after Stage 4 passes; disabling is your signature, not
+mine</td>
+</tr>
+</tbody>
+</table>
+<h2 id="s-7-what-i-need-from-you">7. What I need from you</h2>
+<p>Five decisions. Four have a recommendation; I need a yes or a
+change.</p>
+<ol type="1">
+<li><strong>Scope.</strong> All apps in the Zoho One plan, discovered in
+Stage 1 — or business-critical first? <em>Recommendation: all, in
+dependency order, because a partial fleet means a second cutover
+later.</em></li>
+<li><strong>Write access.</strong> Read-only namespaces by default, with
+write tools granted per role by name — or no write tools at all in this
+rebuild? <em>Recommendation: default read-only, plus an explicit
+allowlist for the seats that already write today.</em></li>
+<li><strong>Legacy servers.</strong> After Stage 4 passes, disable the
+22 legacy servers (not delete). Needs your sign. <em>Recommendation:
+disable, keep for 30 days of audit trail.</em></li>
+<li><strong>Console session.</strong> I hit the login wall. Log into
+<code>mcp.zoho.com</code> in the browser window I have open, or tell me
+which profile already holds a live session, and Stage 1 starts
+immediately.</li>
+<li><strong>The adjacent suites.</strong> Site24x7, MDM, Endpoint
+Central, Log360, Cloud Spend, Qntrl, SDP, Bigin, Catalyst — same fleet,
+or a separate one? <em>Recommendation: separate fleet, same pattern;
+they are not Zoho One and they will triple the server count.</em></li>
+</ol>
+<h2 id="s-evidence">Evidence</h2>
+<p>Everything numeric above traces to these, produced on this Mac
+today.</p>
+<ul>
+<li><strong>Endpoint inventory</strong> — <code>tools/list</code>
+against all twenty direct product endpoints; per-server tool names,
+counts, pagination and app prefixes:
+<code>AI-Drive/Agent-Output/batman/zoho-mcp-rebuild/inventory.json</code></li>
+<li><strong>Shard projection</strong> — per-app distinct counts and
+shard floor computed from the inventory:
+<code>AI-Drive/Agent-Output/batman/zoho-mcp-rebuild/projection.json</code></li>
+<li><strong>Prior fleet state</strong> — 96 per-app servers, shard
+naming, the two auth traps, the "Authorized lies" finding: <a
+href="file:///Volumes/Hiksemi%201TB/AI-Drive/AI-Space/Research/Zoho-MCP/Zoho-MCP-Auth-Switch-HANDOVER.md">Zoho
+MCP auth-switch handover</a></li>
+<li><strong>Zoho OAuth token limits</strong> — 20 refresh tokens per
+client per user, 10 access tokens per refresh token: <a
+href="https://www.zoho.com/developer/oauth/token-limits.html">token
+limits</a></li>
+<li><strong>Zoho MCP authorisation model</strong> — via Connection
+shares the Super Admin's grant; no threshold on server count: <a
+href="https://help.zoho.com/portal/en/kb/mcp">Zoho MCP help</a> · <a
+href="https://www.zoho.com/mcp/">Zoho MCP product</a></li>
+<li><strong>300-action ceiling</strong> — console message on the Tools
+page: <em>"Only 300 native actions can be configured per MCP
+server"</em> (screenshot, 2026-11-04)</li>
+<li><strong>MetaMCP outage</strong> — <code>docker logs metamcp</code>:
+<code>password authentication failed for user "metamcp_user"</code>,
+migration abort at
+<code>CREATE SCHEMA IF NOT EXISTS "drizzle"</code></li>
+<li><strong>Protocol</strong> — <a
+href="https://modelcontextprotocol.io/specification/2025-03-26">MCP
+specification 2025-03-26</a> · <a
+href="https://github.com/metatool-ai/metamcp">MetaMCP</a></li>
+</ul>
+<h2 id="s-related">Related</h2>
+<ul>
+<li>Skill <code>zoho-api-access</code> — direct endpoint calling, the
+auth model that differs per route</li>
+<li>Skill <code>metamcp-admin</code> — namespace map, the
+attach-then-lockdown rule, <code>mm_lockdown.py</code></li>
+<li>Skill <code>infinity-briefs-dashboard</code> — which Zoho tools the
+work briefs actually depend on</li>
+<li>Prior research:
+<code>AI-Drive/AI-Space/Research/Zoho-MCP/zoho_mcp_research/FINDINGS.md</code></li>
+</ul>
+
+</div></body></html>
