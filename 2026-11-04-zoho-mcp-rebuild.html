@@ -423,17 +423,56 @@ generated <code>zoho-mcp-manifest.json</code> maps every tool name to
 exactly one server, with the build timestamp and a hash. It is how we
 prove no duplicates and no gaps, and how a future agent finds a tool
 without guessing a shard. Regenerating it is a cheap daily check.</p>
-<p><strong>Rule 5 — auth via Connection, not per-user consent.</strong>
-Authorization on Demand means every user consents per app, and each
-re-consent burns one of the twenty refresh tokens a client may hold per
-user. Authorization via Connection shares the Super Admin's grant, and
-the documented position is that there is no threshold on how many MCP
-servers may be created.</p>
+<p><strong>Rule 5 — every server is authorized via Connection, and
+<em>completed</em>, not just toggled.</strong> Authorization on Demand
+means every user consents per app, and each re-consent burns one of the
+twenty refresh tokens a client may hold per user. Authorization via
+Connection shares the Super Admin's grant, and there is no documented
+threshold on how many servers may be created. Per server, in this
+order:</p>
+<ol type="1">
+<li>Open the server → <strong>Connection</strong> in the left rail →
+<strong>Change</strong> beside <em>Configure Authorization
+Type</em>.</li>
+<li>Select <strong>Authorization via Connection</strong> and save. The
+section now reads <code>Enabled</code>.</li>
+<li>The <strong>Authorized Tools</strong> table appears with
+<code>Native Connection</code> · Authorized By <code>–</code> · Service
+Name <code>–</code> · Status <strong>Not yet connected</strong> in red.
+<strong>This is the trap: the toggle is on and the server is still
+unusable.</strong></li>
+<li>Complete that connection until the row reports connected and the
+authorizer is named. <code>tools/list</code> answers without it; every
+<code>tools/call</code> fails.</li>
+<li>Only then copy the URL from <strong>Connect</strong> — it rotates
+when auth changes, so it is written into the ledger at the moment it is
+read, never hand-carried.</li>
+</ol>
+<p>A server that fails step 4 is not built, whatever the Tools tab says.
+This is the same class of failure as the September fleet's "Authorized"
+lie, one layer deeper.</p>
 <p><strong>Rule 6 — read by default, write by allowlist.</strong>
 Attaching a server to a MetaMCP namespace activates <em>every</em> tool
 on it, including delete, send, share and sign. Every namespace gets a
 lockdown pass after attach; write tools are enabled per role,
 deliberately, by name.</p>
+<p><strong>Rule 7 — every client gets the same recipe, recorded
+once.</strong> The console's <strong>Connect</strong> tab is the single
+source for how a client attaches: the server URL, transport <strong>HTTP
+/ Streamable HTTP</strong>, and the JSON block</p>
+<pre class="json"><code>{ &quot;mcpServers&quot;: { &quot;ZohoMCP&quot;: { &quot;command&quot;: &quot;npx&quot;,
+  &quot;args&quot;: [&quot;mcp-remote&quot;, &quot;https://&lt;server&gt;-&lt;client-id&gt;.zohomcp.com/mcp/&lt;api-key&gt;/message&quot;,
+           &quot;--transport&quot;, &quot;http-only&quot;] } } }</code></pre>
+<p>Claude, Cursor, Devin Desktop and VS Code each have a tab there;
+anything else uses the same URL with transport HTTP. The URL
+<strong>is</strong> a password — it triggers tools against the org — so
+it never goes into a note, a ticket, chat, git or this PRD. The registry
+is <code>~/.config/maio-stack/secrets.env</code>
+(<code>ZOHO_MCP_&lt;PRODUCT&gt;_URL</code>), and the Apple note
+<code>Zoho MCP — client connection details</code> holds the recipe with
+the key masked. <strong>Regenerate API Key</strong> invalidates every
+client holding the old URL, so regeneration is a fleet event, not a
+per-server convenience.</p>
 <figure class="fig">
   <figcaption><span class="fignum">Figure 2</span> Target — one app per server, sharded by function, proved by a ledger</figcaption>
   <div class="cols">
@@ -498,11 +537,12 @@ generate names; you approve count and names</td>
 </tr>
 <tr>
 <td>3 · Build</td>
-<td>Create each server, add its tools, set auth via Connection, complete
-consent, record its URL</td>
-<td>For every server: <code>tools/list</code> count equals its plan
-count <strong>and</strong> one real <code>tools/call</code>
-succeeds</td>
+<td>Create each server, add its tools, set <strong>Authorization via
+Connection</strong>, complete the Native Connection (not just the
+toggle), copy its URL from Connect</td>
+<td>For every server: the Connection row reads connected with an
+authorizer named, <code>tools/list</code> count equals its plan count,
+<strong>and</strong> one real <code>tools/call</code> succeeds</td>
 </tr>
 <tr>
 <td>4 · Prove</td>
@@ -551,6 +591,11 @@ per shard, with the response recorded.</li>
 <li><strong>Manifest diff.</strong> Union of all servers equals the
 catalogue, with no overlap. Two empty diffs, or the build is not
 finished.</li>
+<li><strong>Connection audit.</strong> Per server, the Authorized Tools
+row reads connected with an authorizer named. Authorization via
+Connection switched to <code>Enabled</code> while the row still says
+<strong>Not yet connected</strong> is the fleet's most expensive silent
+failure: <code>tools/list</code> passes, every real call fails.</li>
 <li><strong>Namespace audit.</strong> Per profile: count the tools the
 namespace actually exposes, and confirm the write set is empty except
 where a role was granted one by name.</li>
@@ -570,6 +615,28 @@ each</h2>
 <td>Consent rate limiting</td>
 <td>Console refuses consent for 15–25 minutes after a burst</td>
 <td>Pace the build; batch consent, then verify in a pause</td>
+</tr>
+<tr>
+<td>Toggle on, connection not made</td>
+<td><code>Authorization via Connection</code> reads <code>Enabled</code>
+while the row says <strong>Not yet connected</strong>; every call fails
+and the Tools tab still looks healthy</td>
+<td>Complete the Native Connection per server and audit the row; a
+server with a red row is unbuilt</td>
+</tr>
+<tr>
+<td>Client URL treated as documentation</td>
+<td>The server URL carries the API key; pasting it into a note, ticket
+or repo hands over the org's tools</td>
+<td>Note holds the recipe with the key masked; the value lives only in
+<code>secrets.env</code></td>
+</tr>
+<tr>
+<td>Key regeneration</td>
+<td><strong>Regenerate API Key</strong> silently breaks every attached
+client</td>
+<td>Treat as a fleet event: rotate, then rewrite every registry entry
+and re-verify one call per server</td>
 </tr>
 <tr>
 <td>20 refresh tokens per client per user</td>
