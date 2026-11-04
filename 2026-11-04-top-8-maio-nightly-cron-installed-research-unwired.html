@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Top 8 Maio — nightly refresh cron: installed, proven, and one defect</title>
+<style>
+:root{--bg:#0a0b10;--panel:#12141c;--ink:#e8eaf2;--dim:#8b90a6;--line:#232736;--good:#3ddc97;--bad:#ff5c7a;--warn:#ffb347;--accent:#7c5cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 ui-sans-serif,-apple-system,"SF Pro Text",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:56px 28px 96px}
+h1{font-size:clamp(30px,4.4vw,46px);line-height:1.1;letter-spacing:-.03em;margin:0 0 16px;font-weight:760}
+h2{font-size:22px;letter-spacing:-.02em;margin:56px 0 14px;padding-top:22px;border-top:1px solid var(--line);font-weight:700}
+h3{font-size:16px;letter-spacing:.02em;text-transform:uppercase;color:var(--dim);margin:32px 0 10px;font-weight:650}
+p{margin:0 0 16px;color:#c3c7d6}
+.lede{font-size:19px;color:var(--ink)}
+code{font:13.5px/1.5 ui-monospace,"SF Mono",Menlo,monospace;background:#1b1e2a;padding:2px 6px;border-radius:5px;color:#d8dcf0}
+pre{background:#0e1017;border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:0 0 20px}
+pre code{background:none;padding:0;font-size:13px}
+.verdict{display:flex;gap:14px;align-items:flex-start;background:linear-gradient(135deg,#151a2e,#12141c);border:1px solid var(--line);border-left:3px solid var(--good);border-radius:10px;padding:20px 22px;margin:0 0 12px}
+.verdict.warn{border-left-color:var(--warn)}
+.verdict .k{font-weight:700;color:var(--good);white-space:nowrap}
+.verdict.warn .k{color:var(--warn)}
+table{width:100%;border-collapse:collapse;margin:0 0 20px;font-size:14.5px}
+th{text-align:left;color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.07em;padding:0 10px 8px;border-bottom:1px solid var(--line)}
+td{padding:9px 10px;border-bottom:1px solid #1a1d29}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:ui-monospace,Menlo,monospace;font-size:13.5px}
+td.cat{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;color:#dfe3f2}
+.good{color:var(--good)} .bad{color:var(--bad)}
+tfoot td{border-top:1px solid var(--line);border-bottom:none;font-weight:700;color:var(--ink)}
+ul{margin:0 0 18px;padding-left:22px;color:#c3c7d6} li{margin:0 0 8px}
+.meta{color:var(--dim);font-size:13.5px;margin:0 0 40px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:650;letter-spacing:.02em}
+.pill.ok{background:rgba(61,220,151,.13);color:var(--good)}
+.pill.bad{background:rgba(255,92,122,.13);color:var(--bad)}
+.pill.warn{background:rgba(255,179,71,.13);color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:0 0 24px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card .n{font-size:28px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.card .l{font-size:12.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+a{color:#9d8bff}
+</style></head><body><div class="wrap">
+
+<h1>Top 8 Maio<br>the nightly cycle is live — research is not</h1>
+<p class="meta">Test 2 of 3 · Adrianna (AI Space) · 2026-11-04 14:33Z · repo <code>apps/top8</code> in <code>maio-os</code> @ <code>d304b61</code> (+ local work)</p>
+
+<p class="lede">The Top 8 cron now exists, fires, and republishes. But "research, update decisions, rescore all categories" was only true of the last two: <strong>the research stage has no worker wired to it</strong>, so it honestly logs <code>skipped</code> every night and the cadence clock never advances.</p>
+
+<h2>The cron, as installed</h2>
+<div class="grid">
+<div class="card"><div class="n">04:10</div><div class="l">SAST daily</div></div>
+<div class="card"><div class="n">18</div><div class="l">categories linted</div></div>
+<div class="card"><div class="n">11</div><div class="l">editions republished</div></div>
+<div class="card"><div class="n">0</div><div class="l">consistency drift</div></div>
+</div>
+
+<p><code>com.maio.top8-refresh</code> → <code>~/.config/maio-stack/bin/top8-refresh.sh</code> → <code>node tools/ops/refresh.mjs --now &lt;stamp&gt;</code>. One firing runs <strong>research → lint → score → publish → build</strong> per category, then rebuilds the single site artifact. Every stage exit writes one row to <code>data/ops/runlog.jsonl</code>, which is the site's only source for "when did this last run".</p>
+
+<h3>Proof it ran — first firing, 2026-11-04T14:30:11Z</h3>
+<table><thead><tr><th>Stage</th><th style="text-align:right">Rows</th><th>Meaning</th></tr></thead><tbody>
+<tr><td class="cat">lint</td><td class="num good">18 ok</td><td>all 18 categories accepted every evidence record</td></tr>
+<tr><td class="cat">score</td><td class="num">11 ok · 7 skipped</td><td>skipped = <code>inputs_hash</code> unchanged, so nothing a reader would see</td></tr>
+<tr><td class="cat">publish</td><td class="num">11 ok · 7 skipped</td><td>11 new revisions, atomic</td></tr>
+<tr><td class="cat">build</td><td class="num good">1 ok</td><td>209 pages, 31 sections, 17 computed</td></tr>
+<tr><td class="cat">research</td><td class="num bad">12 skipped</td><td><strong>no worker configured</strong> — the gap below</td></tr>
+</tbody></table>
+
+<p>Second firing at 14:33Z correctly republished <strong>nothing</strong> — inputs unchanged, so <code>revision</code> does not churn on an idle night. That is the engine behaving as specified, not a no-op bug. <code>launchctl print</code> shows the job registered with its 04:10 calendar trigger and <code>last exit code 0</code>.</p>
+
+<h2>The defect: the research queue is 99.9% noise</h2>
+<p>When research is due, the cycle writes a work queue to <code>data/ops/sweep/&lt;category&gt;.json</code> for a research worker to pick up. That queue is built by walking the <strong>entire shared candidate registry</strong> (174 products) for every category, rather than only the products that belong to that category.</p>
+
+<div class="verdict warn"><span class="k">2.3% relevant</span><span>Of the 4,211 queued research cells across the 5 due categories, <strong>97 are real</strong>. The other 4,114 ask a researcher for the heat-up time of a running shoe and the price check of an AI coding agent.</span></div>
+
+<table><thead><tr><th>Category</th><th style="text-align:right">Queued</th><th style="text-align:right">Relevant</th><th style="text-align:right">Phantom</th><th style="text-align:right">Real pool</th></tr></thead>
+<tbody><tr><td class='cat'>ai-coding-agents</td><td class='num'>988</td><td class='num good'>4</td><td class='num bad'>984</td><td class='num'>10</td></tr>
+<tr><td class='cat'>espresso-machines</td><td class='num'>992</td><td class='num good'>8</td><td class='num bad'>984</td><td class='num'>10</td></tr>
+<tr><td class='cat'>olive-oil</td><td class='num'>696</td><td class='num good'>40</td><td class='num bad'>656</td><td class='num'>10</td></tr>
+<tr><td class='cat'>oysters</td><td class='num'>665</td><td class='num good'>5</td><td class='num bad'>660</td><td class='num'>9</td></tr>
+<tr><td class='cat'>tableware</td><td class='num'>870</td><td class='num good'>40</td><td class='num bad'>830</td><td class='num'>8</td></tr></tbody>
+<tfoot><tr><td>Total (5 due)</td><td class="num">4,211</td><td class="num good">97</td><td class="num bad">4,114</td><td></td></tr></tfoot></table>
+
+<p>Concretely, the espresso-machines queue opens with <code>adidas-adizero-boston-13</code> against criterion <code>heat_up</code> with a 180-day TTL — a running shoe being asked to brew. The registry has no category field at all (<code>data/candidates.yml</code> carries only <code>id, name, brand, price, currency, links, suppliers, price_checked</code>), so the sweep has no honest way to scope itself today.</p>
+
+<p>The six shoes categories show <strong>0 relevant</strong> only because their products carry no evidence under a separate list directory — the pool is real but the join misses it. Either way the queue is unusable as written.</p>
+
+<div class="verdict"><span class="k">Honest by design</span><span>None of this silently corrupts a ranking. Research logs <code>skipped</code>, the cadence clock does not advance, and the sweep file names the queued work rather than dropping it. The failure is that a worker wired to this queue would burn real money researching 4,114 wrong cells.</span></div>
+
+<h2>What I changed</h2>
+<ul>
+<li><strong>Installed the scheduler.</strong> <code>com.maio.top8-refresh.plist</code> copied to <code>~/Library/LaunchAgents</code> and bootstrapped. It was committed in the repo but had never been installed — <code>launchctl print</code> returned <em>Could not find service</em> and there was no log file at all before today.</li>
+<li><strong>Fixed the install instructions in both places that carried them.</strong> They said <code>ln -sf</code>, which <em>fails</em> on this machine: a symlink into <code>/Volumes/Hiksemi 1TB</code> bootstraps as <code>Bootstrap failed: 5: Input/output error</code> (launchd will not read a plist across that TCC boundary). Now documented and used as <code>cp</code>, with the reason written down.</li>
+</ul>
+
+<h2>What still needs your call</h2>
+<ol>
+<li><strong>Wire a research worker</strong> (<code>TOP8_RESEARCH_WORKER</code>) — but only <em>after</em> the sweep is scoped, or it researches 4,114 phantom cells a night. The contract is <code>$WORKER --category &lt;slug&gt; --now &lt;ISO&gt; --sweep &lt;path&gt;</code>, exit 0 = evidence authored and lint-clean. Nothing on the machine accepts that flag today.</li>
+<li><strong>Scope the sweep.</strong> Cheapest correct fix: add a <code>category</code> (or <code>lists</code>) key to each registry entry and filter in <code>tools/pipeline/sweep-plan.mjs</code>. It is a 3-line filter, but it touches the shared append-only registry, so I did not do it unasked.</li>
+<li><strong>5 <code>check-why</code> failures</strong> (arithmetic reconciliation, ±0.05 rounding) reproduce on a clean <code>git archive HEAD</code> checkout with no local changes — pre-existing, not from this work. Separate fix.</li>
+</ol>
+
+<h3>Verified green this pass</h3>
+<table><thead><tr><th>Check</th><th>Result</th></tr></thead><tbody>
+<tr><td><code>node --test</code></td><td><span class="pill ok">141 / 141 pass</span></td></tr>
+<tr><td><code>consistency.mjs</code></td><td><span class="pill ok">0 drift</span> was 11 before the refresh</td></tr>
+<tr><td><code>top8rec.py verify</code></td><td><span class="pill ok">815 ok, 0 mismatched</span></td></tr>
+<tr><td><code>check-assets.mjs</code></td><td><span class="pill ok">all checks passed</span></td></tr>
+<tr><td><code>check-site.mjs</code></td><td><span class="pill ok">209 pages, 17,544 links resolve</span></td></tr>
+<tr><td><code>check-why.mjs</code></td><td><span class="pill bad">5 / 2316 FAILED</span> pre-existing</td></tr>
+</tbody></table>
+
+<h3>Reproduce</h3>
+<pre><code>cd "/Volumes/Hiksemi 1TB/DevMini/maio-os/apps/top8"
+
+# the scheduler is installed and pointing at the wrapper
+launchctl print gui/$(id -u)/com.maio.top8-refresh | head
+
+# fire it by hand (takes ~45s)
+launchctl kickstart -k gui/$(id -u)/com.maio.top8-refresh
+tail -30 ~/.config/maio-stack/logs/top8-refresh.log
+
+# see what it decided, without writing anything
+node tools/ops/refresh.mjs --now "$(date -u +%FT%TZ)" --dry-run
+
+# prove the research queue is unscoped
+node tools/pipeline/sweep-plan.mjs --now "$(date -u +%FT%TZ)" --category espresso-machines \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d['due_now']),'queued'); print(d['due_now'][0])"</code></pre>
+
+<p class="meta" style="margin-top:40px;border-top:1px solid var(--line);padding-top:22px;border-bottom:none">Live magazine: <a href="http://127.0.0.1:9111/top8/">127.0.0.1:9111/top8/</a> · status page <a href="http://127.0.0.1:9111/top8/status.html">/status.html</a> · work log in <code>~/.buzz/WORK_LOGS/</code></p>
+
+</div></body></html>
