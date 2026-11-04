@@ -210,16 +210,111 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="4-application-structure">4. Application structure</h2>
 <p><strong>Architecture at a glance</strong></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TD</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">H</span>[<span class="vs">Hermes Agent</span>] <span class="pp">--&gt;</span> <span class="dt">M</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">D</span>[<span class="vs">dsh · 7 profiles</span>] <span class="pp">--&gt;</span> <span class="dt">M</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">O</span>[<span class="vs">omp</span>] <span class="pp">--&gt;</span> <span class="dt">M</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">M</span>[<span class="st">&quot;comfy_mcp.py — stdio JSON-RPC</span><span class="sc">&lt;br/&gt;</span><span class="st">10 tools · stdlib only&quot;</span>]</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">M</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;HTTP loopback :8188&quot;</span><span class="vs">|</span> <span class="dt">C</span>[<span class="st">&quot;ComfyUI 0.44.0</span><span class="sc">&lt;br/&gt;</span><span class="st">torch 2.15.0 · MPS&quot;</span>]</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">M</span> <span class="pp">--&gt;</span><span class="vs">|reads|</span> <span class="dt">T</span>[<span class="st">&quot;workflows/</span><span class="sc">*</span><span class="st">.json</span><span class="sc">&lt;br/&gt;</span><span class="st">4 API-format templates&quot;</span>]</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">MO</span>[<span class="st">&quot;~/AI Hub/models</span><span class="sc">&lt;br/&gt;</span><span class="st">SD1.5 · SDXL · VAE · 4x-UltraSharp&quot;</span>]</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">MO</span> <span class="pp">-.-&gt;</span><span class="vs">|extra</span><span class="sc">_</span><span class="vs">model</span><span class="sc">_</span><span class="vs">paths|</span> <span class="dt">CS</span>[<span class="st">&quot;Cold store</span><span class="sc">&lt;br/&gt;</span><span class="st">Hiksemi SSD&quot;</span>]</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">OUT</span>[<span class="st">&quot;AI-Drive</span><span class="sc">&lt;br/&gt;</span><span class="st">Agent-Output/comfyui/images&quot;</span>]</span></code></pre></div>
+<figure>
+<svg viewBox="0 0 960 520" width="100%" role="img" aria-labelledby="archTitle archDesc" xmlns="http://www.w3.org/2000/svg" style="max-width:960px;height:auto;font-family:system-ui,-apple-system,'Segoe UI',sans-serif">
+  <title id="archTitle">ComfyUI local image stack — harness, tool, engine, model and output layers</title>
+  <desc id="archDesc">Three harnesses (Hermes Agent, dsh with 7 profiles, omp) connect over stdio JSON-RPC to one stdlib MCP server, comfy_mcp.py. That server reads four JSON workflow templates and calls ComfyUI 0.44.0 on loopback port 8188, which loads models from ~/AI Hub/models with an extra-model path to the Hiksemi cold store and writes renders to AI-Drive.</desc>
+  <defs>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6472"/>
+    </marker>
+    <marker id="arwg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2f8f4e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="520" fill="#ffffff"/>
+
+  <!-- layer labels -->
+
+<p><text x="16" y="34" font-size="11" letter-spacing="1.2" fill="#8a93a0">HARNESS LAYER</text> <text x="240" y="96" font-size="11" letter-spacing="1.2" fill="#8a93a0">TOOL LAYER</text> <text x="530" y="96" font-size="11" letter-spacing="1.2" fill="#8a93a0">ENGINE</text> <text x="790" y="96" font-size="11" letter-spacing="1.2" fill="#8a93a0">OUTPUT</text></p>
+  <!-- harnesses -->
+
+  <g fill="#f6f7f9" stroke="#c9ced6" stroke-width="1.5">
+    <rect x="40" y="52" width="160" height="48" rx="8"/>
+    <rect x="40" y="122" width="160" height="48" rx="8"/>
+    <rect x="40" y="192" width="160" height="48" rx="8"/>
+  </g>
+  <g fill="#1f2530" font-size="13" font-weight="600">
+    <text x="120" y="74" text-anchor="middle">Hermes Agent</text>
+    <text x="120" y="144" text-anchor="middle">dsh · 7 profiles</text>
+    <text x="120" y="214" text-anchor="middle">omp</text>
+  </g>
+  <g fill="#6b7380" font-size="10.5">
+    <text x="120" y="90" text-anchor="middle">all fleet agents</text>
+    <text x="120" y="160" text-anchor="middle">acp · web · mini · desktop…</text>
+    <text x="120" y="230" text-anchor="middle">coding agent</text>
+  </g>
+
+  <!-- harness bus -->
+
+  <path d="M200,76 H220 V216 H200" fill="none" stroke="#5b6472" stroke-width="1.5"/>
+  <path d="M200,146 H220" fill="none" stroke="#5b6472" stroke-width="1.5"/>
+  <path d="M220,146 H240" fill="none" stroke="#5b6472" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="224" y="286" font-size="10.5" fill="#6b7380" transform="rotate(-90 224 286)">stdio JSON-RPC</text>
+
+  <!-- MCP server -->
+
+  <rect x="240" y="120" width="230" height="132" rx="10" fill="#eef4ff" stroke="#4a7bd0" stroke-width="2"/>
+  <text x="355" y="148" text-anchor="middle" font-size="15" font-weight="700" fill="#1d3f73">comfy_mcp.py</text>
+  <text x="355" y="170" text-anchor="middle" font-size="11.5" fill="#3a5580">stdio · JSON-RPC · protocol 2024-11-05</text>
+  <line x1="262" y1="182" x2="448" y2="182" stroke="#c3d4ef" stroke-width="1"/>
+  <text x="355" y="202" text-anchor="middle" font-size="11.5" fill="#3a5580">10 tools · stdlib only · no venv</text>
+  <text x="355" y="224" text-anchor="middle" font-size="11.5" fill="#3a5580">status · models · workflows · generate</text>
+  <text x="355" y="241" text-anchor="middle" font-size="11.5" fill="#3a5580">submit · result · img2img · upscale · queue · outputs</text>
+
+  <!-- templates -->
+
+  <rect x="240" y="312" width="230" height="86" rx="9" fill="#f6f7f9" stroke="#c9ced6" stroke-width="1.5"/>
+  <text x="355" y="336" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2530">workflows/*.json</text>
+  <text x="355" y="356" text-anchor="middle" font-size="11" fill="#6b7380">sd15_txt2img · sdxl_txt2img</text>
+  <text x="355" y="372" text-anchor="middle" font-size="11" fill="#6b7380">sd15_img2img · upscale_4x</text>
+  <text x="355" y="390" text-anchor="middle" font-size="10.5" fill="#8a93a0">4 API-format templates</text>
+  <path d="M355,312 V268" fill="none" stroke="#5b6472" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arw)"/>
+  <text x="364" y="294" font-size="10.5" fill="#6b7380">reads</text>
+
+  <!-- engine -->
+
+  <rect x="530" y="120" width="200" height="100" rx="10" fill="#effaf1" stroke="#2f8f4e" stroke-width="2"/>
+  <text x="630" y="146" text-anchor="middle" font-size="14.5" font-weight="700" fill="#1c5c33">ComfyUI 0.44.0</text>
+  <text x="630" y="166" text-anchor="middle" font-size="11.5" fill="#2f6b45">127.0.0.1:8188 · loopback only</text>
+  <text x="630" y="184" text-anchor="middle" font-size="11.5" fill="#2f6b45">torch 2.15.0 · MPS</text>
+  <text x="630" y="204" text-anchor="middle" font-size="10.5" fill="#4a7a5e">POST /prompt · GET /history · /view</text>
+  <path d="M470,186 H530" fill="none" stroke="#2f8f4e" stroke-width="2" marker-end="url(#arwg)"/>
+  <text x="500" y="178" text-anchor="middle" font-size="10.5" fill="#2f6b45">HTTP</text>
+
+  <!-- models -->
+
+  <rect x="530" y="270" width="200" height="86" rx="9" fill="#f6f7f9" stroke="#c9ced6" stroke-width="1.5"/>
+  <text x="630" y="294" text-anchor="middle" font-size="13" font-weight="600" fill="#1f2530">~/AI Hub/models</text>
+  <text x="630" y="314" text-anchor="middle" font-size="11" fill="#6b7380">SD1.5 · SDXL · VAE</text>
+  <text x="630" y="332" text-anchor="middle" font-size="11" fill="#6b7380">4x-UltraSharp · canonical store</text>
+  <path d="M630,220 V270" fill="none" stroke="#5b6472" stroke-width="1.5" marker-end="url(#arw)"/>
+  <text x="639" y="250" font-size="10.5" fill="#6b7380">loads</text>
+
+  <!-- cold store -->
+
+  <rect x="530" y="396" width="200" height="52" rx="9" fill="#ffffff" stroke="#c9ced6" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="630" y="418" text-anchor="middle" font-size="12" font-weight="600" fill="#5b6472">Cold store — Hiksemi SSD</text>
+  <text x="630" y="436" text-anchor="middle" font-size="10.5" fill="#8a93a0">extra_model_paths.yaml</text>
+  <path d="M630,356 V396" fill="none" stroke="#8a93a0" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arw)"/>
+
+  <!-- output -->
+
+  <rect x="782" y="120" width="158" height="112" rx="10" fill="#fff7ec" stroke="#c07a17" stroke-width="2"/>
+  <text x="861" y="146" text-anchor="middle" font-size="13" font-weight="700" fill="#8a5410">AI-Drive</text>
+  <text x="861" y="168" text-anchor="middle" font-size="10.5" fill="#96682a">Agent-Output/</text>
+  <text x="861" y="184" text-anchor="middle" font-size="10.5" fill="#96682a">comfyui/images</text>
+  <text x="861" y="208" text-anchor="middle" font-size="10.5" fill="#b08040">PNG + absolute path</text>
+  <path d="M730,170 H782" fill="none" stroke="#c07a17" stroke-width="2" marker-end="url(#arw)"/>
+  <text x="756" y="162" text-anchor="middle" font-size="10.5" fill="#8a5410">writes</text>
+
+  <!-- footer note -->
+
+<p><text x="40" y="490" font-size="10.5" fill="#8a93a0">One server, three harnesses, four templates: a new capability is a template file plus one config line. Magnific (266 hosted tools, :8803) sits beside this stack as the cloud lane.</text> </svg></p>
+<figcaption><strong>Figure 1 —</strong> The local image stack: three harnesses, one stdlib MCP server, one loopback engine, one canonical model store, one output root.</figcaption>
+</figure>
+
 <pre><code>Harness layer      Hermes Agent      dsh (7 profiles)      omp
                         │                  │                 │
                         └──────── stdio JSON-RPC ────────────┘
