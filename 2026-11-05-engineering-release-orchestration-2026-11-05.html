@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Engineering &amp; Release Orchestration — 2026-11-05</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="engineering--release-orchestration">Engineering &amp; Release Orchestration</h1>
+<p><strong>Run:</strong> 2026-11-05T20:46:52Z baseline → 2026-11-05T23:15Z <strong>Status: PARTIAL.</strong> One approved requirement delivered and verified end-to-end. Two stale issues reconciled and closed. One deployment defect diagnosed and blocked on you. The rest is queued with reasons — nothing is concealed.</p>
+<hr />
+<h2 id="1-organisation-scope--the-supplied-names-were-not-right">1. Organisation scope — the supplied names were not right</h2>
+<p>You said <code>targetpraks</code> and <code>infinityorg</code>, and told me to verify before changing anything. I did.</p>
+<table>
+<thead>
+<tr>
+<th>Supplied</th>
+<th>Reality</th>
+<th>Access</th>
+<th>In scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>targetpraks</code></td>
+<td>User account, name "Targetpraks"</td>
+<td>owner</td>
+<td>yes</td>
+</tr>
+<tr>
+<td><code>infinityorg</code></td>
+<td><strong>A different, older org</strong> — created 2019, one public repo <code>alx-system_engineering-devops</code>, last push 2023, size 0</td>
+<td><strong>not a member</strong> (404; needs <code>admin:org</code>, which we don't hold)</td>
+<td><strong>no — excluded</strong></td>
+</tr>
+<tr>
+<td>—</td>
+<td><code>InfinityBrandsOrg</code> — created 2026-10-23, 11 private repos</td>
+<td><strong>admin</strong>, active</td>
+<td><strong>yes</strong></td>
+</tr>
+</tbody>
+</table>
+<p><code>InfinityBrandsOrg</code> is the real InfinityOrg: it is the only org carrying the estate, and the only one where this account is admin. I did not touch <code>infinityorg</code>.</p>
+<p><strong>Explicit exclusions:</strong> <code>infinityorg/alx-system_engineering-devops</code> · <code>OddSock-dev/divorced-dads-laravel</code> · <code>dearirshad2/{ffAirbyte,ff_chat2db,flowise,fluxflowairbyte}</code> · <code>paperclipai/paperclip</code> (upstream OSS) · 8 archived repos under <code>targetpraks</code> · 5 forks. None silently skipped.</p>
+<p><strong>Task management:</strong> <code>td usage --new-session</code> → <code>ERROR: database not found: run 'td init' first</code>, and no <code>.td-root</code> anywhere in the DevMini tree. I did <strong>not</strong> run <code>td init</code> — that creates a new store rather than recovering the existing one. The ledger at <code>AI-Drive/Agent-Output/adrianna/eng-orchestration-2026-11-05/ledger/</code> is the system of record instead.</p>
+<hr />
+<h2 id="2-repository-table">2. Repository table</h2>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th>Requirement</th>
+<th>Status</th>
+<th>PR / commit</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>infx-media-website</strong></td>
+<td>AC-10 reduced-motion entrance gating (#7)</td>
+<td><strong>delivered, awaiting your merge</strong></td>
+<td><strong>PR #11</strong>, <code>8c8043e</code></td>
+<td>probe 0 entrances under reduce; 84 with motion allowed; lint/typecheck/tests/build all green</td>
+</tr>
+<tr>
+<td><strong>constellation</strong></td>
+<td>CN-11 team of one (#20)</td>
+<td><strong>verified fixed, issue closed</strong></td>
+<td><code>1417360</code> (PR #19, merged)</td>
+<td><code>Composer.tsx:92-94</code> — <code>min={1}</code>, capped at pool, "the pool has 1 person"</td>
+</tr>
+<tr>
+<td><strong>constellation</strong></td>
+<td>CN-04 data-access summary (#21)</td>
+<td><strong>verified fixed, issue closed</strong></td>
+<td><code>219ec99</code> (PR #22) + <code>74f662d</code> (PR #23)</td>
+<td><code>lib/consent/data-access.ts</code> wired into the admin/HR staff surfaces</td>
+</tr>
+<tr>
+<td>infinity-control-tower</td>
+<td>staging unhealthy</td>
+<td><strong>blocked on you</strong></td>
+<td>—</td>
+<td>see §4</td>
+</tr>
+<tr>
+<td>infx-fnd · sunscout · chromacommand · signet</td>
+<td>#9, #31, #5, #83–#99/#110–#120/#48</td>
+<td><strong>queued, not started</strong></td>
+<td>—</td>
+<td>see §5</td>
+</tr>
+</tbody>
+</table>
+<p>No repository has an open PR other than the one I opened. All 13 local mirrors were clean and synced to origin at baseline.</p>
+<hr />
+<h2 id="3-what-was-actually-delivered--7--ac-10">3. What was actually delivered — #7 / AC-10</h2>
+<p>AC-10 reads: <em>"<code>prefers-reduced-motion</code> disables all canvas and Framer Motion animations."</em> It wasn't true. I measured the defect before changing anything, and found <strong>three</strong> causes, not the one the issue assumed:</p>
+<ol type="1">
+<li><strong><code>MotionConfig reducedMotion="user"</code> only disables transform and layout animations.</strong> Opacity tweens keep running. That was already in the tree and looked like a fix.</li>
+<li><strong><code>initial={{}}</code> is not "skip the animation"</strong> — Framer still tweens from the current value. <code>initial={false}</code> is the sentinel.</li>
+<li><strong>Framer's own <code>useReducedMotion()</code> never re-renders.</strong> Its source is <code>useState(prefersReducedMotion.current)</code> with no subscription, and carries a TODO admitting it. It is correct on first render and then never updates — which is exactly why the live-change clause failed.</li>
+</ol>
+<p>Measured on unfixed <code>main</code>: <strong>5</strong> entrances on <code>/</code> at 800/1000/800/600/300 ms — the hero heading and paragraph among them — plus 2 on <code>/book-briefing/</code> and 3 on <code>/packages-pricing/</code>. Same count, same durations, same elements the issue reported.</p>
+<p>After: <strong>0</strong> under reduce, <strong>84</strong> when motion is allowed (so it is not a blanket disable), <strong>0</strong> elements still fading after a live flip. <code>reports/ac10/*.json</code> hold the raw measurements.</p>
+<p>Deliberately not done: no threshold lowered, no test that merely waits for animations to settle, no remount of the app.</p>
+<hr />
+<h2 id="4-blocked-on-you">4. Blocked on you</h2>
+<p><strong><code>staging-infinity-control-tower-web-1</code> is unhealthy.</strong> Not a crashed container — restarts=0, <code>/health</code> returns 200. Its readiness check returns 503 with its own explanation:</p>
+<blockquote>
+<p><code>last successful sync was 213h ago</code> · <code>newest cycle cyc-20261028T001943 has 5 failed pipe(s)</code> · <code>last_ok_sync: 2026-10-28T00:19:52Z</code></p>
+</blockquote>
+<p>The collection pipeline has produced no clean cycle in about nine days, and five pipes fail every cycle. Recovery needs a fresh OAuth-backed collection — re-authorising the source systems. <strong>That is credential work, which is a hard stop for me.</strong> The container is doing the right thing by reporting itself unhealthy.</p>
+<hr />
+<h2 id="5-also-needing-your-decision">5. Also needing your decision</h2>
+<p><strong>infx-media-website's "Deploy to GitHub Pages" workflow is red</strong> — three consecutive failures on <code>main</code>. Exact error: <code>Get Pages site failed … Not Found</code>. Cause: <code>has_pages: false</code>, the repo is private, and the org plan is <code>free</code> — GitHub Pages <strong>cannot</strong> be enabled for a private repo on a free plan. The workflow targets hosting this repo cannot have. The real deployment already exists (<code>deploy/staging/compose.yaml</code>, container up on the staging host since PR #10).</p>
+<p>Three ways out, and two of them are yours: delete the workflow, make the repo public, or move the org to a paid plan. Money and visibility are your call, so I left it. I did not delete a CI workflow on my own initiative.</p>
+<p><strong>No CI runs on pull requests in this repo</strong> — <code>deploy.yml</code> triggers only on <code>push</code> to <code>main</code>. So PR #11 shows <code>no checks reported</code>, not a passing gate. I ran the full gate locally instead.</p>
+<hr />
+<h2 id="6-queued-with-honest-reasons">6. Queued, with honest reasons</h2>
+<table>
+<thead>
+<tr>
+<th>Repo</th>
+<th>Issue</th>
+<th>Why it needs its own slice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>infx-fnd</td>
+<td>#9 FND-02a</td>
+<td>schema migration + backfill + proof that 135 legacy polygons keep count, IDs and exact geometry, plus rollback, on a disposable DB</td>
+</tr>
+<tr>
+<td>sunscout</td>
+<td>#31</td>
+<td>JWT must fail closed instead of falling back to the dev header — security change</td>
+</tr>
+<tr>
+<td>chromacommand</td>
+<td>#5</td>
+<td>tests report green while DB suites never execute — needs the suite actually run to prove the fix</td>
+</tr>
+<tr>
+<td>signet</td>
+<td>#83–#99, #110–#120, #48</td>
+<td>6 review-debt items + 11 governance + H-D4; programme-scale</td>
+</tr>
+<tr>
+<td>infx-media-website</td>
+<td>#6 AC-8 Lighthouse ≥90</td>
+<td>now measurable against the real compressed staging host; the 74/78 in the issue are fixture numbers the issue itself disclaims</td>
+</tr>
+</tbody>
+</table>
+<p>I could have started several of these. I did not, because a half-migrated schema or a half-verified security fix is worse than an honest queue.</p>
+<hr />
+<h2 id="7-harness-models-cost">7. Harness, models, cost</h2>
+<ul>
+<li><strong>Harness:</strong> Orca 1.4.250 (runtime <code>ready</code>); the fix ran in an Orca worktree, <code>targetpraks/ac10-reduced-motion</code>, which is how the work is visible in the app.</li>
+<li><strong>Model:</strong> <code>deepseek-v4.1-flash:1017-cloud</code> via the local Ollama gateway, as you specified.</li>
+<li><strong>Fallbacks:</strong> none — no rate limit, no quota event, no model swap.</li>
+<li><strong>Cost:</strong> not observable from here; the gateway does not surface per-run spend.</li>
+<li><strong>Checkpoint:</strong> <code>AI-Drive/Agent-Output/adrianna/eng-orchestration-2026-11-05/</code> (<code>ledger/</code>, <code>evidence/</code>, <code>inventory/</code>, <code>logs/</code>). No credentials are stored anywhere in it.</li>
+</ul>
+<p>Two things worth flagging from this run:</p>
+<ul>
+<li>My first probe <strong>reported a false pass</strong> — 0 entrances in both modes. It didn't understand Framer's property-array keyframe form (<code>{opacity:[0,1]}</code>). If I had trusted it, I'd have "fixed" a bug that wasn't fixed. The probe now exits non-zero when motion-allowed records nothing, so a broken recorder can't report success again.</li>
+<li>Orca puts worktrees under <code>AI-Drive/Work/Projects/…</code>, not <code>DevMini</code>. The canonical checkout is still <code>DevMini/infx-media-website</code>; the worktree is ephemeral. Worth knowing if you care about that boundary.</li>
+</ul>
+<hr />
+<h2 id="8-what-finishes-this">8. What finishes this</h2>
+<p>One yes/no from you unblocks the rest:</p>
+<ol type="1">
+<li><strong>PR #11</strong> — merge it? (<code>MERGEABLE</code>, <code>CLEAN</code>, +2125/−213, 35 files.) Your standing rule is that I don't merge without "Yes merge", so it is sitting there.</li>
+<li><strong>Pages workflow</strong> — delete it, make the repo public, or upgrade the plan?</li>
+<li><strong>Control Tower</strong> — do you want to re-authorise the collection sources, or should the container be marked as expected-unready until you do?</li>
+</ol>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
