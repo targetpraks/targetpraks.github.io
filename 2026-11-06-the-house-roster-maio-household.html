@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The House Roster — Maio household</title>
+<style>
+  :root{
+    --paper:#f7f3ec;
+    --card:#fffdf9;
+    --ink:#1b1815;
+    --muted:#6f675d;
+    --line:#e2dacd;
+    --line-strong:#cfc4b2;
+    --ric:#0e6f6b;
+    --jul:#a8405f;
+    --lil:#a2722a;
+    --kids:#4c6f9c;
+    --both:#6b6459;
+    --help:#5c7d3f;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 12px 28px -18px rgba(40,30,15,.45);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;
+    font-variant-numeric:tabular-nums;
+  }
+  .wrap{max-width:1420px;margin:0 auto;padding:34px 26px 80px}
+  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:44px;line-height:1.02;margin:8px 0 6px;letter-spacing:-.015em;font-weight:600;
+  }
+  .sub{color:var(--muted);font-size:15px;max-width:70ch}
+  .sub b{color:var(--ink);font-weight:600}
+
+  /* ---------- controls ---------- */
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:22px 0 4px}
+  .seg{display:inline-flex;background:#efe8dc;border:1px solid var(--line-strong);border-radius:10px;padding:3px;gap:2px}
+  .seg button{
+    border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:600;
+    padding:7px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;
+  }
+  .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.09)}
+  .btn{
+    border:1px solid var(--line-strong);background:var(--card);color:var(--ink);font:inherit;font-size:13px;font-weight:600;
+    padding:9px 14px;border-radius:9px;cursor:pointer;display:inline-flex;gap:7px;align-items:center;
+  }
+  .btn:hover{border-color:#b9ab95}
+  .btn.ghost{background:transparent}
+  .spacer{flex:1}
+  .filterrow{display:flex;flex-wrap:wrap;gap:6px;margin-left:2px;align-items:center}
+  .fbtn{
+    border:1px solid var(--line-strong);background:transparent;border-radius:999px;padding:5px 11px;
+    font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;display:inline-flex;gap:6px;align-items:center;
+  }
+  .fbtn .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+  .fbtn[aria-pressed="true"]{background:var(--card);color:var(--ink);border-color:#b9ab95;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+
+  /* ---------- stat strip ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0 26px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow)}
+  .stat .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .stat .v{font-size:28px;font-weight:650;letter-spacing:-.02em;margin:5px 0 1px;line-height:1.1}
+  .stat .v small{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:0}
+  .stat .n{font-size:12px;color:var(--muted);line-height:1.35}
+
+  /* ---------- legend ---------- */
+  .legend{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px}
+  .person{
+    display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+    border-radius:999px;padding:5px 12px 5px 6px;font-size:13px;font-weight:600;
+  }
+  .avatar{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:700;letter-spacing:.02em}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .ric{background:var(--ric)} .jul{background:var(--jul)} .lil{background:var(--lil)}
+  .kids{background:var(--kids)} .both{background:var(--both)} .help{background:var(--help)}
+  .txt-ric{color:var(--ric)} .txt-jul{color:var(--jul)} .txt-lil{color:var(--lil)} .txt-kids{color:var(--kids)} .txt-help{color:var(--help)}
+
+  /* ---------- week grid ---------- */
+  .sectionhead{display:flex;align-items:baseline;gap:12px;margin:34px 0 12px}
+  .sectionhead h2{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:22px;font-weight:600;margin:0;letter-spacing:-.01em;
+  }
+  .sectionhead .hint{font-size:12.5px;color:var(--muted)}
+  .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px}
+  .day{background:var(--card);border:1px solid var(--line);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+  .day.today{border-color:#b9ab95;box-shadow:0 0 0 2px rgba(14,111,107,.18),var(--shadow)}
+  .day.away{opacity:.55}
+  .dayhead{padding:9px 10px 8px;border-bottom:1px solid var(--line);background:#fbf8f1}
+  .dayhead .dow{font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+  .dayhead .dom{font-size:19px;font-weight:650;letter-spacing:-.02em}
+  .daybody{padding:7px;display:flex;flex-direction:column;gap:4px;flex:1}
+  .ev{display:flex;gap:6px;align-items:flex-start;font-size:11.5px;line-height:1.28;padding:2px 0}
+  .ev .t{color:var(--muted);font-size:10.5px;font-weight:700;min-width:30px;padding-top:1px;font-variant-numeric:tabular-nums}
+  .ev .x{flex:1}
+  .ev .who{width:16px;height:16px;border-radius:4px;color:#fff;font-size:9px;font-weight:800;display:grid;place-items:center;flex:none;margin-top:1px}
+  .ev.care .x{font-style:italic;color:#4a443c}
+  .emptyday{padding:10px;font-size:11.5px;color:var(--muted);text-align:center}
+
+  /* ---------- load ---------- */
+  .loadwrap{display:grid;grid-template-columns:1.25fr .85fr;gap:16px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 14px;box-shadow:var(--shadow)}
+  .panel h3{margin:0 0 3px;font-size:14px;letter-spacing:-.01em}
+  .panel .pnote{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.45}
+  .bar{margin:0 0 11px}
+  .bar .top{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px}
+  .bar .top .nm{font-weight:650}
+  .bar .top .hh{color:var(--muted);font-variant-numeric:tabular-nums}
+  .track{height:9px;border-radius:5px;background:#eee7db;overflow:hidden;display:flex}
+  .fill{height:100%}
+  .fill.chore{opacity:1}
+  .fill.care{opacity:.38}
+  .capper{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .callout{border-left:3px solid var(--ric);padding:2px 0 2px 12px;font-size:13px;line-height:1.5;color:#37322b;margin-top:12px}
+  .callout b{font-weight:650}
+
+  /* ---------- checklist ---------- */
+  .legend2{display:flex;flex-wrap:wrap;gap:14px;font-size:11.5px;color:var(--muted);margin:2px 0 14px}
+  .legend2 span{display:inline-flex;gap:5px;align-items:center}
+  .group{margin:0 0 22px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .ghead{display:flex;align-items:center;gap:10px;padding:11px 16px;background:#fbf8f1;border-bottom:1px solid var(--line)}
+  .ghead h3{margin:0;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#4d463c;font-weight:750}
+  .ghead .count{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:650}
+  .row{display:flex;align-items:flex-start;gap:11px;padding:10px 16px;border-top:1px solid #f0eae0}
+  .row:first-of-type{border-top:0}
+  .row.done .title{text-decoration:line-through;color:#a09a90}
+  .row.done .meta{opacity:.55}
+  .cb{
+    appearance:none;width:18px;height:18px;border:1.5px solid #c3b8a5;border-radius:5px;background:#fff;
+    cursor:pointer;flex:none;margin-top:1px;display:grid;place-items:center;transition:.12s;
+  }
+  .cb:checked{background:var(--ink);border-color:var(--ink)}
+  .cb:checked::after{content:"";width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+  .body{flex:1;min-width:0}
+  .title{font-size:14px;font-weight:560;line-height:1.35}
+  .meta{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .meta .sep{margin:0 5px;opacity:.5}
+  .note{font-size:11.5px;color:#8a6a2f;margin-top:3px}
+  .who{display:flex;gap:4px;flex:none;align-items:center;padding-top:1px}
+  .chip{
+    display:inline-flex;align-items:center;gap:4px;color:#fff;border-radius:6px;
+    padding:3px 7px 3px 5px;font-size:10.5px;font-weight:750;letter-spacing:.02em;white-space:nowrap;
+  }
+  .chip .a{width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.22);display:grid;place-items:center;font-size:8.5px}
+  .mins{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:42px;text-align:right;padding-top:2px}
+  .mins span{display:block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;opacity:.7}
+  .ticks{display:flex;gap:3px;flex:none;padding-top:1px}
+  .daytick{cursor:pointer;display:block}
+  .daytick input{position:absolute;opacity:0;width:0;height:0}
+  .daytick span{
+    width:19px;height:19px;border:1.4px solid #cfc4b2;border-radius:5px;background:#fff;
+    display:grid;place-items:center;font-size:9px;font-weight:800;color:#9c948a;
+    text-transform:uppercase;transition:.1s;user-select:none;
+  }
+  .daytick:hover span{border-color:#a89a84}
+  .daytick input:checked+span{background:var(--ink);border-color:var(--ink);color:#fff}
+  .daytick.wide span{width:auto;padding:0 9px;font-size:9.5px;letter-spacing:.04em}
+  .daytick input:focus-visible+span{outline:2px solid var(--ric);outline-offset:2px}
+
+  /* ---------- rules + assumptions ---------- */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  ol.rules{margin:0;padding-left:18px;font-size:13px;line-height:1.6;color:#37322b}
+  ol.rules li{margin-bottom:7px}
+  ul.assume{margin:0;padding-left:16px;font-size:12.5px;line-height:1.55;color:#37322b}
+  ul.assume li{margin-bottom:6px}
+  .tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:#efe8dc;color:#6b6459;margin-right:5px}
+  a{color:var(--ric);text-decoration:none;border-bottom:1px solid rgba(14,111,107,.35)}
+  a:hover{border-bottom-color:var(--ric)}
+  footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);line-height:1.65}
+
+  @media (max-width:1100px){
+    .week{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .loadwrap,.twocol,.stats{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:720px){
+    .wrap{padding:22px 14px 60px}
+    h1{font-size:32px}
+    .week{grid-template-columns:1fr}
+    .loadwrap,.twocol,.stats{grid-template-columns:1fr}
+    .row{flex-wrap:wrap}
+    .mins{display:none}
+  }
+  @media print{
+    @page{size:A4 landscape;margin:10mm}
+    body{background:#fff;font-size:10.5px}
+    .wrap{max-width:none;padding:0}
+    .controls,.sectionhead .hint,.legend2{display:none!important}
+    .stat,.panel,.day,.group{box-shadow:none}
+    .week{grid-template-columns:repeat(7,1fr)}
+    .loadwrap{grid-template-columns:1fr 1fr}
+    .row{padding:5px 10px}
+    .group{break-inside:avoid}
+    .note{color:#7a5f22}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Maio household &middot; operations</div>
+  <h1>The House Roster</h1>
+  <p class="sub">Every adult job in the house, who owns it, which day it lands on, and the backup when that
+  person is down. Built for <b>two adults, a grandmother, two school children and a seven-week-old</b> —
+  so it assumes the newborn's needs outrank the list.</p>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Week">
+      <button id="prevWeek" aria-label="Previous week">&larr;</button>
+      <button id="weekLabel" aria-pressed="true" style="cursor:default">Week</button>
+      <button id="nextWeek" aria-label="Next week">&rarr;</button>
+    </div>
+    <div class="seg" role="group" aria-label="Rotation">
+      <button id="rotA" aria-pressed="true">Ricardo home</button>
+      <button id="rotB" aria-pressed="false">Ricardo away</button>
+    </div>
+    <div class="seg" role="group" aria-label="Custody">
+      <button id="kidsOn" aria-pressed="true">Kids with us</button>
+      <button id="kidsOff" aria-pressed="false">Kids at Lauren's</button>
+    </div>
+    <div class="seg" role="group" aria-label="Scenario">
+      <button id="helperOff" aria-pressed="true">No outside help</button>
+      <button id="helperOn" aria-pressed="false">With 2&times;/week helper</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="printBtn">Print / PDF</button>
+    <button class="btn ghost" id="resetBtn">Clear ticks</button>
+  </div>
+
+  <div class="controls" style="margin-top:6px">
+    <span class="eyebrow" style="margin-right:2px">Show</span>
+    <div class="filterrow" id="filters"></div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="sectionhead">
+    <h2>Week at a glance</h2>
+    <span class="hint">The fixed points. Everything else lives in the checklist below.</span>
+  </div>
+  <div class="week" id="week"></div>
+
+  <div class="sectionhead">
+    <h2>Who carries what</h2>
+    <span class="hint">Hours per week, from the task list — not an estimate typed by hand.</span>
+  </div>
+  <div class="loadwrap">
+    <div class="panel">
+      <h3>Adult load — week hours</h3>
+      <div class="pnote" id="loadNote">Solid = household chores. Faded = care that cannot be delegated (feeds, night duty).</div>
+      <div id="bars"></div>
+    </div>
+    <div class="panel">
+      <h3>Read it like this</h3>
+      <div class="pnote" style="margin-bottom:10px">The roster is a distribution, not a wish list.</div>
+      <div class="callout" id="insight"></div>
+      <div class="callout" style="border-left-color:var(--jul);margin-top:10px">
+        <b>Julie's protected window: 17:00–20:00.</b> Cluster feeding. She feeds and nothing else — dinner,
+        baths, homework and bedtime belong to everyone else in that window.
+      </div>
+    </div>
+  </div>
+
+  <div class="sectionhead">
+    <h2>The checklist</h2>
+    <span class="hint">Ticks are saved per date; monthly items reset each month. Chips show who owns the day.</span>
+  </div>
+  <div class="legend2">
+    <span><span class="dot" style="background:#c3b8a5"></span>box = not done</span>
+    <span><span class="dot" style="background:#1b1815"></span>box = done</span>
+    <span>R J L = Ricardo, Julie, Lily &middot; D G = Donnie, Gianna</span>
+    <span>Boxes M T W T F S S = tick the day it was actually done</span>
+    <span>Minutes are per occurrence</span>
+  </div>
+  <div id="groups"></div>
+
+  <div class="sectionhead">
+    <h2>How the split works</h2>
+  </div>
+  <div class="twocol">
+    <div class="panel">
+      <h3>The five rules behind it</h3>
+      <ol class="rules">
+        <li><b>One owner per task per day.</b> A task with two owners is a task nobody does. The backup only
+        acts when the owner says so.</li>
+        <li><b>The split is by day, not just by person.</b> Baths are 4/3 to Ricardo, bedtime is the mirror
+        image, Lily cooks Tuesday and Thursday, Ricardo does Sunday's batch. Nobody owns "bath time" in
+        general — they own Monday's and Wednesday's.</li>
+        <li><b>Feeding is not a chore.</b> Julie's 17:00–20:00 window and the night feeds sit outside the
+        fairness maths — they are the reason the rest is distributed this way. Nothing gets scheduled
+        over them.</li>
+        <li><b>Two configurations, not a rota.</b> "Ricardo home" is the fair week. "Ricardo away" is the
+        surge week: it exists so you can see the cost of a trip <em>before</em> booking it. Alternating them
+        casually would put 38 hours on a woman seven weeks postpartum.</li>
+        <li><b>Kids hold real jobs.</b> Table, pets, recycling, their own rooms. Small, owned, not "helping
+        Mom".</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h3>Assumptions to confirm</h3>
+      <ul class="assume">
+        <li><span class="tag">Pool</span> There is a pool and it is not on a service contract. If a pool service
+        exists, delete three tasks and the chart drops by ~1.5 h.</li>
+        <li><span class="tag">Lily</span> Lily is counted at ~10 h/week. That is the number most likely to be
+        wrong — confirm what she actually wants to carry before this goes on the fridge.</li>
+        <li><span class="tag">Garden</span> No gardener assumed. If there is one, the 45-minute Saturday lawn
+        slot goes.</li>
+        <li><span class="tag">Helper</span> No domestic helper assumed. Toggle "with helper" above to see the
+        week with Wednesday and Saturday cleaning/laundry visits. Confirm these assumed days.</li>
+        <li><span class="tag">Custody</span> The board assumes the children are with you this week. Switch to
+        "Kids at Lauren's" and the school-run, homework and lunchbox load disappears.</li>
+        <li><span class="tag">Bins</span> Refuse and recycling are collected on the <em>same day</em> in
+        Welgemoed since 1 Feb 2026 — confirm your street's day on the City's calendar before trusting the
+        Tuesday slot.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    Built from the household record: Donnie (9) and Gianna (7) at
+    <a href="https://www.durbanville.reddamhouse.com/school-life/school-calendar" target="_blank" rel="noopener">Reddam House Durbanville</a>
+    — school 08:00–14:00 Mon–Thu, Friday 13:15, Grade 1 ends 13:30/12:45, aftercare from 13:30 and 14:00,
+    field collection 15:00. Refuse and recycling day per the
+    <a href="https://www.capetown.gov.za/media-and-news/new-recycling-collection-days-in-northern-suburbs-and-surrounding-areas/" target="_blank" rel="noopener">City of Cape Town schedule change</a>
+    (Welgemoed, Sub-council 7). Pool routine follows a standard weekly
+    <a href="https://www.missionpools.com/blog/residential-swimming-pool-maintenance/" target="_blank" rel="noopener">skim / test / backwash cycle</a>.
+    Hours are computed from the task minutes on this page. Nothing here is a medical instruction — the
+    feeding and night patterns follow the household's existing routine, and the midwife's word beats this board.
+  </footer>
+</div>
+
+<script>
+/* ------------------------------------------------------------------ data */
+const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+const DOW  = {mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun'};
+const DOWL = {mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
+const PEOPLE = {
+  RIC:{name:'Ricardo', init:'R', cls:'ric'},
+  JUL:{name:'Julie',   init:'J', cls:'jul'},
+  LIL:{name:'Lily',    init:'L', cls:'lil'},
+  KIDS:{name:'Kids',   init:'D', cls:'kids'},
+  BOTH:{name:'Both',   init:'RJ',cls:'both'},
+  HELP:{name:'Helper', init:'H', cls:'help'},
+  COVER:{name:'Cover needed', init:'?', cls:'help'}
+};
+// Two assumed cleaning/laundry visits; confirm these days with the helper.
+const HELPER_DAYS = ['wed','sat'];
+const SECTIONS = [
+  ['morning','Morning run','05:45 – 08:15'],
+  ['school','School & activities','08:00 – 16:30'],
+  ['food','Food','planning, cooking, lunchboxes'],
+  ['home','Home & admin','the house, the money, the pool'],
+  ['evening','Evening & night','17:00 – 06:00'],
+  ['monthly','Monthly & as-needed','not counted in the weekly hours']
+];
+
+/* t=title, s=section, d=days, o=owner, b=backup, m=minutes, g=grid, time=grid label,
+   care=not a chore, kids=only when children are here, swap=A/B rotation,
+   byDay=per-day owner, note=footnote, helper=covered by outside help, freq=label */
+const TASKS = [
+  /* ---------------- morning ---------------- */
+  {id:'m1', s:'morning', t:'Wake the children, breakfast on the table', d:['mon','tue','wed','thu','fri'], o:'RIC', b:'LIL', m:20, time:'06:30', swap:1, kids:1, freq:'Weekdays'},
+  {id:'m2', s:'morning', t:'Dressed, teeth, shoes, bags by the door', d:['mon','tue','wed','thu','fri'], o:'JUL', b:'RIC', m:15, swap:1, kids:1, freq:'Weekdays'},
+  {id:'m3', s:'morning', t:'School drop-off — Donnie & Gianna (doors close 08:00)', d:['mon','tue','wed','thu','fri'], o:'RIC', b:'LIL', m:30, g:1, time:'07:30', swap:1, kids:1, freq:'Weekdays', note:'Leave 07:30. One driver, both children, no second trip.'},
+  {id:'m4', s:'morning', t:'Sofia — first feed, change, wind', d:DAYS, o:'JUL', b:'RIC', m:40, time:'06:00', care:1, freq:'Daily'},
+  {id:'m5', s:'morning', t:'Breakfast kitchen reset — dishes, counters, table', d:['mon','tue','wed','thu','fri'], o:'LIL', m:10, freq:'Weekdays'},
+  {id:'m6', s:'morning', t:'Lunchboxes and water bottles into school bags', d:['mon','tue','wed','thu','fri'], o:'LIL', m:5, kids:1, freq:'Weekdays'},
+
+  /* ---------------- school & activities ---------------- */
+  {id:'s1', s:'school', t:'Gianna pickup — Grade 1 ends 13:30', d:['mon','tue','wed','thu'], o:'LIL', b:'JUL', m:20, g:1, time:'13:30', kids:1, freq:'Mon–Thu'},
+  {id:'s2', s:'school', t:'Donnie pickup — 14:00, or aftercare / field at 15:00', d:['mon','tue','wed','thu'], o:'JUL', b:'RIC', m:25, g:1, time:'14:00', kids:1, swap:1, freq:'Mon–Thu'},
+  {id:'s3', s:'school', t:'Friday early pickup — Gianna 12:45, Donnie 13:15', d:['fri'], o:'RIC', m:40, g:1, time:'12:45', kids:1, swap:1, freq:'Friday'},
+  {id:'s4', s:'school', t:'Hockey run — kit, water, boots', d:['mon','thu'], o:'RIC', b:'LIL', m:50, g:1, time:'15:30', kids:1, swap:1, freq:'2×/week'},
+  {id:'s5', s:'school', t:'Tennis run', d:['tue'], o:'JUL', b:'LIL', m:45, g:1, time:'15:00', kids:1, swap:1, freq:'Weekly'},
+  {id:'s6', s:'school', t:'Swimming squad run', d:['wed','fri'], o:'RIC', b:'LIL', m:50, g:1, time:'15:00', kids:1, swap:1, freq:'2×/week'},
+  {id:'s7', s:'school', t:'Homework with Donnie — sit with him, not for him', d:['mon','tue','wed','thu'], o:'RIC', b:'JUL', m:30, g:1, time:'16:00', kids:1, swap:1, freq:'Mon–Thu'},
+  {id:'s8', s:'school', t:'Homework and reading with Gianna', d:['mon','tue','wed','thu'], o:'JUL', b:'RIC', m:20, g:1, time:'16:00', kids:1, swap:1, freq:'Mon–Thu'},
+  {id:'s9', s:'school', t:'Reading practice — 15 minutes, one child at a time', d:DAYS, o:'RIC', byDay:{sat:'JUL',sun:'JUL'}, m:15, kids:1, freq:'Daily'},
+  {id:'s10',s:'school', t:'Diary signing and school emails', d:['mon','tue','wed','thu','fri'], o:'JUL', m:5, kids:1, freq:'Weekdays'},
+  {id:'s11',s:'school', t:'School admin block — forms, payments, calendar, trip letters', d:['wed'], o:'JUL', m:20, time:'11:00', kids:1, freq:'Weekly'},
+  {id:'s12',s:'school', t:'Sports kit washed and back in bags', d:['sun','wed'], o:'LIL', m:15, kids:1, freq:'2×/week'},
+
+  /* ---------------- food ---------------- */
+  {id:'f1', s:'food', t:'Meal plan for the week — seven dinners, written down', d:['sun'], o:'BOTH', m:25, g:1, time:'16:00', freq:'Weekly'},
+  {id:'f2', s:'food', t:'Online grocery order — check the list, book the slot', d:['sun'], o:'RIC', m:20, swap:1, freq:'Weekly'},
+  {id:'f3', s:'food', t:'Grocery delivery unpacked and stored', d:['mon'], o:'LIL', m:30, freq:'Weekly'},
+  {id:'f4', s:'food', t:'Mid-week top-up — milk, bread, nappies, fruit', d:['wed'], o:'RIC', m:25, swap:1, freq:'Weekly'},
+  {id:'f5', s:'food', t:'Dinner cooked', d:DAYS, o:'RIC', byDay:{tue:'LIL',thu:'LIL',sat:'JUL'}, m:45, g:1, time:'17:30', swap:1, freq:'Daily'},
+  {id:'f6', s:'food', t:"Children's dinner served at 17:00 and supervised", d:DAYS, o:'LIL', b:'RIC', m:20, g:1, time:'17:00', swap:1, kids:1, freq:'Daily'},
+  {id:'f7', s:'food', t:'Table set and cleared', d:DAYS, o:'KIDS', m:10, kids:1, freq:'Daily'},
+  {id:'f8b',s:'food', t:'Family dinner at the table — no phones, everyone present', d:DAYS, o:'BOTH', m:30, g:1, time:'18:30', zero:1, freq:'Daily'},
+  {id:'f8', s:'food', t:'Sunday batch cook — two dinners ahead for the week', d:['sun'], o:'RIC', m:60, g:1, time:'10:00', freq:'Weekly'},
+  {id:'f9', s:'food', t:'Lunchbox components prepped for tomorrow', d:['mon','tue','wed','thu','sun'], o:'JUL', b:'RIC', m:15, swap:1, kids:1, freq:'Weeknights'},
+  {id:'f10',s:'food', t:'Feeding station restocked — water, snack, cloth, charger', d:DAYS, o:'RIC', m:5, freq:'Daily'},
+  {id:'f11',s:'food', t:'Snack box and bottles packed for school', d:['mon','tue','wed','thu','fri'], o:'KIDS', m:5, kids:1, freq:'Weekdays'},
+
+  /* ---------------- home & admin ---------------- */
+  {id:'h1', s:'home', t:'Laundry — one load in, hung, folded', d:DAYS, o:'LIL', m:20, helper:1, freq:'Daily'},
+  {id:'h2', s:'home', t:'Bed linen changed', d:['sat'], o:'LIL', m:20, helper:1, freq:'Weekly'},
+  {id:'h3', s:'home', t:'Ten-minute family reset — every room back to zero', d:DAYS, o:'BOTH', m:10, time:'19:45', freq:'Daily'},
+  {id:'h4', s:'home', t:'Bathrooms and floors — the deep clean', d:['sat'], o:'LIL', m:60, helper:1, freq:'Weekly', note:'Confirm whether this is Lily or a paid helper day.'},
+  {id:'h5', s:'home', t:'Pool — skim, chlorine and pH test', d:['mon','thu'], o:'RIC', b:'JUL', m:20, time:'07:00', swap:1, freq:'2×/week'},
+  {id:'h6', s:'home', t:'Pool — full clean, brush, backwash', d:['sat'], o:'RIC', m:60, g:1, time:'09:00', swap:1, freq:'Weekly'},
+  {id:'h7', s:'home', t:'Lawn and garden', d:['sat'], o:'RIC', m:45, time:'11:00', freq:'Weekly', note:'Or the gardener — confirm.'},
+  {id:'h8', s:'home', t:'Refuse and recycling out; bins back in', d:['tue'], o:'RIC', b:'KIDS', m:10, g:1, time:'18:00', freq:'Weekly', note:"Collection day: confirm your street on the City calendar — recycling now goes out with refuse."},
+  {id:'h9', s:'home', t:'Recycling sorted and flattened', d:['mon'], o:'KIDS', m:10, kids:1, freq:'Weekly'},
+  {id:'h10',s:'home', t:'Bills — statements checked, payments scheduled, receipts filed', d:['sun'], o:'RIC', m:30, g:1, time:'19:00', freq:'Weekly', note:'Ricardo approves and pays. Nothing goes out on this board’s authority.'},
+  {id:'h11',s:'home', t:'Bank and card reconciliation', d:['sun'], o:'RIC', m:15, freq:'Weekly'},
+  {id:'h12',s:'home', t:'Car — fuel, tyres, wash, service diary', d:['sat'], o:'RIC', m:15, freq:'Weekly'},
+  {id:'h13',s:'home', t:'Pets — feed and fresh water', d:DAYS, o:'KIDS', m:5, freq:'Daily'},
+  {id:'h14',s:'home', t:"Children's rooms reset and declutter", d:['sat'], o:'KIDS', m:20, kids:1, freq:'Weekly'},
+  {id:'h15',s:'home', t:'Week ahead — calendar sweep, clashes, lifts', d:['sun'], o:'JUL', m:15, g:1, time:'17:00', freq:'Weekly'},
+  {id:'h16',s:'home', t:'Family meeting — the week, the roster, who is short', d:['sun'], o:'BOTH', m:20, g:1, time:'18:00', freq:'Weekly'},
+
+  /* ---------------- evening ---------------- */
+  {id:'e1', s:'evening', t:'Baths', d:DAYS, o:'RIC', byDay:{tue:'JUL',thu:'JUL',sat:'JUL'}, m:30, g:1, time:'18:30', swap:1, kids:1, freq:'Daily'},
+  {id:'e2', s:'evening', t:'Bedtime — Donnie and Gianna, 19:15', d:DAYS, o:'JUL', byDay:{mon:'RIC',wed:'RIC',fri:'RIC'}, m:30, g:1, time:'19:15', swap:1, kids:1, freq:'Daily'},
+  {id:'e3', s:'evening', t:'Sofia — evening cluster feed and settle', d:DAYS, o:'JUL', m:45, g:1, time:'17:00', care:1, freq:'Daily'},
+  {id:'e4', s:'evening', t:'Night duty 22:00–02:00 — nappy, wind, resettle', d:DAYS, o:'RIC', m:60, care:1, freq:'Daily'},
+  {id:'e5', s:'evening', t:'Night duty 02:00–06:00 — the feeds', d:DAYS, o:'JUL', m:60, care:1, freq:'Daily'},
+  {id:'e6', s:'evening', t:'Kitchen closed — dishes, counters, rubbish', d:DAYS, o:'LIL', m:15, helper:1, freq:'Daily'},
+  {id:'e7', s:'evening', t:'Tomorrow prepped — uniforms, bags, notes, money', d:DAYS, o:'JUL', m:10, kids:1, freq:'Daily'},
+
+  /* ---------------- monthly ---------------- */
+  {id:'x1', s:'monthly', t:'Medical aid, Vitality points, pharmacy repeats', d:[], o:'RIC', m:30, freq:'Monthly'},
+  {id:'x2', s:'monthly', t:'Policies, vehicle licences, insurance renewals', d:[], o:'RIC', m:30, freq:'Monthly', note:'Ricardo decides and signs.'},
+  {id:'x3', s:'monthly', t:'Household supplies — cleaning, toiletries, paper', d:[], o:'JUL', m:30, freq:'Monthly'},
+  {id:'x4', s:'monthly', t:'Home walk-around — gutters, geyser, alarms, bulbs', d:[], o:'RIC', m:30, freq:'Monthly'},
+  {id:'x5', s:'monthly', t:'Appointments — paed, dentist, OT, hair', d:[], o:'JUL', m:30, freq:'Monthly'},
+  {id:'x6', s:'monthly', t:'Birthdays, parties, RSVPs, gifts', d:[], o:'JUL', m:30, freq:'Monthly'},
+  {id:'x7', s:'monthly', t:'Pool chemicals restocked', d:[], o:'RIC', m:20, freq:'Monthly'},
+  {id:'x8', s:'monthly', t:'School fees, aftercare, activity payments', d:[], o:'RIC', m:20, freq:'Monthly'}
+];
+
+/* --------------------------------------------------------------- state */
+const store = {
+  key:'maio-house-roster-v2',
+  load(){ try{ return JSON.parse(localStorage.getItem(this.key)) || {} }catch(e){ return {} } },
+  save(o){ try{ localStorage.setItem(this.key, JSON.stringify(o)) }catch(e){} }
+};
+let ticks = store.load();
+let state = { weekOffset:0, rot:'A', kids:true, helper:false, filter:'ALL' };
+
+/* anchor Monday 2 Nov 2026 */
+const ANCHOR = new Date(2026,10,2);
+function mondayOf(offset){
+  const d = new Date(ANCHOR); d.setDate(d.getDate() + offset*7); return d;
+}
+function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+function fmtShort(d){ return d.getDate() + ' ' + d.toLocaleString('en-GB',{month:'short'}); }
+function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+/* Respect availability and the protected feeding window; keep uncovered work visible. */
+function resolve(task, day){
+  let o = (task.byDay && task.byDay[day]) || task.o;
+  const protectedTime = !task.care && !task.zero && task.time >= '17:00' && task.time < '20:00';
+  if (protectedTime && (o === 'JUL' || o === 'BOTH')) o = 'RIC';
+  if (state.rot === 'B'){
+    if (o === 'RIC'){
+      const backup = task.b;
+      o = backup && backup !== 'RIC' && !(protectedTime && backup === 'JUL') ? backup : 'COVER';
+    } else if (o === 'BOTH') o = 'JUL';
+  }
+  if (state.helper && task.helper && o === 'LIL' && HELPER_DAYS.includes(day)) o = 'HELP';
+  return o;
+}
+function activeDays(task){
+  if (!state.kids && task.kids) return [];
+  return task.d.length ? task.d : [];
+}
+function completionKey(id, offset = state.weekOffset){
+  const [taskId, day] = id.split(':');
+  const monday = mondayOf(offset);
+  return day === '_'
+    ? taskId + ':month:' + iso(monday).slice(0,7)
+    : taskId + ':date:' + iso(addDays(monday, DAYS.indexOf(day)));
+}
+function isTick(id){ return !!ticks[completionKey(id)]; }
+// Old ticks had no period. Preserve them in the original anchor week/month,
+// leaving the original storage entry intact for recovery.
+try {
+  if (localStorage.getItem(store.key) === null){
+    const legacy = JSON.parse(localStorage.getItem('maio-house-roster-v1') || '{}');
+    for (const [id, done] of Object.entries(legacy || {})){
+      const [taskId, day] = id.split(':');
+      const task = TASKS.find(t=>t.id === taskId);
+      if (done && task && (day === '_' ? !task.d.length : task.d.includes(day)))
+        ticks[completionKey(id, 0)] = 1;
+    }
+    store.save(ticks);
+  }
+} catch(e) {}
+
+/* ------------------------------------------------------------- render */
+function chip(key, extra){
+  const p = PEOPLE[key] || PEOPLE.BOTH;
+  return `<span class="chip ${p.cls}"><span class="a">${p.init}</span>${p.name}${extra||''}</span>`;
+}
+function pips(task, day){
+  return DAYS.map(d=>`<span class="pip ${task.d.includes(d)?'on':''}">${d[0]}</span>`).join('');
+}
+
+function renderStats(){
+  const monday = mondayOf(state.weekOffset);
+  let choreMin=0, careMin=0, open=0, total=0;
+  TASKS.forEach(t=>{
+    const days = activeDays(t);
+    if(!days.length) return;
+    days.forEach(d=>{
+      const o = resolve(t,d);
+      total++;
+      if(!isTick(t.id+':'+d)) open++;
+      if(t.zero) return;
+      if(t.care) careMin += t.m; else choreMin += t.m;
+    });
+  });
+  const hours = (choreMin/60).toFixed(0);
+  const careH = (careMin/60).toFixed(0);
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="k">Week</div><div class="v">${fmtShort(monday)} – ${fmtShort(addDays(monday,6))}</div><div class="n">${state.rot==='A'?'Ricardo home':'Ricardo away — surge week'} &middot; ${state.kids?'children with you':'children at Lauren’s'}</div></div>
+    <div class="stat"><div class="k">Chore hours</div><div class="v">${hours}<small> h</small></div><div class="n">Required household work, including Lily and the children${state.helper?' and helper visits':''}</div></div>
+    <div class="stat"><div class="k">Care hours</div><div class="v">${careH}<small> h</small></div><div class="n">Feeds and night duty — not transferable</div></div>
+    <div class="stat"><div class="k">Still open</div><div class="v" id="openCount">${open}<small> of ${total}</small></div><div class="n">Ticked items stay ticked on reload</div></div>`;
+}
+
+function renderLegend(){
+  const keys = state.helper ? ['RIC','JUL','LIL','KIDS','HELP'] : ['RIC','JUL','LIL','KIDS'];
+  if (state.rot === 'B') keys.push('COVER');
+  document.getElementById('legend').innerHTML = keys.map(k=>{
+    const p = PEOPLE[k];
+    return `<span class="person"><span class="avatar ${p.cls}">${p.init}</span>${p.name}</span>`;
+  }).join('') + `<span class="person" style="background:transparent;border-style:dashed;color:var(--muted)">Sofia — no duties, all of the attention</span>`;
+}
+
+function renderWeek(){
+  const monday = mondayOf(state.weekOffset);
+  const today = new Date(); today.setHours(0,0,0,0);
+  document.getElementById('weekLabel').textContent = fmtShort(monday) + ' – ' + fmtShort(addDays(monday,6));
+  const wrap = document.getElementById('week');
+  wrap.innerHTML = DAYS.map((d,i)=>{
+    const date = addDays(monday,i);
+    const isToday = iso(date) === iso(today);
+    let evs = TASKS.filter(t=>t.g && activeDays(t).includes(d));
+    evs.sort((a,b)=> (a.time||'').localeCompare(b.time||''));
+    const away = !state.kids;
+    const body = evs.length ? evs.map(t=>{
+      const o = resolve(t,d);
+      const p = PEOPLE[o];
+      return `<div class="ev${t.care?' care':''}">
+        <span class="t">${t.time||''}</span>
+        <span class="who ${p.cls}">${p.init}</span>
+        <span class="x">${t.t}</span>
+      </div>`;
+    }).join('') : `<div class="emptyday">Nothing fixed</div>`;
+    return `<div class="day${isToday?' today':''}${away?' away':''}">
+      <div class="dayhead"><div class="dow">${DOW[d]}</div><div class="dom">${date.getDate()} ${date.toLocaleString('en-GB',{month:'short'})}</div></div>
+      <div class="daybody">${body}</div>
+    </div>`;
+  }).join('');
+}
+
+function weeklyMinutes(){
+  const acc = {RIC:{chore:0,care:0},JUL:{chore:0,care:0},LIL:{chore:0,care:0},HELP:{chore:0,care:0},KIDS:{chore:0,care:0},COVER:{chore:0,care:0}};
+  TASKS.forEach(t=>{
+    activeDays(t).forEach(d=>{
+      const o = resolve(t,d);
+      if (t.zero) return;
+      const owners = o === 'BOTH' ? ['RIC','JUL'] : [o];
+      owners.forEach(owner=>{
+        if(t.care) acc[owner].care += t.m / owners.length;
+        else acc[owner].chore += t.m / owners.length;
+      });
+    });
+  });
+  return acc;
+}
+
+function renderBars(){
+  const acc = weeklyMinutes();
+  const keys = state.helper ? ['RIC','JUL','LIL','HELP'] : ['RIC','JUL','LIL'];
+  if (state.rot === 'B') keys.push('COVER');
+  const maxTotal = Math.max(...keys.map(k=>acc[k].chore+acc[k].care));
+  document.getElementById('bars').innerHTML = keys.map(k=>{
+    const p = PEOPLE[k];
+    const chore = acc[k].chore, care = acc[k].care;
+    const total = chore+care;
+    const wChore = (chore/maxTotal)*100;
+    const wCare  = (care/maxTotal)*100;
+    const h = v => (v/60).toFixed(1).replace('.0','');
+    return `<div class="bar">
+      <div class="top"><span class="nm txt-${p.cls==='both'?'ric':p.cls}">${p.name}</span>
+        <span class="hh">${h(chore)} h chores${care?` &middot; ${h(care)} h care`:''}</span></div>
+      <div class="track">
+        <div class="fill chore ${p.cls}" style="width:${wChore}%"></div>
+        <div class="fill care ${p.cls}" style="width:${wCare}%"></div>
+      </div>
+      <div class="capper">${total? h(total)+' h total':''}</div>
+    </div>`;
+  }).join('');
+
+  const hh = v => (v/60).toFixed(1).replace('.0','');
+  const ric = acc.RIC.chore + acc.RIC.care;
+  const jul = acc.JUL.chore + acc.JUL.care;
+  const lil = acc.LIL.chore + acc.LIL.care;
+  let msg;
+  if (!state.kids && state.rot !== 'B'){
+    msg = `<b>Children at Lauren's — the quiet week.</b> The school runs, homework and lunchboxes are gone;
+      what is left is the house, the baby and the admin. Use the space for the monthly items instead of
+      inventing new work for anyone.`;
+  } else if (state.rot === 'B'){
+    msg = `<b>Ricardo away: Julie ${hh(jul)} h, Lily ${hh(lil)} h.</b> Recorded backups cover available duties;
+      <b>${hh(acc.COVER.chore + acc.COVER.care)} h still need cover</b>. Unassigned work stays visible rather than
+      silently moving to Julie during her protected feeding window. The helper model covers cleaning/laundry
+      on Wednesday and Saturday only; confirm the remaining cover before using this week.`;
+  } else {
+    msg = `<b>Ricardo ${hh(ric)} h · Julie ${hh(jul)} h.</b> Near parity on the clock — the composition is the
+      story: <b>${hh(acc.RIC.chore)} h of chores</b> against <b>${hh(acc.JUL.care)} h of feeding and night
+      duty</b>. That is the trade the whole roster is built around, and it is why the 17:00–20:00 window is
+      untouchable. Lily carries ${hh(lil)} h — the number to check with her first.`;
+  }
+  document.getElementById('insight').innerHTML = msg;
+}
+
+function renderGroups(){
+  const wrap = document.getElementById('groups');
+  wrap.innerHTML = SECTIONS.map(([key,label,sub])=>{
+    let items = TASKS.filter(t=>t.s===key && !(t.kids && !state.kids));
+    if (state.filter !== 'ALL'){
+      items = items.filter(t=>{
+        const ds = activeDays(t);
+        if(!ds.length) return t.o === state.filter;
+        return ds.some(d=>{
+          const owner = resolve(t,d);
+          return owner === state.filter || (owner === 'BOTH' && ['RIC','JUL'].includes(state.filter));
+        });
+      });
+    }
+    if(!items.length) return '';
+    const rows = items.map(t=>{
+      const ds = activeDays(t);
+      const own = [...new Set(ds.map(d=>resolve(t,d)))];
+      const chipsHtml = (ds.length ? own : [t.o]).map(o=>chip(o)).join('');
+      const dayLabel = !t.d.length ? t.freq
+        : t.d.length===7 ? 'Every day'
+        : t.d.length===1 ? 'Every ' + DOWL[t.d[0]]
+        : t.d.map(d=>DOW[d]).join(' · ');
+      const done = ds.length ? ds.every(d=>isTick(t.id+':'+d)) : isTick(t.id+':_');
+      const boxes = ds.length
+        ? ds.map(d=>`<label class="daytick"><input type="checkbox" data-day="${d}" ${isTick(t.id+':'+d)?'checked':''}><span>${DOW[d][0]}</span></label>`).join('')
+        : `<label class="daytick wide"><input type="checkbox" ${isTick(t.id+':_')?'checked':''}><span>done</span></label>`;
+      return `<div class="row${done?' done':''}" data-id="${t.id}">
+        <div class="body">
+          <div class="title">${t.t}</div>
+          <div class="meta">${dayLabel}${t.d.length>2&&t.freq?'<span class="sep">·</span>'+t.freq:''}${t.care?'<span class="sep">·</span>care':''}${t.b?`<span class="sep">·</span>backup ${PEOPLE[t.b].name}`:''}</div>
+          ${t.note?`<div class="note">${t.note}</div>`:''}
+        </div>
+        <div class="who">${chipsHtml}</div>
+        <div class="ticks">${boxes}</div>
+        ${ds.length?`<div class="mins">${t.m}<span>min</span></div>`:''}
+      </div>`;
+    }).join('');
+    return `<div class="group" data-sec="${key}">
+      <div class="ghead"><h3>${label}</h3><span style="font-size:11.5px;color:var(--muted)">${sub}</span><span class="count" data-count="${key}"></span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+  wireCheckboxes();
+  updateCounts();
+}
+
+function updateCounts(){
+  SECTIONS.forEach(([key])=>{
+    const rows = [...document.querySelectorAll(`.group[data-sec="${key}"] .row`)];
+    if(!rows.length) return;
+    const done = rows.filter(r=>r.classList.contains('done')).length;
+    const el = document.querySelector(`[data-count="${key}"]`);
+    if(el) el.textContent = `${done} / ${rows.length}`;
+  });
+}
+
+function wireCheckboxes(){
+  document.querySelectorAll('.row .daytick input').forEach(cb=>{
+    cb.addEventListener('change', e=>{
+      const row = e.target.closest('.row');
+      const id = row.dataset.id;
+      const task = TASKS.find(t=>t.id===id);
+      const key = completionKey(id + ':' + (e.target.dataset.day || '_'));
+      if (e.target.checked) ticks[key] = 1; else delete ticks[key];
+      store.save(ticks);
+      const ds = activeDays(task);
+      const all = ds.length ? ds.every(d=>isTick(id+':'+d)) : isTick(id+':_');
+      row.classList.toggle('done', all);
+      updateCounts();
+      renderStats();
+    });
+  });
+}
+
+function renderFilters(){
+  const opts = [['ALL','Everyone'],['RIC','Ricardo'],['JUL','Julie'],['LIL','Lily'],['KIDS','Kids'],['HELP','Helper']];
+  document.getElementById('filters').innerHTML = opts
+    .filter(([k])=> k!=='HELP' || state.helper)
+    .map(([k,label])=>{
+      const p = PEOPLE[k];
+      const dot = k==='ALL' ? '' : `<span class="dot ${p.cls}"></span>`;
+      return `<button class="fbtn" data-f="${k}" aria-pressed="${state.filter===k}">${dot}${label}</button>`;
+    }).join('');
+  document.querySelectorAll('.fbtn').forEach(b=>{
+    b.addEventListener('click',()=>{
+      state.filter = b.dataset.f;
+      renderFilters(); renderGroups();
+    });
+  });
+}
+
+function renderAll(){
+  renderStats(); renderLegend(); renderWeek(); renderBars(); renderGroups();
+  document.querySelectorAll('#filters .fbtn').forEach(b=>b.setAttribute('aria-pressed', b.dataset.f===state.filter));
+}
+
+/* ------------------------------------------------------------- wiring */
+document.getElementById('prevWeek').addEventListener('click',()=>{
+  state.weekOffset--; renderAll();
+});
+document.getElementById('nextWeek').addEventListener('click',()=>{
+  state.weekOffset++; renderAll();
+});
+function syncRot(){
+  document.getElementById('rotA').setAttribute('aria-pressed', state.rot==='A');
+  document.getElementById('rotB').setAttribute('aria-pressed', state.rot==='B');
+}
+document.getElementById('rotA').addEventListener('click',()=>{ state.rot='A'; syncRot(); renderAll(); });
+document.getElementById('rotB').addEventListener('click',()=>{ state.rot='B'; syncRot(); renderAll(); });
+document.getElementById('kidsOn').addEventListener('click',()=>{
+  state.kids=true;
+  document.getElementById('kidsOn').setAttribute('aria-pressed','true');
+  document.getElementById('kidsOff').setAttribute('aria-pressed','false');
+  renderAll();
+});
+document.getElementById('kidsOff').addEventListener('click',()=>{
+  state.kids=false;
+  document.getElementById('kidsOn').setAttribute('aria-pressed','false');
+  document.getElementById('kidsOff').setAttribute('aria-pressed','true');
+  renderAll();
+});
+document.getElementById('helperOn').addEventListener('click',()=>{
+  state.helper=true;
+  document.getElementById('helperOn').setAttribute('aria-pressed','true');
+  document.getElementById('helperOff').setAttribute('aria-pressed','false');
+  renderFilters(); renderAll();
+});
+document.getElementById('helperOff').addEventListener('click',()=>{
+  state.helper=false;
+  if (state.filter === 'HELP') state.filter = 'ALL';
+  document.getElementById('helperOn').setAttribute('aria-pressed','false');
+  document.getElementById('helperOff').setAttribute('aria-pressed','true');
+  renderFilters(); renderAll();
+});
+document.getElementById('printBtn').addEventListener('click',()=>window.print());
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  if(!confirm('Clear every tick on this board?')) return;
+  ticks = {}; store.save(ticks); renderAll();
+});
+
+renderFilters();
+renderAll();
+</script>
+</body>
+</html>
