@@ -22,12 +22,14 @@ import os
 import re
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 
 LEDGER = ".publish-ledger.tsv"
 WORKERS = 12
 TIMEOUT = 20
+MAX_ATTEMPTS = 3
 UA = "maio-pages-link-guard/1.0 (+github actions)"
 
 
@@ -46,20 +48,36 @@ def ledger_rows():
     return rows
 
 
+def _request_status(url, method, deadline):
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        return None
+    try:
+        req = urllib.request.Request(url, method=method,
+                                     headers={"User-Agent": UA, "Cache-Control": "no-cache"})
+        with urllib.request.urlopen(req, timeout=remaining) as r:
+            return r.status
+    except urllib.error.HTTPError as e:
+        return e.code
+    except Exception:                                       # noqa: BLE001
+        return None
+
+
 def status(url):
-    for method in ("HEAD", "GET"):
-        try:
-            req = urllib.request.Request(url, method=method,
-                                         headers={"User-Agent": UA, "Cache-Control": "no-cache"})
-            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-                return r.status
-        except urllib.error.HTTPError as e:
-            if e.code == 405 and method == "HEAD":
-                continue
-            return e.code
-        except Exception:                                   # noqa: BLE001
-            return None
-    return None
+    # Retries and the HEAD-to-GET fallback share one timeout budget per URL.
+    deadline = time.monotonic() + TIMEOUT
+    method = "HEAD"
+    for attempt in range(MAX_ATTEMPTS):
+        code = _request_status(url, method, deadline)
+        if code == 405 and method == "HEAD":
+            method = "GET"
+            code = _request_status(url, method, deadline)
+        if code is None or not 500 <= code < 600 or attempt == MAX_ATTEMPTS - 1:
+            return code
+        backoff = attempt + 1
+        if time.monotonic() + backoff >= deadline:
+            return code
+        time.sleep(backoff)
 
 
 def ever_published():
