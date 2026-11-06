@@ -268,7 +268,7 @@
 
   <div class="sectionhead">
     <h2>The checklist</h2>
-    <span class="hint">Tick as you go — ticks survive a reload on this machine. Chips show who owns the day.</span>
+    <span class="hint">Ticks are saved per date; monthly items reset each month. Chips show who owns the day.</span>
   </div>
   <div class="legend2">
     <span><span class="dot" style="background:#c3b8a5"></span>box = not done</span>
@@ -311,7 +311,7 @@
         <li><span class="tag">Garden</span> No gardener assumed. If there is one, the 45-minute Saturday lawn
         slot goes.</li>
         <li><span class="tag">Helper</span> No domestic helper assumed. Toggle "with helper" above to see the
-        week with two cleaning/laundry days covered.</li>
+        week with Wednesday and Saturday cleaning/laundry visits. Confirm these assumed days.</li>
         <li><span class="tag">Custody</span> The board assumes the children are with you this week. Switch to
         "Kids at Lauren's" and the school-run, homework and lunchbox load disappears.</li>
         <li><span class="tag">Bins</span> Refuse and recycling are collected on the <em>same day</em> in
@@ -345,8 +345,11 @@ const PEOPLE = {
   LIL:{name:'Lily',    init:'L', cls:'lil'},
   KIDS:{name:'Kids',   init:'D', cls:'kids'},
   BOTH:{name:'Both',   init:'RJ',cls:'both'},
-  HELP:{name:'Helper', init:'H', cls:'help'}
+  HELP:{name:'Helper', init:'H', cls:'help'},
+  COVER:{name:'Cover needed', init:'?', cls:'help'}
 };
+// Two assumed cleaning/laundry visits; confirm these days with the helper.
+const HELPER_DAYS = ['wed','sat'];
 const SECTIONS = [
   ['morning','Morning run','05:45 – 08:15'],
   ['school','School & activities','08:00 – 16:30'],
@@ -361,12 +364,12 @@ const SECTIONS = [
    byDay=per-day owner, note=footnote, helper=covered by outside help, freq=label */
 const TASKS = [
   /* ---------------- morning ---------------- */
-  {id:'m1', s:'morning', t:'Wake the children, breakfast on the table', d:['mon','tue','wed','thu','fri'], o:'RIC', b:'LIL', m:20, time:'06:30', swap:1, freq:'Weekdays'},
-  {id:'m2', s:'morning', t:'Dressed, teeth, shoes, bags by the door', d:['mon','tue','wed','thu','fri'], o:'JUL', b:'RIC', m:15, swap:1, freq:'Weekdays'},
-  {id:'m3', s:'morning', t:'School drop-off — Donnie & Gianna (doors close 08:00)', d:['mon','tue','wed','thu','fri'], o:'RIC', b:'LIL', m:30, g:1, time:'07:30', swap:1, freq:'Weekdays', note:'Leave 07:30. One driver, both children, no second trip.'},
+  {id:'m1', s:'morning', t:'Wake the children, breakfast on the table', d:['mon','tue','wed','thu','fri'], o:'RIC', b:'LIL', m:20, time:'06:30', swap:1, kids:1, freq:'Weekdays'},
+  {id:'m2', s:'morning', t:'Dressed, teeth, shoes, bags by the door', d:['mon','tue','wed','thu','fri'], o:'JUL', b:'RIC', m:15, swap:1, kids:1, freq:'Weekdays'},
+  {id:'m3', s:'morning', t:'School drop-off — Donnie & Gianna (doors close 08:00)', d:['mon','tue','wed','thu','fri'], o:'RIC', b:'LIL', m:30, g:1, time:'07:30', swap:1, kids:1, freq:'Weekdays', note:'Leave 07:30. One driver, both children, no second trip.'},
   {id:'m4', s:'morning', t:'Sofia — first feed, change, wind', d:DAYS, o:'JUL', b:'RIC', m:40, time:'06:00', care:1, freq:'Daily'},
   {id:'m5', s:'morning', t:'Breakfast kitchen reset — dishes, counters, table', d:['mon','tue','wed','thu','fri'], o:'LIL', m:10, freq:'Weekdays'},
-  {id:'m6', s:'morning', t:'Lunchboxes and water bottles into school bags', d:['mon','tue','wed','thu','fri'], o:'LIL', m:5, freq:'Weekdays'},
+  {id:'m6', s:'morning', t:'Lunchboxes and water bottles into school bags', d:['mon','tue','wed','thu','fri'], o:'LIL', m:5, kids:1, freq:'Weekdays'},
 
   /* ---------------- school & activities ---------------- */
   {id:'s1', s:'school', t:'Gianna pickup — Grade 1 ends 13:30', d:['mon','tue','wed','thu'], o:'LIL', b:'JUL', m:20, g:1, time:'13:30', kids:1, freq:'Mon–Thu'},
@@ -380,7 +383,7 @@ const TASKS = [
   {id:'s9', s:'school', t:'Reading practice — 15 minutes, one child at a time', d:DAYS, o:'RIC', byDay:{sat:'JUL',sun:'JUL'}, m:15, kids:1, freq:'Daily'},
   {id:'s10',s:'school', t:'Diary signing and school emails', d:['mon','tue','wed','thu','fri'], o:'JUL', m:5, kids:1, freq:'Weekdays'},
   {id:'s11',s:'school', t:'School admin block — forms, payments, calendar, trip letters', d:['wed'], o:'JUL', m:20, time:'11:00', kids:1, freq:'Weekly'},
-  {id:'s12',s:'school', t:'Sports kit washed and back in bags', d:['sun','wed'], o:'LIL', m:15, freq:'2×/week'},
+  {id:'s12',s:'school', t:'Sports kit washed and back in bags', d:['sun','wed'], o:'LIL', m:15, kids:1, freq:'2×/week'},
 
   /* ---------------- food ---------------- */
   {id:'f1', s:'food', t:'Meal plan for the week — seven dinners, written down', d:['sun'], o:'BOTH', m:25, g:1, time:'16:00', freq:'Weekly'},
@@ -388,7 +391,7 @@ const TASKS = [
   {id:'f3', s:'food', t:'Grocery delivery unpacked and stored', d:['mon'], o:'LIL', m:30, freq:'Weekly'},
   {id:'f4', s:'food', t:'Mid-week top-up — milk, bread, nappies, fruit', d:['wed'], o:'RIC', m:25, swap:1, freq:'Weekly'},
   {id:'f5', s:'food', t:'Dinner cooked', d:DAYS, o:'RIC', byDay:{tue:'LIL',thu:'LIL',sat:'JUL'}, m:45, g:1, time:'17:30', swap:1, freq:'Daily'},
-  {id:'f6', s:'food', t:"Children's dinner served at 17:00 and supervised", d:DAYS, o:'LIL', b:'RIC', m:20, g:1, time:'17:00', swap:1, freq:'Daily'},
+  {id:'f6', s:'food', t:"Children's dinner served at 17:00 and supervised", d:DAYS, o:'LIL', b:'RIC', m:20, g:1, time:'17:00', swap:1, kids:1, freq:'Daily'},
   {id:'f7', s:'food', t:'Table set and cleared', d:DAYS, o:'KIDS', m:10, kids:1, freq:'Daily'},
   {id:'f8b',s:'food', t:'Family dinner at the table — no phones, everyone present', d:DAYS, o:'BOTH', m:30, g:1, time:'18:30', zero:1, freq:'Daily'},
   {id:'f8', s:'food', t:'Sunday batch cook — two dinners ahead for the week', d:['sun'], o:'RIC', m:60, g:1, time:'10:00', freq:'Weekly'},
@@ -415,8 +418,8 @@ const TASKS = [
   {id:'h16',s:'home', t:'Family meeting — the week, the roster, who is short', d:['sun'], o:'BOTH', m:20, g:1, time:'18:00', freq:'Weekly'},
 
   /* ---------------- evening ---------------- */
-  {id:'e1', s:'evening', t:'Baths', d:DAYS, o:'RIC', byDay:{tue:'JUL',thu:'JUL',sat:'JUL'}, m:30, g:1, time:'18:30', swap:1, freq:'Daily'},
-  {id:'e2', s:'evening', t:'Bedtime — Donnie and Gianna, 19:15', d:DAYS, o:'JUL', byDay:{mon:'RIC',wed:'RIC',fri:'RIC'}, m:30, g:1, time:'19:15', swap:1, freq:'Daily'},
+  {id:'e1', s:'evening', t:'Baths', d:DAYS, o:'RIC', byDay:{tue:'JUL',thu:'JUL',sat:'JUL'}, m:30, g:1, time:'18:30', swap:1, kids:1, freq:'Daily'},
+  {id:'e2', s:'evening', t:'Bedtime — Donnie and Gianna, 19:15', d:DAYS, o:'JUL', byDay:{mon:'RIC',wed:'RIC',fri:'RIC'}, m:30, g:1, time:'19:15', swap:1, kids:1, freq:'Daily'},
   {id:'e3', s:'evening', t:'Sofia — evening cluster feed and settle', d:DAYS, o:'JUL', m:45, g:1, time:'17:00', care:1, freq:'Daily'},
   {id:'e4', s:'evening', t:'Night duty 22:00–02:00 — nappy, wind, resettle', d:DAYS, o:'RIC', m:60, care:1, freq:'Daily'},
   {id:'e5', s:'evening', t:'Night duty 02:00–06:00 — the feeds', d:DAYS, o:'JUL', m:60, care:1, freq:'Daily'},
@@ -436,7 +439,7 @@ const TASKS = [
 
 /* --------------------------------------------------------------- state */
 const store = {
-  key:'maio-house-roster-v1',
+  key:'maio-house-roster-v2',
   load(){ try{ return JSON.parse(localStorage.getItem(this.key)) || {} }catch(e){ return {} } },
   save(o){ try{ localStorage.setItem(this.key, JSON.stringify(o)) }catch(e){} }
 };
@@ -452,20 +455,46 @@ function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x
 function fmtShort(d){ return d.getDate() + ' ' + d.toLocaleString('en-GB',{month:'short'}); }
 function iso(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 
-/* rotate every swap-flagged task between Ricardo and Julie */
+/* Respect availability and the protected feeding window; keep uncovered work visible. */
 function resolve(task, day){
   let o = (task.byDay && task.byDay[day]) || task.o;
-  if (task.swap && state.rot === 'B'){
-    if (o === 'RIC') o = 'JUL'; else if (o === 'JUL') o = 'RIC';
+  const protectedTime = !task.care && !task.zero && task.time >= '17:00' && task.time < '20:00';
+  if (protectedTime && (o === 'JUL' || o === 'BOTH')) o = 'RIC';
+  if (state.rot === 'B'){
+    if (o === 'RIC'){
+      const backup = task.b;
+      o = backup && backup !== 'RIC' && !(protectedTime && backup === 'JUL') ? backup : 'COVER';
+    } else if (o === 'BOTH') o = 'JUL';
   }
-  if (state.helper && task.helper && (o==='LIL')) o = 'HELP';
+  if (state.helper && task.helper && o === 'LIL' && HELPER_DAYS.includes(day)) o = 'HELP';
   return o;
 }
 function activeDays(task){
   if (!state.kids && task.kids) return [];
   return task.d.length ? task.d : [];
 }
-function isTick(id){ return !!ticks[id]; }
+function completionKey(id, offset = state.weekOffset){
+  const [taskId, day] = id.split(':');
+  const monday = mondayOf(offset);
+  return day === '_'
+    ? taskId + ':month:' + iso(monday).slice(0,7)
+    : taskId + ':date:' + iso(addDays(monday, DAYS.indexOf(day)));
+}
+function isTick(id){ return !!ticks[completionKey(id)]; }
+// Old ticks had no period. Preserve them in the original anchor week/month,
+// leaving the original storage entry intact for recovery.
+try {
+  if (localStorage.getItem(store.key) === null){
+    const legacy = JSON.parse(localStorage.getItem('maio-house-roster-v1') || '{}');
+    for (const [id, done] of Object.entries(legacy || {})){
+      const [taskId, day] = id.split(':');
+      const task = TASKS.find(t=>t.id === taskId);
+      if (done && task && (day === '_' ? !task.d.length : task.d.includes(day)))
+        ticks[completionKey(id, 0)] = 1;
+    }
+    store.save(ticks);
+  }
+} catch(e) {}
 
 /* ------------------------------------------------------------- render */
 function chip(key, extra){
@@ -486,7 +515,7 @@ function renderStats(){
       const o = resolve(t,d);
       total++;
       if(!isTick(t.id+':'+d)) open++;
-      if(o==='HELP' || t.zero) return;
+      if(t.zero) return;
       if(t.care) careMin += t.m; else choreMin += t.m;
     });
   });
@@ -494,13 +523,14 @@ function renderStats(){
   const careH = (careMin/60).toFixed(0);
   document.getElementById('stats').innerHTML = `
     <div class="stat"><div class="k">Week</div><div class="v">${fmtShort(monday)} – ${fmtShort(addDays(monday,6))}</div><div class="n">${state.rot==='A'?'Ricardo home':'Ricardo away — surge week'} &middot; ${state.kids?'children with you':'children at Lauren’s'}</div></div>
-    <div class="stat"><div class="k">Chore hours</div><div class="v">${hours}<small> h</small></div><div class="n">Across Ricardo, Julie${state.helper?' and a helper':' and Lily'} this week</div></div>
+    <div class="stat"><div class="k">Chore hours</div><div class="v">${hours}<small> h</small></div><div class="n">Required household work, including Lily and the children${state.helper?' and helper visits':''}</div></div>
     <div class="stat"><div class="k">Care hours</div><div class="v">${careH}<small> h</small></div><div class="n">Feeds and night duty — not transferable</div></div>
     <div class="stat"><div class="k">Still open</div><div class="v" id="openCount">${open}<small> of ${total}</small></div><div class="n">Ticked items stay ticked on reload</div></div>`;
 }
 
 function renderLegend(){
   const keys = state.helper ? ['RIC','JUL','LIL','KIDS','HELP'] : ['RIC','JUL','LIL','KIDS'];
+  if (state.rot === 'B') keys.push('COVER');
   document.getElementById('legend').innerHTML = keys.map(k=>{
     const p = PEOPLE[k];
     return `<span class="person"><span class="avatar ${p.cls}">${p.init}</span>${p.name}</span>`;
@@ -535,13 +565,16 @@ function renderWeek(){
 }
 
 function weeklyMinutes(){
-  const acc = {RIC:{chore:0,care:0},JUL:{chore:0,care:0},LIL:{chore:0,care:0},HELP:{chore:0,care:0},KIDS:{chore:0,care:0}};
+  const acc = {RIC:{chore:0,care:0},JUL:{chore:0,care:0},LIL:{chore:0,care:0},HELP:{chore:0,care:0},KIDS:{chore:0,care:0},COVER:{chore:0,care:0}};
   TASKS.forEach(t=>{
     activeDays(t).forEach(d=>{
       const o = resolve(t,d);
       if (t.zero) return;
-      if(!acc[o]) acc[o]={chore:0,care:0};
-      if(t.care) acc[o].care += t.m; else acc[o].chore += t.m;
+      const owners = o === 'BOTH' ? ['RIC','JUL'] : [o];
+      owners.forEach(owner=>{
+        if(t.care) acc[owner].care += t.m / owners.length;
+        else acc[owner].chore += t.m / owners.length;
+      });
     });
   });
   return acc;
@@ -550,6 +583,7 @@ function weeklyMinutes(){
 function renderBars(){
   const acc = weeklyMinutes();
   const keys = state.helper ? ['RIC','JUL','LIL','HELP'] : ['RIC','JUL','LIL'];
+  if (state.rot === 'B') keys.push('COVER');
   const maxTotal = Math.max(...keys.map(k=>acc[k].chore+acc[k].care));
   document.getElementById('bars').innerHTML = keys.map(k=>{
     const p = PEOPLE[k];
@@ -574,15 +608,15 @@ function renderBars(){
   const jul = acc.JUL.chore + acc.JUL.care;
   const lil = acc.LIL.chore + acc.LIL.care;
   let msg;
-  if (!state.kids){
+  if (!state.kids && state.rot !== 'B'){
     msg = `<b>Children at Lauren's — the quiet week.</b> The school runs, homework and lunchboxes are gone;
       what is left is the house, the baby and the admin. Use the space for the monthly items instead of
       inventing new work for anyone.`;
   } else if (state.rot === 'B'){
-    msg = `<b>Surge week: Julie ${hh(jul)} h, Lily ${hh(lil)} h.</b> With Ricardo away the school runs and the
-      cooking land on the other two — and unlike chores, ${hh(acc.JUL.care)} h of feeding cannot be shared out.
-      This week only works with the helper on, or a grandparent sleeping over. It is not a rotation to run
-      casually.`;
+    msg = `<b>Ricardo away: Julie ${hh(jul)} h, Lily ${hh(lil)} h.</b> Recorded backups cover available duties;
+      <b>${hh(acc.COVER.chore + acc.COVER.care)} h still need cover</b>. Unassigned work stays visible rather than
+      silently moving to Julie during her protected feeding window. The helper model covers cleaning/laundry
+      on Wednesday and Saturday only; confirm the remaining cover before using this week.`;
   } else {
     msg = `<b>Ricardo ${hh(ric)} h · Julie ${hh(jul)} h.</b> Near parity on the clock — the composition is the
       story: <b>${hh(acc.RIC.chore)} h of chores</b> against <b>${hh(acc.JUL.care)} h of feeding and night
@@ -599,8 +633,11 @@ function renderGroups(){
     if (state.filter !== 'ALL'){
       items = items.filter(t=>{
         const ds = activeDays(t);
-        if(!ds.length) return true;
-        return ds.some(d=>resolve(t,d)===state.filter);
+        if(!ds.length) return t.o === state.filter;
+        return ds.some(d=>{
+          const owner = resolve(t,d);
+          return owner === state.filter || (owner === 'BOTH' && ['RIC','JUL'].includes(state.filter));
+        });
       });
     }
     if(!items.length) return '';
@@ -652,7 +689,7 @@ function wireCheckboxes(){
       const row = e.target.closest('.row');
       const id = row.dataset.id;
       const task = TASKS.find(t=>t.id===id);
-      const key = id + ':' + (e.target.dataset.day || '_');
+      const key = completionKey(id + ':' + (e.target.dataset.day || '_'));
       if (e.target.checked) ticks[key] = 1; else delete ticks[key];
       store.save(ticks);
       const ds = activeDays(task);
@@ -719,6 +756,7 @@ document.getElementById('helperOn').addEventListener('click',()=>{
 });
 document.getElementById('helperOff').addEventListener('click',()=>{
   state.helper=false;
+  if (state.filter === 'HELP') state.filter = 'ALL';
   document.getElementById('helperOn').setAttribute('aria-pressed','false');
   document.getElementById('helperOff').setAttribute('aria-pressed','true');
   renderFilters(); renderAll();
