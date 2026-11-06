@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Week — Maio household</title>
+<style>
+  :root{
+    --paper:#f7f3ec; --card:#fffdf9; --ink:#1b1815; --muted:#6f675d;
+    --line:#e2dacd; --line-strong:#cfc4b2;
+    --ric:#0e6f6b; --jul:#a8405f; --lil:#a2722a;
+    --kids:#8a8279; --all:#b8ae9f; --help:#c9c0b1;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 10px 24px -18px rgba(40,30,15,.45);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:30px 24px 70px}
+
+  .eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+     font-size:40px;line-height:1.02;margin:8px 0 4px;letter-spacing:-.015em;font-weight:600}
+  .sub{color:var(--muted);font-size:14.5px;max-width:70ch}
+
+  .controls{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:18px 0 14px}
+  .seg{display:inline-flex;background:#efe8dc;border:1px solid var(--line-strong);border-radius:10px;padding:3px;gap:2px}
+  .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;font-weight:600;
+    padding:7px 11px;border-radius:7px;cursor:pointer;white-space:nowrap}
+  .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.09)}
+  .btn{border:1px solid var(--line-strong);background:var(--card);color:var(--ink);font:inherit;font-size:12.5px;
+    font-weight:600;padding:9px 13px;border-radius:9px;cursor:pointer}
+  .btn:hover{border-color:#b9ab95}
+  .spacer{flex:1}
+
+  .legend{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .person{display:inline-flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+    border-radius:999px;padding:5px 12px 5px 6px;font-size:12.5px;font-weight:600}
+  .avatar{width:21px;height:21px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:10.5px;font-weight:700}
+  .ric{background:var(--ric)} .jul{background:var(--jul)} .lil{background:var(--lil)}
+  .kids{background:var(--kids)} .all{background:var(--all);color:#3a352e}
+  .help{background:var(--help);color:#3a352e;box-shadow:inset 0 0 0 1px #8a8279}
+
+  /* ---------------- the week grid ---------------- */
+  .board{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;
+    box-shadow:0 1px 0 rgba(0,0,0,.04),0 16px 34px -24px rgba(40,30,15,.5);overflow-x:auto}
+  .grid{display:grid;grid-template-columns:168px repeat(7,minmax(0,1fr));gap:5px;min-width:760px}
+  .gh{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:750;
+    padding:0 2px 6px;text-align:center}
+  .gh.today{color:var(--ink)}
+  .gh .d{display:block;font-size:10px;letter-spacing:0;text-transform:none;font-weight:600;color:#a09a90}
+  .area{padding:10px 10px 10px 4px;border-top:1px solid #f0eae0;display:flex;flex-direction:column;justify-content:center}
+  .area .n{font-size:13px;font-weight:650;letter-spacing:-.01em;line-height:1.15}
+  .area .s{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.25}
+  .cell{position:relative;border-radius:9px;min-height:52px;display:flex;align-items:center;justify-content:center;
+    text-align:center;color:#fff;font-size:11.5px;font-weight:650;letter-spacing:.01em;padding:6px 4px;
+    line-height:1.2;border:1px solid transparent}
+  .cell.dim{opacity:.55}
+  .cell.empty{background:transparent;border:1px dashed #e6ddcf;color:transparent}
+  .cell.small{font-size:10px}
+
+  /* ---------------- page two ---------------- */
+  .page2{margin-top:34px}
+  .sectionhead{display:flex;align-items:baseline;gap:12px;margin:0 0 12px}
+  .sectionhead h2{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:21px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .sectionhead .hint{font-size:12px;color:var(--muted)}
+  .three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .pcard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .pcard .ph{display:flex;align-items:center;gap:9px;padding:11px 14px;color:#fff}
+  .pcard .ph .nm{font-weight:700;font-size:14px}
+  .pcard .ph .hr{margin-left:auto;font-size:11.5px;font-weight:650;opacity:.9}
+  .pbody{padding:6px 14px 12px}
+  .line{display:flex;gap:8px;padding:6px 0;border-top:1px solid #f2ede3;font-size:12px;line-height:1.35}
+  .line:first-child{border-top:0}
+  .line .k{color:var(--muted);font-weight:650;min-width:78px}
+  .line .v{flex:1}
+  .notes{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;margin-top:12px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+  .panel h3{margin:0 0 7px;font-size:13px}
+  .panel ul{margin:0;padding-left:16px;font-size:12.5px;line-height:1.5;color:#37322b}
+  .panel li{margin-bottom:5px}
+  .panel p{margin:0;font-size:12.5px;line-height:1.5;color:#37322b}
+  .tag{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    padding:2px 6px;border-radius:4px;background:#efe8dc;color:#6b6459;margin-right:5px}
+  a{color:var(--ric);text-decoration:none;border-bottom:1px solid rgba(14,111,107,.35)}
+  footer{margin-top:26px;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);line-height:1.55}
+  .footmark{display:none}
+
+  @media (max-width:820px){
+    .three{grid-template-columns:1fr}
+    .notes{grid-template-columns:1fr}
+    h1{font-size:31px}
+  }
+
+  @media print{
+    @page{size:A4 landscape;margin:7mm}
+    html,body{background:#fff!important}
+    body{font-size:8pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .wrap{max-width:none;padding:0}
+    .controls,.legend{display:none!important}
+    h1{font-size:17pt;margin:0 0 1mm}
+    .sub{font-size:7pt;max-width:none;margin:0}
+    .eyebrow{font-size:6pt}
+    .board{border:0;box-shadow:none;padding:0;border-radius:0;margin-top:2mm;overflow:visible}
+    .grid{grid-template-columns:34mm repeat(7,1fr)!important;gap:1.3mm;min-width:0}
+    .gh{font-size:6pt;padding:0 0 1mm}
+    .gh .d{font-size:5.6pt}
+    .area{border-top:0;padding:0 2mm 0 0}
+    .area .n{font-size:7.6pt;line-height:1.1}
+    .area .s{font-size:5.7pt;line-height:1.15}
+    .cell{min-height:14.2mm;border-radius:1.4mm;font-size:7.2pt;padding:1mm;line-height:1.12}
+    .cell.small{font-size:6.4pt}
+    .page2{break-before:page;margin-top:0}
+    .sectionhead{margin:0 0 2mm}
+    .sectionhead h2{font-size:11pt}
+    .sectionhead .hint{font-size:6.4pt}
+    .three{gap:3mm}
+    .pcard{border-radius:1.6mm;box-shadow:none}
+    .pcard .ph{padding:1.6mm 2.2mm}
+    .pcard .ph .nm{font-size:8.4pt}
+    .pcard .ph .hr{font-size:6pt}
+    .pbody{padding:.8mm 2.2mm 1.6mm}
+    .line{padding:.75mm 0;font-size:6.4pt;line-height:1.22}
+    .line .k{min-width:19mm;font-size:6.2pt}
+    .notes{gap:3mm;margin-top:3mm}
+    .panel{border-radius:1.6mm;padding:2.2mm 2.6mm;box-shadow:none}
+    .panel h3{font-size:7.4pt;margin-bottom:1mm}
+    .panel ul,.panel p{font-size:6.1pt;line-height:1.24}
+    footer{display:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Maio household &middot; one week</div>
+  <h1>The Week</h1>
+  <p class="sub">Ten areas of the house, seven days, one colour per adult. <b>Teal is Ricardo, rose is Julie,
+  amber is Lily.</b> Read across a row to see who owns that job this week; read down a column to see whose day it is.</p>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Week">
+      <button id="rotA" aria-pressed="true">Ricardo home</button>
+      <button id="rotB" aria-pressed="false">Ricardo away</button>
+    </div>
+    <div class="seg" role="group" aria-label="Custody">
+      <button id="kidsOn" aria-pressed="true">Kids with us</button>
+      <button id="kidsOff" aria-pressed="false">Kids at Lauren's</button>
+    </div>
+    <div class="seg" role="group" aria-label="Help">
+      <button id="helperOff" aria-pressed="true">No outside help</button>
+      <button id="helperOn" aria-pressed="false">With a helper</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" id="printBtn">Print A4</button>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="board">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="page2">
+    <div class="sectionhead">
+      <h2>Who does what</h2>
+      <span class="hint">The same week, read by person.</span>
+    </div>
+    <div class="three" id="people"></div>
+
+    <div class="notes">
+      <div class="panel">
+        <h3>How the week holds together</h3>
+        <ul>
+          <li><b>17:00–20:00 is Julie's.</b> Cluster feeding. Nobody books anything over it — dinner, baths and
+          bedtime belong to everyone else.</li>
+          <li><b>Nights are split every night:</b> Ricardo 22:00–02:00, Julie 02:00–06:00. That is why the
+          mornings sit with him.</li>
+          <li><b>Care is not a chore.</b> The feeds are hours, not tasks; they never move to balance a chart.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Worth confirming</h3>
+        <ul>
+          <li><span class="tag">Lily</span>Amber is the load to check with her first — laundry every day is
+          more than it looks.</li>
+          <li><span class="tag">Pool</span>Assumes no pool service. A contract would empty two teal cells.</li>
+          <li><span class="tag">Bins</span>Refuse and recycling share a day in Welgemoed; confirm the street's
+          day.</li>
+          <li><span class="tag">Helper</span>Off by default. Switch it on to see which cells leave the family.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    A working week, not a rota — it changes when the house changes. School times from
+    <a href="https://www.durbanville.reddamhouse.com/school-life/school-calendar" target="_blank" rel="noopener">Reddam House Durbanville</a>.
+    Refuse and recycling per the
+    <a href="https://www.capetown.gov.za/media-and-news/new-recycling-collection-days-in-northern-suburbs-and-surrounding-areas/" target="_blank" rel="noopener">City of Cape Town</a>
+    (Welgemoed, Sub-council 7).
+  </footer>
+</div>
+
+<script>
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const DATES = [2,3,4,5,6,7,8];
+const PEOPLE = {
+  RIC:{name:'Ricardo',init:'R',cls:'ric'},
+  JUL:{name:'Julie',  init:'J',cls:'jul'},
+  LIL:{name:'Lily',   init:'L',cls:'lil'},
+  HELP:{name:'Helper',init:'H',cls:'help'}
+};
+
+/* One row per area of the house. Each day: {o: owner, t: short label} or null (nothing that day). */
+const ROWS = [
+  {id:'morning', name:'Morning run', sub:'wake · dress · out the door', days:[
+    {o:'RIC',t:'Drop'},{o:'RIC',t:'Drop'},{o:'RIC',t:'Drop'},{o:'RIC',t:'Drop'},{o:'RIC',t:'Drop'},
+    {o:'RIC',t:'Breakfast'},{o:'JUL',t:'Breakfast'}]},
+
+  {id:'afternoon', name:'Afternoon run', sub:'pickups · activities', kids:true, days:[
+    {o:'LIL',t:'Pickup'},{o:'LIL',t:'Tennis'},{o:'LIL',t:'Swim'},{o:'LIL',t:'Hockey'},{o:'JUL',t:'Early pickup'},
+    {o:'RIC',t:'Sport'},null]},
+
+  {id:'cooking', name:'Cooking', sub:'dinner, every night', days:[
+    {o:'RIC',t:'Cook'},{o:'LIL',t:'Cook'},{o:'RIC',t:'Cook'},{o:'LIL',t:'Cook'},{o:'RIC',t:'Cook'},
+    {o:'JUL',t:'Cook'},{o:'RIC',t:'Batch cook'}]},
+
+  {id:'groceries', name:'Groceries', sub:'order · unpack · top-up', days:[
+    {o:'LIL',t:'Unpack'},null,null,{o:'RIC',t:'Top-up'},null,null,{o:'RIC',t:'Order'}]},
+
+  {id:'homework', name:'Homework', sub:'the kitchen table', kids:true, days:[
+    {o:'RIC',t:'Donnie'},{o:'JUL',t:'Gianna'},{o:'RIC',t:'Donnie'},{o:'JUL',t:'Gianna'},null,null,null]},
+
+  {id:'bath', name:'Bath & bed', sub:'19:00 – 19:45', days:[
+    {o:'RIC'},{o:'JUL'},{o:'RIC'},{o:'JUL'},{o:'RIC'},{o:'JUL'},{o:'RIC'}]},
+
+  {id:'laundry', name:'Laundry', sub:'one load a day', days:[
+    {o:'LIL'},{o:'LIL'},{o:'LIL'},{o:'LIL'},{o:'LIL'},{o:'LIL'},{o:'LIL'}]},
+
+  {id:'feeds', name:'Sofia', sub:'feeds, all day', care:true, days:[
+    {o:'JUL'},{o:'JUL'},{o:'JUL'},{o:'JUL'},{o:'JUL'},{o:'JUL'},{o:'JUL'}]},
+
+  {id:'outside', name:'Garden, pool & bins', sub:'outside the house', days:[
+    {o:'RIC',t:'Pool'},{o:'RIC',t:'Bins'},null,{o:'RIC',t:'Pool'},null,{o:'RIC',t:'Clean'},null]},
+
+  {id:'admin', name:'Admin & bills', sub:'the study', days:[
+    null,null,{o:'JUL',t:'Forms'},null,null,null,{o:'RIC',t:'Bills'}]}
+];
+
+let state = {rot:'A', kids:true, helper:false};
+
+function owner(cell){
+  if (!cell) return null;
+  let o = cell.o;
+  if (state.rot==='B'){ if (o==='RIC') o='JUL'; else if (o==='JUL') o='RIC'; }
+  if (state.helper && o==='LIL') o='HELP';
+  return o;
+}
+
+function renderLegend(){
+  const keys = state.helper ? ['RIC','JUL','LIL','HELP'] : ['RIC','JUL','LIL'];
+  document.getElementById('legend').innerHTML = keys.map(k=>{
+    const p=PEOPLE[k];
+    return `<span class="person"><span class="avatar ${p.cls}">${p.init}</span>${p.name}</span>`;
+  }).join('');
+}
+
+function renderGrid(){
+  const g = document.getElementById('grid');
+  let html = '<div class="gh" style="text-align:left">AREA</div>';
+  html += DAYS.map((d,i)=>`<div class="gh">${d}<span class="d">${DATES[i]} Nov</span></div>`).join('');
+
+  ROWS.forEach(row=>{
+    const hidden = row.kids && !state.kids;
+    html += `<div class="area"><div class="n" style="${hidden?'opacity:.4':''}">${row.name}</div>
+             <div class="s">${row.sub}</div></div>`;
+    row.days.forEach(cell=>{
+      if (hidden || !cell) { html += `<div class="cell empty"></div>`; return; }
+      const o = owner(cell);
+      const p = PEOPLE[o];
+      const label = cell.t || p.name;
+      const small = label.length > 8 ? ' small' : '';
+      html += `<div class="cell ${p.cls}${small}">${label}</div>`;
+    });
+  });
+  g.innerHTML = html;
+}
+
+function renderPeople(){
+  const cards = ['RIC','JUL','LIL'].filter(k=>!state.helper || k!=='LIL' || true).map(k=>{
+    const p = PEOPLE[k];
+    const rows = ROWS.map(row=>{
+      if (row.kids && !state.kids) return null;
+      const days = row.days.map((cell,i)=>({cell,i})).filter(x=>x.cell && owner(x.cell)===k).map(x=>DAYS[x.i]);
+      if (!days.length) return null;
+      if (days.length===7) return {k:row.name, v:'every day'};
+      if (days.length===5 && days[0]==='Mon' && days[4]==='Fri') return {k:row.name, v:'Monday to Friday'};
+      if (days.length===2 && days[0]==='Mon' && days[1]==='Thu') return {k:row.name, v:'Monday and Thursday'};
+      return {k:row.name, v:days.join(' · ')};
+    }).filter(Boolean);
+    return `<div class="pcard">
+      <div class="ph ${p.cls}"><span class="avatar" style="background:rgba(255,255,255,.24)">${p.init}</span>
+        <span class="nm">${p.name}</span><span class="hr">${rows.length} areas</span></div>
+      <div class="pbody">${rows.map(r=>`<div class="line"><span class="k">${r.k}</span><span class="v">${r.v}</span></div>`).join('') ||
+        '<div class="line"><span class="v" style="color:var(--muted)">Nothing this week</span></div>'}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('people').innerHTML = cards;
+}
+
+function renderAll(){ renderLegend(); renderGrid(); renderPeople(); }
+
+document.getElementById('rotA').addEventListener('click',()=>{
+  state.rot='A';
+  document.getElementById('rotA').setAttribute('aria-pressed','true');
+  document.getElementById('rotB').setAttribute('aria-pressed','false');
+  renderAll();
+});
+document.getElementById('rotB').addEventListener('click',()=>{
+  state.rot='B';
+  document.getElementById('rotB').setAttribute('aria-pressed','true');
+  document.getElementById('rotA').setAttribute('aria-pressed','false');
+  renderAll();
+});
+document.getElementById('kidsOn').addEventListener('click',()=>{
+  state.kids=true;
+  document.getElementById('kidsOn').setAttribute('aria-pressed','true');
+  document.getElementById('kidsOff').setAttribute('aria-pressed','false');
+  renderAll();
+});
+document.getElementById('kidsOff').addEventListener('click',()=>{
+  state.kids=false;
+  document.getElementById('kidsOn').setAttribute('aria-pressed','false');
+  document.getElementById('kidsOff').setAttribute('aria-pressed','true');
+  renderAll();
+});
+document.getElementById('helperOn').addEventListener('click',()=>{
+  state.helper=true;
+  document.getElementById('helperOn').setAttribute('aria-pressed','true');
+  document.getElementById('helperOff').setAttribute('aria-pressed','false');
+  renderAll();
+});
+document.getElementById('helperOff').addEventListener('click',()=>{
+  state.helper=false;
+  document.getElementById('helperOn').setAttribute('aria-pressed','false');
+  document.getElementById('helperOff').setAttribute('aria-pressed','true');
+  renderAll();
+});
+document.getElementById('printBtn').addEventListener('click',()=>window.print());
+
+renderAll();
+</script>
+</body>
+</html>
