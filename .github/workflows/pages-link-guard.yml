@@ -5,7 +5,7 @@ name: published links
 # dedupe pass (2026-11-02) and a page renamed by a pull request merged on github.com (2026-11-02),
 # which no local git hook can see.
 #
-# This is the only check that runs where a web merge happens. It needs nothing but the checkout:
+# After Pages deploys a web merge, this check needs nothing but the checkout:
 # lens 1 = every ledger URL answers 200; lens 2 = every name that ever held a ledger row still
 # exists. The vault lens (the links a note actually quotes) needs Ricardo's vault and is not here:
 #   python3 ~/.config/maio-stack/tools/pages_link_check.py check
@@ -13,7 +13,9 @@ name: published links
 # Rule and rationale: ~/.config/maio-stack/docs/document-publishing-convention.md §2.5.2
 
 on:
-  push:
+  workflow_run:
+    workflows: [pages-build-deployment]
+    types: [completed]
     branches: [main]
   schedule:
     - cron: "23 4 * * *"          # 06:23 SAST, before the day starts
@@ -25,10 +27,17 @@ permissions:
 jobs:
   links:
     name: every published page still answers
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          # Later pushes may move main beyond the deployment being checked.
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           fetch-depth: 0          # the ledger's whole history is lens 2
+      - name: test bounded link response handling
+        run: python3 -m unittest discover -s .github -p 'test_pages_link_check_ci.py'
       - name: audit the published URLs and names
         run: python3 .github/pages_link_check_ci.py
