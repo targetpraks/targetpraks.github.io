@@ -109,11 +109,11 @@
   </ol>
 </nav>
 
-<h2 id="method"><span class="num">01</span>What was measured, and from where</h2>
+<h2 id="method"><span class="num">01</span> What was measured, and from where</h2>
 <p>Two vantage points, both legitimate: the staging VM at <b>192.168.88.226</b> — a bridged guest on the same office LAN, so it sees exactly what any office laptop sees — and an SSH shell on the Mac mini as <code>infmac</code>, which is an administrator account but has no passwordless <code>sudo</code>. Everything below is read-only: port tests, service banners, directory records and preference reads. Nothing was changed, and no password was entered or requested.</p>
 <p>This note covers the side question in the original request — the exposure of SMB, Screen Sharing, ARD and Kerberos. The wider inventory of what runs on the box (Hermes under <code>hermes-deploy</code>, the :8099/:9377/:9390 endpoints) is in the <a href="https://targetpraks.github.io/inf-mac-mini-access-2026-11.html">access report</a> and is not repeated here.</p>
 
-<h2 id="table"><span class="num">02</span>The four services at a glance</h2>
+<h2 id="table"><span class="num">02</span> The four services at a glance</h2>
 <table>
   <thead>
     <tr><th>Port</th><th>Service</th><th>Answering on the VLAN</th><th>What it asks for</th><th>Who is allowed</th><th>Verdict</th></tr>
@@ -155,7 +155,7 @@
 </table>
 <p class="note">Port 139 is closed, so SMB is SMB2/3 over 445 only. The box also exposes SSH 22, AirPlay 5000/7000, rapportd 49423, the Hermes endpoints 8099/9377/9390 and 3031; those are covered elsewhere and excluded from this note.</p>
 
-<h2 id="smb"><span class="num">03</span>SMB on 445</h2>
+<h2 id="smb"><span class="num">03</span> SMB on 445</h2>
 <p>SMB answers, but it does not let anyone in without an account. From the machine itself, an anonymous session was refused on both the loopback address and the LAN address:</p>
 <pre><span class="c">$ smbutil view -N //127.0.0.1</span>
 smbutil: server rejected the authentication: Authentication error
@@ -168,7 +168,7 @@ smbutil: server rejected the authentication: Authentication error</pre>
   <p style="margin-bottom:0">A file door that is shut to anonymous users but has no signature check on the knock — and the only account behind it is the administrator who is logged in at the console.</p>
 </div>
 
-<h2 id="screen"><span class="num">04</span>Screen Sharing and ARD</h2>
+<h2 id="screen"><span class="num">04</span> Screen Sharing and ARD</h2>
 <h3>Screen Sharing on 5900</h3>
 <p>The banner is <code>RFB 003.889</code>. The security types offered after the version handshake are <b>30, 33, 36 and 35</b> — all of them Apple's Remote Desktop authentication family. Type 1 (<i>None</i>, no authentication at all) and type 2 (legacy VNC password) are <b>not</b> offered, so the “VNC viewers may control screen with password” option is off and there is no unauthenticated way onto the display.</p>
 <pre><span class="c"># version handshake against the local listener</span>
@@ -187,7 +187,7 @@ ARDAgent 1125 infmac 9u IPv6 ... TCP *:3283 (LISTEN)</pre>
 <p>The ARD access list is the <b>Remote Access</b> ACL, <code>com.apple.access_remote_ae</code>, which also nests only <code>admin</code>. The Remote Management preferences carry no <code>ARD_AllLocalUsers</code> key, so “all local users” has not been granted. What we cannot see without <code>sudo</code> is the <b>privilege set</b> — whether the allowed administrator can control and observe, send UNIX commands, copy items, or restart the machine. If Remote Management is enabled with the full control privilege, an ARD session is materially stronger than Screen Sharing, and the same password is the only gate.</p>
 <p>One structural note from Apple's own guidance: Screen Sharing and Remote Management are alternatives — turning one on turns the other off (<a href="https://support.apple.com/guide/mac-help/mh11848/mac">Apple Support</a>). Both sets of ports answering at the same time tells us the ARD listener is the agent process left running in the user session, which is worth confirming on the box with <a href="https://support.apple.com/guide/remote-desktop/set-access-privileges-apdfab787da/mac">the ARD privilege panel</a> rather than assumed.</p>
 
-<h2 id="krb"><span class="num">05</span>Kerberos on 88</h2>
+<h2 id="krb"><span class="num">05</span> Kerberos on 88</h2>
 <p>A Heimdal KDC is running as root and listening on <b>TCP and UDP 88</b>, on all interfaces, since boot on 28 October:</p>
 <pre><span class="c">$ ps aux | grep -i kdc</span>
 root 147 ... /System/Library/PrivateFrameworks/Heimdal.framework/Helpers/kdc
@@ -205,7 +205,7 @@ udp6 0 0 *.88 *.*</pre>
 <p>So the KDC runs <b>because File Sharing and Screen Sharing are on</b> — it is Apple's local single-sign-on helper for exactly those two services, not something somebody chose. That is the answer to the question in the original request: no, port 88 is not a deliberate KDC role.</p>
 <p>Risk is Low, and honestly stated: the realm is machine-local, so an attacker cannot use it against the rest of the estate, and the principal list and pre-authentication flags live in root-only files we could not read. What remains is unnecessary attack surface — a daemon on every office seat that nobody watches, plus the possibility that a local principal without pre-authentication is roastable. Both deserve a check with admin rights, not an alarm.</p>
 
-<h2 id="finding"><span class="num">06</span>The finding behind all four</h2>
+<h2 id="finding"><span class="num">06</span> The finding behind all four</h2>
 <div class="callout">
   <h3>No network control, one credential</h3>
   <p>The application firewall is <b>off</b>, stealth mode is <b>off</b>, and block-all is <b>off</b>:</p>
@@ -217,7 +217,7 @@ Firewall has block all state set to disabled.</pre>
 <p>Two accounts exist on the box. <code>infmac</code> is the administrator and is in every relevant group: <code>com.apple.access_ssh</code>, <code>com.apple.access_screensharing</code>, <code>com.apple.access_remote_ae</code>. <code>hermes-deploy</code> (uid 599) is a standard user, but it is in <code>com.apple.access_ssh</code> and in the file-sharing group, so it too has a shell on 22 and a seat on 445 — with no administrator rights, which is the right shape for a service account and the wrong shape for the share if the point was to keep the admin account off the network.</p>
 <p>That is the exposure in one sentence: <b>the security of four network services is the strength of one password, with no packet filter, no second factor and no separate account in between.</b></p>
 
-<h2 id="actions"><span class="num">07</span>What to change, in order</h2>
+<h2 id="actions"><span class="num">07</span> What to change, in order</h2>
 <p>All of these need an administrator password on the box, so they are for Tuan to run with Ricardo's approval. Nothing here was applied — the shell we hold has no passwordless <code>sudo</code>, and changing a live business machine is not ours to do unasked.</p>
 <ol class="recs">
   <li><b>Put a filter in front of the box.</b>
@@ -243,7 +243,7 @@ Firewall has block all state set to disabled.</pre>
     <div class="who">Tuan · needs admin</div></li>
 </ol>
 
-<h2 id="gaps"><span class="num">08</span>What we could not verify</h2>
+<h2 id="gaps"><span class="num">08</span> What we could not verify</h2>
 <p>Stated plainly, because a security note that hides its blind spots is worse than a short one:</p>
 <table>
   <thead><tr><th>Question</th><th>Why it stayed open</th><th>How to close it</th></tr></thead>
@@ -255,7 +255,7 @@ Firewall has block all state set to disabled.</pre>
   </tbody>
 </table>
 
-<h2 id="evidence"><span class="num">09</span>Evidence log</h2>
+<h2 id="evidence"><span class="num">09</span> Evidence log</h2>
 <p>Every claim above comes from one of these reads, taken 8 November 2026 between 17:23 and 17:26 SAST. Commands are shown as run; output is trimmed to the relevant lines.</p>
 <h3>From the office VLAN (192.168.88.226)</h3>
 <pre><span class="c">$ for p in 88 445 5900 3283; do timeout 3 bash -c "echo > /dev/tcp/192.168.88.173/$p" &amp;&amp; echo "$p open"; done</span>
@@ -314,7 +314,7 @@ uid=599(hermes-deploy) gid=20(staff) groups=20(staff),12(everyone),61(localaccou
 399(com.apple.access_ssh),100(_lpoperator),701(com.apple.sharepoint.group.1)</pre>
 <p class="note">The VNC security-type probe ran as a short socket script against <code>127.0.0.1:5900</code>: read the server banner, reply <code>RFB 003.889</code>, read the security-type count and list. No authentication was attempted against any service at any point.</p>
 
-<h2 id="sources"><span class="num">10</span>Sources</h2>
+<h2 id="sources"><span class="num">10</span> Sources</h2>
 <ul>
   <li><a href="https://support.apple.com/guide/mac-help/set-up-smb-file-sharing-on-mac-mh14107/mac">Apple Support — Set up SMB file sharing on Mac</a> (what the SMB option turns on, and the per-user Windows sharing list)</li>
   <li><a href="https://support.apple.com/guide/mac-help/mh11848/mac">Apple Support — Turn Mac screen sharing on or off</a> (access list, VNC option, and the note that Screen Sharing and Remote Management are mutually exclusive)</li>
