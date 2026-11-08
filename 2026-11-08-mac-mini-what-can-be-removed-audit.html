@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mac mini removal audit — 8 Nov 2026</title>
+<style>
+  :root{--ink:#101418;--muted:#5b6772;--line:#e2e6ea;--bg:#fbfbfa;--keep:#0b6b3a;--go:#8a1c1c;--warn:#8a5a00;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif}
+  main{max-width:900px;margin:0 auto;padding:56px 28px 96px}
+  h1{font-size:34px;line-height:1.15;letter-spacing:-.02em;margin:0 0 6px}
+  .sub{color:var(--muted);margin:0 0 36px}
+  h2{font-size:20px;letter-spacing:-.01em;margin:44px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+  h3{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:26px 0 8px}
+  p{margin:10px 0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+  th{text-align:left;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 10px 8px 0;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+  td{border-bottom:1px solid var(--line);padding:8px 10px 8px 0;vertical-align:top}
+  td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .verdict{display:inline-block;font-size:12px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+  .v-go{color:var(--go)} .v-keep{color:var(--keep)} .v-warn{color:var(--warn)}
+  .callout{border-left:3px solid var(--ink);padding:2px 0 2px 16px;margin:18px 0;color:#22292f}
+  code{font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:#eef1f3;padding:1px 5px;border-radius:4px}
+  .small{font-size:13.5px;color:var(--muted)}
+  ul{margin:8px 0 8px 20px;padding:0} li{margin:5px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Mac mini — what can be removed</h1>
+<p class="sub">Audit of 8 Nov 2026, 10:16–10:45 SAST · 371 GB used / 56 GB free on 460 GB · every figure measured on the machine</p>
+
+<h2>Bottom line</h2>
+<p><span class="verdict v-go">Buzz — remove</span> It is a chat client you have effectively stopped using: the last human message is 7 Nov 12:59 UTC, and volume collapsed from 905 events on 4 Nov to 6, then 2, then 2 per day. It costs 5 Docker containers, 7 agent bridge processes and ~1.9 GB.</p>
+<p><span class="verdict v-keep">Orca — keep the app, drop the broken job</span> This is not idle software. 408 Codex sessions since 30 Oct (129 on 30 Oct; 43 / 50 / 105 / 43 on 4–7 Nov), two worktrees (maio-os alone is 7.7 GB), and a Hermes TUI has been running under its terminal host for 27 hours. What genuinely does not serve you is the launchd job <code>com.maio.orca-serve</code>, which exits 1 every time it starts.</p>
+
+<h2>Buzz, in detail</h2>
+<table>
+<tr><th>Evidence</th><th>Result</th></tr>
+<tr><td>Channel structure</td><td>18 channels: 1-Ai-Space, 2-Work, 3-Personal, B1–B4 brand units, pilot, gms, Welcome — 50 memberships, 0 API tokens</td></tr>
+<tr><td>Message volume (Nov)</td><td>4 Nov: 905 events · 5 Nov: 50 · 6 Nov: 6 · 7 Nov: 2 · 8 Nov: 2 · 130 chat messages total</td></tr>
+<tr><td>Last human message</td><td>2026-11-07 12:59 UTC — you, closing a QMD MCP 404 thread</td></tr>
+<tr><td>Running cost</td><td>5 containers (relay, pair-relay, postgres, minio, redis), 142 MB of volumes, 7 <code>buzz-acp</code> processes, auto-started at login by <code>com.ricardo.buzz.stack</code></td></tr>
+<tr><td>Footprint</td><td>232 MB app + ~1.4 GB images + ~140 MB volumes + 2.6 MB state + 11 MB <code>~/Buzz</code></td></tr>
+</table>
+<p>Nothing else depends on it: it is not on any Tailscale mapping, and the bots you actually talk to run on Telegram and Discord. Removing it means deleting the app, the relay containers with their volumes, <code>~/Buzz</code>, and the two launchd jobs (<code>buzz.stack</code>, <code>buzz.backup</code>). Export the Postgres volume first if you want the chat history kept.</p>
+
+<h2>Orca, in detail</h2>
+<table>
+<tr><th>Evidence</th><th>Result</th></tr>
+<tr><td>App + daemon</td><td>Running: PID 4791, daemon-host up, CLI 1.4.250; last app use 7 Nov 15:10</td></tr>
+<tr><td>Codex sessions per day</td><td>28 Oct 11 · 29 Oct 6 · 30 Oct 129 · 1 Nov 1 · 4 Nov 43 · 5 Nov 50 · 6 Nov 105 · 7 Nov 43 · 8 Nov 0 so far (508 rollouts on disk)</td></tr>
+<tr><td>Live process dependency</td><td>Hermes TUI PID 22793 started 7 Nov 07:35, 27 h uptime, parent chain goes through <code>orca-tcc-login</code> — it dies with Orca</td></tr>
+<tr><td>Worktrees</td><td><code>~/orca/workspaces/maio-os</code> 7.7 GB, <code>AI-Space</code> mounted</td></tr>
+<tr><td>Disk</td><td>724 MB app + 6.4 GB app support (2.7 GB Codex accounts, 758 MB ai-vault) + 7.9 GB worktrees</td></tr>
+<tr><td>Broken piece</td><td><code>com.maio.orca-serve</code> — RunAtLoad, last exit status 1, never stays up</td></tr>
+</table>
+<p class="small">If the goal is to stop Orca being part of the stack, the correct move is not to delete the app: it is to (a) retire the failing <code>orca-serve</code> launchd job, (b) move any long-lived Hermes TUI out of an Orca pane into a launchd-owned process, and (c) prune its caches. Deleting the app would take 508 session records and a live TUI with it.</p>
+
+<h2>Applications with no launch record and no supporting evidence</h2>
+<p class="small">Last-used from Spotlight metadata, cross-checked against running processes, config references and data directories. <code>—</code> means Spotlight has no record; that alone is not proof (CLI-launched apps like OpenKnowledge show the same), so each row below has a second signal.</p>
+<table>
+<tr><th>App</th><th class="n">Size</th><th>Second signal</th><th>Verdict</th></tr>
+<tr><td>GitHub Desktop</td><td class="n">1,112 MB</td><td>last used 24 Oct, 8 MB state, gh CLI is what actually talks to GitHub</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>WhatsApp</td><td class="n">732 MB</td><td>never launched, 7 MB state, no linked-device activity</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>cables</td><td class="n">651 MB</td><td>never launched, no state, no project referencing it</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>OrcaSlicer</td><td class="n">496 MB</td><td>never launched, no printer config found</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>OBS</td><td class="n">488 MB</td><td>never launched, no recordings, video work runs through the code-render lane</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>CleanMyMac + CLI</td><td class="n">477 MB</td><td>ran 6 Nov; it is the tool that wiped the com.maio launchd fleet before</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>Telegram (desktop)</td><td class="n">345 MB</td><td>never launched; the Telegram bots are API clients, they need no desktop app</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>Zoho Sheet / Tables / TeamInbox</td><td class="n">472 MB</td><td>last used 1–10 Oct, work runs through the Zoho API and portal</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>Subtitle Edit</td><td class="n">322 MB</td><td>never launched, no subtitle projects</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>Audacity 4</td><td class="n">128 MB</td><td>never launched, audio work runs through ffmpeg</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>Blackmagic Disk Speed Test / TeraCopy</td><td class="n">28 MB</td><td>never launched, one-off utilities</td><td><span class="verdict v-go">remove</span></td></tr>
+<tr><td>Plex (client)</td><td class="n">618 MB</td><td>client last used 21 Oct; the <em>server</em> is separate and in use (no playback since 5 Nov)</td><td><span class="verdict v-warn">your call</span></td></tr>
+<tr><td>Blender</td><td class="n">907 MB</td><td>used 2 Nov — real 3D work, not a stray</td><td><span class="verdict v-keep">keep</span></td></tr>
+<tr><td>ChatGPT / Dia / Chrome / Obsidian / Claude / T3 / Cua Spaces</td><td class="n">7.3 GB</td><td>running or used within 48 h</td><td><span class="verdict v-keep">keep</span></td></tr>
+</table>
+
+<h2>Disk that is safe to reclaim without removing a capability</h2>
+<table>
+<tr><th>Item</th><th class="n">Size</th><th>Why it is dead</th></tr>
+<tr><td>HF cache: FLUX.2-klein-4B + FLUX.1-schnell</td><td class="n">15.3 GB</td><td>written 15 Oct, zero ComfyUI workflows exist, image_gen lane is a commented-out block in config.yaml</td></tr>
+<tr><td><code>clef-flash:9b</code> Ollama model</td><td class="n">12 GB</td><td>referenced only in ram-guard logs; the gate model that is in use is <code>d3-flash-mlx</code> (307 references)</td></tr>
+<tr><td><code>~/.cache/uv</code> + <code>~/.hermes/cache/uv</code> + pip</td><td class="n">9.5 GB</td><td>package download cache, rebuilds on demand</td></tr>
+<tr><td>Hermes profile scratch (batman 5.5 GB, splinter 0.9 GB)</td><td class="n">6.4 GB</td><td>scratch older than the 24 h pruner, which is not running for those two profiles</td></tr>
+<tr><td><code>go-build</code> cache</td><td class="n">4.7 GB</td><td>build cache</td></tr>
+<tr><td>Unused Docker volumes (55 anonymous) + inactive images</td><td class="n">7.0 GB</td><td>nothing references them</td></tr>
+<tr><td>Pre-update state snapshots</td><td class="n">1.1 GB</td><td>28 Oct–6 Nov, superseded</td></tr>
+<tr><td>Buzz (if approved)</td><td class="n">1.9 GB</td><td>app + relay stack + volumes</td></tr>
+<tr><td>Apps listed above</td><td class="n">5.9 GB</td><td>no record of use</td></tr>
+</table>
+<p><strong>Reclaim: 60–64 GB</strong>, taking free space from 56 GB to roughly 115–120 GB.</p>
+
+<h2>Do not touch — evidence says live</h2>
+<ul>
+<li><strong>Firefly III</strong> holds 9,606 transaction journals and 28 accounts. That is real bookkeeping, and its MariaDB data (225 MB) sits inside the colima VM disk, not in the host bind directory I can see. Export before any teardown; it is money data and out of bounds without your sign-off.</li>
+<li><strong>The seven local app containers</strong> (chromacommand, constellation, infx-fnd, divorced-dads, signet, the-good-stuff, papa-pasta) are live dev deploys: every repo committed between 5 and 7 Nov, papa-pasta-bench has 28 uncommitted files. They can be stopped when you are not working on them, but they are not abandoned.</li>
+<li><strong>hindsight (4.9 GB volume)</strong> is the memory bank; <strong>metamcp</strong> and <strong>home-assistant</strong> are in <code>stack-up.sh</code>; <strong>d3-flash-mlx</strong> is the decision gate; <strong>nomic-embed-text</strong> is the embedding model.</li>
+<li><strong>~/.hermes/installs</strong> (3.7 GB) — both trees were written on 7 Nov, so the toolchain may still resolve through them. Prove it before pruning.</li>
+</ul>
+
+<h2>Proposed order of work</h2>
+<ol>
+<li>Delete the 5.9 GB of unused apps, plus Buzz's app and relay stack after a Postgres dump (~1.9 GB).</li>
+<li>Run the cache/model reclaim batch (~48 GB) with <code>df</code> measured before and after, and a gate check on the destructive step.</li>
+<li>Retire the failing <code>com.maio.orca-serve</code> job; leave Orca itself alone.</li>
+<li>Separately: decide whether Firefly should be archived and whether the four un-exposed demo apps should be stopped between sessions.</li>
+</ol>
+
+<h2>Evidence appendix</h2>
+<p class="small">Commands run, verbatim results condensed. <code>df -h</code>: 368 GiB used / 56 GiB avail. <code>docker system df</code>: 45 images 27.65 GB, 19 inactive, 2.26 GB reclaimable; 83 volumes 11.4 GB, 4.6 GB reclaimable; 33 containers. <code>ollama list</code>: 7 local models, 17 cloud tags. <code>du</code>: home 296 GB = Library 76.7 + AI Hub 68.1 + .colima 48.2 + .hermes 27.6 + Pictures 17.3 + .cache 15.3. <code>tailscale serve status</code>: 14 mappings; Buzz absent. <code>launchctl list</code>: 31 com.maio jobs, 3 firing, <code>orca-serve</code> exit 1.</p>
+</main>
+</body>
+</html>
