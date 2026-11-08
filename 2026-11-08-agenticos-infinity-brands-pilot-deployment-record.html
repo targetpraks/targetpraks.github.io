@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>AgenticOS — Infinity Brands pilot deployment record</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="agenticos--deployment-record-infinity-brands-pilot">AgenticOS — deployment record, Infinity Brands pilot</h1>
+<p><strong>Date:</strong> 2026-11-08 <strong>PRD:</strong> <code>INFINITY-AGENT-PLATFORM-PRD.md</code> v1.0 (canonical, SHA-256 <code>9de6d55a…</code>) <strong>Upstream baseline:</strong> release <code>v1.56.3</code>, commit <code>e25389a7231f309c1629ba950eac6fb5737103cd</code> <strong>Stages reached:</strong> A (deployment contract) and B (isolated foundations) — synthetic, no live Zoho, no live staff data.</p>
+<h2 id="host">Host</h2>
+<p><code>macmini-inf</code> — Ubuntu 26.04.1 LTS, arm64, running as an Apple Virtualization guest on the Infinity Brands Mac mini (<code>systemd-detect-virt</code> = <code>apple</code>). Hostname is reachable only through the office SSH chain (<code>bastion</code> → <code>macserver</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Measured value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vCPU</td>
+<td>6</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>7400 MB total</td>
+</tr>
+<tr>
+<td>RAM available before install</td>
+<td>5422 MB</td>
+</tr>
+<tr>
+<td>Memory already used by 20 staging containers</td>
+<td>760 MB</td>
+</tr>
+<tr>
+<td>Disk</td>
+<td>76 GB total, 48 GB free</td>
+</tr>
+<tr>
+<td>Container runtime</td>
+<td>Docker 29.9.2, Compose v5.6.1, overlayfs</td>
+</tr>
+<tr>
+<td>Docker at boot</td>
+<td><code>enabled</code> / <code>active</code>; containers <code>restart: unless-stopped</code></td>
+</tr>
+<tr>
+<td>Egress</td>
+<td>github.com 200, ollama.com 200, registry.ollama.ai reachable</td>
+</tr>
+</tbody>
+</table>
+<h2 id="installation">Installation</h2>
+<p>Deployment directory <code>~/agenticos</code> on <code>macserver</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docker-compose.yml</code></td>
+<td>upstream v1.56.3, unmodified</td>
+</tr>
+<tr>
+<td><code>docker-compose.instance.yml</code></td>
+<td>loopback port bindings + memory ceilings for this VM</td>
+</tr>
+<tr>
+<td><code>docker-compose.embed.yml</code></td>
+<td><code>ollama-embed</code> service on isolated <code>agenticos_embed</code> network</td>
+</tr>
+<tr>
+<td><code>.env</code></td>
+<td>per-install secrets, 0600, <code>ENVIRONMENT=production</code>, <code>DEBUG=false</code>, <code>DIAGNOSTICS_ENABLED=false</code></td>
+</tr>
+<tr>
+<td><code>owner-credentials.txt</code></td>
+<td>owner login, 0600</td>
+</tr>
+<tr>
+<td><code>agenticos.sh</code></td>
+<td>control wrapper that always passes all three compose files</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>operator runbook</td>
+</tr>
+</tbody>
+</table>
+<p>Nine production-checklist items from <code>docs/configuration.md</code>: seven set deliberately (<code>SECRET_KEY</code>, <code>API_KEY</code>, <code>VAULT_MASTER_KEY</code>, <code>ENVIRONMENT</code>, <code>DEBUG</code>, <code>POSTGRES_PASSWORD</code>, <code>CORS_ORIGINS</code>). Two recorded as deliberate deviations: <code>REDIS_PASSWORD</code> (the base compose file runs Valkey without auth on an unpublished internal network) and SMTP (unset, so invitations and resets send nothing).</p>
+<h2 id="stage-a--capacity-gate">Stage A — capacity gate</h2>
+<p><code>RAM_headroom = available_to_container_VM − selected_service_memory_budget − embedding_budget − operation_reserve</code></p>
+<pre><code>available_to_container_VM                                 5422 MB
+selected_service_memory_budget
+  app 1024 + db 512 + valkey 192 + worker 1536 + frontend 384  3648 MB
+embedding_budget (ollama-embed ceiling)                     640 MB
+operation_reserve (20 existing staging containers)         1024 MB
+-----------------------------------------------------------------
+RAM_headroom                                               +110 MB   PASS</code></pre>
+<p>The upstream production ceilings (app 2560 + db 2048 + valkey 512 + worker 2560 = 7680 MB) exceed this VM's 7400 MB total, so a reduction is required for the gate to pass. The reduction is recorded in <code>docker-compose.instance.yml</code>; it is a configuration change, not a hidden default. Worker and database ceilings were rebalanced once against measured appetite (worker 961 MB idle of a 1024 MB ceiling → 1536 MB; database 78 MB of 768 MB → 512 MB).</p>
+<p>CPU compared separately: app 2.0, db 1.5, valkey 0.3, frontend 1.0 against 6 vCPU; worker keeps the default share because a <code>cpus</code> key conflicts with the upstream <code>deploy.resources</code> block.</p>
+<h2 id="stage-b--proof-of-isolated-foundations">Stage B — proof of isolated foundations</h2>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Receipt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Images pinned</td>
+<td><code>agenticos-backend:1.56.3</code>, <code>agenticos-frontend:1.56.3</code>, <code>pgvector/pgvector:pg16</code>, <code>valkey/valkey:8-alpine</code>, <code>ollama/ollama:0.40.15</code></td>
+</tr>
+<tr>
+<td>Migrations</td>
+<td><code>migrate</code> service exited 0; head <code>0297_workflow_chat_source</code></td>
+</tr>
+<tr>
+<td>API health</td>
+<td><code>GET /api/v1/health</code> → <code>{"status":"healthy"}</code> HTTP 200</td>
+</tr>
+<tr>
+<td>Console</td>
+<td><code>GET /</code> → 307 → <code>/login</code> → HTTP 200, 737 145 bytes, <code>&lt;title&gt;Sign in | agenticos&lt;/title&gt;</code></td>
+</tr>
+<tr>
+<td>Database</td>
+<td><code>pgvector 0.8.7</code> available to the app role</td>
+</tr>
+<tr>
+<td>Cache</td>
+<td>Valkey <code>PING</code> answered</td>
+</tr>
+<tr>
+<td>Vault</td>
+<td>key configured (<code>agenticos cmd doctor</code>: <code>[ok] vault</code>)</td>
+</tr>
+<tr>
+<td>Scheduler</td>
+<td>1 worker alive; every-minute schedule fired within 5 intervals</td>
+</tr>
+<tr>
+<td>Accounts</td>
+<td>owner <code>ricardom@infinitybrands.co.za</code>, <code>is_app_admin: true</code>; orgs <code>Personal</code> (personal) and <code>Infinity Brands</code> (team, slug <code>infinity-brands</code>)</td>
+</tr>
+<tr>
+<td>Sign-in</td>
+<td><code>POST /api/v1/auth/login</code> (form) → 200 access+refresh tokens; <code>GET /api/v1/auth/me</code> → 200</td>
+</tr>
+<tr>
+<td>Persistence</td>
+<td>stack restarted; containers back healthy in 43–46 s; sign-in and both orgs survived</td>
+</tr>
+<tr>
+<td>Local embedding — API container</td>
+<td><code>POST http://ollama-embed:11434/v1/embeddings</code> → 768-dim vector</td>
+</tr>
+<tr>
+<td>Local embedding — worker container</td>
+<td>same endpoint → 768-dim vector</td>
+</tr>
+<tr>
+<td>Embedding isolation</td>
+<td>no host port on <code>ollama-embed</code> (<code>11434/tcp</code> internal only)</td>
+</tr>
+<tr>
+<td>Network boundary</td>
+<td>app <code>127.0.0.1:8000</code>, frontend <code>127.0.0.1:3000</code>; nothing published on the LAN or internet</td>
+</tr>
+<tr>
+<td>Console through the SSH tunnel</td>
+<td><code>ssh -L 13000:127.0.0.1:3000</code> → sign-in page 200, API health 200</td>
+</tr>
+</tbody>
+</table>
+<p>Measured idle memory after start: app 610 MB, worker 961 MB, frontend 150 MB, db 78 MB, valkey 4 MB, ollama-embed 375 MB ≈ 2.2 GB, against 3520 MB of ceilings.</p>
+<p><code>agenticos cmd doctor</code> closes with <code>Everything this can check is working.</code> Its open lines are the ones this record already names: no model profile with an active key, no SMTP, no sandbox/browser endpoint, no private-network allowlist.</p>
+<h2 id="not-done--by-design">Not done — by design</h2>
+<ol type="1">
+<li><strong>Model profile.</strong> The bootstrap CLI offers Anthropic, Google, OpenAI and OpenRouter only, and no provider key was placed on the host. Ollama Cloud is added in the product (Settings → AI providers), which is where the key belongs — in the encrypted vault, not a file.</li>
+<li><strong>Embedding integration row.</strong> The <code>ollama-embed</code> endpoint answers both callers, but registering it as the <code>ollama</code> provider at <code>http://ollama-embed:11434/v1</code> is a product step.</li>
+<li><strong>SMTP</strong>, so invitations cannot be proven.</li>
+<li><strong>Staff access route (PRD D4)</strong> — company network only versus an authenticated HTTPS address. Until that decision, the console is tunnel-only.</li>
+<li><strong>Live Zoho, MCP connections, departmental bots (Stage D/E)</strong> — each needs D1–D5 answered and Zoho admin work.</li>
+</ol>
+<h2 id="reproduce">Reproduce</h2>
+<p>The three compose files plus <code>agenticos.sh</code> are the artefact; <code>.env</code> secrets are per-install and are not copied anywhere. Rebuilding elsewhere is <code>pull</code> → <code>up</code> → <code>bootstrap</code> as the README sets out.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
