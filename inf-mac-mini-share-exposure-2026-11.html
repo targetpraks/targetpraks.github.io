@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Four doors on the office VLAN — SMB, Screen Sharing, ARD and Kerberos on INF's Mac mini</title>
+<meta name="description" content="Exposure review of SMB, Screen Sharing, Apple Remote Desktop and Kerberos on INFs-Mac-mini (192.168.88.173), measured from an ordinary office address on 8 November 2026.">
+<style>
+  :root{
+    --paper:#fdfaf3; --ink:#12203a; --dim:#5d6b7e; --line:#d8cfc0;
+    --card:#ffffff; --coral:#c2553f; --teal:#1d6f6a; --gold:#a8862f; --wash:#f4efe4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:56px 32px 96px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:26px;margin-bottom:34px}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);font-weight:700;margin:0 0 14px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:40px;line-height:1.14;margin:0 0 14px;letter-spacing:-.01em}
+  .standfirst{font-size:18px;color:var(--dim);margin:0;max-width:74ch}
+  .meta{margin-top:18px;font-size:13px;color:var(--dim)}
+  .meta b{color:var(--ink);font-weight:600}
+  h2{font-family:Georgia,serif;font-size:26px;margin:52px 0 6px;padding-top:18px;border-top:1px solid var(--line)}
+  h2 .num{color:var(--coral);font-size:15px;font-family:-apple-system,sans-serif;font-weight:700;
+          letter-spacing:.1em;display:block;margin-bottom:6px;text-transform:uppercase}
+  h3{font-size:17px;margin:26px 0 8px}
+  p{margin:12px 0}
+  a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(29,111,106,.35)}
+  a:hover{border-bottom-color:var(--teal)}
+  .answers{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0 10px}
+  .ans{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:16px 18px}
+  .ans .lab{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .ans .big{font-family:Georgia,serif;font-size:34px;line-height:1.05;margin:8px 0 6px}
+  .ans .big.teal{color:var(--teal)} .ans .big.coral{color:var(--coral)}
+  .ans .sub{font-size:12.5px;color:var(--dim);line-height:1.42}
+  table{width:100%;border-collapse:collapse;margin:18px 0;background:var(--card);
+        border:1px solid var(--line);font-size:14.5px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--wash);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+  tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  code{background:var(--wash);border:1px solid var(--line);border-radius:4px;padding:1px 5px;
+       font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+  pre{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);
+      border-radius:6px;padding:14px 16px;overflow:auto;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;margin:14px 0}
+  pre .c{color:var(--dim)}
+  .pill{display:inline-block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;
+        font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid}
+  .p-low{color:var(--teal);border-color:rgba(29,111,106,.45);background:rgba(29,111,106,.07)}
+  .p-med{color:var(--gold);border-color:rgba(168,134,47,.5);background:rgba(168,134,47,.09)}
+  .callout{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:20px 22px;margin:24px 0}
+  .callout h3{margin-top:0}
+  .callout.rule{border-left:6px solid var(--coral)}
+  .note{font-size:13.5px;color:var(--dim);margin:10px 0 0}
+  ol.recs{padding-left:22px;margin:18px 0}
+  ol.recs li{margin:0 0 16px}
+  ol.recs b{display:block;font-size:16px}
+  ol.recs .why{color:var(--dim);font-size:14px}
+  ol.recs .who{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--coral);font-weight:700}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 22px;margin:28px 0 8px}
+  .toc .t{font-size:11.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:8px}
+  .toc ol{margin:0;padding-left:20px;columns:2;column-gap:34px}
+  .toc li{margin:3px 0;font-size:14.5px}
+  footer{margin-top:56px;border-top:1px solid var(--line);padding-top:18px;font-size:13px;color:var(--dim)}
+  @media (max-width:760px){
+    .answers{grid-template-columns:1fr 1fr}
+    h1{font-size:30px}
+    .wrap{padding:36px 20px 64px}
+    .toc ol{columns:1}
+  }
+  @media print{ body{background:#fff} .wrap{max-width:none;padding:0} a{color:var(--ink)} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">INF's Mac mini · security note · 8 November 2026</p>
+  <h1>Four doors on the office VLAN</h1>
+  <p class="standfirst">SMB, Screen Sharing, Apple Remote Desktop and Kerberos on <b>192.168.88.173</b> — what answers from an ordinary office seat, what it asks for in return, and the one control all four of them share.</p>
+  <p class="meta"><b>Host</b> INFs-Mac-mini.local · macOS 26.5.2 · Mac16,10 (M4, 16 GB) · up 11 days
+    &nbsp;·&nbsp; <b>Checked</b> 8 Nov 2026, 17:23–17:26 SAST
+    &nbsp;·&nbsp; <b>From</b> the staging VM 192.168.88.226 (normal office address) and a shell on the box as <code>infmac</code>
+    &nbsp;·&nbsp; <b>Changes made</b> none</p>
+</header>
+
+<div class="answers">
+  <div class="ans"><div class="lab">Services reachable</div><div class="big coral">4 / 4</div><div class="sub">SMB, Screen Sharing, ARD and Kerberos answer from every seat on the office VLAN</div></div>
+  <div class="ans"><div class="lab">Packet filters in front</div><div class="big coral">0</div><div class="sub">Application firewall disabled, stealth off, block-all off</div></div>
+  <div class="ans"><div class="lab">Accounts behind them</div><div class="big">1</div><div class="sub">Every service authenticates as <code>infmac</code>, an admin, logged in at the console</div></div>
+  <div class="ans"><div class="lab">Ways in without a password</div><div class="big teal">0</div><div class="sub">SMB guest rejected; screen sharing offers no “None” authentication type</div></div>
+</div>
+<p class="note">The headline is not that four services are open — it is that no network control sits in front of any of them, so the strength of one admin password is the whole security posture of a machine that also hosts the staging VM and a CI runner.</p>
+
+<nav class="toc">
+  <div class="t">Contents</div>
+  <ol>
+    <li><a href="#method">What was measured, and from where</a></li>
+    <li><a href="#table">The four services at a glance</a></li>
+    <li><a href="#smb">SMB on 445</a></li>
+    <li><a href="#screen">Screen Sharing and ARD</a></li>
+    <li><a href="#krb">Kerberos on 88</a></li>
+    <li><a href="#finding">The finding behind all four</a></li>
+    <li><a href="#actions">What to change, in order</a></li>
+    <li><a href="#gaps">What we could not verify</a></li>
+    <li><a href="#evidence">Evidence log</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ol>
+</nav>
+
+<h2 id="method"><span class="num">01</span>What was measured, and from where</h2>
+<p>Two vantage points, both legitimate: the staging VM at <b>192.168.88.226</b> — a bridged guest on the same office LAN, so it sees exactly what any office laptop sees — and an SSH shell on the Mac mini as <code>infmac</code>, which is an administrator account but has no passwordless <code>sudo</code>. Everything below is read-only: port tests, service banners, directory records and preference reads. Nothing was changed, and no password was entered or requested.</p>
+<p>This note covers the side question in the original request — the exposure of SMB, Screen Sharing, ARD and Kerberos. The wider inventory of what runs on the box (Hermes under <code>hermes-deploy</code>, the :8099/:9377/:9390 endpoints) is in the <a href="https://targetpraks.github.io/inf-mac-mini-access-2026-11.html">access report</a> and is not repeated here.</p>
+
+<h2 id="table"><span class="num">02</span>The four services at a glance</h2>
+<table>
+  <thead>
+    <tr><th>Port</th><th>Service</th><th>Answering on the VLAN</th><th>What it asks for</th><th>Who is allowed</th><th>Verdict</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num">445</td>
+      <td>SMB file sharing <code>smbd</code></td>
+      <td>Yes, from 192.168.88.226</td>
+      <td>Account and password. Anonymous and guest sessions are refused.</td>
+      <td><code>infmac</code>, <code>hermes-deploy</code> (share group)</td>
+      <td><span class="pill p-low">Low–Medium</span></td>
+    </tr>
+    <tr>
+      <td class="num">5900</td>
+      <td>Screen Sharing <code>screensharingd</code></td>
+      <td>Yes — banner <code>RFB 003.889</code></td>
+      <td>Apple ARD authentication only; no anonymous, no legacy VNC password</td>
+      <td>Administrators only</td>
+      <td><span class="pill p-med">Medium</span></td>
+    </tr>
+    <tr>
+      <td class="num">3283</td>
+      <td>Apple Remote Desktop <code>ARDAgent</code></td>
+      <td>Yes</td>
+      <td>ARD authentication for control; the port itself answers before login</td>
+      <td>Administrators only</td>
+      <td><span class="pill p-med">Medium</span></td>
+    </tr>
+    <tr>
+      <td class="num">88</td>
+      <td>Kerberos KDC, Heimdal <code>kdc</code></td>
+      <td>Yes — TCP and UDP</td>
+      <td>Kerberos tickets for the machine's local realm</td>
+      <td>Any principal in that realm</td>
+      <td><span class="pill p-low">Low</span></td>
+    </tr>
+  </tbody>
+</table>
+<p class="note">Port 139 is closed, so SMB is SMB2/3 over 445 only. The box also exposes SSH 22, AirPlay 5000/7000, rapportd 49423, the Hermes endpoints 8099/9377/9390 and 3031; those are covered elsewhere and excluded from this note.</p>
+
+<h2 id="smb"><span class="num">03</span>SMB on 445</h2>
+<p>SMB answers, but it does not let anyone in without an account. From the machine itself, an anonymous session was refused on both the loopback address and the LAN address:</p>
+<pre><span class="c">$ smbutil view -N //127.0.0.1</span>
+smbutil: server rejected the authentication: Authentication error
+<span class="c">$ smbutil view -N //192.168.88.173</span>
+smbutil: server rejected the authentication: Authentication error</pre>
+<p>That is consistent with the rest of the configuration: there is no Guest account on the machine at all, and the login window has <code>GuestEnabled = 0</code>. There is exactly one share, <code>INF’s Public Folder</code>, mapped to <code>/Users/infmac/Public</code>, and it is shared to the group <a href="https://support.apple.com/guide/mac-help/set-up-smb-file-sharing-on-mac-mh14107/mac">com.apple.sharepoint.group.1</a> — which <code>infmac</code> and <code>hermes-deploy</code> both hold. The folder holds nothing sensitive: two entries, <code>.localized</code> and a write-only <code>Drop Box</code>.</p>
+<p>Two things are worth fixing anyway. First, the share record still carries <b>guest-access flags</b> (<code>smb_guestaccess: 1</code>, <code>afp_guestaccess: 1</code>): they are inert today only because the Guest account is disabled, and they would become live the moment somebody turns it on. Second, the SMB server has <b>no signing requirement</b> — the server preferences contain only the code page, NetBIOS name and description, and <code>SigningRequired</code> is not set. On a flat VLAN with dozens of seats, that leaves NTLM relay as the realistic attack: an attacker who can answer ARP or spoof a name can relay an office machine's authentication attempt to 445 and ride it. The files on this share are not the prize; the credential of an <b>admin</b> account is.</p>
+<div class="callout rule">
+  <h3>What SMB is, in one line</h3>
+  <p style="margin-bottom:0">A file door that is shut to anonymous users but has no signature check on the knock — and the only account behind it is the administrator who is logged in at the console.</p>
+</div>
+
+<h2 id="screen"><span class="num">04</span>Screen Sharing and ARD</h2>
+<h3>Screen Sharing on 5900</h3>
+<p>The banner is <code>RFB 003.889</code>. The security types offered after the version handshake are <b>30, 33, 36 and 35</b> — all of them Apple's Remote Desktop authentication family. Type 1 (<i>None</i>, no authentication at all) and type 2 (legacy VNC password) are <b>not</b> offered, so the “VNC viewers may control screen with password” option is off and there is no unauthenticated way onto the display.</p>
+<pre><span class="c"># version handshake against the local listener</span>
+server banner: b'RFB 003.889\n'
+num security types byte: b'\x04'
+offered security types: [30, 33, 36, 35]</pre>
+<p>Access is restricted, not open to everyone. The service ACL <code>com.apple.access_screensharing</code> nests the <b>admin</b> group (its only nested group resolves to <code>admin</code>), and there is no <code>com.apple.access_all_screensharing</code> record at all — the record that would exist if “All users” had been chosen in <a href="https://support.apple.com/guide/mac-help/mh11848/mac">Sharing settings</a>. In practice: <code>infmac</code>, <code>root</code> and the setup user.</p>
+<p>The reason this still lands at Medium is the state of the session behind the door. The console has been logged in as <code>infmac</code> since 28 October (<code>who</code>: <code>infmac console</code>), the machine never sleeps (<code>pmset sleep 0</code>), and the screen locks five minutes after the display sleeps (<code>sysadminctl: screenLock delay is 300 seconds</code>). Anyone with that one password gets an already-unlocked administrator desktop — the browser sessions, the Cliq client, the terminal, and the staged VM — not merely a shell.</p>
+
+<h3>Apple Remote Desktop on 3283</h3>
+<p><code>ARDAgent</code> is running as <code>infmac</code> and listening on all interfaces:</p>
+<pre><span class="c">$ ps aux | grep ARDAgent</span>
+infmac 1125 ... /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/MacOS/ARDAgent
+<span class="c">$ lsof -nP -iTCP:3283 -sTCP:LISTEN</span>
+ARDAgent 1125 infmac 9u IPv6 ... TCP *:3283 (LISTEN)</pre>
+<p>The ARD access list is the <b>Remote Access</b> ACL, <code>com.apple.access_remote_ae</code>, which also nests only <code>admin</code>. The Remote Management preferences carry no <code>ARD_AllLocalUsers</code> key, so “all local users” has not been granted. What we cannot see without <code>sudo</code> is the <b>privilege set</b> — whether the allowed administrator can control and observe, send UNIX commands, copy items, or restart the machine. If Remote Management is enabled with the full control privilege, an ARD session is materially stronger than Screen Sharing, and the same password is the only gate.</p>
+<p>One structural note from Apple's own guidance: Screen Sharing and Remote Management are alternatives — turning one on turns the other off (<a href="https://support.apple.com/guide/mac-help/mh11848/mac">Apple Support</a>). Both sets of ports answering at the same time tells us the ARD listener is the agent process left running in the user session, which is worth confirming on the box with <a href="https://support.apple.com/guide/remote-desktop/set-access-privileges-apdfab787da/mac">the ARD privilege panel</a> rather than assumed.</p>
+
+<h2 id="krb"><span class="num">05</span>Kerberos on 88</h2>
+<p>A Heimdal KDC is running as root and listening on <b>TCP and UDP 88</b>, on all interfaces, since boot on 28 October:</p>
+<pre><span class="c">$ ps aux | grep -i kdc</span>
+root 147 ... /System/Library/PrivateFrameworks/Heimdal.framework/Helpers/kdc
+<span class="c">$ netstat -an -p tcp | grep '\.88 '</span>
+tcp4 0 0 *.88 *.* LISTEN
+<span class="c">$ netstat -an -p udp | grep '\.88 '</span>
+udp4 0 0 *.88 *.*
+udp6 0 0 *.88 *.*</pre>
+<p>This is not a deliberate Kerberos deployment: the machine is not bound to Active Directory (<code>dsconfigad -show</code> returns nothing), there is no <code>/etc/krb5.conf</code>, and the only Kerberos configuration record is a <b>local</b> realm — <code>LKDC:SHA1.44D1767D11…</code> in <code>/Config/KerberosKDC</code> — created by Apple's one-shot <code>configureLocalKDC</code> on 29 July at 12:36, the same minute as <code>/etc/krb5.keytab</code>.</p>
+<p>The reason it is exposed at all is in the launchd job. <code>com.apple.Kerberos.kdc</code> keeps itself alive on the state of three other services:</p>
+<pre>KeepAlive → OtherJobEnabled:
+    com.apple.AppleFileServer  true
+    com.apple.smbd             true
+    com.apple.screensharing    true</pre>
+<p>So the KDC runs <b>because File Sharing and Screen Sharing are on</b> — it is Apple's local single-sign-on helper for exactly those two services, not something somebody chose. That is the answer to the question in the original request: no, port 88 is not a deliberate KDC role.</p>
+<p>Risk is Low, and honestly stated: the realm is machine-local, so an attacker cannot use it against the rest of the estate, and the principal list and pre-authentication flags live in root-only files we could not read. What remains is unnecessary attack surface — a daemon on every office seat that nobody watches, plus the possibility that a local principal without pre-authentication is roastable. Both deserve a check with admin rights, not an alarm.</p>
+
+<h2 id="finding"><span class="num">06</span>The finding behind all four</h2>
+<div class="callout">
+  <h3>No network control, one credential</h3>
+  <p>The application firewall is <b>off</b>, stealth mode is <b>off</b>, and block-all is <b>off</b>:</p>
+  <pre style="margin:12px 0 10px">Firewall is disabled. (State = 0)
+Firewall stealth mode is off
+Firewall has block all state set to disabled.</pre>
+  <p style="margin-bottom:0">Nothing on the host filters anything. Every one of the four services is reachable from every one of the roughly dozens of devices on the office VLAN, and each of them ends at the same account: <code>infmac</code>, uid 501, member of <code>admin</code>, logged in at the console since 28 October. The machine also hosts the staging VM and a self-hosted GitHub Actions runner registered to the organisation, so a single credential does not merely open a file share — it reaches the build pipeline and the VM underneath.</p>
+</div>
+<p>Two accounts exist on the box. <code>infmac</code> is the administrator and is in every relevant group: <code>com.apple.access_ssh</code>, <code>com.apple.access_screensharing</code>, <code>com.apple.access_remote_ae</code>. <code>hermes-deploy</code> (uid 599) is a standard user, but it is in <code>com.apple.access_ssh</code> and in the file-sharing group, so it too has a shell on 22 and a seat on 445 — with no administrator rights, which is the right shape for a service account and the wrong shape for the share if the point was to keep the admin account off the network.</p>
+<p>That is the exposure in one sentence: <b>the security of four network services is the strength of one password, with no packet filter, no second factor and no separate account in between.</b></p>
+
+<h2 id="actions"><span class="num">07</span>What to change, in order</h2>
+<p>All of these need an administrator password on the box, so they are for Tuan to run with Ricardo's approval. Nothing here was applied — the shell we hold has no passwordless <code>sudo</code>, and changing a live business machine is not ours to do unasked.</p>
+<ol class="recs">
+  <li><b>Put a filter in front of the box.</b>
+    <div class="why">Turn the macOS firewall on and allow only what is used, or — better, because it survives a reboot into a bad state — allow-list these four ports to a management subnet at the router, and reach them over VPN from anywhere else. The <a href="https://support.apple.com/guide/mac-help/change-firewall-settings-on-mac-mh11783/mac">firewall options</a> and what each one blocks are documented by Apple.</div>
+    <div class="who">Tuan · needs admin · highest value, lowest effort</div></li>
+  <li><b>Decide whether SMB is used at all.</b>
+    <div class="why">If nothing mounts <code>INF’s Public Folder</code>, turn File Sharing off: port 445 disappears, and the local KDC stops with it. If it is used, keep it and do the next two items.</div>
+    <div class="who">Ricardo decides · Tuan executes</div></li>
+  <li><b>Close the guest flags and require SMB signing.</b>
+    <div class="why"><code>sudo dscl . -delete "/SharePoints/INF’s Public Folder" smb_guestaccess</code>, then <code>sudo defaults write /Library/Preferences/SystemConfiguration/com.apple.smb.server SigningRequired -bool true</code> and restart <code>smbd</code>. Signing is the control that kills NTLM relay; the <a href="https://pages.nist.gov/macos_security/">macOS Security Compliance Project</a> is the reference baseline for this class of setting.</div>
+    <div class="who">Tuan · needs admin</div></li>
+  <li><b>Decide on Remote Management.</b>
+    <div class="why">If nobody uses ARD, turn it off and keep Screen Sharing for support — port 3283 goes away. If it is used, read the privilege set first and strip everything except what the support workflow needs.</div>
+    <div class="who">Tuan · needs admin</div></li>
+  <li><b>Keep Screen Sharing on administrators, and stop sharing the console admin.</b>
+    <div class="why">The ACL is already “administrators only”; the defect is that the administrator is also the account sitting unlocked at the console. A dedicated standard user for file sharing, with admin reserved for administrative work, breaks the “one password opens everything” chain.</div>
+    <div class="who">Ricardo approves · Tuan creates the account</div></li>
+  <li><b>Stop the KDC if it is not needed.</b>
+    <div class="why"><code>sudo launchctl disable system/com.apple.Kerberos.kdc</code>. Do this only after confirming that SMB and screen-sharing sign-in to local accounts do not depend on it — and check the principal list with <code>sudo kadmin.local -q list_principals</code> before deciding.</div>
+    <div class="who">Tuan · needs admin · after item 1</div></li>
+  <li><b>Turn off SSH password authentication.</b>
+    <div class="why"><code>sshd_config</code> sets no <code>PasswordAuthentication</code> directive, so the default (yes) applies — a password guess against port 22 is a second, quieter way to the same account. Keys are already in place for both accounts we use.</div>
+    <div class="who">Tuan · needs admin</div></li>
+</ol>
+
+<h2 id="gaps"><span class="num">08</span>What we could not verify</h2>
+<p>Stated plainly, because a security note that hides its blind spots is worse than a short one:</p>
+<table>
+  <thead><tr><th>Question</th><th>Why it stayed open</th><th>How to close it</th></tr></thead>
+  <tbody>
+    <tr><td>Is SMB signing actually enforced by the running server?</td><td>The preference key is absent and a signed session cannot be negotiated from this side</td><td>Read the live config as admin, or negotiate from a Windows client and check the session properties</td></tr>
+    <tr><td>Which ARD privileges are granted?</td><td><code>/var/db/RemoteManagement</code> is root-only</td><td>Open the Remote Management panel on the box, or <code>sudo kickstart -configure</code> and read it back</td></tr>
+    <tr><td>Does every Kerberos principal require pre-authentication?</td><td>The principal database is root-only</td><td><code>sudo kadmin.local -q list_principals</code> and inspect the flags</td></tr>
+    <tr><td>Are any of these ports reachable from outside the office LAN?</td><td>Out of scope: measured only from 192.168.88.0/24</td><td>Run the same four-port test from the internet-facing side of the bastion</td></tr>
+  </tbody>
+</table>
+
+<h2 id="evidence"><span class="num">09</span>Evidence log</h2>
+<p>Every claim above comes from one of these reads, taken 8 November 2026 between 17:23 and 17:26 SAST. Commands are shown as run; output is trimmed to the relevant lines.</p>
+<h3>From the office VLAN (192.168.88.226)</h3>
+<pre><span class="c">$ for p in 88 445 5900 3283; do timeout 3 bash -c "echo > /dev/tcp/192.168.88.173/$p" &amp;&amp; echo "$p open"; done</span>
+88 open
+445 open
+5900 open
+3283 open
+<span class="c">$ timeout 3 nc 192.168.88.173 5900 | head -c 12</span>
+RFB 003.889</pre>
+<h3>From the box, as <code>infmac</code></h3>
+<pre><span class="c">$ /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate</span>
+Firewall is disabled. (State = 0)
+<span class="c">$ /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode</span>
+Firewall stealth mode is off
+
+<span class="c">$ netstat -an -p tcp | grep -i listen</span>
+*.22   *.88   *.445   *.5900   *.3283   *.3031   *.5000   *.7000
+*.8099 *.9377 *.9390 *.49423
+
+<span class="c">$ dscl . -list /SharePoints</span>
+INF’s Public Folder
+<span class="c">$ dscl . -read "/SharePoints/INF’s Public Folder"</span>
+dsAttrTypeNative:directory_path: /Users/infmac/Public
+dsAttrTypeNative:smb_guestaccess: 1
+dsAttrTypeNative:afp_guestaccess: 1
+dsAttrTypeNative:smb_shared: 1
+
+<span class="c">$ defaults read /Library/Preferences/SystemConfiguration/com.apple.smb.server</span>
+{ DOSCodePage = 437; NetBIOSName = "INFs-Mac-mini"; ServerDescription = "INF’s Mac mini"; }
+
+<span class="c">$ dscl . -read /Groups/com.apple.access_screensharing</span>
+RecordName: com.apple.access_screensharing
+NestedGroups: ABCDEFAB-CDEF-ABCD-EFAB-CDEF00000050   <span class="c"># resolves to "admin"</span>
+
+<span class="c">$ dscl . -read /Groups/com.apple.access_all_screensharing</span>
+&lt;dscl_cmd&gt; DS Error: -14136 (eDSRecordNotFound)
+
+<span class="c">$ defaults read /Library/Preferences/com.apple.RemoteManagement</span>
+{ AllowSRPForNetworkNodes = 0; DisableKerberos = 0; allowInsecureDH = 1; }
+
+<span class="c">$ ps aux | grep -i kdc</span>
+root 147 ... /System/Library/PrivateFrameworks/Heimdal.framework/Helpers/kdc
+<span class="c">$ dscl . -read /Config/KerberosKDC</span>
+RealName: LKDC:SHA1.44D1767D119CF55A401A1B9CF0A3776CAF45CC00
+
+<span class="c">$ sysadminctl -screenLock status</span>
+screenLock delay is 300 seconds
+<span class="c">$ who</span>
+infmac  console  Oct 28 14:27
+<span class="c">$ pmset -g | head -8</span>
+sleep 0 (sleep prevented by powerd, ZohoPingAgent, Zoho)
+displaysleep 10 (display sleep prevented by Zoho)
+
+<span class="c">$ id hermes-deploy</span>
+uid=599(hermes-deploy) gid=20(staff) groups=20(staff),12(everyone),61(localaccounts),
+399(com.apple.access_ssh),100(_lpoperator),701(com.apple.sharepoint.group.1)</pre>
+<p class="note">The VNC security-type probe ran as a short socket script against <code>127.0.0.1:5900</code>: read the server banner, reply <code>RFB 003.889</code>, read the security-type count and list. No authentication was attempted against any service at any point.</p>
+
+<h2 id="sources"><span class="num">10</span>Sources</h2>
+<ul>
+  <li><a href="https://support.apple.com/guide/mac-help/set-up-smb-file-sharing-on-mac-mh14107/mac">Apple Support — Set up SMB file sharing on Mac</a> (what the SMB option turns on, and the per-user Windows sharing list)</li>
+  <li><a href="https://support.apple.com/guide/mac-help/mh11848/mac">Apple Support — Turn Mac screen sharing on or off</a> (access list, VNC option, and the note that Screen Sharing and Remote Management are mutually exclusive)</li>
+  <li><a href="https://support.apple.com/guide/remote-desktop/set-access-privileges-apdfab787da/mac">Apple Remote Desktop — Set access privileges</a> (the privilege set an ARD administrator holds)</li>
+  <li><a href="https://support.apple.com/guide/mac-help/change-firewall-settings-on-mac-mh11783/mac">Apple Support — Change Firewall settings on Mac</a> (block-all, stealth mode, per-app allows)</li>
+  <li><a href="https://support.apple.com/guide/deployment/depe6a1cda64/web">Apple Platform Deployment — Kerberos Single Sign-on extension</a> (what Kerberos SSO is for, and that it targets a directory service)</li>
+  <li><a href="https://pages.nist.gov/macos_security/">macOS Security Compliance Project (mSCP)</a> (the government and industry baseline used for settings such as SMB signing)</li>
+  <li><a href="https://targetpraks.github.io/inf-mac-mini-access-2026-11.html">Companion note — SSH access, what runs on the box, and its wider port surface</a></li>
+</ul>
+
+<footer>
+  <p>Read-only assessment run on 8 November 2026 from the staging VM 192.168.88.226 and from a shell on INFs-Mac-mini as <code>infmac</code>. No configuration was changed, no password was entered, and no authentication attempt was made against SMB, Screen Sharing, ARD or Kerberos.</p>
+  <p>Prepared for Ricardo Maio · INF Brands · 192.168.88.173</p>
+</footer>
+
+</div>
+</body>
+</html>
