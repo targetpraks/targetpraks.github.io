@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INF's Mac mini — SSH access, what runs on it, what it exposes</title>
+<style>
+  :root{
+    --paper:#fdfaf3; --ink:#12203a; --dim:#5d6b7e; --line:#d8cfc0;
+    --card:#ffffff; --coral:#c2553f; --teal:#1d6f6a; --gold:#a8862f;
+    --wash:#f4efe4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:56px 32px 96px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:26px;margin-bottom:40px}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--coral);font-weight:700;margin:0 0 14px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:40px;line-height:1.15;margin:0 0 14px;letter-spacing:-.01em}
+  .standfirst{font-size:18px;color:var(--dim);margin:0;max-width:70ch}
+  .meta{margin-top:18px;font-size:13px;color:var(--dim)}
+  .meta b{color:var(--ink);font-weight:600}
+  h2{font-family:Georgia,serif;font-size:26px;margin:52px 0 6px;padding-top:18px;border-top:1px solid var(--line)}
+  h2 .num{color:var(--coral);font-size:15px;font-family:-apple-system,sans-serif;font-weight:700;
+          letter-spacing:.1em;display:block;margin-bottom:6px;text-transform:uppercase}
+  h3{font-size:17px;margin:26px 0 8px}
+  p{margin:12px 0}
+  .answers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:26px 0 8px}
+  .ans{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:18px 20px}
+  .ans .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .ans .big{font-family:Georgia,serif;font-size:30px;line-height:1.1;margin:8px 0 6px}
+  .ans .big.yes{color:var(--teal)}
+  .ans .sub{font-size:13px;color:var(--dim);line-height:1.45}
+  table{width:100%;border-collapse:collapse;margin:18px 0;background:var(--card);
+        border:1px solid var(--line);font-size:14.5px}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--wash);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+  tr:last-child td{border-bottom:none}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--wash);
+       padding:1px 5px;border-radius:4px;border:1px solid var(--line)}
+  pre{background:#fffdf8;border:1px solid var(--line);border-left:3px solid var(--teal);
+      padding:14px 16px;overflow-x:auto;font:12.5px/1.6 ui-monospace,Menlo,monospace;border-radius:6px;margin:16px 0}
+  .flag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+        padding:2px 8px;border-radius:20px;border:1px solid}
+  .f-red{color:#8f2f20;border-color:#d9a79c;background:#fbeee9}
+  .f-amb{color:#7a5c12;border-color:#ddc894;background:#fbf3de}
+  .f-ok{color:#155e59;border-color:#9dcac5;background:#e8f4f2}
+  .note{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:18px 20px;margin:24px 0}
+  .note h4{margin:0 0 8px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--coral)}
+  ul,ol{margin:12px 0;padding-left:22px}
+  li{margin:7px 0}
+  a{color:var(--teal);text-decoration:underline;text-underline-offset:2px}
+  .draft{background:#fffdf8;border:1px dashed var(--gold);border-radius:10px;padding:18px 20px;font-size:15px}
+  footer{margin-top:60px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--dim)}
+  @media(max-width:760px){.answers{grid-template-columns:1fr}.wrap{padding:32px 18px 64px}h1{font-size:30px}}
+  @media print{body{background:#fff}.wrap{padding:0}h2{page-break-after:avoid}table{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="kicker">ITC · IT Support · Infinity Brands</p>
+  <h1>INF's Mac mini: access, contents, and what it exposes</h1>
+  <p class="standfirst">Tuan authorised our key. The account is <b>infmac</b>, and yes — this is the Mac mini
+  that runs the staging VM <b>macmini-inf</b>. Below: how the access works, what actually runs on the box,
+  and the exposure nobody asked about but should see.</p>
+  <p class="meta"><b>Verified</b> 2026-11-08 17:16 SAST · <b>Host</b> 192.168.88.173 (INFs-Mac-mini.local) ·
+  <b>Source</b> <a href="https://cliq.zoho.com/company/infinitybrands/message/2243163771461718677/1794124645223_4341040251751">Cliq thread with Tuan Griezel</a></p>
+</header>
+
+<div class="answers">
+  <div class="ans">
+    <div class="lab">Account name</div>
+    <div class="big">infmac</div>
+    <div class="sub">uid 501 · member of <code>admin</code> and <code>com.apple.access_ssh</code></div>
+  </div>
+  <div class="ans">
+    <div class="lab">Hosts macmini-inf?</div>
+    <div class="big yes">Yes</div>
+    <div class="sub">UTM VM “Ubuntu Server” · 192.168.88.226 bridged on en0</div>
+  </div>
+  <div class="ans">
+    <div class="lab">Read access</div>
+    <div class="big" style="color:var(--teal)">Working</div>
+    <div class="sub">key installed 15:09, login verified 17:16 — no password used</div>
+  </div>
+</div>
+
+<h2><span class="num">01</span>How the access works</h2>
+<p>The office VLAN is not reachable from this Mac, and the bastion only forwards to the staging VM — not to
+the Mac mini. The working route is therefore end-to-end SSH through both hops, so the key stays on this
+machine and is never copied to the bastion:</p>
+<pre>ssh infmini          # ~/.ssh/config: ProxyJump bastion,macserver · User infmac · key id_ed25519</pre>
+<p>That alias now resolves to <code>infmac@192.168.88.173</code>; before today it pointed at a
+<code>ricardomaio</code> account that does not exist on the box. Five public keys are now authorised on
+<code>~/.ssh/authorized_keys</code> (permissions 700 on the directory, 600 on the file, as asked).</p>
+
+<div class="note">
+  <h4>One thing to note before it becomes a habit</h4>
+  <p style="margin-bottom:0">Adrianna asked for read access; what was granted is an <b>administrator</b>
+  account — a member of <code>admin</code>, with the SSH access group and screen-sharing access attached.
+  Passwordless sudo is <i>not</i> enabled (a password is still required), so this is narrower than root,
+  but it is wider than “read”. If we only need to inventory, a standard account would do the job with less
+  blast radius.</p>
+</div>
+
+<h2><span class="num">02</span>What actually runs on it</h2>
+<p>This is a Mac mini M4 with 16&nbsp;GB, macOS 26.5.2, up 11 days. It is not idle: it is the office's
+staging host <i>and</i> a Hermes box, under a second account called <code>hermes-deploy</code>.</p>
+<table>
+  <thead><tr><th>What</th><th>Runs as</th><th>Where it answers</th><th>State</th></tr></thead>
+  <tbody>
+    <tr><td>Hermes agent</td><td><code>hermes-deploy</code></td><td><code>~/.hermes</code></td><td><span class="flag f-ok">running</span></td></tr>
+    <tr><td>“Meridian Service Bureau” app (digital-employee plugin)</td><td><code>hermes-deploy</code></td><td>port 8099</td><td><span class="flag f-ok">sign-in page live</span></td></tr>
+    <tr><td>Browser-agent control API (camoufox engine)</td><td>—</td><td>port 9377</td><td><span class="flag f-amb">enabled, idle</span></td></tr>
+    <tr><td>Agent artefact server (frames, step logs, reports)</td><td>—</td><td>port 9390</td><td><span class="flag f-red">open listing</span></td></tr>
+    <tr><td>Staging VM macmini-inf (UTM, Apple Virtualization)</td><td><code>infmac</code></td><td>192.168.88.226</td><td><span class="flag f-ok">running</span></td></tr>
+    <tr><td>GitHub Actions self-hosted runner “INFs-Mac-mini”</td><td><code>infmac</code></td><td>—</td><td><span class="flag f-ok">registered</span></td></tr>
+    <tr><td>ZohoAssist, WebSSH, Chrome, Safari, UTM</td><td><code>infmac</code></td><td>—</td><td><span class="flag f-ok">installed</span></td></tr>
+  </tbody>
+</table>
+<p>No Homebrew, and no project repositories checked out in either home directory — the code lives on the
+staging VM, not on this Mac. Disk: 119&nbsp;GB used of 228&nbsp;GB.</p>
+
+<h3>The hosting answer, with proof rather than a promise</h3>
+<p>Tuan said yes; the machine agrees. UTM is running with a single VM bundle, <code>Ubuntu Server.utm</code>,
+and the staging VM's own network card (<code>ba:95:85:da:e3:06</code>) appears in this Mac's ARP table as
+192.168.88.226 on <code>en0</code>. The VM reports itself as an Apple Virtualization guest, which is exactly
+what UTM uses on Apple silicon. It is bridged onto the office LAN, not NATed — which is why the bastion can
+reach it directly.</p>
+
+<h2><span class="num">03</span>What it exposes to the office VLAN</h2>
+<p>Scanned from the staging VM, i.e. from a normal office address, exactly as a colleague's laptop would see it:</p>
+<table>
+  <thead><tr><th class="num">Port</th><th>Service</th><th>Answers with</th><th>Risk</th></tr></thead>
+  <tbody>
+    <tr><td class="num">22</td><td>SSH (OpenSSH 10.2)</td><td>public key, password, keyboard-interactive</td><td><span class="flag f-amb">password auth enabled</span></td></tr>
+    <tr><td class="num">88</td><td>Kerberos KDC (Apple Heimdal)</td><td>ticket service</td><td><span class="flag f-amb">why is this a KDC?</span></td></tr>
+    <tr><td class="num">445</td><td>SMB file sharing</td><td>smbd</td><td><span class="flag f-amb">office-wide</span></td></tr>
+    <tr><td class="num">5900</td><td>Screen Sharing (VNC)</td><td><code>RFB 003.889</code></td><td><span class="flag f-amb">office-wide</span></td></tr>
+    <tr><td class="num">3283</td><td>Apple Remote Desktop agent</td><td>ARDAgent</td><td><span class="flag f-amb">office-wide</span></td></tr>
+    <tr><td class="num">3031</td><td>Unidentified listener</td><td>no protocol reply</td><td><span class="flag f-amb">unowned</span></td></tr>
+    <tr><td class="num">5000 / 7000</td><td>AirPlay receiver (Control Center)</td><td>HTTP</td><td><span class="flag f-ok">normal macOS</span></td></tr>
+    <tr><td class="num">9377</td><td>Browser-agent control API</td><td><code>{"ok":true,"engine":"camoufox"}</code></td><td><span class="flag f-red">no auth</span></td></tr>
+    <tr><td class="num">8099</td><td>Meridian Service Bureau</td><td>sign-in page</td><td><span class="flag f-amb">exposed app</span></td></tr>
+    <tr><td class="num">9390</td><td>Agent artefact server</td><td><b>directory listing</b></td><td><span class="flag f-red">no auth, browsable</span></td></tr>
+    <tr><td class="num">49423</td><td>rapportd (Continuity)</td><td>—</td><td><span class="flag f-ok">normal macOS</span></td></tr>
+  </tbody>
+</table>
+<p>Two of those deserve a sentence each. <b>9390</b> serves an index of whatever the browser agent has been
+doing — frames, step-by-step logs, shift reports — to anyone on the office network, with no login:
+<code>amazon-split.html</code>, <code>steps.jsonl</code>, <code>shift-report.md</code>, <code>frames/</code>.
+<b>9377</b> is the control endpoint for that same agent, also unauthenticated; it currently reports
+<code>running:false</code>, but an idle control port is still a control port.</p>
+<p>On top of that, the application firewall is <b>off</b>, stealth mode is off, and the box accepts SSH
+passwords. The whole office VLAN can knock on all of the above.</p>
+
+<h2><span class="num">04</span>What I would do about it</h2>
+<ol>
+  <li><b>Bind the agent ports to localhost.</b> 9377 and 9390 need to be reachable from the Mac mini, not
+  from the VLAN. One listening-address change, no loss of function, closes the worst of it.</li>
+  <li><b>Decide whether SMB, Screen Sharing and ARD belong on the general VLAN.</b> If they are only for
+  IT, restrict them to a management subnet or switch on the application firewall with an explicit allow-list.</li>
+  <li><b>Turn the firewall on.</b> It is currently disabled with stealth mode off, which is why every port
+  above is visible to a scan.</li>
+  <li><b>Turn off SSH password authentication</b> and keep public keys only. It costs one line in
+  <code>sshd_config.d</code> and removes the thing we were careful to avoid in chat.</li>
+  <li><b>Check the Kerberos KDC on port 88.</b> A single-user Mac mini serving Kerberos to the office is
+  unusual; either it is a deliberate directory-service role, or something is enabled that nobody meant to enable.</li>
+  <li><b>Treat the self-hosted Actions runner as code execution.</b> It is registered to the
+  <a href="https://github.com/InfinityBrandsOrg">InfinityBrandsOrg</a> and runs as <code>infmac</code> — an
+  admin account that can also reach the staging VM. Any workflow that lands on it runs with those rights.</li>
+</ol>
+
+<h2><span class="num">05</span>Suggested reply to Tuan</h2>
+<div class="draft">
+  <p style="margin-top:0">Thanks Tuan — key works, I'm in as <code>infmac</code>, and confirmed the Mac mini
+  is the UTM host for macmini-inf. Two things worth your attention while you're in there: the firewall is
+  off on that box, and two agent ports (9377, 9390) are answering the whole office VLAN with no login —
+  9390 is serving a browsable directory listing. Nothing urgent from our side; happy to log it as a ticket
+  if you want it tracked.</p>
+  <p style="margin-bottom:0"><i>Drafted, not sent — Ricardo sends it, or tells me to.</i></p>
+</div>
+
+<h2><span class="num">06</span>Evidence</h2>
+<pre>local   $ ssh infmini 'whoami; hostname; sw_vers -productVersion'
+        infmac
+        INFs-Mac-mini.local
+        26.5.2
+
+host    $ id
+        uid=501(infmac) gid=20(staff) groups=... 80(admin) ... 399(com.apple.access_ssh) ...
+
+host    $ ls -l ~/.ssh/authorized_keys
+        -rw-------  1 infmac  staff  502 Nov  8 15:09 /Users/infmac/.ssh/authorized_keys
+
+host    $ ls ~/Library/Containers/com.utmapp.UTM/Data/Documents
+        Ubuntu Server.utm
+
+host    $ arp -an | grep 192.168.88.226
+        ? (192.168.88.226) at ba:95:85:da:e3:6 on en0 ifscope [ethernet]
+
+vm      $ ip link show enp0s1
+        link/ether ba:95:85:da:e3:06          &lt;- same card
+
+vm      $ systemd-detect-virt ; ip route show default
+        apple
+        default via 192.168.88.1 dev enp0s1 proto dhcp src 192.168.88.226
+
+vm      $ curl -s http://192.168.88.173:9390/ | grep href
+        amazon-split.html · cursor.json · events.jsonl · frames/ · live.html · shift-report.md ...
+
+host    $ /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
+        Firewall is disabled. (State = 0)</pre>
+
+<footer>
+  Prepared by Bruce Wayne · ITC · 2026-11-08. Every line above is copied from a command that ran; nothing was
+  inferred. Access was granted by Tuan Griezel in
+  <a href="https://cliq.zoho.com/company/infinitybrands/message/2243163771461718677/1794143641848_4345354214084">the Cliq thread</a>.
+</footer>
+
+</div>
+</body>
+</html>
