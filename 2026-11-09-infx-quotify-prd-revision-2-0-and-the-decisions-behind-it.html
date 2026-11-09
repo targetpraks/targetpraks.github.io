@@ -137,7 +137,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td><strong>Status</strong></td>
-<td>PRD revised; user-facing name changed; branch <code>docs/infx-quotify-prd-v2</code>, not committed, not pushed</td>
+<td>PRD revised; user-facing name changed; live Zoho re-checked 2026-11-09; branch <code>docs/infx-quotify-prd-v2</code>, not committed, not pushed</td>
 </tr>
 <tr>
 <td><strong>PRD</strong></td>
@@ -154,10 +154,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>The product is now Infx Quotify.</strong> The name is changed in the app title, sidebar, login screen, PO sheet, notification copy, README and PRD. Internal identifiers (<code>quorum.pb.js</code>, <code>/api/quorum/*</code>, <code>qp_*</code>, <code>q_*</code>) are unchanged so nothing breaks; a compatibility rename is a separate job.</li>
 <li><strong>The PRD is now revision 2.0.</strong> Thirteen owner decisions and six new workstreams: the requester queue, item-for-item equivalence, the advisory award model, proof of payment, the Zoho Books contract, and a Zoho Creator review.</li>
 <li><strong>Zoho Books, not Zoho Inventory.</strong> Books is the ledger: vendor bills, VAT, payments and proof-of-payment attachments. Inventory stays the stock and warehouse view. One origin per document, and Books owns the official PO number.</li>
-<li><strong>Zoho Creator Procurement is real — but not deployed here.</strong> It has requisitions, POs, GRNs, budgets, multilevel approvals, vendor management and mobile. The Infinity Brands tenant has five Creator apps and none is procurement; the Procurement service is disabled. Borrow the patterns, do not buy a second system of record.</li>
+<li><strong>Zoho Creator Procurement is real — but not deployed here.</strong> It has requisitions, POs, GRNs, budgets, multilevel approvals, vendor management and mobile. A live read on 9 November returns two Creator apps, neither procurement; the Procurement service is disabled. Borrow the patterns, do not buy a second system of record.</li>
 <li><strong>The AI is advisory, by construction.</strong> A deterministic scorecard does the maths; a local model reads internal reviews and writes a cited second opinion. It cannot write a decision field, cannot override the three-quote rule or a budget stop, and may abstain.</li>
 <li><strong>The staff journey is now explicit:</strong> request → queue with an owner → service clock and effort timer → "quotes ready" notification → requester confirms fit → manager approves spend → purchasing orders → payment proof recorded.</li>
-<li><strong>Two gates before a live tender:</strong> the award must become a real server command (today it still depends on <code>QP_AWARD_EXECUTION=synthetic</code>), and finance must confirm the Zoho VAT registration (<code>is_tax_registered: false</code> in the July audit).</li>
+<li><strong>Two gates before a live tender:</strong> the award must become a real server command (today it still depends on <code>QP_AWARD_EXECUTION=synthetic</code>), and the Books service/scope must be enabled with finance-confirmed tax rates. The live org <strong>is</strong> tax-registered (<code>is_tax_registered: true</code>) — the July audit's <code>false</code> was stale.</li>
 </ul>
 <h2 id="what-actually-changed-in-the-repo">What actually changed in the repo</h2>
 <table>
@@ -240,10 +240,16 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </table>
 <p>Zoho's own integration documentation says items, contacts, purchase orders, bills and reports synchronise between Inventory and Books (<a href="https://www.zoho.com/us/inventory/kb/integrations/accounting-flow.html">accounting flow</a>). That is exactly why the desk must <strong>pick one origin per document</strong>: creating the same PO in both systems creates two numbers and two truths.</p>
 <p><strong>The rule in the PRD:</strong> Infx Quotify creates the PO in Books, sends its own <code>QX-YYYY-NNNN</code> as <code>reference_number</code>, and reads back the Books-issued <code>purchaseorder_number</code>. Stock receipts happen in Inventory and flow back. Books owns the official number (D12); Quotify never runs a second series.</p>
-<p><strong>VAT is the blocker.</strong> The July 2026 tenant audit records the Books organisation as <code>is_tax_registered: false</code>. The PRD fails closed: no live push until finance confirms the registration, tax IDs and rates. A PO is not a tax invoice, and the old <code>1.15</code> divisor is deleted, not moved into a constant (WS-4).</p>
+<p><strong>The live VAT position (checked 9 November 2026).</strong> The Books API returns one organisation — Infinity Brands, <code>org_type: live</code>, ZAR, <code>is_tax_registered: true</code>, fiscal year starting in February. The July audit's <code>false</code> is stale and corrected in the PRD. Three gates remain:</p>
+<ol type="1">
+<li>Finance confirms the tax IDs and rates — registration itself is confirmed.</li>
+<li>The Books service or the token's Books scope must be enabled: <code>GET</code> on contacts, purchase orders, bills, vendor payments and taxes returns HTTP 400 code 6018 ("account is disabled"), while <code>/organizations</code> succeeds.</li>
+<li>There is no sandbox sibling org, so the sandbox phase becomes a fixture dry-run or a new sandbox the owner creates.</li>
+</ol>
+<p>A PO is not a tax invoice, and the old <code>1.15</code> divisor is deleted, not moved into a constant (WS-4).</p>
 <h2 id="zoho-creator-procurement--what-it-is-and-what-we-found">Zoho Creator Procurement — what it is and what we found</h2>
 <p>Zoho Creator does ship a Procurement application: purchase requisitions, purchase orders, goods received notes, budget management, multilevel approvals, vendor management, multi-currency, a central document repository, analytics and mobile access (<a href="https://www.zoho.com/creator/procurement/features.html">features</a>).</p>
-<p>What Infinity Brands actually has, per the July 2026 Creator audit: five applications — Cleaning Schedule, IT Asset Register, GovPortal, Site Inspector, Content Review — and <strong>no procurement app</strong>. The Zoho Procurement service is disabled on the tenant. So there is nothing to "link" today.</p>
+<p>What Infinity Brands actually has, per a live Creator API read on 9 November 2026: <strong>two applications</strong> — Content Review and Release Tracking, and Site Inspector — and <strong>no procurement app</strong>. The July audit listed five (Cleaning Schedule, IT Asset Register, GovPortal, Site Inspector, Content Review); whichever count is current, none is procurement. The Zoho Procurement service is disabled on the tenant. So there is nothing to "link" today.</p>
 <p><strong>Decision:</strong> do not deploy it as a second procurement system. It overlaps the desk at requisition and approval, but it does not provide the three-quote proof, the VAT-exclusive like-for-like matrix, the hash-chained audit trail or the advisory evidence record. Running both would create two queues and two truths. Borrow these patterns instead:</p>
 <table>
 <thead>
@@ -428,7 +434,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Where I did not take the panel's advice.</strong> Two cuts would break the thing Ricardo asked for. I kept the <strong>four-way match</strong>, because proof of payment is meaningless without it, and I kept the <strong>budget hard stop</strong>, because it is an accepted control — introduced in shadow mode first, not removed. I also kept the three-way match's exception register: it is the evidence finance signs.</p>
 <h2 id="what-ricardo-needs-to-decide">What Ricardo needs to decide</h2>
 <ol type="1">
-<li><strong>VAT registration.</strong> Finance must confirm the Books organisation's VAT registration, tax IDs and rates. Until then, Zoho live push stays off. This is not a coding decision.</li>
+<li><strong>Tax rates and Books access.</strong> The live org is VAT-registered, so the question is narrower: finance confirms the tax IDs and rates, and someone enables the Books service/scope (the contacts, PO, bill and payment endpoints currently return 6018). Until both are done, live push stays off.</li>
 <li><strong>Proof-of-payment retention and access.</strong> Default in the PRD is seven years, finance + owning purchaser + auditor. Confirm or change.</li>
 <li><strong>Service targets.</strong> Proposed: first response 1 working day; ready for review 5 working days under R50k, 10 above. Measure first, enforce after three months.</li>
 <li><strong>Model visibility.</strong> Proposed: managers and purchasers see the model view; requesters see facts and the decision, not an "AI says" badge.</li>
@@ -444,7 +450,8 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>Bill attachments:</strong> <a href="https://www.zoho.com/us/books/kb/bills/attachment-bill.html">official help</a></li>
 <li><strong>Books–Inventory sync:</strong> <a href="https://www.zoho.com/us/inventory/kb/integrations/accounting-flow.html">official help</a></li>
 <li><strong>Creator Procurement features:</strong> <a href="https://www.zoho.com/creator/procurement/features.html">official page</a></li>
-<li><strong>Tenant audit:</strong> <code>AI-Drive/Work/_archive-from-Developer/zoho-audit-reports/zoho-purchasing-report.md</code> — <code>is_tax_registered: false</code>, 43 contacts, 35 ACDC entities, 11 users, February fiscal year, Procurement service disabled.</li>
+<li><strong>Live Zoho check (2026-11-09):</strong> one Books org (<code>716443079</code>, Infinity Brands, <code>org_type: live</code>, ZAR, <code>is_tax_registered: true</code>, <code>fiscal_year_start_month: 2</code>); two Creator apps, neither procurement; contacts/PO/bill/payment endpoints return 6018 (service or scope disabled).</li>
+<li><strong>Tenant audit (July 2026, partly stale):</strong> <code>AI-Drive/Work/_archive-from-Developer/zoho-audit-reports/zoho-purchasing-report.md</code> — 43 contacts, 35 ACDC entities, 11 users, Procurement service disabled. Its <code>is_tax_registered: false</code> is superseded by the live check.</li>
 <li><strong>Creator audit:</strong> same folder, <code>zoho-creator-report.md</code> — five apps, none procurement.</li>
 <li><strong>Capability comparison (previous report):</strong> <a href="https://targetpraks.github.io/jump.html?vault=Maio%20Hub&amp;file=Work%2F2.Automations-Skills%2FReports%2F2026-11-09-quorum-vs-zoho-procurement-capability-comparison&amp;doc=Work%2F2.Automations-Skills%2FReports%2F2026-11-09-quorum-vs-zoho-procurement-capability-comparison&amp;t=Quorum%20vs%20Zoho%20Procurement%20%E2%80%94%20capability%20comparison&amp;h=https%3A%2F%2Ftargetpraks.github.io%2F2026-11-09-quorum-vs-zoho-procurement-capability-comparison.html">Quorum vs Zoho Procurement</a></li>
 <li><strong>Workstream audit:</strong> <code>Maio Hub/Work/4.Research/2026-11-07-quorum-prd-workstream-audit.md</code></li>
