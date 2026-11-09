@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Infx Quotify — PRD revision 2.0 and the decisions behind it</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="infx-quotify--prd-revision-20-and-the-decisions-behind-it">Infx Quotify — PRD revision 2.0 and the decisions behind it</h1>
+<table>
+<tbody>
+<tr>
+<td><strong>Date</strong></td>
+<td>2026-11-09</td>
+</tr>
+<tr>
+<td><strong>Author</strong></td>
+<td>Courage (Hermes), on Ricardo's decisions</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>PRD revised; user-facing name changed; branch <code>docs/infx-quotify-prd-v2</code>, not committed, not pushed</td>
+</tr>
+<tr>
+<td><strong>PRD</strong></td>
+<td><code>/Volumes/Hiksemi 1TB/DevMini/quote-program/prd/quote-program-enhancement-2026-10-30.md</code></td>
+</tr>
+<tr>
+<td><strong>Repo</strong></td>
+<td><code>InfinityBrandsOrg/quote-program</code> — <code>/Volumes/Hiksemi 1TB/DevMini/quote-program</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-short-version">The short version</h2>
+<ul>
+<li><strong>The product is now Infx Quotify.</strong> The name is changed in the app title, sidebar, login screen, PO sheet, notification copy, README and PRD. Internal identifiers (<code>quorum.pb.js</code>, <code>/api/quorum/*</code>, <code>qp_*</code>, <code>q_*</code>) are unchanged so nothing breaks; a compatibility rename is a separate job.</li>
+<li><strong>The PRD is now revision 2.0.</strong> Thirteen owner decisions and six new workstreams: the requester queue, item-for-item equivalence, the advisory award model, proof of payment, the Zoho Books contract, and a Zoho Creator review.</li>
+<li><strong>Zoho Books, not Zoho Inventory.</strong> Books is the ledger: vendor bills, VAT, payments and proof-of-payment attachments. Inventory stays the stock and warehouse view. One origin per document, and Books owns the official PO number.</li>
+<li><strong>Zoho Creator Procurement is real — but not deployed here.</strong> It has requisitions, POs, GRNs, budgets, multilevel approvals, vendor management and mobile. The Infinity Brands tenant has five Creator apps and none is procurement; the Procurement service is disabled. Borrow the patterns, do not buy a second system of record.</li>
+<li><strong>The AI is advisory, by construction.</strong> A deterministic scorecard does the maths; a local model reads internal reviews and writes a cited second opinion. It cannot write a decision field, cannot override the three-quote rule or a budget stop, and may abstain.</li>
+<li><strong>The staff journey is now explicit:</strong> request → queue with an owner → service clock and effort timer → "quotes ready" notification → requester confirms fit → manager approves spend → purchasing orders → payment proof recorded.</li>
+<li><strong>Two gates before a live tender:</strong> the award must become a real server command (today it still depends on <code>QP_AWARD_EXECUTION=synthetic</code>), and finance must confirm the Zoho VAT registration (<code>is_tax_registered: false</code> in the July audit).</li>
+</ul>
+<h2 id="what-actually-changed-in-the-repo">What actually changed in the repo</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index.html</code></td>
+<td>Nine user-facing brand strings: page title, sidebar, login, version chip, PO sheet, alert copy, Zoho notes and footer.</td>
+<td>No capital-Q "Quorum" remains in the file.</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>Title, product sentence and local-backend line.</td>
+<td>No capital-Q "Quorum" remains in the file.</td>
+</tr>
+<tr>
+<td><code>prd/quote-program-enhancement-2026-10-30.md</code></td>
+<td>Revision 2.0: decision register D1–D13, go-live gate, WS-18–WS-23, Books retarget, out-of-scope changes, Q13–Q20, risk R12–R15, revision history.</td>
+<td>+600 lines; 2,077 lines total.</td>
+</tr>
+<tr>
+<td>Unit suite</td>
+<td>Nothing broken by the text changes.</td>
+<td><code>npm run test:unit</code> → <strong>192 tests, 192 pass, 0 fail</strong>.</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing was pushed, no backend was started, no live Zoho call was made. The changes are on branch <code>docs/infx-quotify-prd-v2</code> and are uncommitted for review.</p>
+<h2 id="the-name-why-the-internals-stay">The name: why the internals stay</h2>
+<p>"Quorum" was hard to say and harder to remember. <strong>Infx Quotify</strong> says what it is and carries the INFX family name. The repo stays <code>quote-program</code>, the hook file stays <code>quorum.pb.js</code>, and the API stays <code>/api/quorum/*</code> because renaming a deployed route and a collection prefix is a migration, not a rebrand. The PRD records that decision (D1) so nobody "fixes" the inconsistency later without a plan.</p>
+<h2 id="zoho-books-or-zoho-inventory">Zoho Books or Zoho Inventory?</h2>
+<p><strong>Books.</strong> Not because Inventory is worse, but because the things this desk must prove are financial records:</p>
+<table>
+<thead>
+<tr>
+<th>What the desk needs</th>
+<th>Zoho Books</th>
+<th>Zoho Inventory</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vendor bill, input VAT, general ledger</td>
+<td>The accounting book itself</td>
+<td>Posts through the Books integration; not the ledger</td>
+<td><strong>Books</strong></td>
+</tr>
+<tr>
+<td>Vendor payment and proof-of-payment attachment</td>
+<td>Vendor payments, bill attachments, payment documents</td>
+<td>Payments made exist, but the ledger and documents belong to Books</td>
+<td><strong>Books</strong></td>
+</tr>
+<tr>
+<td>Purchase order</td>
+<td>Yes — lines, taxes, currency</td>
+<td>Yes — stock purchase orders</td>
+<td>One origin; <strong>Books</strong></td>
+</tr>
+<tr>
+<td>Goods receipt, stock valuation, warehouses</td>
+<td>Partial</td>
+<td>Yes</td>
+<td><strong>Inventory</strong></td>
+</tr>
+<tr>
+<td>Reports finance signs</td>
+<td>Yes</td>
+<td>Stock reports only</td>
+<td><strong>Books</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Zoho's own integration documentation says items, contacts, purchase orders, bills and reports synchronise between Inventory and Books (<a href="https://www.zoho.com/us/inventory/kb/integrations/accounting-flow.html">accounting flow</a>). That is exactly why the desk must <strong>pick one origin per document</strong>: creating the same PO in both systems creates two numbers and two truths.</p>
+<p><strong>The rule in the PRD:</strong> Infx Quotify creates the PO in Books, sends its own <code>QX-YYYY-NNNN</code> as <code>reference_number</code>, and reads back the Books-issued <code>purchaseorder_number</code>. Stock receipts happen in Inventory and flow back. Books owns the official number (D12); Quotify never runs a second series.</p>
+<p><strong>VAT is the blocker.</strong> The July 2026 tenant audit records the Books organisation as <code>is_tax_registered: false</code>. The PRD fails closed: no live push until finance confirms the registration, tax IDs and rates. A PO is not a tax invoice, and the old <code>1.15</code> divisor is deleted, not moved into a constant (WS-4).</p>
+<h2 id="zoho-creator-procurement--what-it-is-and-what-we-found">Zoho Creator Procurement — what it is and what we found</h2>
+<p>Zoho Creator does ship a Procurement application: purchase requisitions, purchase orders, goods received notes, budget management, multilevel approvals, vendor management, multi-currency, a central document repository, analytics and mobile access (<a href="https://www.zoho.com/creator/procurement/features.html">features</a>).</p>
+<p>What Infinity Brands actually has, per the July 2026 Creator audit: five applications — Cleaning Schedule, IT Asset Register, GovPortal, Site Inspector, Content Review — and <strong>no procurement app</strong>. The Zoho Procurement service is disabled on the tenant. So there is nothing to "link" today.</p>
+<p><strong>Decision:</strong> do not deploy it as a second procurement system. It overlaps the desk at requisition and approval, but it does not provide the three-quote proof, the VAT-exclusive like-for-like matrix, the hash-chained audit trail or the advisory evidence record. Running both would create two queues and two truths. Borrow these patterns instead:</p>
+<table>
+<thead>
+<tr>
+<th>Creator pattern</th>
+<th>Adopt as</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multilevel approval matrix</td>
+<td>Approval bands resolved from grants, not typed names</td>
+<td>WS-7, WS-18</td>
+</tr>
+<tr>
+<td>Budget management and alerts</td>
+<td>Budget meter and hard stop before award</td>
+<td>WS-8</td>
+</tr>
+<tr>
+<td>Mobile approval</td>
+<td>Responsive approval screen with the evidence summary</td>
+<td>WS-17</td>
+</tr>
+<tr>
+<td>PR → PO → GRN trace</td>
+<td>One visible chain per request</td>
+<td>WS-18, WS-21</td>
+</tr>
+<tr>
+<td>Central document repository</td>
+<td>One protected, hashed document set per request</td>
+<td>WS-3, WS-21</td>
+</tr>
+<tr>
+<td>Analytics</td>
+<td>Time-to-ready, savings, exceptions, vendor performance</td>
+<td>WS-9</td>
+</tr>
+</tbody>
+</table>
+<p>If it is ever adopted, the only coherent split is Creator as the intake front-end, Books as the ledger, Infx Quotify as the quote and decision record. That is an explicit decision (Q17), not a silent integration.</p>
+<h2 id="the-ai-decision-model-evidence-not-a-decision">The AI decision model: evidence, not a decision</h2>
+<p>Two layers, deliberately separated:</p>
+<ol type="1">
+<li><strong>Deterministic scorecard (code).</strong> VAT-exclusive landed total, variance to the cheapest comparable, lead time, validity remaining, payment terms, compliance state, award count, on-time rate, quality/rejection rate, and the vendor's own price history. Every number is computed in integer cents and reproducible.</li>
+<li><strong>Local model narrative (LiteLLM, on this Mac).</strong> It reads the scorecard, the request context and the <em>internal</em> review notes, and returns a structured advisory: a recommendation (or an abstention), per-quote strengths and risks, line risks, questions to ask, and an evidence list.</li>
+</ol>
+<p><strong>What makes it safe in a three-quote regime:</strong></p>
+<ul>
+<li><strong>Blind first.</strong> The decider records a provisional choice and reason before the model view is revealed. The model output is sealed at that moment, so it cannot be tuned to the choice. After the reveal, changing the choice requires a recorded reason.</li>
+<li><strong>Structural isolation.</strong> The award command imports no model module and cannot read <code>qp_ai_runs</code>. The model never writes <code>winner</code>, <code>status</code>, a price or a line label.</li>
+<li><strong>Hard stops.</strong> It abstains — and says why — on fewer than three valid quotes, a budget stop, an expired compliance document, a blacklisted or related-party-unresolved vendor, an unresolved <em>different</em>/<em>unclear</em> line, or a missing proof of payment where policy requires one.</li>
+<li><strong>Local only.</strong> No quote, review, vendor contact, bank detail or POP leaves the Mac. POP and bank data are never in the prompt.</li>
+<li><strong>Supplier text is data.</strong> Descriptions are attacker-controlled; the prompt delimits them and flags injection attempts.</li>
+<li><strong>Full audit.</strong> <code>qp_ai_runs</code> stores model id, prompt version, prompt hash, redacted input, output, output hash, latency and tokens. An auditor can reproduce what the approver saw after the model is upgraded.</li>
+<li><strong>Evaluation.</strong> 30 past awards, zero unsupported claims required, abstain rate and override rate monitored. A model that agrees more often but invents a delivery history has failed.</li>
+</ul>
+<p>The model is a cited second opinion. It is not the decision, and it cannot satisfy the three-quote rule on the buyer's behalf.</p>
+<h2 id="item-for-item-same-or-not-the-same">Item-for-item: same, or not the same?</h2>
+<p>Every quote line gets one label, with evidence:</p>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Meaning</th>
+<th>Counts in like-for-like total?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>identical</strong></td>
+<td>Same identity key and pack/unit</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>equivalent</strong></td>
+<td>Same function; pack or unit differs with a stated conversion</td>
+<td>Yes, with the conversion shown</td>
+</tr>
+<tr>
+<td><strong>substitute</strong></td>
+<td>Different brand/model/spec, still meets the need</td>
+<td>No — shown separately; requester accepts if form/fit/function changes</td>
+</tr>
+<tr>
+<td><strong>different</strong></td>
+<td>Not the requested item</td>
+<td>No — <strong>only a human may apply this</strong></td>
+</tr>
+<tr>
+<td><strong>unclear</strong></td>
+<td>Not enough data</td>
+<td>No — a person must resolve before award</td>
+</tr>
+</tbody>
+</table>
+<p>The ladder is deterministic first: GTIN → MPN + brand → normalised identity → unit conversion → attribute comparison → fuzzy candidate finding → human. Fuzzy scores never produce <em>identical</em>, and an automatic label may never remove a quote from the counted set. <strong>Abstain is not different.</strong> The matcher abstains when the unit dimension differs, a pack size is missing, a numeric token differs, two candidates are within epsilon, or the text hits a character range the vendor normaliser refuses.</p>
+<h2 id="the-journey-ricardo-asked-for">The journey Ricardo asked for</h2>
+<ol type="1">
+<li><strong>Request.</strong> A staff member submits the need: brand, department, need-by date, lines, specification, budget, attachments.</li>
+<li><strong>Queue.</strong> The request enters a server-owned queue with a priority reason (need-by, age, value band) and an owner. Nothing sits unassigned without showing it.</li>
+<li><strong>Work and time.</strong> A purchaser claims it; the service clock starts. A separate effort timer can be started and stopped. The clock pauses only in a named waiting-on state — requester, approval or goods — and the row shows who it waits on.</li>
+<li><strong>Quotes ready.</strong> The requester and manager get one notification with a deep link: "three quotes ready, review and confirm".</li>
+<li><strong>Requester confirms fit.</strong> They confirm the selected quote meets the need. This is not a spend approval.</li>
+<li><strong>Manager approves spend.</strong> The manager approves within their band, with the evidence and the model view in front of them.</li>
+<li><strong>Purchasing processes.</strong> The PO is created in Books, the outbox is observable, the request shows the Books PO number and state.</li>
+<li><strong>Receipt and payment.</strong> Goods are received, the invoice is matched, the payment is recorded and the proof of payment is attached. The requester sees "ordered", "received" and "paid" without asking anyone.</li>
+</ol>
+<h2 id="proof-of-payment">Proof of payment</h2>
+<p>The desk records a payment; it never initiates one.</p>
+<ul>
+<li>A payment record per payment, with amount, date, method, reference and last four digits only — never a full account or card number.</li>
+<li>POP is a protected file with a SHA-256 hash and a malware scan; only finance, the owning purchaser and an auditor may open it; every open is logged.</li>
+<li><strong>Four-way match:</strong> PO line ↔︎ goods receipt ↔︎ supplier invoice line ↔︎ payment allocation. Tolerances are policy values; a mismatch creates an exception, not a silent pass.</li>
+<li><strong>A bank-detail change never happens through the desk.</strong> It is verified out of band by callback to a known contact, approved by two people, and recorded as a change event. This is the dominant supplier-payment fraud in South Africa.</li>
+<li>POPIA: POP and bid exports carry names, amounts and bank references. They are role-scoped, never in a general export, and never sent to a model, gate or chat.</li>
+</ul>
+<h2 id="the-moa-panel-what-the-three-reviewers-changed">The MoA panel: what the three reviewers changed</h2>
+<table>
+<thead>
+<tr>
+<th>Panel finding</th>
+<th>Applied where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vendor distinctness must be a legal entity, not a name — 35 of 43 contacts share one VAT number, so three "quotes" can be one supplier</td>
+<td>D11, WS-3, Q19, R12</td>
+</tr>
+<tr>
+<td>Books should own the supplier-facing PO number; two series create reconciliation pain</td>
+<td>D12, WS-22</td>
+</tr>
+<tr>
+<td>Split "they approve" into requirement sign-off vs spend approval — a requester approving their own spend is self-approval</td>
+<td>WS-18, step 5–6</td>
+</tr>
+<tr>
+<td>VAT must be a tax-invoice control; delete the <code>1.15</code> fallback; a PO is not a tax invoice</td>
+<td>WS-4, WS-21, WS-22</td>
+</tr>
+<tr>
+<td>POP is evidence only; bank-detail change needs out-of-band callback and two people</td>
+<td>WS-21, Q20</td>
+</tr>
+<tr>
+<td>The advisory must be a stored artefact, blind-first, structurally unable to write a decision</td>
+<td>WS-20</td>
+</tr>
+<tr>
+<td>Item labels must be graded at capture; abstain ≠ different; only a human may disqualify a quote</td>
+<td>WS-19</td>
+</tr>
+<tr>
+<td>Queue needs an owner, a waiting-on party, two clocks and a real channel — in-app today, not a promised email</td>
+<td>WS-18</td>
+</tr>
+<tr>
+<td>No live tender until the award is a server command for real rows</td>
+<td>2.0.5 go-live gate, D13</td>
+</tr>
+<tr>
+<td>Cut v1 scope: FX, discounts, savings verdicts, GL matrix, retention automation</td>
+<td>Noted; FX/discounts/savings/GL deferred in the sequencing note</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Where I did not take the panel's advice.</strong> Two cuts would break the thing Ricardo asked for. I kept the <strong>four-way match</strong>, because proof of payment is meaningless without it, and I kept the <strong>budget hard stop</strong>, because it is an accepted control — introduced in shadow mode first, not removed. I also kept the three-way match's exception register: it is the evidence finance signs.</p>
+<h2 id="what-ricardo-needs-to-decide">What Ricardo needs to decide</h2>
+<ol type="1">
+<li><strong>VAT registration.</strong> Finance must confirm the Books organisation's VAT registration, tax IDs and rates. Until then, Zoho live push stays off. This is not a coding decision.</li>
+<li><strong>Proof-of-payment retention and access.</strong> Default in the PRD is seven years, finance + owning purchaser + auditor. Confirm or change.</li>
+<li><strong>Service targets.</strong> Proposed: first response 1 working day; ready for review 5 working days under R50k, 10 above. Measure first, enforce after three months.</li>
+<li><strong>Model visibility.</strong> Proposed: managers and purchasers see the model view; requesters see facts and the decision, not an "AI says" badge.</li>
+<li><strong>PO origin.</strong> Proposed: Books in v1. Confirm that stock POs may originate there and receipt in Inventory.</li>
+<li><strong>Go-live gate.</strong> Approve the four conditions in §2.0.5 — especially turning the award into a real server command and refusing the browser write.</li>
+<li><strong>Creator.</strong> Confirm no Creator Procurement deployment; patterns only.</li>
+</ol>
+<h2 id="evidence-and-links">Evidence and links</h2>
+<ul>
+<li><strong>Unit suite:</strong> <code>npm run test:unit</code> → 192 tests, 192 pass, 0 fail (5.0 s).</li>
+<li><strong>Zoho Books purchase orders:</strong> <a href="https://www.zoho.com/us/books/help/purchase-order/functions.html">official help</a></li>
+<li><strong>Zoho Books vendor payments API:</strong> <a href="https://www.zoho.com/books/api/v3/vendor-payments/">official API</a></li>
+<li><strong>Bill attachments:</strong> <a href="https://www.zoho.com/us/books/kb/bills/attachment-bill.html">official help</a></li>
+<li><strong>Books–Inventory sync:</strong> <a href="https://www.zoho.com/us/inventory/kb/integrations/accounting-flow.html">official help</a></li>
+<li><strong>Creator Procurement features:</strong> <a href="https://www.zoho.com/creator/procurement/features.html">official page</a></li>
+<li><strong>Tenant audit:</strong> <code>AI-Drive/Work/_archive-from-Developer/zoho-audit-reports/zoho-purchasing-report.md</code> — <code>is_tax_registered: false</code>, 43 contacts, 35 ACDC entities, 11 users, February fiscal year, Procurement service disabled.</li>
+<li><strong>Creator audit:</strong> same folder, <code>zoho-creator-report.md</code> — five apps, none procurement.</li>
+<li><strong>Capability comparison (previous report):</strong> <a href="https://targetpraks.github.io/jump.html?vault=Maio%20Hub&amp;file=Work%2F2.Automations-Skills%2FReports%2F2026-11-09-quorum-vs-zoho-procurement-capability-comparison&amp;doc=Work%2F2.Automations-Skills%2FReports%2F2026-11-09-quorum-vs-zoho-procurement-capability-comparison&amp;t=Quorum%20vs%20Zoho%20Procurement%20%E2%80%94%20capability%20comparison&amp;h=https%3A%2F%2Ftargetpraks.github.io%2F2026-11-09-quorum-vs-zoho-procurement-capability-comparison.html">Quorum vs Zoho Procurement</a></li>
+<li><strong>Workstream audit:</strong> <code>Maio Hub/Work/4.Research/2026-11-07-quorum-prd-workstream-audit.md</code></li>
+</ul>
+<h2 id="files-and-status">Files and status</h2>
+<ul>
+<li>Branch: <code>docs/infx-quotify-prd-v2</code> (from <code>feat/award-schedule</code> @ <code>6b5a9f6</code>).</li>
+<li>Modified: <code>index.html</code>, <code>README.md</code>, <code>prd/quote-program-enhancement-2026-10-30.md</code>.</li>
+<li>Uncommitted; no push; no live Zoho call.</li>
+<li>The PRD remains <strong>PROPOSED</strong>. Nothing in this report authorises a live tender or a live Zoho write.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
