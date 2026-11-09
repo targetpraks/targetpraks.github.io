@@ -132,6 +132,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Failed to authenticate: OAuth session expired and could not be refreshed</p>
 </blockquote>
 <p>That was not a transient blip, and it is not a T3 Code bug.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">timeline</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">title</span><span class="vs"> How the credential chain died</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">12</span><span class="er">:</span><span class="dt">05 SAST : </span><span class="vs">last successful refresh wrote ~/.claude/.credentials.json</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">19</span><span class="er">:</span><span class="dt">43 SAST : </span><span class="vs">access token expiresAt reached, chain now stale</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">20</span><span class="er">:</span><span class="dt">56 SAST : </span><span class="vs">T3 Code turn asks for a refresh, server REJECTS it</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">20</span><span class="er">:</span><span class="dt">56 SAST : </span><span class="vs">claude auth status reports loggedIn false</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">20</span><span class="er">:</span><span class="dt">57 SAST : </span><span class="vs">claude -p proves it </span><span class="dt">: </span><span class="vs">OAuth session expired and could not be refreshed</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">2026-12-05 : </span><span class="vs">refresh token&#39;s own expiry, never reached</span></span></code></pre></div>
 <h3 id="evidence">Evidence</h3>
 <table>
 <thead>
@@ -197,7 +205,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </table>
 <p><strong>Reading:</strong> the access token aged out at 17:43, the CLI tried to refresh it, and the <strong>server rejected the refresh</strong> even though the refresh token has not reached its own expiry date. That means the OAuth session was invalidated on Anthropic's side — a sign-out elsewhere, a session revoked, or token rotation that left this machine holding a dead chain. Nothing on this Mac is misconfigured; the credential chain itself is spent.</p>
 <h3 id="the-fix--needs-ricardo-about-30-seconds">The fix — needs Ricardo, about 30 seconds</h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> auth login</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">claude</span> auth login</span></code></pre></div>
 <p>It opens the browser, he signs in, and the CLI rewrites the credentials itself. Then a <strong>new</strong> T3 Code thread works on <code>claudeAgent</code>. The failed thread cannot be resumed — the provider thread never got an ID (<code>pending…</code>), so it has to be restarted.</p>
 <p>Non-interactive alternatives, both dead ends here: API-key auth has no key in the environment, and LiteLLM is no longer running on this Mac (see §3), so there is no local gateway to point at.</p>
 <h2 id="2-dsh--the-work-that-thread-was-trying-to-do--is-healthy">2. dsh — the work that thread was trying to do — is healthy</h2>
@@ -260,5 +268,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>Ricardo:</strong> <code>claude auth login</code> → start a new T3 Code thread. Unblocks <code>claudeAgent</code> (Claude Opus 5.5, effort max).</li>
 <li><strong>Ricardo / Adrianna A:</strong> decide on the <code>dsh-hooks-claude-code</code> upgrade to match dsh <code>0.2.2-rc.1</code>.</li>
 </ol>
+<h2 id="links">Links</h2>
+<ul>
+<li><a href="https://docs.claude.com/en/docs/claude-code/setup">Claude Code setup and sign-in docs</a> — the <code>claude auth login</code> flow this report asks for.</li>
+<li><a href="https://status.claude.com">Claude status page</a> — queried at 18:34Z on 2026-11-09: <code>indicator: none</code>, <em>All Systems Operational</em>; latest incident 2026-11-08 (degraded performance, resolved). No platform-side auth incident explains this.</li>
+<li><a href="https://console.anthropic.com/settings/keys">Anthropic Console → API keys</a> — where API-key auth would come from if the subscription route is abandoned.</li>
+</ul>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
