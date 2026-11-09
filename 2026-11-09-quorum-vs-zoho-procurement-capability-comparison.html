@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quorum vs Zoho Procurement — capability comparison</title>
+<style>
+  :root{
+    --paper:#F6F4EF; --card:#FFFFFF; --ink:#151923; --muted:#5A6070; --faint:#8A8F9C;
+    --rule:#E3DFD5; --rule-soft:#EEEAE1;
+    --navy:#101A2E; --navy-2:#18243D; --gold:#B08A4B; --gold-soft:#F0E6D2;
+    --green:#1F6B4A; --green-bg:#E6F2EB;
+    --amber:#8A5A12; --amber-bg:#F8EEDC;
+    --violet:#5B3F86; --violet-bg:#EFE9F7;
+    --blue:#1F4F82; --blue-bg:#E7EFF8;
+    --grey:#5E6470; --grey-bg:#EDEEF0;
+    --red:#8C2F2F; --red-bg:#F7E7E7;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.62 var(--sans);-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 28px 80px}
+  header.hero{background:
+      radial-gradient(1100px 420px at 88% -18%,rgba(176,138,75,.30),transparent 62%),
+      linear-gradient(150deg,var(--navy) 0%,var(--navy-2) 72%,#1D2A45 100%);
+    color:#F7F5EF;padding:52px 0 40px;border-bottom:3px solid var(--gold)}
+  .hero .wrap{padding-bottom:0}
+  .kicker{font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:#D8BE8C}
+  h1{font:600 46px/1.08 var(--serif);letter-spacing:-.015em;margin:16px 0 12px;max-width:900px}
+  .sub{font-size:17.5px;line-height:1.55;color:#D7DBE4;max-width:820px;margin:0}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+  .meta span{font:500 12px/1 var(--sans);color:#CFD5DF;border:1px solid rgba(255,255,255,.20);padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.04)}
+  .verdict{background:rgba(255,255,255,.06);border:1px solid rgba(216,190,140,.34);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:20px 24px;margin:30px 0 0;max-width:980px}
+  .verdict b{color:#F3E4C6}
+  .verdict p{margin:0;font-size:16px;line-height:1.65;color:#E8EAF0}
+  main{padding-top:34px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0 0 34px}
+  .kpi{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:16px 16px 14px;box-shadow:0 1px 0 rgba(16,26,46,.03)}
+  .kpi .lab{font:600 10.5px/1.3 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--faint)}
+  .kpi .big{font:600 26px/1.15 var(--serif);margin:9px 0 4px;letter-spacing:-.01em}
+  .kpi .fine{font-size:12.5px;color:var(--muted);line-height:1.45}
+  section{margin:0 0 44px}
+  .sechead{display:flex;align-items:baseline;gap:12px;margin:0 0 6px}
+  .num{font:600 11px/1 var(--mono);color:var(--gold);letter-spacing:.06em;padding-top:4px}
+  h2{font:600 28px/1.2 var(--serif);letter-spacing:-.01em;margin:0}
+  .dek{color:var(--muted);font-size:14.5px;margin:6px 0 18px;max-width:860px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:20px 22px}
+  .card h3{font:600 17px/1.3 var(--serif);margin:0 0 6px}
+  .card .role{font:600 10.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  .card p{margin:0 0 10px;font-size:14px;color:#333A48}
+  .card ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;color:#333A48}
+  .card li{margin:4px 0}
+  .score{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0 0}
+  .score div{background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:14px 16px}
+  .score .n{font:600 30px/1 var(--serif);letter-spacing:-.02em}
+  .score .l{font-size:11.5px;color:var(--muted);margin-top:6px;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+  .sc-us .n{color:var(--green)} .sc-zoho .n{color:var(--blue)} .sc-level .n{color:var(--grey)} .sc-neither .n{color:var(--amber)}
+  .note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.55}
+  .tblwrap{background:var(--card);border:1px solid var(--rule);border-radius:10px;overflow:auto;max-height:78vh}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:13.2px}
+  thead th{position:sticky;top:0;z-index:3;background:#FBF9F4;text-align:left;font:600 10.8px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:12px 14px;border-bottom:1px solid var(--rule)}
+  thead th.c1{left:0;z-index:5}
+  tbody td{padding:11px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top;background:var(--card)}
+  tbody tr:nth-child(even) td{background:#FCFBF7}
+  tbody tr.grp td{background:#F1EDE3;font:600 10.8px/1.2 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#6E6350;padding:8px 14px;border-bottom:1px solid var(--rule)}
+  td.cap{font-weight:600;color:#1B2333;min-width:260px}
+  td.cap small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.45}
+  td.verdict{white-space:nowrap;font:600 11px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase}
+  .v-us{color:var(--green)} .v-zoho{color:var(--blue)} .v-level{color:var(--grey)} .v-neither{color:var(--amber)}
+  .pill{display:inline-block;font:600 10.2px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:4px;border:1px solid transparent;white-space:nowrap}
+  .p-live{color:var(--green);background:var(--green-bg);border-color:#CFE4D8}
+  .p-part{color:var(--amber);background:var(--amber-bg);border-color:#EBD6B4}
+  .p-staged{color:var(--violet);background:var(--violet-bg);border-color:#DDD0EE}
+  .p-none{color:var(--grey);background:var(--grey-bg);border-color:#DFE1E4}
+  .p-zlive{color:var(--blue);background:var(--blue-bg);border-color:#CFDDEE}
+  .p-early{color:#6B4A12;background:#F6EBD7;border-color:#E7D2AC}
+  .p-ann{color:#6B5426;background:#F5EFE2;border-color:#D8C6A2;border-style:dashed}
+  .p-ent{color:#1E5B65;background:#E4F0F1;border-color:#C8E0E2}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:10px 0 12px;font-size:12px;color:var(--muted)}
+  .legend .pill{margin-right:4px}
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .win{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:18px 20px}
+  .win h3{margin:0 0 3px;font:600 16.5px/1.3 var(--serif)}
+  .win .tag{font:600 10.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+  .win.us .tag{color:var(--green)} .win.them .tag{color:var(--blue)}
+  .win ul{margin:0;padding:0;list-style:none}
+  .win li{position:relative;padding:7px 0 7px 22px;border-top:1px solid var(--rule-soft);font-size:13.6px;line-height:1.5}
+  .win li:first-child{border-top:0}
+  .win li:before{content:"＋";position:absolute;left:2px;top:7px;color:var(--gold);font-weight:700}
+  .win.them li:before{content:"◆";font-size:9px;top:10px}
+  .truths{background:#FFFDF8;border:1px solid #E7DCC6;border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:18px 22px}
+  .truths h3{margin:0 0 8px;font:600 16px/1.3 var(--serif);color:#5C4317}
+  .truths ul{margin:0;padding-left:18px}
+  .truths li{margin:7px 0;font-size:13.8px;line-height:1.55;color:#3A342A}
+  table.money{max-height:none;font-size:13.4px}
+  table.money th,table.money td{padding:11px 14px;border-bottom:1px solid var(--rule-soft);text-align:right}
+  table.money th:first-child,table.money td:first-child{text-align:left;font-weight:600}
+  table.money thead th{background:#FBF9F4}
+  .moneygrid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:start}
+  .callout{background:var(--navy);color:#EAEDF3;border-radius:10px;padding:20px 22px}
+  .callout h3{margin:0 0 8px;font:600 17px/1.3 var(--serif);color:#F0E2C4}
+  .callout p{margin:0 0 10px;font-size:13.6px;color:#D3D8E2;line-height:1.6}
+  .callout .big{font:600 32px/1 var(--serif);color:#F7F3E9;letter-spacing:-.02em;margin:6px 0 3px}
+  .callout .small{font-size:12px;color:#C6CDD9}
+  .steps{counter-reset:s;margin:0;padding:0;list-style:none}
+  .steps li{position:relative;padding:12px 0 12px 42px;border-top:1px solid var(--rule-soft);font-size:13.8px}
+  .steps li:first-child{border-top:0}
+  .steps li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:12px;width:26px;height:26px;border-radius:50%;border:1px solid var(--gold);color:var(--gold);font:600 12px/24px var(--mono);text-align:center}
+  .steps b{display:block;margin-bottom:2px}
+  .steps span{color:var(--muted);font-size:13px}
+  .rec{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+  .rec .card{padding:18px}
+  .rec .card.best{border-color:#CFE4D8;box-shadow:0 0 0 3px rgba(31,107,74,.07)}
+  .rec .badge{display:inline-block;font:600 10px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:4px 7px;border-radius:4px;margin-bottom:9px}
+  .rec .best .badge{background:var(--green-bg);color:var(--green)}
+  .rec .badge.alt{background:var(--grey-bg);color:var(--grey)}
+  .rec h3{font:600 15.5px/1.3 var(--serif);margin:0 0 7px}
+  .rec p{font-size:13.2px;color:#3B4250;margin:0 0 8px;line-height:1.55}
+  .rec .when{font-size:12px;color:var(--faint);line-height:1.5;border-top:1px solid var(--rule-soft);padding-top:8px;margin-top:8px}
+  .ev{font:12.6px/1.7 var(--mono);color:#3B4250;background:#FBF9F4;border:1px solid var(--rule);border-radius:8px;padding:16px 18px;overflow:auto}
+  .ev b{font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block;margin:14px 0 4px}
+  .ev b:first-child{margin-top:0}
+  .ev span{color:var(--muted)}
+  footer{border-top:1px solid var(--rule);padding-top:16px;color:var(--faint);font-size:12px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  @media (max-width:920px){
+    h1{font-size:34px}
+    .kpis,.score{grid-template-columns:1fr 1fr}
+    .two,.cols2,.moneygrid,.rec{grid-template-columns:1fr}
+    .wrap{padding:0 18px 60px}
+    td.cap{min-width:200px}
+  }
+  @media print{
+    body{background:#fff;font-size:11.5px}
+    header.hero{background:#fff;color:#111;border-bottom:2px solid #B08A4B}
+    .sub,.meta span,.verdict p{color:#222}
+    .verdict{background:#FBF9F4}
+    .kpis,.score{grid-template-columns:repeat(4,1fr)}
+    .tblwrap{max-height:none;overflow:visible}
+    thead th{position:static}
+    section{break-inside:avoid}
+    .two,.cols2,.rec,.moneygrid{grid-template-columns:1fr 1fr}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Infinity Brands · Procurement systems · 9 November 2026</div>
+    <h1>Quorum vs Zoho Procurement</h1>
+    <p class="sub">A like-for-like read of the quotation desk we built against the source-to-pay product Zoho sells: what is actually live on each side, what is still a slide, and which one deserves the next rand of engineering time.</p>
+    <div class="meta">
+      <span>Quorum v2.9.0 · repo <code>quote-program</code></span>
+      <span>origin/main dd6fc29 · 7 Nov 2026</span>
+      <span>47 capabilities compared</span>
+      <span>Prices verified 9 Nov 2026</span>
+    </div>
+    <div class="verdict">
+      <p><b>Short answer:</b> they are not the same animal. Quorum is a <b>rules engine for the three-quote rule with a purchase desk attached</b> — ZAR-native, VAT-exclusive, audit-chained, and free to licence. Zoho Procurement is a <b>full source-to-pay suite</b> — supplier portal, e-bidding, goods receipts, invoice matching, payments and contracts — priced per buyer. Zoho wins breadth 21 rows to our 8. We win the rows that decide whether an award is <em>defensible</em>. Buying Zoho today would add capability we have not asked for yet and remove the custom controls we built it for.</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="lab">Licence cost</div>
+      <div class="big">R0 vs $35–$75</div>
+      <div class="fine">Ours: self-hosted, no per-seat fee. Zoho: per paid user per month, billed annually.</div>
+    </div>
+    <div class="kpi">
+      <div class="lab">The three-quote rule</div>
+      <div class="big">Enforced vs not native</div>
+      <div class="fine">Ours flips to approval only on the third valid quote. Zoho needs custom workflow logic to imitate it.</div>
+    </div>
+    <div class="kpi">
+      <div class="lab">Supplier-facing</div>
+      <div class="big">None vs portal</div>
+      <div class="fine">Our buyers key bids in by hand. Zoho lets suppliers onboard, bid and accept POs themselves.</div>
+    </div>
+    <div class="kpi">
+      <div class="lab">Where the chain ends</div>
+      <div class="big">PO vs payment</div>
+      <div class="fine">We stop at the approved order. Zoho carries receipt, invoice match and payment.</div>
+    </div>
+  </div>
+
+  <section id="what">
+    <div class="sechead"><span class="num">01</span><h2>What each one actually is</h2></div>
+    <p class="dek">Read this first: the comparison only makes sense once you separate a governance tool from an ERP module.</p>
+    <div class="two">
+      <div class="card">
+        <div class="role">Ours · Quorum</div>
+        <h3>A tender desk for one rule, done properly</h3>
+        <p>Departments raise a requisition; purchasing captures three competing quotes with documents and VAT status; the desk normalises every bid to VAT-exclusive, shows the line-by-line matrix, and only unlocks award on the third valid bid. The manager signs with a reason; the approved award becomes a numbered PO and a Zoho-ready payload. Every step appends to an audit chain.</p>
+        <ul>
+          <li>One file, PocketBase backend, Docker on Infinity's private staging host</li>
+          <li>ZAR and 15% VAT are the native assumptions, not a configuration exercise</li>
+          <li>Live functions: requests, quote capture, comparison, award, PO, budgets, spend report, vendor master, catalog, alerts</li>
+          <li>Built and maintained in-house; no vendor, no seat count, no exit negotiation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="role">Theirs · Zoho Procurement</div>
+        <h3>A source-to-pay suite with procurement in the middle</h3>
+        <p>Employees raise requests from catalogs or Amazon Business; approvers route by role, department or amount; sourcing runs RFx events with supplier e-bidding; POs convert from awards; receipts are recorded as GRNs; invoices arrive in an inbox, are extracted by AI and matched two- or three-way; payments and vendor credits close the loop. Contracts and supplier scoring sit on the roadmap.</p>
+        <ul>
+          <li>Vendor self-service portal, supplier onboarding and contextual chat</li>
+          <li>Approval workflow builder, real-time budgets, audit trails, custom roles</li>
+          <li>Analytics across spend, vendors, departments and categories</li>
+          <li>Sold per paid user, with 50 free requester licences per paid seat</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="score">
+    <div class="sechead"><span class="num">02</span><h2>The scoreboard, without spin</h2></div>
+    <p class="dek">Forty-seven capabilities, grouped the way a purchase actually moves. A row is only awarded to us if the function is live in the desk today — not designed, not staged behind a flag.</p>
+    <div class="score">
+      <div class="sc-us"><div class="n">8</div><div class="l">We win</div></div>
+      <div class="sc-zoho"><div class="n">21</div><div class="l">Zoho wins</div></div>
+      <div class="sc-level"><div class="n">14</div><div class="l">Level</div></div>
+      <div class="sc-neither"><div class="n">4</div><div class="l">Neither, today</div></div>
+    </div>
+    <p class="note"><b>How to read the count:</b> Zoho's lead is a breadth lead — it is four products wearing one coat. Our eight wins are concentrated in the governance core: the three-quote gate, VAT-exclusive comparison, override justification, audit chain, quote-rule flags, private hosting and cost. If the objective is “prove we competed every rand”, those eight rows matter more than the other thirty-eight. If the objective is “run a modern procurement department”, they do not.</p>
+  </section>
+
+  <section id="matrix">
+    <div class="sechead"><span class="num">03</span><h2>The full capability matrix</h2></div>
+    <p class="dek">Status is the honest state on 9 November 2026. “Staged” means the code exists but the enforcement flag is off, so it is not operating behaviour.</p>
+    <div class="legend">
+      <span><span class="pill p-live">Live</span> in use today</span>
+      <span><span class="pill p-part">Partial</span> some of it works</span>
+      <span><span class="pill p-staged">Staged</span> built, switched off</span>
+      <span><span class="pill p-none">None</span> not built</span>
+      <span><span class="pill p-zlive">Live</span> Zoho shipped</span>
+      <span><span class="pill p-early">Early access</span> limited release</span>
+      <span><span class="pill p-ann">Announced</span> “coming soon”</span>
+      <span><span class="pill p-ent">Enterprise</span> top tier only</span>
+    </div>
+
+    <div class="tblwrap">
+      <table>
+        <thead>
+          <tr><th class="c1">Capability</th><th>Quorum (ours)</th><th>Zoho Procurement</th><th>Verdict</th></tr>
+        </thead>
+        <tbody>
+          <tr class="grp"><td colspan="4">A · Raising the request</td></tr>
+          <tr><td class="cap">Multi-line purchase requisition <small>Item, spec, quantity, need-by date, brand/department, notes.</small></td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Item catalog <small>Units, default specs, estimated price and GL coding.</small></td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Per brand, with GL code and group</small></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Images, fixed pricing, central repository</small></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Account/expense coding on each request line</td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">GL lives on the catalog item, not enforced per line</small></td>
+              <td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Amazon Business punch-out</td>
+              <td><span class="pill p-none">None</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Budget visible while raising the request</td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Estimate checks itself against free budget</small></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Budget check runs at approval</small></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Raise from a phone</td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+
+          <tr class="grp"><td colspan="4">B · Sourcing and comparison</td></tr>
+          <tr><td class="cap">Issue the RFQ and take bids in the tool <small>Supplier portal, e-bidding, sealed bids.</small></td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Buyer keys every quote in from an email or PDF</small></td>
+              <td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Quote document captured against the bid <small>PDF/image stored with the quote.</small></td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">SHA-256 hash added when capture enforcement is on</small></td>
+              <td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Per-line pricing with explicit VAT status <small>Inclusive, exclusive or zero-rated, line by line.</small></td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">VAT-exclusive normalisation across every bid <small>Comparable totals before ranking, not after.</small></td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Inclusive prices ÷1.15; stated rates in staged capture</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Tax-aware, but not documented as a normalised schedule</small></td><td class="verdict v-us">Ours</td></tr>
+          <tr><td class="cap">Side-by-side matrix, variance vs cheapest, best value flagged</td>
+              <td><span class="pill p-live">Live</span></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">RFQ comparison; scoring is early access</small></td><td class="verdict v-us">Ours</td></tr>
+          <tr><td class="cap">Weighted scoring (price / lead time / compliance)</td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Specified in the PRD; not in the live desk</small></td>
+              <td><span class="pill p-early">Early access</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Three-quote minimum, distinct vendors, automatic flip to approval</td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Server-side on the third quote; validity report built</small></td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Imitable with custom fields and workflow, not native</small></td><td class="verdict v-us">Ours</td></tr>
+          <tr><td class="cap">Quote expiry and validity checks</td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Valid-until captured; read-only validity report</small></td>
+              <td><span class="pill p-part">Partial</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Multi-currency bids with captured FX</td>
+              <td><span class="pill p-staged">Staged</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Route and form built; enforcement off</small></td>
+              <td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Discounts, freight and separate settlement terms</td>
+              <td><span class="pill p-staged">Staged</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Delivery cost is live; line discounts are staged</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Vendor credits; line-level discount capture not shown</small></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Supplier submits its own bid <small>Removes the buyer from the bid-intake path.</small></td>
+              <td><span class="pill p-none">None</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+
+          <tr class="grp"><td colspan="4">C · Approval and governance</td></tr>
+          <tr><td class="cap">Amount-based approval bands <small>Auto under R5k, manager to R50k, countersign to R250k, owner above.</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Four bands and the countersign path exist, but decision writes run client-side</small></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Role, department or spend-threshold routing</small></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Hierarchical, parallel and ad-hoc approver routing</td>
+              <td><span class="pill p-none">None</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Mandatory justification for non-lowest award or short bid count</td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Override memo and sole-source waiver are required to proceed</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Possible through workflow rules; not a procurement concept</small></td><td class="verdict v-us">Ours</td></tr>
+          <tr><td class="cap">Budget position shown at the approval decision</td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Hard budget stop</td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Warns and shows remaining; no hard block</small></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Overspend flagged before the order is issued</small></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Requester / purchaser / manager separation</td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Scoped owner/admin/auditor grants, custom roles, SSO, IP limits</td>
+              <td><span class="pill p-staged">Staged</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Grant endpoints built behind a flag; no SSO</small></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">SSO and IP restriction on Enterprise</small></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Tamper-evident audit chain, verifiable offline</td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Append-only, hash-chained, CLI verifier</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Audit logs, basic or advanced; not hash-chained</small></td><td class="verdict v-us">Ours</td></tr>
+          <tr><td class="cap">One tender file for the auditor or franchisor <small>Request, bids, locked schedule, award letter, PO, memo in one archive.</small></td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Designed as a ZIP export; not built</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Documents live on the record; no pack</small></td><td class="verdict v-neither">Neither</td></tr>
+          <tr><td class="cap">Anti-split and purchase-frequency controls</td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Designed; not enforced</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Spend analytics can surface it; not a blocking rule</small></td><td class="verdict v-neither">Neither</td></tr>
+
+          <tr class="grp"><td colspan="4">D · Ordering and receiving</td></tr>
+          <tr><td class="cap">PO creation, numbering and print/PDF</td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Direct write into Zoho Inventory / Books</td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Paste-ready JSON, CSV, and an outbox marked “manual”; direct push is Phase 2</small></td>
+              <td><span class="pill p-zlive">Native</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Duplicate-PO guard</td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">PO amendments and blanket/recurring orders</td>
+              <td><span class="pill p-none">None</span></td>
+              <td><span class="pill p-ann">Announced</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Amendments and blanket POs marked coming soon</small></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Goods receipt / GRN, including partial receipts and rejects</td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Specified; no UI</small></td>
+              <td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Three-way match (PO / receipt / invoice)</td>
+              <td><span class="pill p-none">None</span></td>
+              <td><span class="pill p-zlive">2-way Premium</span> <span class="pill p-ent">3-way Enterprise</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Vendor accepts or rejects the PO in a portal</td>
+              <td><span class="pill p-none">None</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+
+          <tr class="grp"><td colspan="4">E · Paying</td></tr>
+          <tr><td class="cap">Invoice inbox, AI extraction and PO matching</td>
+              <td><span class="pill p-none">None</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Payments, batch payments and supplier advances</td>
+              <td><span class="pill p-none">None</span></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">ACH is US-only; connected banking is India-only</small></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Vendor credits</td>
+              <td><span class="pill p-none">None</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+
+          <tr class="grp"><td colspan="4">F · Suppliers and contracts</td></tr>
+          <tr><td class="cap">Vendor master with SA controls <small>VAT number, tax-clearance expiry, related-party flag, blacklist, payment terms.</small></td>
+              <td><span class="pill p-live">Live</span></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Wider supplier data; SA-specific controls not native</small></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Supplier onboarding, self-service portal and scorecards</td>
+              <td><span class="pill p-none">None</span></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Scorecards still marked coming soon</small></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Contract repository, renewals and contract spend</td>
+              <td><span class="pill p-none">None</span></td>
+              <td><span class="pill p-ann">Announced</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Module listed as coming soon</small></td><td class="verdict v-neither">Neither</td></tr>
+
+          <tr class="grp"><td colspan="4">G · Insight and platform</td></tr>
+          <tr><td class="cap">Spend by brand, department, vendor and month</td>
+              <td><span class="pill p-live">Live</span></td><td><span class="pill p-zlive">Live</span></td><td class="verdict v-level">Level</td></tr>
+          <tr><td class="cap">Flags for award above the lowest bid or below three quotes</td>
+              <td><span class="pill p-live">Live</span></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Would need custom analytics</small></td><td class="verdict v-us">Ours</td></tr>
+          <tr><td class="cap">Savings ledger, quote coverage, desk penetration, franchise pack</td>
+              <td><span class="pill p-none">None</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Designed in detail; no live report</small></td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Savings analytics; not SA coverage or franchisor reporting</small></td><td class="verdict v-neither">Neither</td></tr>
+          <tr><td class="cap">Alerts and scheduled digests</td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Alert log and optional Cliq DM; daily/weekly digests not built</small></td>
+              <td><span class="pill p-zlive">Live</span></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Public API and custom ERP integration</td>
+              <td><span class="pill p-part">Partial</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Internal REST endpoints; no public API</small></td>
+              <td><span class="pill p-zlive">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Custom ERP integrations on Enterprise</small></td><td class="verdict v-zoho">Zoho</td></tr>
+          <tr><td class="cap">Private hosting and data control</td>
+              <td><span class="pill p-live">Live</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Own Docker container, private route, one backup story</small></td>
+              <td><span class="pill p-none">SaaS</span></td><td class="verdict v-us">Ours</td></tr>
+          <tr><td class="cap">Licence cost</td>
+              <td><span class="pill p-live">R0</span></td>
+              <td><span class="pill p-zlive">$35–$75</span> <small style="display:block;color:var(--muted);font-weight:400;font-size:11.5px;margin-top:4px">Per paid user per month, billed annually</small></td><td class="verdict v-us">Ours</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Rows are capabilities, not equal weights. “Level” means both sides do the job; it does not mean the implementations are equally deep. Zoho's “Announced” rows are listed on its own pricing page as coming soon — they are not purchasable behaviour today.</p>
+  </section>
+
+  <section id="ahead">
+    <div class="sechead"><span class="num">04</span><h2>Where each one genuinely wins</h2></div>
+    <p class="dek">Stripped of marketing, the split is clean: we own the evidence of competition; Zoho owns the machinery around it.</p>
+    <div class="cols2">
+      <div class="win us">
+        <div class="tag">Quorum · the governance core</div>
+        <h3>Things we do that Zoho does not do out of the box</h3>
+        <ul>
+          <li><b>The three-quote gate is law.</b> The request cannot reach approval until three distinct vendors have valid, priced, documented bids — enforced server-side, not by a reminder.</li>
+          <li><b>VAT-exclusive comparison is the default.</b> Inclusive bids are normalised before ranking, so a vendor who quotes VAT-inclusive cannot look 15% expensive by accident.</li>
+          <li><b>Non-lowest awards need a written reason.</b> The override memo and the sole-source waiver are part of the record, not a comment field someone can skip.</li>
+          <li><b>The audit trail is hash-chained and independently verifiable.</b> Each event embeds the previous hash; a CLI verifies the export. That is a stronger claim than “audit logs available”.</li>
+          <li><b>It is shaped like this group.</b> Brands, departments, ZAR, 15% VAT, tax-clearance expiry, related-party flags and a blacklist are first-class fields.</li>
+          <li><b>Zero licence, private hosting.</b> No per-seat maths, no data leaving the estate, no vendor exit.</li>
+        </ul>
+      </div>
+      <div class="win them">
+        <div class="tag">Zoho Procurement · the machinery</div>
+        <h3>Things Zoho does that we have not built</h3>
+        <ul>
+          <li><b>Suppliers act for themselves.</b> Onboarding, document upload, e-bidding, PO acceptance and invoice queries happen in a portal — no buyer re-keying.</li>
+          <li><b>Sourcing is a process, not a capture form.</b> RFx events, deadlines, Q&amp;A, bid comparison and shortlisting are native.</li>
+          <li><b>The chain continues past the PO.</b> GRNs, partial receipts, invoice extraction, two- or three-way matching, vendor credits and payment status.</li>
+          <li><b>Approval routing is configurable.</b> Hierarchical, parallel or ad hoc, by role, department or amount, with a workflow builder.</li>
+          <li><b>It is a maintained product.</b> Support, uptime, security patching, mobile access, SSO — and a vendor who answers the phone.</li>
+          <li><b>It integrates with the books.</b> Native links into Zoho Books and Inventory; custom ERP integration on Enterprise.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="truths">
+    <div class="sechead"><span class="num">05</span><h2>The uncomfortable truths, both ways</h2></div>
+    <p class="dek">This is the part a vendor deck would leave out, and the part that decides the buy.</p>
+    <div class="truths">
+      <h3>About ours</h3>
+      <ul>
+        <li><b>We have no supplier-facing surface at all.</b> Every bid is keyed in by a purchaser. The audit chain proves the document did not change after capture — it does not prove the vendor sent it. That is a real control gap, not a technicality.</li>
+        <li><b>The chain ends at the PO.</b> No goods receipt, no invoice match, no payment. Zoho Books still owns the money, so the “defensible file” stops one step short of the invoice.</li>
+        <li><b>Direct Zoho push is not built.</b> The “Orders · Zoho” screen exports a paste-ready payload and records the outbox row as <code>manual</code>. Anything described as automated today is not.</li>
+        <li><b>A meaningful share of the newest work is switched off.</b> Scoped bid reads, monetary capture, discounts, role authority, award execution — built and tested, but default-off behind flags. The live desk is the v2.9 behaviour, not the changelog's ceiling.</li>
+        <li><b>It is a one-machine system with a single maintainer.</b> That is cheap until it is not: backups, restores, OAuth, migrations and uptime are ours to own.</li>
+        <li><b>The three-quote floor is configurable down to two.</b> A setting that can weaken the group's own rule is a governance risk if nobody owns it.</li>
+      </ul>
+    </div>
+    <div class="truths" style="margin-top:14px;border-left-color:var(--blue);border-color:#D6E0EC;background:#FAFCFF">
+      <h3 style="color:#1F3B5C">About theirs</h3>
+      <ul>
+        <li><b>Five modules you may want are not shipped.</b> Contract management, blanket POs, PO amendments, supplier scorecards and fixed-asset management are marked coming soon on Zoho's own pricing page.</li>
+        <li><b>Three-way matching is Enterprise-only.</b> Premium stops at two-way, which is exactly the control that catches receipt-versus-invoice fraud.</li>
+        <li><b>Payments are not South African.</b> ACH is US-only; connected banking is India-only. You would record payments, then execute them elsewhere — a gap, not a feature.</li>
+        <li><b>The South African three-quote rule is not a Zoho concept.</b> You can approximate it with custom fields, validation and workflow, but it is configuration you own and must defend in an audit.</li>
+        <li><b>Cost scales with buyers, not with value.</b> At $35–$75 per paid seat per year, a five-person buying team is $2,100–$4,500 a year before implementation; requesters are free, but they are also not the people doing the work.</li>
+        <li><b>It is still a suite you configure.</b> Catalog, approval matrix, budgets, tax setup, vendor onboarding and Books integration are a project — the licence is the cheap part.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="money">
+    <div class="sechead"><span class="num">06</span><h2>The money, plainly</h2></div>
+    <p class="dek">Zoho's published list price, annual billing, before tax and before implementation. Ours is not free — it is prepaid in engineering.</p>
+    <div class="moneygrid">
+      <div class="tblwrap" style="max-height:none">
+        <table class="money">
+          <thead><tr><th>Paid users</th><th>Premium<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$35/user/mo</span></th><th>Enterprise<br><span style="font-weight:400;text-transform:none;letter-spacing:0">$75/user/mo</span></th><th>Free requesters</th></tr></thead>
+          <tbody>
+            <tr><td>3 buyers</td><td>$1,260 / yr</td><td>$2,700 / yr</td><td>150</td></tr>
+            <tr><td>5 buyers</td><td>$2,100 / yr</td><td>$4,500 / yr</td><td>250</td></tr>
+            <tr><td>10 buyers</td><td>$4,200 / yr</td><td>$9,000 / yr</td><td>500</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <h3>What Quorum has actually cost</h3>
+        <div class="big">77 commits</div>
+        <div class="small">since 1 September 2026 — a two-month build, not a weekend script</div>
+        <p style="margin-top:12px">2,373 lines of front end, 30 server hooks, 14 migrations and 10 browser test suites. Twenty changelog workstreams are still marked unreleased. The licence is zero; the engineering and the maintenance are the price.</p>
+        <p style="margin-bottom:0"><b>Break-even framing:</b> at five buyers, Zoho Premium is about $2,100 a year. If closing our four biggest gaps costs less than that in engineering time — and it does — the build is still the cheaper path for this year.</p>
+      </div>
+    </div>
+    <p class="note">Prices are Zoho's USD list on 9 November 2026, billed annually. Monthly billing is higher, local tax is extra, and ZAR invoicing can differ; confirm the quote before committing. The 50-free-requesters benefit is per paid user, per Zoho's pricing FAQ.</p>
+  </section>
+
+  <section id="gaps">
+    <div class="sechead"><span class="num">07</span><h2>What it would take to close the gap</h2></div>
+    <p class="dek">Rough sizing from the actual codebase — days and weeks of work, not a vendor quote. Ordered by what buys the most credibility per week.</p>
+    <ol class="steps">
+      <li><b>Direct push to Zoho Inventory <span style="float:right;color:var(--faint);font-weight:400;font-size:12px">3–5 days</span></b> <span>OAuth self-client, encrypted token store, exactly-once outbox worker against the PO number. The schema and the duplicate guards are already there; the API call is the missing piece.</span></li>
+      <li><b>Goods receipt (GRN) <span style="float:right;color:var(--faint);font-weight:400;font-size:12px">2–3 weeks</span></b> <span>Receiver, date, accepted/rejected quantities with reason codes, delivery note, photo. Without it the “defensible file” has no proof the goods arrived.</span></li>
+      <li><b>Savings ledger and quote coverage <span style="float:right;color:var(--faint);font-weight:400;font-size:12px">1–2 weeks</span></b> <span>Two savings measures with a printed formula, value-weighted coverage, and desk-penetration reconciled to Zoho Books. This is the number Ricardo actually quotes to a franchisor or funder.</span></li>
+      <li><b>Supplier quote-upload link <span style="float:right;color:var(--faint);font-weight:400;font-size:12px">2–3 weeks</span></b> <span>A single-purpose magic link per tender: supplier uploads the PDF and keys prices; the buyer reviews. Closes the “purchaser invented the bid” gap without building a full portal.</span></li>
+      <li><b>Then, only if volume demands it <span style="float:right;color:var(--faint);font-weight:400;font-size:12px">4–8 weeks each</span></b> <span>RFx issuance and e-bidding, invoice inbox and matching, contract repository. These are the expensive ones, and they are exactly what Zoho already sells.</span></li>
+    </ol>
+  </section>
+
+  <section id="recommendation">
+    <div class="sechead"><span class="num">08</span><h2>Recommendation</h2></div>
+    <p class="dek">Three honest paths. The choice turns on volume and who is expected to do the work — not on which product is “better”.</p>
+    <div class="rec">
+      <div class="card best">
+        <span class="badge">Recommended now</span>
+        <h3>Keep Quorum, close four gaps</h3>
+        <p>Direct Zoho push, GRN, savings/coverage reporting, supplier upload link. That turns the desk from a good quotation tool into an end-to-end defensible purchase record, at no licence cost.</p>
+        <p class="when"><b>Choose this if:</b> the three-quote rule and franchisor evidence are the point, the buying team is small, and R0 licence plus private hosting still matters.</p>
+      </div>
+      <div class="card">
+        <span class="badge alt">Buy</span>
+        <h3>Adopt Zoho Procurement Premium</h3>
+        <p>Take the suite for supplier self-service, e-bidding, receipts, invoice matching and workflow routing. Budget for configuration and for Zoho Books/Inventory alignment; treat the SA three-quote rule as custom workflow you must document.</p>
+        <p class="when"><b>Choose this if:</b> you are past roughly 150 invoices a month, have eight or more people touching procurement, or suppliers are demanding a portal.</p>
+      </div>
+      <div class="card">
+        <span class="badge alt">Only with discipline</span>
+        <h3>Hybrid: Quorum front, Zoho back</h3>
+        <p>Quorum stays the tender gate and pushes approved POs into Zoho, which owns vendors, bills and payments. One vendor master, one PO entry path, no parallel ledgers.</p>
+        <p class="when"><b>Choose this if:</b> you need both the SA evidence and Zoho's AP machinery — and can enforce that nobody buys outside the desk.</p>
+      </div>
+    </div>
+    <div class="truths" style="margin-top:16px;border-left-color:var(--green);border-color:#CFE4D8;background:#F7FBF8">
+      <h3 style="color:#1F5C42">The one-line answer</h3>
+      <p style="margin:.2em 0 0;font-size:14.2px;line-height:1.6;color:#24352C">Do not buy Zoho Procurement to replace Quorum. Buy it only when the work moves beyond quoting — when receipts, invoices and supplier self-service become the bottleneck. Until then, the gap that matters is not a missing module; it is the missing push, receipt and savings number in our own desk.</p>
+    </div>
+  </section>
+
+  <section id="evidence">
+    <div class="sechead"><span class="num">09</span><h2>Evidence and caveats</h2></div>
+    <p class="dek">Everything above is traceable. Nothing was taken from a slide.</p>
+    <div class="ev">
+      <b>Our system · live state</b>
+      Repo: /Volumes/Hiksemi 1TB/DevMini/quote-program<br>
+      origin/main dd6fc29 · 2026-11-07 09:41 SAST · local HEAD 6b5a9f6 (4 commits behind, none ahead)<br>
+      App version string: Quorum v2.9.0 · index.html 2,373 lines<br>
+      77 commits since 2026-09-01 · 30 pb_hooks · 14 migrations · 10 Playwright specs<br>
+      <span>Live views confirmed in index.html: Approval desk, Buyer desk, My requests, All requests, Orders · Zoho, Spend report, Vendors, Catalog, Alerts, Budgets, Staff, Settings.</span>
+
+      <b>Our system · what is switched off</b>
+      Flags present in pb_hooks: QP_AWARD_EXECUTION, QP_ROLE_AUTHORITY, QP_TRANSITIONS, QP_VALID_QUOTES<br>
+      Settings screen: “Zoho Inventory link (Phase 2)”; direct push needs ZohoInventory.purchaseorders.CREATE<br>
+      Outbox rows are written with push_status: 'manual'<br>
+      <span>README: “Direct push (OAuth, purchaseorders.CREATE scope) is Phase 2. Until then every approved PO exports a paste-ready payload.”</span>
+
+      <b>Our system · designed but not live</b>
+      Tender-file ZIP · savings ledger · quote coverage · desk penetration · GRN · anti-split controls · weighted scoring · daily/weekly digests · supplier portal<br>
+      <span>Present in PRD-v2-FINAL (Work/3.PRD/Active/Quote-Program) and the changelog; not found in the live UI.</span>
+
+      <b>Zoho · sources read on 2026-11-09</b>
+      zoho.com/procurement · zoho.com/procurement/procurement-management/<br>
+      zoho.com/procurement/procurement-management/purchase-requests/ · purchase-orders/<br>
+      zoho.com/procurement/supplier-management/ · zoho.com/procurement/pricing/<br>
+      zoho.com/us/procurement/help/my-requests/approvals-for-my-requests/<br>
+      <span>Feature statuses (“coming soon”, “early access”, “Limited”, 2-way vs 3-way, ACH US-only, India banking) are as published on those pages on that date.</span>
+
+      <b>Caveats</b>
+      Prices are USD list, billed annually, excluding tax; ZAR and monthly billing differ. Zoho's “Announced” features may ship on a different timeline. Our “Live” means present and reachable in the v2.9 desk, not necessarily exercised against production purchasing data — the staging deployment was verified on 5 November 2026 and the desk still requires staff provisioning before it is the operating system of record.
+    </div>
+  </section>
+
+  <footer>
+    <span>Prepared for Ricardo Maio · 9 November 2026 · Adrianna A</span>
+    <span>Quorum (quote-program) vs Zoho Procurement · 47 capabilities, status as at 9 Nov 2026</span>
+  </footer>
+</main>
+</body>
+</html>
