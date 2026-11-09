@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>QwenPaw on the Mac mini — Setup PRD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="qwenpaw-on-the-mac-mini--corrected-setup-prd">QwenPaw on the Mac mini — corrected setup PRD</h1>
+<p>This replaces the v1 draft. The local Console service works for the bounded turns recorded below; the full setup is <strong>not accepted as complete</strong>. Authentication, next-login confirmation, isolated application restore, and several GUI acceptance checks remain unfinished. Memory ingestion, fresh-session recall, recall after a process restart, live launchd supervision, and a current application backup have since passed on supplied orchestrator evidence. No service start, stop, restart, or launchctl command was executed in Stage 3.</p>
+<p>Evidence scope: <code>prd.md</code> supplies the intended scope; <code>codex-audit.md</code> corrects it against the installed 2.2.2.post1 source. <code>implementation-stage1.md</code>, <code>implementation-stage2.md</code>, their JSON artifacts, and Stage 3 evidence record implementation. The orchestrator's independently verified Stage 3 handoff and subsequent memory, backup, Console screenshot, live autostart and final functional evidence are accepted without repeating their checks. Historical results below are labelled; they are not new measurements. All times are SAST unless an ISO timestamp includes another offset.</p>
+<h2 id="what-is-true-now">What is true now</h2>
+<table>
+<thead>
+<tr>
+<th>Measured fact</th>
+<th>Command, endpoint, or explicit supplied observation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Service running on 127.0.0.1:8088, launchd-owned PID 97340</td>
+<td>Supplied orchestrator evidence: <code>launchctl print gui/501/com.maio.qwenpaw</code> reports <code>state = running</code>, <code>pid = 97340</code>, <code>runs = 10</code>; <code>lsof -nP -iTCP:8088</code> identifies PID 97340 bound to loopback.</td>
+</tr>
+<tr>
+<td>Current readiness is healthy</td>
+<td>Supplied <code>/api/healthz</code> response: <code>{"status":"ok","agents_loaded":["default"]}</code>.</td>
+</tr>
+<tr>
+<td>Current functional checks on PID 97340, model <code>kilo/kilo-auto/free</code></td>
+<td>Exact <code>ALIVE</code> in 3.1 s; exact <code>BLUE-HERON-42</code> recall in 11.7 s; one clean workspace-listing sentence naming <code>AGENTS.md</code>, <code>SOUL.md</code>, <code>PROFILE.md</code>, <code>MEMORY.md</code>, <code>skills/</code>, <code>memory/</code> in 9.6 s.</td>
+</tr>
+<tr>
+<td>Six default-workspace persona files are English, CJK=0</td>
+<td>Stage 2 codepoint scan in <code>stage2-evidence.json</code>: AGENTS, SOUL, PROFILE, BOOTSTRAP, HEARTBEAT, MEMORY; independently confirmed by orchestrator. No claim that every file in every workspace is English.</td>
+</tr>
+<tr>
+<td>Default description is “Local QwenPaw assistant for Ricardo on the Mac mini”</td>
+<td><code>GET /api/agents</code>, <code>stage2-runtime.json</code>; independently confirmed by orchestrator.</td>
+</tr>
+<tr>
+<td>Configured active model is provider <code>kilo</code>, model <code>kilo-auto/free</code></td>
+<td><code>GET /api/models/active</code>, <code>stage2-runtime.json</code>; independently confirmed by orchestrator. This identifies the router, not its resolved downstream model.</td>
+</tr>
+<tr>
+<td>Memory worker was idle, queue_pending=0, tasks_running=0; auto-memory enabled, interval=5; embedding_reindex_required=false</td>
+<td><code>GET /api/agents/default/memory/runtime-status</code>, <code>stage2-runtime.json</code>; independently confirmed by orchestrator. No embedding reindex is required. Restart persistence is separately proven by the supplied behavioral evidence below.</td>
+</tr>
+<tr>
+<td>“Daily QwenPaw liveness” is enabled at <code>0 9 * * *</code>, <code>Africa/Johannesburg</code></td>
+<td><code>qwenpaw cron list --base-url http://127.0.0.1:8088</code>, <code>stage2-cron-job.json</code>; independently confirmed by orchestrator.</td>
+</tr>
+<tr>
+<td>Manual cron run succeeded in Stage 2</td>
+<td><code>qwenpaw cron state d2d88f14-159f-4adb-9c0f-1fcc09ad14c1 --base-url http://127.0.0.1:8088</code> and <code>GET /api/cron/jobs/d2d88f14-159f-4adb-9c0f-1fcc09ad14c1/history</code>: last_status/status <code>success</code>, last_error/error null, trigger <code>manual</code>. Recorded run_at <code>2026-11-10T00:21:54.833986+02:00</code>.</td>
+</tr>
+<tr>
+<td>Default skills: 14 enabled, 2 disabled; mailbox and dingtalk_channel disabled</td>
+<td>Orchestrator's independent Stage 3 inventory. Its exact inventory command was not supplied; no new skills-list operation was performed.</td>
+</tr>
+<tr>
+<td>Console renders in English; version label v2.2.2.post1, model “Kilo Auto (Free Router)”, approval “Smart Mode”</td>
+<td>Orchestrator's independent GUI observation supplied for Stage 3. Screenshot/DOM artifact path was not supplied; no new GUI inspection is claimed.</td>
+</tr>
+<tr>
+<td>Reply rule occurs once in each of AGENTS.md and SOUL.md</td>
+<td>Stage 3 Python read-back of <code>~/.qwenpaw/workspaces/default/{AGENTS,SOUL}.md</code>, <code>stage3-settings-evidence.json</code>.</td>
+</tr>
+<tr>
+<td>Console show_thinking changed from true to false, persisted and read back false</td>
+<td><code>GET</code>, <code>PUT</code>, then <code>GET /api/agents/default</code>; independent Python JSON read of <code>agent.json</code> field <code>channels.console.show_thinking</code>, <code>stage3-settings-evidence.json</code>.</td>
+</tr>
+<tr>
+<td>Vendor QA helper is disabled</td>
+<td><code>PATCH /api/agents/QwenPaw_QA_Agent_0.2/toggle</code> body <code>{"enabled":false}</code> returned success; <code>GET /api/agents</code> reports enabled=false, startup_status=disabled. <code>available_in_chat</code> still reports true; disappearance from the selector is not claimed.</td>
+</tr>
+</tbody>
+</table>
+<p>The added rule is exactly:</p>
+<blockquote>
+<p>Reply directly. Do not restate the user's request, do not narrate your reasoning or plan, and do not repeat your answer — one answer, once.</p>
+</blockquote>
+<p>The disabled QA workspace and its Chinese content were preserved. Disabling the helper does not translate it or delete its data.</p>
+<h2 id="target-architecture">Target architecture</h2>
+<p>The supported surface is the installed CLI plus shipped Console, served only on loopback. A loaded, running per-user LaunchAgent supervises the service after GUI login, using an explicit executable, working directory, PATH, working/secret directories and telemetry choice. Login autostart is distinct from pre-login boot availability. No Desktop reinstall or npm build is required by the inspected installation.</p>
+<p>The default agent uses the provisional Kilo free router, English persona files, Smart approval, enabled guards and the reviewed skill inventory. Memory worker status is idle, auto-memory is on, and no embedding reindex is required. Memory ingestion, fresh-chat retrieval and recall after a process restart are PASS on the supplied behavioral evidence below. No embedding change is required.</p>
+<p>Keep working data under <code>~/.qwenpaw</code>, provider/auth material in the application's separate secret store, and deliverables under <code>/Volumes/Hiksemi 1TB/AI-Drive</code>. Obsidian remains read-only to this agent; Beast is its writer. No external chat channel is active. Ricardo must choose any future channel and paid provider.</p>
+<p>A bounded health request establishes readiness only. A bounded synthetic model turn and tool turn establish separate functional checks. A future monitor must detect timeouts even while the socket and readiness endpoint remain healthy; no night-check integration is claimed here.</p>
+<h2 id="what-was-implemented-stage-by-stage">What was implemented stage by stage</h2>
+<h3 id="stage-1--bootstrap-configuration-and-staged-supervision">Stage 1 — bootstrap, configuration and staged supervision</h3>
+<p>Ran <code>QWENPAW_TELEMETRY_DISABLED=1 PYTHONDONTWRITEBYTECODE=1 qwenpaw init --defaults --accept-security</code>. Init created global config, skill pool, default templates and a vendor QA workspace. Noninteractive initialization requires both flags; <code>--defaults</code> alone is insufficient.</p>
+<p>Set global <code>agents.language=en</code>, both agent language fields to en, default approval to SMART, global/default sandbox to true, and retained enabled tool/file guards. Wrote UI <code>settings.json</code> language=en. Persona templates were initially preserved under the then-current no-overwrite instruction; that left Chinese content until Stage 2.</p>
+<p>Wrote and linted <code>~/Library/LaunchAgents/com.maio.qwenpaw.plist</code>. It uses <code>/Users/ricardomaio/.local/bin/qwenpaw app --host 127.0.0.1 --port 8088</code>, RunAtLoad=true, ThrottleInterval=30, telemetry disabled, and <strong>KeepAlive={SuccessfulExit:false}</strong>. It is not unconditional KeepAlive=true and does not establish clean-exit recovery. Bootstrap was not executed.</p>
+<p>Stage 1 <strong>failed</strong> direct-start readiness: <code>Health timeout: curl exit 7 stdout</code> followed by <code>000 stderr</code> with no body. It stopped there; no Stage 1 liveness pass exists. The service was subsequently supplied running by the orchestrator; this document does not invent how it was started.</p>
+<p>Pre-setup archive was owner-verified at <code>/Volumes/Hiksemi 1TB/AI-Drive/Backups/qwenpaw-pre-setup-20261110-001402.tgz</code>: 11 archive entries, 5 extracted files. That is historical pre-init backup evidence, not a current consistent snapshot or a tested application restore.</p>
+<h3 id="stage-2--english-personas-and-live-service-checks">Stage 2 — English personas and live service checks</h3>
+<p>Replaced the six authorized default persona files with English instructions, removed the bootstrap interview ritual, and persisted the default description through the agent API. Verified configured model and memory runtime status. Created the one daily cron job with explicit Inbox saving and tool safety; its manual execution reached success in state/history.</p>
+<p>Stage 2 captured two completed turns, but the orchestrator found visible self-narration and repetition in the stream. The earlier report's broad “all functional checks passed” statement is superseded by this Stage 3 quality pass. Inbox content and real timed execution were not verified. The orchestrator additionally confirmed 14 enabled skills with mailbox and dingtalk_channel disabled and the specific GUI values listed above; those observations are accepted as supplied evidence, not attributed to an unrecorded Stage 2 command.</p>
+<h3 id="stage-3--reply-quality-and-unused-helper">Stage 3 — reply quality and unused helper</h3>
+<p>Appended the exact direct-reply rule to AGENTS.md and SOUL.md. Set console show_thinking=false through the supported agent update route and verified API and disk. Disabled QA through the supported toggle route and verified the listing. The agent update supports runtime reload; the service process was not restarted.</p>
+<p>The two completed fresh-chat turns have clean answer text. The earlier Stage 3 stop was over-strict and is superseded by the final supplied interpretation. SSE deltas and final snapshots describe the same message and must not be counted as repeated answers.</p>
+<p>The supplied screenshot of the open conversation shows only <code>ALIVE</code>: Console hides reasoning with <code>show_thinking=false</code>. Reasoning still appears as <code>text</code> deltas in the raw SSE stream; this is expected and matters only to API consumers.</p>
+<h3 id="subsequent-orchestrator-evidence--memory-live-autostart-and-backup">Subsequent orchestrator evidence — memory, live autostart and backup</h3>
+<p><strong>MEMORY — PASS (ingestion, fresh-session recall and recall after a process restart).</strong> A fact ("fleet codeword is BLUE-HERON-42") was given in one chat; the agent wrote it to <code>~/.qwenpaw/workspaces/default/MEMORY.md</code>, confirmed by grep. A brand-new chat asked "What is the fleet codeword?" and the final answer block was exactly:</p>
+<pre class="text"><code>BLUE-HERON-42</code></pre>
+<p>The manually started instance (PID 81527) was stopped with <code>qwenpaw shutdown</code>. launchd then started a new process (PID 97340); a fresh chat against that process asked "What is the fleet codeword?" and answered exactly <code>BLUE-HERON-42</code>. Recall after a process restart is therefore <strong>PASS</strong>. These are supplied orchestrator results; no checks were repeated.</p>
+<p><strong>AUTOSTART — LIVE.</strong> Supplied <code>launchctl print gui/501/com.maio.qwenpaw</code> output reports <code>state = running</code>, <code>pid = 97340</code>, <code>runs = 10</code>. Supplied <code>lsof -nP -iTCP:8088</code> identifies the launchd-owned listener as PID 97340, bound to <code>127.0.0.1</code>; <code>/api/healthz</code> returned <code>{"status":"ok","agents_loaded":["default"]}</code>. Earlier attempts exited with code 3 because the manual instance held port 8088; once it was stopped, the job came up cleanly. Next-login confirmation and crash/clean-exit recovery acceptance remain outstanding.</p>
+<p><strong>BACKUP — PASS, with a defect found and fixed.</strong> Created through the app API, <code>POST /api/backups/jobs</code>. The first attempt returned <code>agent_count: 0</code> because <code>agents</code> must be an explicit list: a 565 KB / 209-file zip with NO agent workspace. This was the "green but empty" failure mode. The corrected request passed <code>"agents":["default"]</code> and produced <code>/Users/ricardomaio/.qwenpaw.backups/qwenpaw-2.2.2.post1-20261109T223213Z-a6e53b71.zip</code>: 1,207,007 bytes, <strong>466 files</strong>, containing <code>data/workspaces/default/AGENTS.md</code>, <code>SOUL.md</code>, <code>PROFILE.md</code>, <code>MEMORY.md</code> and <code>data/config.json</code>, with <code>agent_count: 1</code>. Secrets were excluded by design (<code>include_secrets: false</code>). An isolated application restore remains <strong>NOT DONE</strong>.</p>
+<h3 id="final-verified-turn-results">Final verified turn results</h3>
+<p>Current-state checks supplied by the orchestrator ran against the launchd-owned process <strong>PID 97340</strong>, using model <strong><code>kilo/kilo-auto/free</code></strong>:</p>
+<ul>
+<li><code>Reply with exactly: ALIVE</code> → exactly <code>ALIVE</code> in <strong>3.1 s</strong>.</li>
+<li><code>What is the fleet codeword?</code> → exactly <code>BLUE-HERON-42</code> in <strong>11.7 s</strong>.</li>
+<li>Workspace listing → one clean sentence naming <code>AGENTS.md</code>, <code>SOUL.md</code>, <code>PROFILE.md</code>, <code>MEMORY.md</code>, <code>skills/</code>, <code>memory/</code> in <strong>9.6 s</strong>.</li>
+</ul>
+<p>These supplied results establish clean functional responses on the launchd-owned process and memory recall after a process restart. No checks were repeated and no new GUI interaction is claimed.</p>
+<h2 id="verification-matrix">Verification matrix</h2>
+<p>PASS means only the explicitly named check passed. NOT DONE means no adequate behavioral evidence exists. A configuration PASS does not imply the broader acceptance gate passed.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Evidence and limit</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 1 direct-start readiness</td>
+<td>curl exit 7 / HTTP 000; Stage 1 stopped</td>
+<td>FAIL</td>
+</tr>
+<tr>
+<td>Current running service</td>
+<td>Orchestrator verified launchd-owned PID 97340 on 127.0.0.1:8088; bounded turns recorded separately</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Current healthz response</td>
+<td>Supplied <code>/api/healthz</code>: <code>{"status":"ok","agents_loaded":["default"]}</code>; functional checks recorded separately</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Version label</td>
+<td>Orchestrator GUI v2.2.2.post1; installed source audit agrees</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Enforced package pin and launchd binary identity</td>
+<td>Version note and CLI path do not enforce a pin</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>English default personas and description</td>
+<td>Stage 2 scan/API plus orchestrator verification</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>English Console labels</td>
+<td>Orchestrator GUI observation</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>English and values after confirmed restart</td>
+<td>Restarts prohibited during Stage 3</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Active router and rendered model</td>
+<td>API kilo/kilo-auto/free; GUI Kilo Auto (Free Router)</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Actual downstream router model identity</td>
+<td>Router ID alone cannot resolve it</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Provider authentication</td>
+<td>Keyless router used; credential presence is not an acceptance test</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Clean ALIVE answer text</td>
+<td>Exactly ALIVE on launchd-owned PID 97340, completed in 3.1 s</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Clean workspace-file answer text</td>
+<td>One clean sentence naming AGENTS.md, SOUL.md, PROFILE.md, MEMORY.md, skills/, memory/ on PID 97340, completed in 9.6 s</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Separate SSE reasoning hidden in Console</td>
+<td>Reasoning still streams as separate SSE <code>reasoning</code> events; console <code>show_thinking=false</code> hides them.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Console show thinking disabled</td>
+<td>API and persisted disk false; GUI toggle not re-inspected</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>QA helper disabled</td>
+<td>Toggle success; listing enabled=false/status=disabled</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>QA hidden in GUI selector</td>
+<td>Listing still available_in_chat=true; no GUI check</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Memory worker observable / auto-memory on / no reindex required</td>
+<td>Runtime status idle, auto-memory enabled=true, embedding_reindex_required=false; not restart-persistence proof</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Memory ingestion and fresh-session recall</td>
+<td>Supplied orchestrator evidence: "fleet codeword is BLUE-HERON-42" written to <code>~/.qwenpaw/workspaces/default/MEMORY.md</code> (grep confirmed); brand-new chat asked "What is the fleet codeword?"; final answer block exactly <code>BLUE-HERON-42</code></td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Memory recall after a service restart</td>
+<td>Manual PID 81527 stopped with <code>qwenpaw shutdown</code>; launchd started new PID 97340; fresh chat recalled exactly <code>BLUE-HERON-42</code> (final functional check: 11.7 s)</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Skills inventory</td>
+<td>Orchestrator verified 14/2</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Named enabled skill actually executed</td>
+<td>A workspace tool turn alone does not prove a named skill loaded</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Console enabled / external channels off</td>
+<td>Stage 2 agent settings</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Real external-channel inbound/outbound and reconnect</td>
+<td>No external channel configured/tested</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Daily cron definition and manual run</td>
+<td>Spec, state and history; manual success only</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Real scheduled execution and result visible in Inbox</td>
+<td>Saving enabled; delivery/content not retrieved</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Heartbeat configured and executed on schedule</td>
+<td>English HEARTBEAT.md is only query content, not scheduler proof</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Smart approval displayed</td>
+<td>API SMART and orchestrator GUI Smart Mode</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Tool/file guards and sandbox configuration</td>
+<td>Stage 1 field changes, Stage 2 sandbox API</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Guard enforcement and approval/refusal behavior</td>
+<td>No benign allowed/denied enforcement test</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Web authentication</td>
+<td>OFF by owner decision; any change remains pending the owner decision</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>UI-typed prompt and rendered clean response</td>
+<td>Fresh turns here use API; do not substitute them for GUI interaction</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Other GUI settings rows</td>
+<td>Memory, skills, channels, cron, heartbeat, guard controls, token usage, workspace file contents not individually evidenced</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Token usage correlated with test turn</td>
+<td>SSE usage may identify configured router; no rendered correlated usage/persistence check</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Remote LAN/tailnet rejection including IPv6</td>
+<td>Loopback handoff is not a second-host test</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Pre-init archive content</td>
+<td>Owner verified nonempty archive/extraction</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Current backup</td>
+<td><code>POST /api/backups/jobs</code> with <code>"agents":["default"]</code>, <code>include_secrets: false</code>: <code>/Users/ricardomaio/.qwenpaw.backups/qwenpaw-2.2.2.post1-20261109T223213Z-a6e53b71.zip</code>, 1,207,007 bytes, 466 files, <code>agent_count: 1</code>; required workspace files and <code>data/config.json</code> included. Initial 565 KB / 209-file archive had no workspace (<code>agent_count: 0</code>): "green but empty" defect found and fixed by explicit agent list</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Isolated application restore</td>
+<td>No isolated application restore proof</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Stale Desktop/native-messaging cleanup</td>
+<td>No deletion or browser-function test implemented</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>LaunchAgent file syntax</td>
+<td>Stage 1 plutil -lint returned OK</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Autostart loaded and running</td>
+<td>Supplied launchctl state=running, pid=97340, runs=10; loopback listener and healthz confirmed</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>Crash/clean-exit recovery and next-login confirmation</td>
+<td>Live supervision proven; these broader recovery/login checks remain outstanding</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Log bounds for stdout/stderr</td>
+<td>Project log rotation variables do not rotate launchd streams</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Telemetry absence</td>
+<td>Disabled env was specified for init/staged job; no effective runtime/network proof</td>
+<td>NOT DONE</td>
+</tr>
+<tr>
+<td>Night-check alert, sleep/wake and model outage recovery</td>
+<td>No integration or operational test</td>
+<td>NOT DONE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="known-gaps">Known gaps</h2>
+<ul>
+<li><strong>Authentication is OFF by owner decision; any change remains pending the owner decision.</strong> With auth disabled, the no-auth host list does not supply protection. When auth is enabled and an owner is registered, loopback may still bypass it unless <code>security.allow_no_auth_hosts=[]</code> is deliberately configured. Test unauthenticated rejection and authenticated success. The app persists password hash, salt and JWT material in its secret store; “Keychain only” was an incorrect v1 promise.</li>
+<li><strong>Autostart is live:</strong> the loaded job runs as PID 97340. Its conditional KeepAlive does not prove recovery on clean exit; crash/clean-exit recovery and confirmation after the next login remain outstanding.</li>
+<li><strong>Memory is PASS:</strong> ingestion into MEMORY.md, exact fresh-chat recall and exact recall of <code>BLUE-HERON-42</code> after the transition from PID 81527 to new launchd-owned PID 97340 all passed.</li>
+<li><strong>Backup is PASS, with a caveat:</strong> <code>agents</code> must be an explicit list. The initial "green but empty" archive (<code>agent_count: 0</code>, 565 KB / 209 files, no workspace) was corrected with <code>"agents":["default"]</code> (<code>agent_count: 1</code>, 1,207,007 bytes / 466 files, workspace and config included). Secrets were excluded by design (<code>include_secrets: false</code>); isolated application restore remains NOT DONE.</li>
+<li>Console UI hides reasoning when <code>show_thinking=false</code>, verified by a screenshot of the open conversation showing only "ALIVE"; reasoning still appears as <code>text</code> deltas in the raw SSE stream. This is expected, not a defect, and matters only to API consumers.</li>
+<li><strong>No external channel is enabled or tested.</strong> This is unfinished scope until Ricardo explicitly defers it or a real round trip passes.</li>
+<li><strong>GUI proof covers English rendering, version, model label and Smart Mode</strong>, plus the supplied screenshot showing only <code>ALIVE</code> with reasoning hidden. Other settings rows, the thinking toggle itself, disabled QA selector behavior and the workspace-file reply have no fresh GUI proof.</li>
+<li>The daily cron has manual-success evidence only. Its old recorded next_run_at was <code>2026-11-10T09:00:00+02:00</code>; it is not asserted to still be in the future.</li>
+<li>Stage 1 init reported a CRITICAL scanner finding for <code>make-skill</code>, safe=false, while blocking was disabled. It was not resolved. Inventory is not a security review of all enabled skills.</li>
+</ul>
+<h2 id="risks">Risks</h2>
+<p>An unauthenticated local API capable of tools is an unresolved access risk; loopback limits network exposure but does not authenticate local callers. Smart Mode and enabled guard settings have not been tested as enforcement boundaries.</p>
+<p>The free router can change downstream models, throttle or fail. The bounded successful samples do not establish reliability. The live conditional KeepAlive can recover qualifying process exits; it cannot detect hung turns. Broader recovery checks and alerting remain unfinished.</p>
+<p>Memory continuity across a process restart is proven; isolated application restore remains unproven. Ingestion, fresh-session retrieval, restart recall and the current application backup have passed; secrets were excluded by design. Unbounded launchd streams and unverified memory/index retention can grow the disk footprint. Sleep, missed schedules, locked-session tools and credentials remain operational unknowns.</p>
+<p>Chinese vendor files remain on disk in the disabled QA workspace. API <code>available_in_chat=true</code> leaves its selector presentation ambiguous. Do not equate disabled runtime status with hidden or deleted content.</p>
+<h2 id="open-questions-for-ricardo">Open questions for Ricardo</h2>
+<ol type="1">
+<li>Enable web authentication with local bypass removed, and which operator sign-in/secret-storage policy should apply?</li>
+<li>Should this be available only after GUI login, or before login? Launchd supervision is already live; decide clean-exit recovery policy.</li>
+<li>Keep the provisional free router, and what failure rate/latency warrants a provider change? No purchase is authorized by this PRD.</li>
+<li>Which one external channel should be implemented, or should that acceptance requirement be explicitly deferred?</li>
+<li>What memory retention and restore policy is acceptable? No embedding reindex is currently required; recall after a process restart is PASS.</li>
+<li>Should the flagged make-skill skill remain enabled pending review? Smart approval is configured; is that the intended long-term policy?</li>
+</ol>
+<h2 id="what-a-human-must-do-next">What a human must do next</h2>
+<p>The job is already loaded and running as launchd-owned PID 97340. The human only needs to confirm after the next login that it came back, and run <code>qwenpaw shutdown</code> before any upgrade. The agent gateway itself cannot run <code>launchctl bootstrap</code>; any future re-registration must be done in the user's own shell.</p>
+<p>The loaded plist uses conditional KeepAlive={SuccessfulExit:false}; clean-exit recovery and log-retention acceptance remain unfinished.</p>
+<p>For the remaining full-setup acceptance checks, open Console at <code>http://127.0.0.1:8088</code>, type a new prompt, and verify one rendered answer. Read back each required GUI value after reopening it. Observe a real scheduled run and its Inbox content. Run guard/auth negative tests, named skill execution, reachable-peer rejection tests, a consistent backup and isolated restore, and crash/clean-exit/login recovery before marking the full setup accepted.</p>
+<h2 id="evidence-index">Evidence index</h2>
+<p>Scratch evidence root: <code>/Users/ricardomaio/.hermes/profiles/courage/cache/scratch/qp-prd-audit</code>.</p>
+<ul>
+<li><code>prd.md</code>: original requirements, retained as historical input.</li>
+<li><code>codex-audit.md</code>: installed-source audit and corrections; its <code>Asia/Johannesburg</code> suggestion was a typo, corrected here to the implemented <code>Africa/Johannesburg</code>.</li>
+<li><code>implementation-stage1.md</code>, <code>stage1-field-changes.json</code>, <code>stage1-init-created.json</code>, <code>stage1-init.log</code>: bootstrap and failed readiness.</li>
+<li><code>implementation-stage2.md</code>, <code>stage2-runtime.json</code>, <code>stage2-evidence.json</code>, <code>stage2-agent-settings.json</code>, <code>stage2-cron-{job,state,history}.json</code>: Stage 2 observations and limits.</li>
+<li><code>stage3-settings-evidence.json</code>, <code>stage3-turn-{alive,files}.json</code>, <code>stage3-summary-{alive,files}.json</code>, <code>stage3_turn.py</code>, <code>implementation-final.md</code>: Stage 3 source changes and verbatim turn evidence.</li>
+</ul>
+<p>No credential, token or password values belong in this PRD or its evidence excerpts.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
