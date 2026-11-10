@@ -1,267 +1,180 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<title>Company AI platform — model key handover and open work</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light dark">
+<title>Company AI platform — model key handover and open work</title>
+<meta name="description" content="Company Ollama Cloud key located and verified; installation blocked on the office network link.">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
-/* The dark palette is only variables: every rule below reads them, so no base rule can
-   out-order it. Explicit dark rules here used to be overridden by the base table rules
-   further down the sheet, which painted cream rows under near-white text. */
-@media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
-      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+:root{--paper:#fdfaf3;--ink:#12203a;--ink-soft:#3d4a63;--muted:#6d6f79;
+      --line:#e2dccb;--hair:#ece6d6;--card:#ffffff;--gold:#a9791c;--gold-soft:#fdf6e6;
+      --stop:#b5453a;--go:#2f7d5b;--mono:"SFMono-Regular",Menlo,Consolas,monospace;
+      --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+      --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);
-     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-     -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
-.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
-.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
-.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
-h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
-    letter-spacing:-.01em;margin:0 0 .5em}
-h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
-    padding-bottom:.28em;border-bottom:1px solid var(--line)}
-h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
-p,li{color:var(--ink)}
-a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
-   text-underline-offset:2px;font-weight:600}
-a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
-hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
-blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
-           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
-blockquote p:last-child{margin-bottom:0}
-code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
-     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
-pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
-     overflow-x:auto}
-pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
-thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
-         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
-         border-bottom:2px solid var(--th-line)}
-th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
-tbody tr:nth-child(even){background:var(--zebra)}
-tbody tr:last-child td{border-bottom:0}
-td:first-child{font-weight:600}
-td strong{font-weight:650}
-img{max-width:100%;height:auto;border-radius:10px}
-ul,ol{padding-left:1.3em} li{margin:.34em 0}
-/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
-   card, a results line or a small calculator. Every colour is a token, so they flip with the
-   paper and nothing here can drift off the two house looks. */
-.wrap{max-width:none}
-.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
-        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
-h1 em{font-style:normal;color:var(--gold)}
-.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
-.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
-      color:var(--muted);background:var(--card)}
-.chip.hot{border-color:var(--bad);color:var(--bad)}
-.chip.ok{border-color:var(--ok);color:var(--ok)}
-.lede{font-size:18.5px;color:var(--ink)}
-.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
-         border-left:3px solid var(--gold);border-radius:10px}
-.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
-.callout p:last-child{margin-bottom:0}
-.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
-       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
-.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
-            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-.quote q{font-style:italic}
-td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
-      font-weight:600;font-size:13.5px}
-td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
-.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
-.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
-            text-transform:uppercase;color:var(--gold)}
-.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
-.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
-.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
-        margin:14px 0 6px}
-.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
-         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
-         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
-.f input:focus{outline:none;border-color:var(--gold)}
-.hint{font-size:12px;color:var(--muted);margin-top:4px}
-.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
-.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
-       border-bottom:1px dashed var(--line);font-size:15px}
-.rline span:first-child{color:var(--muted)}
-.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
-.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
-             font-size:17px}
-.rline.total span:last-child{color:var(--gold);font-size:21px}
-.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
-.elec.win{border-color:var(--gold)}
-ol.steps{list-style:none;padding-left:0;counter-reset:s}
-ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
-            border-left:1px solid var(--line);margin-left:12px}
-ol.steps>li:last-child{border-left-color:transparent}
-ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
-                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
-                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
-ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
-footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
-       font-size:13.5px}
-.src{font-size:13.5px;color:var(--muted)}
-.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
-      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
-@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
-@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
-</style></head>
-<body><main>
-
-<h1 id="company-ai-platform--model-key-handover-and-open-work">Company AI platform — model key handover and open work</h1>
-<p><strong>Status:</strong> company Ollama Cloud key located and verified; installation blocked on the office network link. <strong>Written:</strong> 2026-11-10, 17:20 SAST · Bruce Wayne (Chief of Staff) · for Ricardo, the fleet, and any harness picking this work up.</p>
-<hr />
-<h2 id="1-the-key-exists--and-it-is-not-ricardos">1. The key exists — and it is not Ricardo's</h2>
-<table>
-<thead>
-<tr>
-<th>Fact</th>
-<th>Evidence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Company Ollama Cloud key was issued by <strong>Tuan Griezel</strong> (IT) on 2026-11-10</td>
-<td>Cliq DM with Ricardo, file message <strong>07:51</strong>, <code>Adriana.odt</code></td>
-</tr>
-<tr>
-<td>Tuan pointed at it at <strong>15:26</strong></td>
-<td>Cliq message: <em>"its in this doc. just don't tell Adrianna"</em> (reply to that file)</td>
-</tr>
-<tr>
-<td>The key is valid</td>
-<td><code>GET https://ollama.com/v1/models</code> with it returns <strong>23 models</strong>, <code>deepseek-v4.1-flash</code> among them</td>
-</tr>
-<tr>
-<td>It is a <strong>different account</strong> from the key currently in use</td>
-<td>string comparison against <code>OLLAMA_API_KEY</code> in <code>~/.config/maio-stack/secrets.env</code> → not equal</td>
-</tr>
-<tr>
-<td>It has <strong>never been sent to any agent</strong></td>
-<td>no mail (246 messages / 77 folders swept), no config file, no vault row</td>
-</tr>
-</tbody>
-</table>
+     font:16.5px/1.66 var(--sans);font-feature-settings:"kern"}
+.wrap{max-width:780px;margin:0 auto;padding:44px 22px 74px}
+.eyebrow{font:700 11.5px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+h1{font:600 33px/1.16 var(--serif);letter-spacing:-.015em;margin:14px 0 0;
+   padding-bottom:16px;border-bottom:3px solid var(--ink)}
+h2{font:600 22px/1.25 var(--serif);margin:44px 0 14px;padding-bottom:9px;
+   border-bottom:1px solid var(--hair)}
+h3{font:700 14px/1.4 var(--sans);letter-spacing:.01em;margin:26px 0 8px;color:var(--ink-soft)}
+p{margin:0 0 14px}
+.stand{font-size:18.5px;line-height:1.5;color:var(--ink);margin:20px 0 8px;padding-left:16px;
+       border-left:4px solid var(--gold)}
+.meta{font-size:13px;color:var(--muted);margin:0 0 6px}
+strong{font-weight:650;color:var(--ink)}
+code{font:13.5px/1.4 var(--mono);background:#f2eddf;border:1px solid var(--hair);
+     border-radius:5px;padding:1.5px 5px;color:#3a3222;white-space:nowrap}
+.mono{font:13.5px/1.4 var(--mono)}
+a{color:#1a4f7a;text-decoration:none;border-bottom:2px solid #c9d8e4}
+a:hover{border-bottom-color:#1a4f7a}
+ul,ol{margin:0 0 16px;padding-left:22px}
+li{margin:0 0 9px}
+.tscroll{overflow-x:auto;margin:0 0 20px}
+table{border-collapse:collapse;width:100%;background:var(--card);
+      border:2px solid var(--line);font-size:14.5px}
+th{background:#f4efe2;color:var(--ink);text-align:left;font:700 12px/1.35 var(--sans);
+   letter-spacing:.06em;text-transform:uppercase;padding:10px 13px;border-bottom:1px solid var(--line)}
+td{padding:11px 13px;border-top:1px solid var(--hair);vertical-align:top;line-height:1.5}
+tbody tr:nth-child(even) td{background:#fbf8ef}
+td:first-child{font-weight:600;color:var(--ink)}
+.flag{background:var(--gold-soft);border:1px solid #ecd9ae;border-left:4px solid var(--gold);
+      border-radius:8px;padding:13px 16px 2px;margin:20px 0 20px}
+.flag p{margin:0 0 12px;font-size:15px}
+.code{background:#f7f3e7;border:1px solid var(--line);border-left:4px solid var(--ink);
+      border-radius:8px;padding:13px 16px;overflow-x:auto;margin:0 0 18px}
+.code code{background:none;border:0;padding:0;white-space:pre;font-size:13px;line-height:1.6}
+.fig{margin:22px 0 26px;background:#fff;border:2px solid var(--line);border-radius:12px;
+     padding:20px 20px 12px}
+.fl{display:grid;gap:0}
+.step{display:flex;gap:12px;align-items:flex-start;background:#fff;border:2px solid var(--line);
+      border-radius:10px;padding:11px 14px}
+.step b{display:block;font:650 15px/1.35 var(--sans);color:var(--ink)}
+.step .sub{display:block;font-size:13px;line-height:1.4;color:var(--muted)}
+.step .n{flex:0 0 26px;height:26px;display:grid;place-items:center;border-radius:7px;
+         background:var(--ink);color:#fff;font:700 12px/1 var(--sans)}
+.step.decide{background:var(--gold-soft);border-color:#e6c98a}
+.step.decide .n{background:var(--gold)}
+.step.stop{border-color:#e7c3bd}
+.step.stop .n{background:var(--stop)}
+.step.go{border-color:#bcd9c9}
+.step.go .n{background:var(--go)}
+.step.final{background:#f6f9f4;border-color:#c9dcc9}
+.rail{margin:0 0 0 24px;padding:7px 0 7px 14px;border-left:2px dashed #d8cfb8;
+      font:600 11.5px/1.4 var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.branch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 10px}
+.fig figcaption{font:13px/1.5 var(--sans);color:var(--muted);margin:16px 0 4px;
+                 padding-top:11px;border-top:1px solid var(--hair)}
+.sources{margin-top:46px;padding-top:18px;border-top:3px solid var(--ink)}
+.sources h2{margin-top:0;border:0;padding:0;font-size:17px}
+.sources ul{padding-left:20px;font-size:14px}
+.sources li{margin-bottom:7px}
+.foot{margin-top:26px;font-size:12.5px;color:var(--muted);line-height:1.55}
+@media (max-width:720px){
+  h1{font-size:26px}
+  .branch{grid-template-columns:1fr}
+  table{border:0;background:none}
+  thead{display:none}
+  tbody tr{display:block;border:2px solid var(--line);border-radius:9px;background:#fff;
+           margin-bottom:10px;overflow:hidden}
+  tbody tr:nth-child(even) td{background:#fff}
+  td{display:flex;justify-content:space-between;gap:14px;border:0;padding:9px 12px;
+     border-top:1px solid var(--hair);font-size:14px}
+  td:first-child{border-top:0;background:#faf6ea;font-weight:700}
+  td::before{content:attr(data-l);flex:0 0 auto;font:700 10.5px/1.6 var(--sans);
+             letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding-right:8px}
+  td:first-child::before{content:""}
+  code{white-space:normal;word-break:break-word}
+}
+@media print{
+  @page{size:A4;margin:15mm 14mm 16mm}
+  body{background:#fff;font-size:10.4pt}
+  .wrap{max-width:none;padding:0}
+  h1{font-size:21pt}
+  h2{page-break-after:avoid;font-size:14pt}
+  h3,.step,table,.fig,.flag,.code{page-break-inside:avoid}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+  a{color:var(--ink)}
+  .fig{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">Work · 3.PRD · Active</div>
+  <h1>Company AI platform — model key handover and open work</h1>
+  <p class="stand">company Ollama Cloud key located and verified; installation blocked on the office network link.</p>
+  <p class="meta">2026-11-10, 17:20 SAST · Bruce Wayne (Chief of Staff) · for Ricardo, the fleet, and any harness picking this work up.</p>
+</header>
+<main>
+<h2 id="s1">1. The key exists — and it is not Ricardo&#x27;s</h2>
+<div class="tscroll"><table><thead><tr><th scope="col">Fact</th><th scope="col">Evidence</th></tr></thead><tbody><tr><td data-l="Fact">Company Ollama Cloud key was issued by <strong>Tuan Griezel</strong> (IT) on 2026-11-10</td><td data-l="Evidence">Cliq DM with Ricardo, file message <strong>07:51</strong>, <code>Adriana.odt</code></td></tr><tr><td data-l="Fact">Tuan pointed at it at <strong>15:26</strong></td><td data-l="Evidence">Cliq message: <em>&quot;its in this doc. just don&#x27;t tell Adrianna&quot;</em> (reply to that file)</td></tr><tr><td data-l="Fact">The key is valid</td><td data-l="Evidence"><code>GET https://ollama.com/v1/models</code> with it returns <strong>23 models</strong>, <code>deepseek-v4.1-flash</code> among them</td></tr><tr><td data-l="Fact">It is a <strong>different account</strong> from the key currently in use</td><td data-l="Evidence">string comparison against <code>OLLAMA_API_KEY</code> in <code>~/.config/maio-stack/secrets.env</code> → not equal</td></tr><tr><td data-l="Fact">It has <strong>never been sent to any agent</strong></td><td data-l="Evidence">no mail (246 messages / 77 folders swept), no config file, no vault row</td></tr></tbody></table></div>
 <p><strong>The key value appears in no file in this repository, no ticket and no chat.</strong> It lives in that one Cliq document, which is where the installer reads it from at run time.</p>
-<h3 id="the-same-document-also-contains">The same document also contains</h3>
-<ul>
-<li>A <strong>Cloudflare client ID + secret</strong> for the <code>ricardo-staging-checks</code> tunnel. Untouched, unused.</li>
-<li>Nothing else of value — 227 characters of text total.</li>
-</ul>
-<h3 id="governance-flag">Governance flag</h3>
-<p>Tuan asked Ricardo to keep the credential from Adrianna (a fleet agent). That is a call an IT contractor does not get to make about Ricardo's own assistant. Recorded here, not acted on. Ricardo's own instruction — <em>"give the other harnesses this information"</em> — supersedes it.</p>
-<hr />
-<h2 id="2-what-is-currently-installed-and-why-it-is-wrong">2. What is currently installed, and why it is wrong</h2>
+<h3>The same document also contains</h3>
+<ul><li>A <strong>Cloudflare client ID + secret</strong> for the <code>ricardo-staging-checks</code> tunnel. Untouched, unused.</li><li>Nothing else of value — 227 characters of text total.</li></ul>
+<aside class="flag"><h3>Governance flag</h3><p>Tuan asked Ricardo to keep the credential from Adrianna (a fleet agent). That is a call an IT contractor does not get to make about Ricardo&#x27;s own assistant. Recorded here, not acted on. Ricardo&#x27;s own instruction — <em>&quot;give the other harnesses this information&quot;</em> — supersedes it.</p></aside>
+<h2 id="s2">2. What is currently installed, and why it is wrong</h2>
 <p>The AgenticOS pilot runs all eight department bots on one vault secret:</p>
-<ul>
-<li>profile <code>Ollama Cloud (default)</code> → <code>ollama</code> / <code>deepseek-v4.1-flash</code> / <code>https://ollama.com/v1</code></li>
-<li>secret <strong><code>Ollama Cloud key — Ricardo's personal (TEMPORARY)</code></strong> (<code>purpose: ollama</code>)</li>
-</ul>
-<p>That value is Ricardo's own key — a stopgap installed before the company key existed. Replacing that one secret value repoints every bot; <strong>no rebuild, no agent republish, no new links.</strong></p>
-<hr />
-<h2 id="3-blocked-the-office-link-is-down">3. Blocked: the office link is down</h2>
+<ul><li>profile <code>Ollama Cloud (default)</code> → <code>ollama</code> / <code>deepseek-v4.1-flash</code> / <code>https://ollama.com/v1</code></li><li>secret <strong><code>Ollama Cloud key — Ricardo&#x27;s personal (TEMPORARY)</code></strong> (<code>purpose: ollama</code>)</li></ul>
+<p>That value is Ricardo&#x27;s own key — a stopgap installed before the company key existed. Replacing that one secret value repoints every bot; <strong>no rebuild, no agent republish, no new links.</strong></p>
+
+<figure class="fig">
+  <div class="fl">
+    <div class="step"><span class="n">1</span><div><b>Cliq doc <span class="mono">Adriana.odt</span></b><span class="sub">the only place the key is written down</span></div></div>
+    <div class="rail">in memory only — never written to disk</div>
+    <div class="step"><span class="n">2</span><div><b><span class="mono">install-company-key.py</span> — this Mac</b><span class="sub">pulls the doc, extracts the key, stages the swap script</span></div></div>
+    <div class="rail">verify <span class="mono">GET /v1/models</span></div>
+    <div class="step decide"><span class="n">?</span><div><b>Is the key valid?</b><span class="sub">23 models returned means it is live</span></div></div>
+    <div class="branch">
+      <div class="step stop"><span class="n">✕</span><div><b>No — stop</b><span class="sub">ask Tuan, do not install</span></div></div>
+      <div class="step go"><span class="n">→</span><div><b>Yes — continue</b><span class="sub">down the rail below</span></div></div>
+    </div>
+    <div class="rail">ssh stdin — never argv, never disk</div>
+    <div class="step"><span class="n">3</span><div><b><span class="mono">swap-key.py</span> — macserver</b><span class="sub">replaces the vault secret and renames it</span></div></div>
+    <div class="rail">one secret value</div>
+    <div class="step"><span class="n">4</span><div><b>Vault secret <span class="mono">purpose: ollama</span></b><span class="sub">repointed in place — no rebuild, no republish</span></div></div>
+    <div class="rail">every bot reads the secret at start</div>
+    <div class="step final"><span class="n">5</span><div><b>8 department bots</b><span class="sub">on their next run, on the company key</span></div></div>
+  </div>
+  <figcaption>The handover touches one vault secret value and one SSH pipe — no rebuild. The dashed rails name what carries the key between steps; the branch is where the install stops instead of guessing.</figcaption>
+</figure>
+
+<h2 id="s3">3. Blocked: the office link is down</h2>
 <p>As at <strong>15:30–17:25 SAST 2026-11-10</strong>:</p>
-<table>
-<thead>
-<tr>
-<th>Target</th>
-<th>Result</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>bastion</code> 41.169.136.83:22</td>
-<td><code>Connection refused</code></td>
-</tr>
-<tr>
-<td><code>macserver</code> 192.168.88.226:22</td>
-<td>timeout (unreachable)</td>
-</tr>
-<tr>
-<td><code>infmini</code> 192.168.88.173</td>
-<td>resolves to the public IP, connection refused</td>
-</tr>
-</tbody>
-</table>
-<p>Tuan, 15:22: <em>"Will look at this tonight and revert."</em></p>
+<div class="tscroll"><table><thead><tr><th scope="col">Target</th><th scope="col">Result</th></tr></thead><tbody><tr><td data-l="Target"><code>bastion</code> 41.169.136.83:22</td><td data-l="Result"><code>Connection refused</code></td></tr><tr><td data-l="Target"><code>macserver</code> 192.168.88.226:22</td><td data-l="Result">timeout (unreachable)</td></tr><tr><td data-l="Target"><code>infmini</code> 192.168.88.173</td><td data-l="Result">resolves to the public IP, connection refused</td></tr></tbody></table></div>
+<p>Tuan, 15:22: <em>&quot;Will look at this tonight and revert.&quot;</em></p>
 <p>Consequence: the swap <strong>cannot</strong> be executed from here until the line returns. Nothing else about the pilot is blocked — the stack was healthy at last contact (all eight bots answered, migrations at head <code>0297_workflow_chat_source</code>).</p>
-<hr />
-<h2 id="4-the-install-ready-to-run">4. The install, ready to run</h2>
+<h2 id="s4">4. The install, ready to run</h2>
 <p>Two scripts, permanent home <code>AI-Drive/Work/Infinity Brands/AgenticOS/tools/</code>:</p>
-<ul>
-<li><code>install-company-key.py</code> — runs on this Mac. Pulls the Cliq doc into memory, extracts the key, verifies it against <code>https://ollama.com/v1/models</code>, stages <code>swap-key.py</code> on the host, then pipes the key over <strong>stdin</strong> (never argv, never disk).</li>
-<li><code>swap-key.py</code> — runs on <code>macserver</code>. Replaces the vault secret, renames it to <code>Ollama Cloud key — company (issued by Tuan, 2026-11-10)</code>, then runs the Finance bot and prints its answer as proof.</li>
-</ul>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> <span class="st">&quot;/Volumes/Hiksemi 1TB/AI-Drive/Work/Infinity Brands/AgenticOS/tools&quot;</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> install-company-key.py</span></code></pre></div>
+<ul><li><code>install-company-key.py</code> — runs on this Mac. Pulls the Cliq doc into memory, extracts the key, verifies it against <code>https://ollama.com/v1/models</code>, stages <code>swap-key.py</code> on the host, then pipes the key over <strong>stdin</strong> (never argv, never disk).</li><li><code>swap-key.py</code> — runs on <code>macserver</code>. Replaces the vault secret, renames it to <code>Ollama Cloud key — company (issued by Tuan, 2026-11-10)</code>, then runs the Finance bot and prints its answer as proof.</li></ul>
+<pre class="code"><code>cd &quot;/Volumes/Hiksemi 1TB/AI-Drive/Work/Infinity Brands/AgenticOS/tools&quot;
+python3 install-company-key.py</code></pre>
 <p>Expected output: <code>key verified · 23 models · deepseek-v4.1-flash yes</code>, then <code>MODEL RUN OK</code> with a one-line answer from the Finance bot. Failure modes to expect: <code>ssh rc 255</code> = link still down, retry later; <code>ollama rejected the key: 401</code> = key rotated, go back to Tuan.</p>
 <p><strong>Rollback:</strong> the personal key is untouched in <code>~/.config/maio-stack/secrets.env</code>; re-patching the secret with it restores the previous state.</p>
-<hr />
-<h2 id="5-open-decisions--ricardos-not-mine">5. Open decisions — Ricardo's, not mine</h2>
-<ol type="1">
-<li><strong>Hermes access shape.</strong> Tuan, 15:27: <em>"Do you want your agent to be able to talk to hermes or should it have all access to the VM that hermes runs on?"</em> Different blast radius: an API key scopes to the agent; VM access is a shell on the box. Unanswered.</li>
-<li><strong>Staff access route (PRD D4).</strong> Currently everyone on the office LAN reaches <code>http://192.168.88.226:8080</code>. That is a workaround, not the PRD decision; authenticated HTTPS for named pilot staff was the alternative.</li>
-<li><strong>Cost visibility.</strong> The product carries no price row for <code>ollama.com</code> models, so per-run cost reads <code>0.000000</code>. On a company key, spend must be watched in the Ollama account until pricing is entered.</li>
-<li><strong>DHCP reservation for 192.168.88.226.</strong> Without it the handed-out space links eventually break.</li>
-</ol>
-<hr />
-<h2 id="6-where-the-rest-of-the-pilot-stands">6. Where the rest of the pilot stands</h2>
-<table>
-<thead>
-<tr>
-<th>Item</th>
-<th>State</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Stack v1.56.3 on <code>macserver</code></td>
-<td>live at last contact, boot-persistent, telemetry off</td>
-</tr>
-<tr>
-<td>Single staff address</td>
-<td><code>http://192.168.88.226:8080</code> (nginx gateway, host network)</td>
-</tr>
-<tr>
-<td>8 department groups / bots / spaces</td>
-<td>created, published, all 8 answered live</td>
-</tr>
-<tr>
-<td>Local embeddings</td>
-<td><code>nomic-embed-text</code>, 768-dim, proven from app <strong>and</strong> worker, no host port</td>
-</tr>
-<tr>
-<td>Embedding provider row in-product</td>
-<td><strong>not registered</strong> — Knowledge → Integrations still needs it</td>
-</tr>
-<tr>
-<td>Staff invitations</td>
-<td><strong>not issued</strong> — needs names and work addresses</td>
-</tr>
-<tr>
-<td>Owner account</td>
-<td><code>ricardom@infinitybrands.co.za</code>, password only in <code>~/agenticos/owner-credentials.txt</code> (mode 600)</td>
-</tr>
-</tbody>
-</table>
+<h2 id="s5">5. Open decisions — Ricardo&#x27;s, not mine</h2>
+<ol><li><strong>Hermes access shape.</strong> Tuan, 15:27: <em>&quot;Do you want your agent to be able to talk to hermes or should it have all access to the VM that hermes runs on?&quot;</em> Different blast radius: an API key scopes to the agent; VM access is a shell on the box. Unanswered.</li><li><strong>Staff access route (PRD D4).</strong> Currently everyone on the office LAN reaches <code>http://192.168.88.226:8080</code>. That is a workaround, not the PRD decision; authenticated HTTPS for named pilot staff was the alternative.</li><li><strong>Cost visibility.</strong> The product carries no price row for <code>ollama.com</code> models, so per-run cost reads <code>0.000000</code>. On a company key, spend must be watched in the Ollama account until pricing is entered.</li><li><strong>DHCP reservation for 192.168.88.226.</strong> Without it the handed-out space links eventually break.</li></ol>
+<h2 id="s6">6. Where the rest of the pilot stands</h2>
+<div class="tscroll"><table><thead><tr><th scope="col">Item</th><th scope="col">State</th></tr></thead><tbody><tr><td data-l="Item">Stack v1.56.3 on <code>macserver</code></td><td data-l="State">live at last contact, boot-persistent, telemetry off</td></tr><tr><td data-l="Item">Single staff address</td><td data-l="State"><code>http://192.168.88.226:8080</code> (nginx gateway, host network)</td></tr><tr><td data-l="Item">8 department groups / bots / spaces</td><td data-l="State">created, published, all 8 answered live</td></tr><tr><td data-l="Item">Local embeddings</td><td data-l="State"><code>nomic-embed-text</code>, 768-dim, proven from app <strong>and</strong> worker, no host port</td></tr><tr><td data-l="Item">Embedding provider row in-product</td><td data-l="State"><strong>not registered</strong> — Knowledge → Integrations still needs it</td></tr><tr><td data-l="Item">Staff invitations</td><td data-l="State"><strong>not issued</strong> — needs names and work addresses</td></tr><tr><td data-l="Item">Owner account</td><td data-l="State"><code>ricardom@infinitybrands.co.za</code>, password only in <code>~/agenticos/owner-credentials.txt</code> (mode 600)</td></tr></tbody></table></div>
 <p>Deployment record: vault → <code>Work/3.PRD/Active/2026-11-08-agenticos-infinity-brands-pilot-deployment-record</code>.</p>
-<hr />
 <p><em>No key, token or password appears in this document. If one is needed, read it from its source of truth at the moment of use.</em></p>
-<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
-</main></body></html>
+
+<section class="sources">
+  <h2>Sources for the public references in this note</h2>
+  <ul>
+    <li><a href="https://ollama.com/library">Ollama model library</a> — the model names the company key returns, <code>deepseek-v4.1-flash</code> among them.</li>
+    <li><a href="https://docs.ollama.com/api/introduction">Ollama API reference</a> — the <code>/v1/models</code> endpoint the installer verifies the key against.</li>
+    <li><a href="https://ollama.com/pricing">Ollama Cloud pricing</a> — why section 5.3 matters: a company key bills against the company account, and the product carries no price row for these models.</li>
+  </ul>
+  <p class="foot">Everything else in this note is evidence from the system it describes: Cliq messages, command output and the scripts named above. No key, token or password appears on this page. Filed as <code>Work/3.PRD/Active/2026-11-10-company-ai-platform-model-key-handover-and-open-work.md</code>.</p>
+</section>
+
+</main>
+</div>
+</body>
+</html>
