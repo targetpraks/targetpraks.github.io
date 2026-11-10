@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ITC — the bastion's SSH door, and the way in that does not need a site visit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="itc--the-bastions-ssh-door">ITC — the bastion's SSH door</h1>
+<p><strong>Card:</strong> t_22c4c867 (BW-42abc7df-3/subtask-3) · <strong>Run:</strong> 2026-11-10 17:32–17:42 SAST · <strong>For:</strong> Ricardo → Tuan <strong>Status:</strong> cannot be fixed from this Mac — we hold no shell on that host. Everything below is measured, and the repair block has been executed here on real hosts before it is handed over.</p>
+<hr />
+<h2 id="1-what-is-actually-broken-measured-at-1741-not-copied">1. What is actually broken (measured at 17:41, not copied)</h2>
+<table>
+<thead>
+<tr>
+<th>Probe on the office WAN <code>41.169.136.83</code></th>
+<th>Result</th>
+<th>Read</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ping</code></td>
+<td>3/3, 0% loss, 28 ms</td>
+<td>the line and the router are up</td>
+</tr>
+<tr>
+<td>TCP <strong>22</strong></td>
+<td><strong>REFUSED</strong> in 29 ms (RST, one round trip)</td>
+<td>a machine answers and refuses: the forward reaches a host where sshd is not listening</td>
+</tr>
+<tr>
+<td>TCP <strong>2222</strong></td>
+<td>dropped, no reply</td>
+<td>nothing published there</td>
+</tr>
+<tr>
+<td>TCP <strong>8006</strong></td>
+<td>dropped, no reply</td>
+<td>Proxmox UI is not published on the WAN IP</td>
+</tr>
+<tr>
+<td>TCP <strong>443</strong></td>
+<td>open, 200, NPMplus default page (2,056 B)</td>
+<td>reverse proxy alive</td>
+</tr>
+<tr>
+<td>TCP <strong>4443</strong></td>
+<td>open, Cisco Meraki cert <code>ib-head-office-wired-tvgzrjcjzt.dynamic-m.com</code></td>
+<td>the office router itself answers</td>
+</tr>
+<tr>
+<td><code>Host: pve.infinitybrands.co.za</code> on <code>:443</code></td>
+<td><strong>200, title <code>networknut - Proxmox Virtual Environment</code></strong></td>
+<td>the office proxy is healthy <strong>and</strong> it fronts the Proxmox host</td>
+</tr>
+<tr>
+<td><code>https://pve.infinitybrands.co.za/api2/json/nodes</code></td>
+<td><strong>401</strong></td>
+<td>the Proxmox API is alive and asking for a login</td>
+</tr>
+</tbody>
+</table>
+<p>The 22-vs-2222/8006 difference is the useful part: a refused connection needs something at the far end to say no, while 2222 and 8006 are silently dropped. So the port-forward for 22 most likely still exists and the host behind it is up — <strong>sshd on that host is the fault</strong>, not the router rule. That is exactly what Adrianna asked us to check, and it is the one thing only a session on that host can confirm.</p>
+<h2 id="2-the-way-in-that-does-not-need-anyone-to-drive-to-the-office">2. The way in that does not need anyone to drive to the office</h2>
+<p><code>https://pve.infinitybrands.co.za</code> serves a working Proxmox VE login from the public internet. Tuan has Proxmox access (his own words, 6 Nov note). From that UI he can open a <strong>console on the bastion itself</strong> — Proxmox consoles do not go through sshd, so a dead sshd cannot lock him out of the fix. That replaces "someone must be at the machine" with "log in and open a console".</p>
+<p>If the bastion is not a guest on that node, the node's own <strong>Shell</strong> still reaches the office LAN, and the fix is one command from there.</p>
+<h2 id="3-the-repair--proven-here-before-it-goes-to-tuan">3. The repair — proven here before it goes to Tuan</h2>
+<p>Two files sit beside this note:</p>
+<ul>
+<li><strong><code>fix-office-sshd.sh</code></strong> — the full repair: report-only by default, <code>--apply</code> fixes, <code>--allow-firewall</code> opens 22. Handles macOS Remote Login, Proxmox/Debian with systemd, and init.d fallback.</li>
+<li><strong><code>tuan-paste-block.sh</code></strong> — the 24-line version of the same thing that fits in a chat message.</li>
+</ul>
+<p>What was actually executed here, with real output:</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Debian 12 container, sshd stopped, <code>/run/sshd</code> deleted, report-only run</td>
+<td><code>config test FAILED -&gt; Missing privilege separation directory: /run/sshd</code>, <code>nothing listening on 22</code>, exit 1</td>
+</tr>
+<tr>
+<td>same container, <code>--apply</code></td>
+<td>recreates <code>/run/sshd</code>, <code>Restarting OpenBSD Secure Shell server: sshd</code>, <code>LISTENING: 0.0.0.0:22</code>, banner <code>SSH-2.0-OpenSSH_9.2p1</code>, exit 0</td>
+</tr>
+<tr>
+<td>same container, <code>--apply</code> a second time</td>
+<td>no duplicate work, still listening, exit 0</td>
+</tr>
+<tr>
+<td>config deliberately broken, sshd stopped, <code>--apply</code></td>
+<td><code>REFUSING to start: sshd -t fails</code>, <code>Nothing was changed</code>, exit 1, <strong>nothing started</strong></td>
+</tr>
+<tr>
+<td>config repaired, <code>--apply</code></td>
+<td>back to listening, exit 0</td>
+</tr>
+<tr>
+<td>Ubuntu VM with real systemd, unit <code>ssh</code> was <code>active</code> but <code>disabled</code></td>
+<td>detected the reboot trap, <code>systemctl enable</code> created the symlink, <code>active after: active</code>, banner <code>SSH-2.0-OpenSSH_9.6p1</code>, exit 0</td>
+</tr>
+<tr>
+<td>from the Mac, against the container's published port</td>
+<td><code>SSH-2.0-OpenSSH_9.2p1 Debian-2+deb12u10</code> — a real SSH server, not just an open socket</td>
+</tr>
+<tr>
+<td>macOS branch, report-only on this Mac (no changes made)</td>
+<td><code>host kind: macos</code>, 82 listeners, <code>nothing on port 22</code>, honest <code>skipped — needs root</code> instead of a fake failure</td>
+</tr>
+</tbody>
+</table>
+<p>Two faults the scripts are built around, both of which look like "sshd is down" from outside:</p>
+<ol type="1">
+<li><strong><code>/run/sshd</code> missing after a reboot.</strong> <code>/run</code> is a tmpfs; if the unit does not recreate the directory, sshd refuses to start with <code>Missing privilege separation directory</code> and the host sits there healthy with no SSH at all. <code>--apply</code> recreates it.</li>
+<li><strong>Enabled ≠ running, and running ≠ enabled.</strong> The Ubuntu VM above had <code>active: active</code> with <code>enabled: disabled</code> — perfect today, gone at the next reboot. <code>--apply</code> fixes the enable, which is what stops this card coming back in a month.</li>
+</ol>
+<h2 id="4-what-tuan-pastes">4. What Tuan pastes</h2>
+<pre><code>bash fix-office-sshd.sh                    # run on the bastion via the Proxmox console
+sudo bash fix-office-sshd.sh --apply       # if the report says it is not listening</code></pre>
+<p>or, from chat, the block in <code>tuan-paste-block.sh</code> — printed with <code>bash tuan-paste-block.sh</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-u</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="va">SUDO</span><span class="op">=</span><span class="st">&quot;&quot;</span><span class="kw">;</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">id</span> <span class="at">-u</span><span class="va">)</span><span class="st">&quot;</span> <span class="ot">-ne</span> 0 <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="va">SUDO</span><span class="op">=</span>sudo</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;== host: </span><span class="va">$(</span><span class="fu">hostname</span><span class="va">)</span><span class="st"> | </span><span class="va">$(</span><span class="fu">uname</span> <span class="at">-srm</span><span class="va">)</span><span class="st"> | </span><span class="va">$(</span><span class="fu">date</span> <span class="st">&#39;+%Y-%m-%d %H:%M:%S %Z&#39;</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">uname</span> <span class="at">-s</span><span class="va">)</span><span class="st">&quot;</span> <span class="ot">=</span> Darwin <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">$SUDO</span> systemsetup <span class="at">-setremotelogin</span> on</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="va">$SUDO</span> launchctl enable system/com.openssh.sshd</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="va">$SUDO</span> launchctl kickstart <span class="at">-k</span> system/com.openssh.sshd</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">$SUDO</span> mkdir <span class="at">-p</span> /run/sshd /var/empty<span class="kw">;</span> <span class="va">$SUDO</span> chmod 0755 /run/sshd /var/empty</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="va">$SUDO</span> /usr/sbin/sshd <span class="at">-t</span><span class="kw">;</span> <span class="cf">then</span> <span class="bu">echo</span> <span class="st">&quot;STOP: sshd config is broken, nothing started&quot;</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="cf">fi</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="bu">[</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">ps</span> <span class="at">-p</span> 1 <span class="at">-o</span> comm=<span class="va">)</span><span class="st">&quot;</span> <span class="ot">=</span> systemd <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="va">$SUDO</span> systemctl enable <span class="at">--now</span> ssh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="va">$SUDO</span> systemctl enable <span class="at">--now</span> sshd</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="va">$SUDO</span> systemctl restart ssh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="va">$SUDO</span> systemctl restart sshd</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;unit: </span><span class="va">$(</span><span class="ex">systemctl</span> is-enabled ssh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="ex">systemctl</span> is-enabled sshd<span class="va">)</span><span class="st"> / </span><span class="va">$(</span><span class="ex">systemctl</span> is-active ssh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="ex">systemctl</span> is-active sshd<span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="va">$SUDO</span> /etc/init.d/ssh restart <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="va">$SUDO</span> /etc/init.d/sshd restart <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="va">$SUDO</span> /usr/sbin/sshd</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">sleep</span> 1</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;== listening on 22:&quot;</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">ss</span> <span class="at">-ltn</span> <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">netstat</span> <span class="at">-an</span><span class="kw">)</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-E</span> <span class="st">&#39;[:.]22 &#39;</span> <span class="kw">|</span> <span class="fu">head</span> <span class="at">-3</span> <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;  NOTHING&quot;</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;== the key we asked about:&quot;</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> /Users/hermes-deploy/.ssh/authorized_keys /Users/ricardo/.ssh/authorized_keys /home/hermes-deploy/.ssh/authorized_keys ~/.ssh/authorized_keys<span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="bu">[</span> <span class="ot">-s</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span> <span class="bu">]</span> <span class="kw">&amp;&amp;</span> <span class="fu">ssh-keygen</span> <span class="at">-lf</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;== done. Paste this whole output back.&quot;</span></span></code></pre></div>
+<h2 id="5-confirming-it-from-our-side-one-command">5. Confirming it from our side, one command</h2>
+<p><code>check-office-edge.sh</code> (beside this note) re-measures every port and prints a verdict; exit 0 means the door is open. Current output ends with:</p>
+<pre><code>VERDICT: no SSH door on 41.169.136.83. Fix sshd on the host (fix-office-sshd.sh) and check the Meraki forward for 22.</code></pre>
+<p>When sshd is back it ends with <code>ssh bastion whoami</code> instead, and the rest of the office access (<code>macserver</code>, INFs-Mac-mini, the key installation) can finally be tested.</p>
+<h2 id="6-still-open-and-not-ours-to-close">6. Still open, and not ours to close</h2>
+<ul>
+<li>the <code>ricardo</code> screen-sharing password through 1Password — never received;</li>
+<li>rotation of the Cloudflare client secret and the Ollama key that were in Adriana.odt, and of the <code>ricardo</code> password posted in chat. None of the three is a change we can make: they need that account's owner. Replacements go to Ricardo through 1Password, never back into chat.</li>
+</ul>
+<h2 id="7-evidence-log-this-run">7. Evidence log (this run)</h2>
+<pre><code>ping -c3 41.169.136.83                     -&gt; 3/3, 0% loss (17:41 SAST)
+connect 22 / 2222 / 8006                   -&gt; REFUSED 29 ms / timeout / timeout
+connect 443 / 4443                         -&gt; OPEN 27 ms / OPEN 26 ms
+curl -k https://41.169.136.83/             -&gt; 200, 2,056 B (NPMplus default page)
+curl -k -H &#39;Host: pve.infinitybrands.co.za&#39; https://41.169.136.83/ -&gt; 200, 2,872 B, &quot;networknut - Proxmox Virtual Environment&quot;
+curl https://pve.infinitybrands.co.za/api2/json/nodes -&gt; 401 (API alive)
+openssl :4443                              -&gt; CN=ib-head-office-wired-tvgzrjcjzt.dynamic-m.com, Cisco/IdenTrust
+crtsh % .infinitybrands.co.za              -&gt; pve. and npm. names exist; ssh./bastion. do not resolve
+tailscale status                           -&gt; 4 nodes, none in the office
+fix-office-sshd.sh  (container, 5 runs)    -&gt; report/apply/idempotent/refuse/recover as in §3
+fix-office-sshd.sh  (colima, systemd)      -&gt; &quot;enabled: disabled&quot; caught, enabled, active, banner
+tuan-paste-block.sh (container, x2)        -&gt; started sshd, listener + banner, exit 0
+tuan-paste-block.sh (colima, non-root)     -&gt; unit: enabled / active, listener, exit 0
+bash -n on both scripts                    -&gt; SYNTAX OK</code></pre>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
