@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GSD — Get Shit Done · Limited Edition Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #dde3ee;
+    --bg2: #d4dbe9;
+    --card: #ffffff;
+    --card-solid: #ffffff;
+    --border: #d3d9e8;
+    --border-strong: #8b93b8;
+    --text: #0f172a;
+    --muted: #5b6478;
+    --accent: #6d28d9;
+    --accent2: #0284c7;
+    --green: #16a34a;
+    --amber: #d97706;
+    --red: #dc2626;
+    --gold: #b45309;
+    --purple: #7c3aed;
+    --pink: #db2777;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background:
+      radial-gradient(1000px 500px at 85% -10%, rgba(109, 40, 217, 0.08), transparent 60%),
+      radial-gradient(800px 400px at 5% 0%, rgba(2, 132, 199, 0.07), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; }
+
+  /* Header */
+  .header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    flex-wrap: wrap; gap: 16px; margin-bottom: 18px;
+  }
+  .logo-row { display: flex; align-items: center; gap: 14px; }
+  .logo-mark {
+    width: 50px; height: 50px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 22px; color: #fff;
+    box-shadow: 0 4px 16px rgba(109, 40, 217, 0.35);
+  }
+  .logo-title { font-size: 28px; font-weight: 800; letter-spacing: 0.3px; color: var(--text); }
+  .logo-title .le { color: var(--accent2); }
+  .logo-title .le2 { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 14px; font-weight: 500; margin-top: 2px; }
+  .header-right { text-align: right; }
+  .date { color: var(--muted); font-size: 13px; font-family: var(--mono); font-weight: 600; }
+  .sim-badge {
+    display: inline-block; margin-top: 6px;
+    background: #fef3c7; border: 1.5px solid #f59e0b;
+    color: #92400e; font-size: 11px; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  /* Nav */
+  .nav {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+    position: sticky; top: 8px; z-index: 50;
+    background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px);
+    padding: 8px; border-radius: 14px; border: 1.5px solid var(--border);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  }
+  .nav-btn {
+    padding: 9px 18px; border-radius: 10px; cursor: pointer;
+    background: transparent; border: 1.5px solid transparent;
+    color: var(--muted); font-size: 14px; font-weight: 700;
+    font-family: var(--sans); transition: all 0.18s;
+  }
+  .nav-btn:hover { color: var(--accent); background: rgba(109, 40, 217, 0.06); }
+  .nav-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-color: transparent; color: #fff;
+    box-shadow: 0 2px 10px rgba(109, 40, 217, 0.3);
+  }
+  .nav-spacer { flex: 1; }
+
+  /* Sections */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .section-title {
+    font-size: 16px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--text);
+    margin: 24px 0 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .bar { width: 5px; height: 18px; border-radius: 2px; background: linear-gradient(var(--accent), var(--accent2)); }
+  .section-title small { text-transform: none; letter-spacing: 0; font-weight: 500; color: var(--muted); font-size: 13px; }
+
+  /* Grids */
+  .grid { display: grid; gap: 14px; }
+  .g-4 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .g-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+  .g-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+  .g-5 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+  /* Cards */
+  .card {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 18px;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.10);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { border-color: var(--border-strong); box-shadow: 0 5px 16px rgba(15, 23, 42, 0.14); }
+  .card h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 800; }
+  .card .big { font-size: 28px; font-weight: 800; line-height: 1.1; }
+  .card .sub { font-size: 12px; color: #475569; margin-top: 4px; font-weight: 500; }
+
+  /* Metric rows */
+  .metric { margin-bottom: 12px; }
+  .metric:last-child { margin-bottom: 0; }
+  .metric .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .metric .label { font-size: 13px; color: #1e293b; font-weight: 700; }
+  .metric .value { font-size: 20px; font-weight: 800; font-family: var(--mono); color: var(--text); }
+  .metric .delta { font-size: 12px; font-family: var(--mono); font-weight: 700; margin-left: 6px; }
+  .up { color: var(--green); } .down { color: var(--red); } .flat { color: var(--muted); }
+  .bar { height: 6px; background: #e5e9f2; border-radius: 3px; margin-top: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+  /* Brand board — compact metric grid (tight layout) */
+  .brand-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 10px;
+  }
+  .brand-metric {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .brand-metric:hover { border-color: var(--border-strong); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08); }
+  .brand-metric .bm-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+  .brand-metric .bm-label { font-size: 11px; color: #1e293b; font-weight: 700; line-height: 1.25; }
+  .brand-metric .bm-value { font-size: 18px; font-weight: 800; font-family: var(--mono); color: var(--text); }
+  .brand-metric .bm-delta { font-size: 11px; font-family: var(--mono); font-weight: 700; }
+  .brand-metric .bm-formula { font-size: 9px; color: var(--muted); font-family: var(--mono); }
+  .brand-metric .bm-explain { font-size: 10px; color: #475569; font-weight: 500; line-height: 1.3; }
+  .brand-metric .bm-bar { height: 4px; background: #e5e9f2; border-radius: 2px; overflow: hidden; margin-top: 2px; }
+  .brand-metric .bm-bar-fill { height: 100%; border-radius: 2px; }
+
+  /* Status pills */
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
+  .pill.green { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+  .pill.amber { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+  .pill.red { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .pill.no_data { background: #cbd5e1; color: #334155; border: 1.5px solid #64748b; }
+  .pill.critical { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+  .pill.warning { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+  .dot.green { background: var(--green); box-shadow: 0 0 6px rgba(22, 163, 74, 0.5); }
+  .dot.amber { background: var(--amber); box-shadow: 0 0 6px rgba(217, 119, 6, 0.5); }
+  .dot.red { background: var(--red); box-shadow: 0 0 6px rgba(220, 38, 38, 0.5); }
+  .dot.no_data { background: var(--muted); }
+
+  /* Brand tabs */
+  .brand-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .brand-tab {
+    padding: 9px 16px; border-radius: 10px; cursor: pointer;
+    background: var(--card); border: 1.5px solid var(--border);
+    color: var(--muted); font-size: 14px; font-weight: 700; transition: all 0.18s;
+  }
+  .brand-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .brand-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border-color: transparent; box-shadow: 0 2px 10px rgba(109, 40, 217, 0.3); }
+  .brand-tab .prio { font-size: 10px; opacity: 0.8; margin-left: 4px; }
+
+  /* KPI strip */
+  .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kpi {
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; position: relative; overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  }
+  .kpi::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .kpi .k-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; }
+  .kpi .k-value { font-size: 22px; font-weight: 800; font-family: var(--mono); margin-top: 4px; color: var(--text); }
+  .kpi .k-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Funnel */
+  .funnel-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 800px) { .funnel-row { grid-template-columns: 1fr; } }
+  .funnel-stage { position: relative; }
+  .funnel-stage .stage-num {
+    position: absolute; top: -10px; left: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-size: 11px; font-weight: 800;
+    padding: 3px 12px; border-radius: 20px;
+  }
+  .funnel-arrow { display: flex; align-items: center; justify-content: center; color: var(--accent2); font-size: 24px; font-weight: 800; }
+  @media (max-width: 800px) { .funnel-arrow { transform: rotate(90deg); } }
+
+  /* Funnel metric contrast */
+  .funnel-metric {
+    background: #f0f4ff;
+    border: 1.5px solid #c7d2fe;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .funnel-metric:last-child { margin-bottom: 0; }
+  .funnel-metric .fm-label {
+    font-size: 10px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #4f46e5; margin-bottom: 4px;
+  }
+  .funnel-metric .fm-value {
+    font-size: 30px; font-weight: 800; font-family: var(--mono);
+    color: #1e1b4b; line-height: 1.1;
+  }
+  .funnel-metric .fm-value .fm-unit { font-size: 14px; color: #6366f1; font-weight: 700; }
+  .funnel-metric .fm-formula {
+    font-size: 10px; color: #6b7280; font-family: var(--mono);
+    margin-top: 4px;
+  }
+  .funnel-metric .fm-status { margin-top: 6px; }
+  .funnel-metric.conv {
+    background: #fefce8;
+    border-color: #fde047;
+  }
+  .funnel-metric.conv .fm-label { color: #a16207; }
+  .funnel-metric.conv .fm-value { color: #422006; }
+  .funnel-metric.conv .fm-value .fm-unit { color: #ca8a04; }
+
+  /* Tables */
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table th {
+    text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.8px; padding: 10px 12px; border-bottom: 2px solid var(--border-strong);
+    font-weight: 800;
+  }
+  .table td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-weight: 500; }
+  .table tr:hover td { background: #f8faff; }
+  .table .mono { font-family: var(--mono); }
+
+  /* Search */
+  .search-box {
+    width: 100%; max-width: 420px;
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 12px 16px; color: var(--text); font-family: var(--sans); font-size: 15px; font-weight: 500;
+    outline: none; transition: border-color 0.2s;
+  }
+  .search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.12); }
+  .search-box::placeholder { color: var(--muted); }
+
+  /* Alerts */
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--card); border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  }
+  .alert-item.critical { border-left: 4px solid var(--red); }
+  .alert-item.warning { border-left: 4px solid var(--amber); }
+  .alert-item .a-metric { font-family: var(--mono); font-size: 14px; font-weight: 700; }
+  .alert-item .a-detail { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+  /* Phases */
+  .phase { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .phase:last-child { border-bottom: none; }
+  .phase .p-num {
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; font-family: var(--mono);
+  }
+  .phase.done .p-num { background: #dcfce7; color: #15803d; }
+  .phase.pending .p-num { background: #fef3c7; color: #b45309; }
+  .phase .p-name { font-size: 14px; font-weight: 700; }
+  .phase .p-status { font-size: 12px; color: var(--muted); }
+  .phase .p-blocker { font-size: 11px; color: var(--red); margin-left: 6px; font-weight: 700; }
+
+  /* Data sources */
+  .src { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .src:last-child { border-bottom: none; }
+  .src .s-name { font-size: 14px; font-weight: 700; }
+  .src .s-desc { font-size: 12px; color: var(--muted); }
+
+  /* Footer */
+  .footer { margin-top: 30px; color: var(--muted); font-size: 13px; text-align: center; line-height: 1.7; }
+  .footer code { background: #eef1f6; border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: var(--mono); font-size: 12px; }
+
+  .hidden { display: none; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-bottom: 12px; font-weight: 500; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+
+  .count-badge {
+    display: inline-block; min-width: 20px; text-align: center;
+    background: #fee2e2; color: #b91c1c;
+    border-radius: 20px; font-size: 10px; font-weight: 800; padding: 1px 6px; margin-left: 6px;
+  }
+  .count-badge.zero { background: #dcfce7; color: #15803d; }
+
+  /* Formula explanations */
+  .formula {
+    margin-top: 6px; padding: 8px 10px;
+    background: #f0f7ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    font-size: 12px; line-height: 1.5;
+  }
+  .f-plain { color: var(--muted); }
+  .f-code {
+    margin-top: 4px; font-family: var(--mono); font-size: 11px;
+    color: var(--accent2); word-break: break-word; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo-row">
+      <div class="logo-mark">GSD</div>
+      <div>
+        <div class="logo-title">Get Shit Done <span class="le">·</span> <span class="le2">Limited Edition</span></div>
+        <div class="subtitle">Infinity Group Measurement System · INF GSD Limited Edition</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="date" id="date"></div>
+      <div class="sim-badge" id="sim-badge">SIMULATED DATA</div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" data-view="ceo">👑 CEO Twelve</button>
+    <button class="nav-btn" data-view="brands">🏢 Brand Boards</button>
+    <button class="nav-btn" data-view="depts">🏛 Departments</button>
+    <button class="nav-btn" data-view="funnel">🔻 Funnel</button>
+    <button class="nav-btn" data-view="library">📚 Metric Library</button>
+    <button class="nav-btn" data-view="alerts">🚨 Alerts <span class="count-badge" id="alert-count">0</span></button>
+    <button class="nav-btn" data-view="system">⚙️ System</button>
+    <div class="nav-spacer"></div>
+    <button class="nav-btn" id="period-prev">◀</button>
+    <span class="nav-btn" id="period-label" style="cursor:default; color:var(--text);"></span>
+    <button class="nav-btn" id="period-next">▶</button>
+    <button class="nav-btn" id="period-mode" style="cursor:pointer;">📅 Month</button>
+  </div>
+
+  <!-- ============ CEO TWELVE ============ -->
+  <div class="view active" id="view-ceo">
+    <div class="section-title"><span class="bar"></span> CEO Twelve <small>— Layer 1 · per brand · 20 minutes, Monday morning</small></div>
+    <div class="brand-tabs" id="ceo-brand-tabs"></div>
+    <div class="legend">
+      <span><span class="dot green"></span> Green ≥ 100% target</span>
+      <span><span class="dot amber"></span> Amber 90–99%</span>
+      <span><span class="dot red"></span> Red &lt; 90%</span>
+      <span><span class="dot no_data"></span> No target / trend</span>
+    </div>
+    <div id="ceo-blocks"></div>
+  </div>
+
+  <!-- ============ BRAND BOARDS ============ -->
+  <div class="view" id="view-brands">
+    <div class="section-title"><span class="bar"></span> Brand Boards <small>— per-brand focus metrics + department cards</small></div>
+    <div class="brand-tabs" id="brand-tabs"></div>
+    <div id="brand-board"></div>
+  </div>
+
+  <!-- ============ FUNNEL ============ -->
+  <div class="view" id="view-funnel">
+    <div class="section-title"><span class="bar"></span> Sales &amp; Marketing Funnel <small>— Leads × Conversion % = Output · per product, per month</small></div>
+    <div class="brand-tabs" id="funnel-product-tabs"></div>
+    <div id="funnel-view"></div>
+  </div>
+
+  <!-- ============ DEPARTMENTS ============ -->
+  <div class="view" id="view-depts">
+    <div class="section-title"><span class="bar"></span> Departments <small>— drill into one department across all brands</small></div>
+    <div class="brand-tabs" id="dept-tabs"></div>
+    <div id="dept-view"></div>
+  </div>
+
+  <!-- ============ METRIC LIBRARY ============ -->
+  <div class="view" id="view-library">
+    <div class="section-title"><span class="bar"></span> Metric Library <small>— 59 metrics defined once, referenced by brands</small></div>
+    <input class="search-box" id="metric-search" placeholder="Search metrics, departments, owners, sources…">
+    <div style="margin-top:14px;" id="library-table"></div>
+  </div>
+
+  <!-- ============ ALERTS ============ -->
+  <div class="view" id="view-alerts">
+    <div class="section-title"><span class="bar"></span> Alert Center <small>— red flips only · never green confirmations</small></div>
+    <div id="alerts-list"></div>
+  </div>
+
+  <!-- ============ SYSTEM ============ -->
+  <div class="view" id="view-system">
+    <div class="section-title"><span class="bar"></span> Data Sources</div>
+    <div class="card" id="data-sources"></div>
+
+    <div class="section-title"><span class="bar"></span> Implementation Phases</div>
+    <div class="card" id="phases"></div>
+
+    <div class="section-title"><span class="bar"></span> Open Decisions</div>
+    <div class="card" id="decisions"></div>
+
+    <div class="section-title"><span class="bar"></span> Escalation Ladder <small>— 1-3-1 rule on every red</small></div>
+    <div class="card" id="escalation"></div>
+  </div>
+
+  <div class="footer">
+    INF GSD Limited Edition measurement contract · <code>inf-gsd-limited-edition.json</code> · RAG: green ≥100% · amber 90–99% · red &lt;90%<br>
+    Dummy data for development — wire Zoho via FluxFlow for live readings · Owner: Ricardo Da Costa Maio
+  </div>
+</div>
+
+<script src="js/data.js?v=20260813-5"></script>
+<script>
+'use strict';
+
+/* ================= Helpers ================= */
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+const fmt = (v, unit) => {
+  if (v === null || v === undefined) return '—';
+  if (typeof v === 'string') return v;
+  if (unit === 'ZAR' || unit === 'ZAR_per_hour') return unit === 'ZAR_per_hour' ? 'R' + Math.round(v).toLocaleString('en-ZA') + '/h' : 'R' + Math.round(v).toLocaleString('en-ZA');
+  if (unit === 'percent') return v.toFixed(0) + '%';
+  if (unit === 'ratio') return v.toFixed(1) + '×';
+  if (unit === 'score_10') return v.toFixed(1) + '/10';
+  if (unit === 'locations') return Math.round(v) + ' loc';
+  if (unit === 'units') return Math.round(v).toLocaleString('en-ZA') + ' units';
+  if (unit === 'months') return v.toFixed(1) + ' mo';
+  if (unit === 'days') return v.toFixed(0) + ' d';
+  if (unit === 'hours') return v.toFixed(1) + ' h';
+  if (unit === 'people' || unit === 'audience') return Math.round(v).toLocaleString('en-ZA');
+  if (unit === 'franchise_locations') return Math.round(v) + ' loc';
+  if (unit === 'count_per_week') return Math.round(v) + '/wk';
+  if (unit === 'tasks_per_quarter') return Math.round(v) + '/q';
+  if (unit === 'pieces_per_month') return Math.round(v) + '/mo';
+  if (unit === 'hours_per_person_month') return v.toFixed(1) + ' h';
+  if (unit === 'leads' || unit === 'opportunities' || unit === 'deals' || unit === 'tickets' || unit === 'units_or_kg' || unit === 'subscriptions' || unit === 'posts' || unit === 'campaigns' || unit === 'calls' || unit === 'interviews' || unit === 'projects' || unit === 'messages' || unit === 'visits' || unit === 'checklists' || unit === 'letters' || unit === 'people' || unit === 'functions') return Math.round(v).toLocaleString('en-ZA');
+  if (unit === 'kg') return Math.round(v).toLocaleString('en-ZA') + ' kg';
+  if (unit === 'ZAR_per_gram') return 'R' + v.toFixed(2) + '/g';
+  if (unit === 'minutes') return v.toFixed(0) + ' min';
+  return v.toLocaleString('en-ZA');
+};
+const pctOf = (v, t) => (t && typeof t === 'number' && v !== null) ? Math.round((v / t) * 100) : null;
+const barColor = (status) => status === 'green' ? 'var(--green)' : status === 'amber' ? 'var(--amber)' : status === 'red' ? 'var(--red)' : 'var(--muted)';
+const pill = (status) => `<span class="pill ${status}">${status === 'no_data' ? 'NO TARGET' : status.toUpperCase()}</span>`;
+const deltaHtml = (vs, direction) => {
+  if (vs === null || vs === undefined) return '';
+  const good = direction === 'higher_is_better' ? vs > 0 : vs < 0;
+  const cls = vs === 0 ? 'flat' : good ? 'up' : 'down';
+  const arrow = vs > 0 ? '▲' : vs < 0 ? '▼' : '•';
+  return `<span class="delta ${cls}">${arrow}${Math.abs(vs).toLocaleString('en-ZA')}</span>`;
+};
+
+/* ================= State ================= */
+let state = {
+  view: 'ceo',
+  brand: 'infinity',
+  ceoBrand: 'infinity',
+  funnelProduct: 'infx_solutions',
+  dept: 'fin',
+  period: GSD_CURRENT,
+  periodMode: 'month', // 'month' | 'quarter'
+};
+
+// Quarter helpers — derive quarters from the available months
+const QUARTERS = (() => {
+  const qs = [];
+  GSD_MONTHS.forEach(m => {
+    const [y, mo] = m.split('-').map(Number);
+    const q = Math.floor((mo - 1) / 3) + 1;
+    const key = `${y}-Q${q}`;
+    if (!qs.find(x => x.key === key)) qs.push({ key, label: `Q${q} ${y}`, months: [] });
+    qs.find(x => x.key === key).months.push(m);
+  });
+  return qs;
+})();
+function currentQuarterKey() {
+  const [y, mo] = state.period.split('-').map(Number);
+  return `${y}-Q${Math.floor((mo - 1) / 3) + 1}`;
+}
+function quarterMonths(key) {
+  const q = QUARTERS.find(x => x.key === key);
+  return q ? q.months : [state.period];
+}
+function periodLabel() {
+  if (state.periodMode === 'quarter') {
+    const q = QUARTERS.find(x => x.key === currentQuarterKey());
+    return q ? q.label : state.period;
+  }
+  return state.period;
+}
+
+const metricById = (id) => GSD_METRICS[id];
+const brandById = (id) => GSD_BRANDS[id];
+const productById = (id) => GSD_PRODUCTS.find(p => p.id === id);
+const deptById = (id) => GSD_DEPTS[id];
+
+/* Simplified explanation: one short line + the contract formula, shown under every metric */
+function formulaHtml(m) {
+  const plain = (typeof GSD_FORMULA_EXPLANATIONS !== 'undefined' && GSD_FORMULA_EXPLANATIONS[m.id]) || m.definition || '';
+  const f = m.formula || '';
+  if (!plain && !f) return '';
+  return `
+    <div class="formula">
+      <div class="f-plain">${plain}</div>
+      ${f ? `<div class="f-code">${f}</div>` : ''}
+    </div>`;
+}
+
+function readingsFor(metricId, brandId, productId, period, origin) {
+  return GSD_READINGS.filter(r =>
+    r.metric_id === metricId &&
+    (brandId ? r.brand_id === brandId : true) &&
+    (productId ? r.product_id === productId : true) &&
+    (origin ? r.origin === origin : true) &&
+    r.period === period
+  );
+}
+function latestReading(metricId, brandId, productId, origin) {
+  // In quarter mode, aggregate across the quarter's months
+  if (state.periodMode === 'quarter') {
+    const months = quarterMonths(currentQuarterKey());
+    const rs = GSD_READINGS.filter(r =>
+      r.metric_id === metricId &&
+      (brandId ? r.brand_id === brandId : true) &&
+      (productId ? r.product_id === productId : true) &&
+      (origin ? r.origin === origin : true) &&
+      months.includes(r.period)
+    );
+    if (!rs.length) return null;
+    const numeric = rs.filter(r => typeof r.value === 'number');
+    if (!numeric.length) return null;
+    const m = metricById(metricId);
+    // Percent / ratio / score metrics: average across the quarter (a rate is not additive)
+    const avgLike = m && ['percent', 'ratio', 'score_10', 'score_5', 'nps', 'visits_per_location', 'hours', 'minutes', 'days', 'months'].includes(m.unit);
+    const agg = avgLike
+      ? numeric.reduce((s, r) => s + r.value, 0) / numeric.length
+      : numeric.reduce((s, r) => s + r.value, 0);
+    const first = rs[0];
+    return { ...first, value: Math.round(agg * 10) / 10, vs_prior: null };
+  }
+  const rs = readingsFor(metricId, brandId, productId, state.period, origin);
+  return rs.length ? rs[0] : null;
+}
+function seriesFor(metricId, brandId, productId) {
+  return GSD_READINGS.filter(r =>
+    r.metric_id === metricId &&
+    (brandId ? r.brand_id === brandId : true) &&
+    (productId ? r.product_id === productId : true)
+  ).sort((a, b) => a.period.localeCompare(b.period));
+}
+
+/* ================= Navigation ================= */
+function switchView(view) {
+  state.view = view;
+  $$('.nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  $$('.view').forEach(v => v.classList.remove('active'));
+  $('#view-' + view).classList.add('active');
+  render();
+}
+$$('.nav-btn[data-view]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.view)));
+
+$('#period-prev').addEventListener('click', () => {
+  if (state.periodMode === 'quarter') {
+    const i = QUARTERS.findIndex(q => q.key === currentQuarterKey());
+    if (i > 0) { state.period = QUARTERS[i - 1].months[0]; render(); }
+    return;
+  }
+  const i = GSD_MONTHS.indexOf(state.period);
+  if (i > 0) { state.period = GSD_MONTHS[i - 1]; render(); }
+});
+$('#period-next').addEventListener('click', () => {
+  if (state.periodMode === 'quarter') {
+    const i = QUARTERS.findIndex(q => q.key === currentQuarterKey());
+    if (i < QUARTERS.length - 1) { state.period = QUARTERS[i + 1].months[0]; render(); }
+    return;
+  }
+  const i = GSD_MONTHS.indexOf(state.period);
+  if (i < GSD_MONTHS.length - 1) { state.period = GSD_MONTHS[i + 1]; render(); }
+});
+$('#period-mode').addEventListener('click', () => {
+  state.periodMode = state.periodMode === 'month' ? 'quarter' : 'month';
+  $('#period-mode').textContent = state.periodMode === 'month' ? '📅 Month' : '📅 Quarter';
+  render();
+});
+
+/* ================= CEO Twelve (per brand) ================= */
+function renderCeoTabs() {
+  const html = Object.values(GSD_BRANDS).map(b => `
+    <button class="brand-tab ${state.ceoBrand === b.id ? 'active' : ''}" data-ceo-brand="${b.id}">
+      ${b.name}
+    </button>`).join('');
+  $('#ceo-brand-tabs').innerHTML = html;
+  $$('#ceo-brand-tabs .brand-tab').forEach(t => t.addEventListener('click', () => {
+    state.ceoBrand = t.dataset.ceoBrand;
+    renderCeoTabs();
+    renderCeo();
+  }));
+}
+
+function renderCeo() {
+  const b = brandById(state.ceoBrand);
+  const blocks = Object.fromEntries(
+    Object.entries(INF_GSD.ceo_twelve.blocks).filter(([name]) => name !== 'Founder Freedom')
+  );
+  // NPS is a main reporting feature — surface it in the Growth block
+  if (blocks['Growth']) {
+    blocks['Growth'] = [...blocks['Growth'], 'mkt.nps'];
+  }
+  const html = Object.entries(blocks).map(([blockName, metricIds]) => {
+    const rows = metricIds.map(mid => {
+      const m = metricById(mid);
+      if (!m) return ''; // metric removed from scope — skip safely
+      const r = latestReading(mid, b.id);
+      const val = r ? r.value : null;
+      const tgt = r ? r.target : null;
+      const st = r ? r.status : 'no_data';
+      const pct = pctOf(val, tgt);
+      const width = pct !== null ? Math.min(100, Math.max(0, pct)) : 0;
+      return `
+        <div class="metric">
+          <div class="top">
+            <span class="label">${m.name}</span>
+            <span>
+              <span class="value">${fmt(val, m.unit)}</span>
+              ${deltaHtml(r ? r.vs_prior : null, m.direction)}
+              ${pill(st)}
+            </span>
+          </div>
+          <div class="bar"><div class="bar-fill" style="width:${width}%; background:${barColor(st)};"></div></div>
+          <div class="sub" style="font-size:10px; color:var(--muted);">${m.id} · ${m.cadence}</div>
+          <div class="sub" style="font-size:11px; color:var(--text); font-weight:600; margin-top:2px;">${(typeof GSD_FORMULA_EXPLANATIONS !== 'undefined' && GSD_FORMULA_EXPLANATIONS[m.id]) || ''}</div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="card">
+        <h3>${blockName}</h3>
+        ${rows}
+      </div>`;
+  }).join('');
+  $('#ceo-blocks').innerHTML = `
+    <div class="card" style="margin-bottom:14px; border-color:var(--border-strong);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <h3 style="margin:0; color:var(--text);">${b.name} — CEO Twelve</h3>
+        <span class="pill ${b.status === 'active' ? 'green' : 'amber'}">${b.status.toUpperCase()}</span>
+      </div>
+      <div style="margin-top:6px; font-size:12px; color:var(--muted);">${b.role}</div>
+    </div>
+    <div class="grid g-3">${html}</div>`;
+}
+
+/* ================= Brand Boards ================= */
+function renderBrandTabs() {
+  const html = Object.values(GSD_BRANDS).map(b => `
+    <button class="brand-tab ${state.brand === b.id ? 'active' : ''}" data-brand="${b.id}">
+      ${b.name}
+    </button>`).join('');
+  $('#brand-tabs').innerHTML = html;
+  $$('#brand-tabs .brand-tab').forEach(t => t.addEventListener('click', () => {
+    state.brand = t.dataset.brand;
+    renderBrandTabs();
+    renderBrandBoard();
+  }));
+}
+
+function renderBrandBoard() {
+  const b = brandById(state.brand);
+  // Universal KPIs — money + efficiency only, same board for every brand (conformity).
+  // Research-backed: Revenue vs Plan (normalizes brand sizes), Gross Margin, EBITDA,
+  // Net Burn (cash direction), Revenue per FTE (efficiency), NPS (user-requested main feature).
+  const UNIVERSAL_KPIS = ['fin.revenue_vs_plan', 'fin.gross_margin', 'fin.ebitda', 'fin.net_burn', 'hr.rev_per_fte', 'mkt.nps'];
+  const focusReadings = UNIVERSAL_KPIS.map(mid => {
+    const m = metricById(mid);
+    const r = latestReading(mid, b.id);
+    return { m, r };
+  }).filter(x => x.r);
+
+  // KPI strip
+  const kpis = focusReadings.map(({ m, r }) => `
+    <div class="kpi">
+      <div class="k-label">${m.name}</div>
+      <div class="k-value">${fmt(r.value, m.unit)}</div>
+      <div class="k-sub">${pill(r.status)} ${r.target !== null && r.target !== undefined ? '· target ' + fmt(r.target, m.unit) : ''}</div>
+    </div>`).join('');
+
+  // Brand-critical metrics — each brand tells ONE story. No overlap with the KPI strip.
+  // No founder metrics (removed per instruction). No department metrics (those live in Departments).
+  const BRAND_CRITICAL = {
+    infinity: ['hr.playbook_coverage', 'fin.recurring_ratio', 'funnel.output_zar.inf_consultancy', 'funnel.output_zar.sla_finance', 'funnel.output_zar.sla_hr', 'funnel.output_zar.sla_zeestore'],
+    tlf: ['ops.quality_score', 'ops.delivery_on_time', 'tlf.avg_rand_invoice', 'tlf.avg_rand_per_gram_mushroom', 'tlf.avg_rand_per_gram_microgreen', 'tlf.yield_pct_mushroom', 'tlf.yield_pct_microgreen', 'tlf.facility_utilization_mushroom', 'tlf.facility_utilization_microgreen', 'tlf.subscriptions_loaded', 'tlf.subscription_retention', 'tlf.rand_per_subscription', 'tlf.total_yield_mushroom', 'tlf.total_yield_microgreen'],
+    infx: ['sal.nrr', 'ops.delivery_on_time', 'ops.csat', 'fin.recurring_ratio', 'fin.revenue', 'infx.projects_completed', 'infx.projects_active', 'infx.time_spent_active', 'infx.estimated_cost_active', 'infx.deal_value_active', 'infx.avg_labor_rate'],
+    fluxflow: ['fin.runway', 'sal.pipeline', 'it.automation_coverage', 'it.ai_adoption', 'sal.churn', 'sal.nrr', 'it.system_uptime', 'app.clients_onboarded', 'app.total_clients', 'app.client_growth', 'app.data_handled'],
+    divorced: ['fin.runway', 'mkt.community_size', 'sal.nrr', 'it.system_uptime', 'app.clients_onboarded', 'app.total_clients', 'app.client_growth', 'app.data_handled'],
+    papapasta: { sections: [
+      { title: 'Franchisor — Franchisee-Facing', metrics: ['franch.locations', 'franch.consultants_per_location', 'franch.nps', 'franch.sop_compliance'] },
+      { title: 'Brand — Client-Facing', metrics: ['franch.group_turnover', 'franch.products_sold_qty', 'franch.products_sold_turnover', 'franch.brand_nps', 'franch.brand_csat', 'fin.gross_margin'] },
+    ]},
+    acdc: { sections: [
+      { title: 'Franchisor — Franchisee-Facing', metrics: ['franch.locations', 'franch.consultants_per_location', 'franch.nps', 'franch.sop_compliance'] },
+      { title: 'Brand — Client-Facing', metrics: ['franch.group_turnover', 'franch.products_sold_qty', 'franch.products_sold_turnover', 'franch.brand_nps', 'franch.brand_csat', 'fin.gross_margin'] },
+    ]},
+  };
+  // Resolve readings for a metric id (flat form), supporting product-qualified ids
+  function resolveReading(mid) {
+    let metricId = mid;
+    let productId = null;
+    let labelOverride = null;
+    if (mid.includes('.')) {
+      const parts = mid.split('.');
+      for (let k = parts.length - 1; k >= 2; k--) {
+        const prodId = parts.slice(k).join('.');
+        const prod = GSD_PRODUCTS.find(p => p.id === prodId);
+        if (prod) { metricId = parts.slice(0, k).join('.'); productId = prod.id; labelOverride = prod.name; break; }
+      }
+    }
+    const m = metricById(metricId);
+    if (!m) return null;
+    let r = null;
+    if (m.id.startsWith('funnel.') || productId) {
+      r = productId ? latestReading(m.id, null, productId) : null;
+    } else {
+      r = latestReading(m.id, b.id);
+    }
+    return r ? { m, r, label: labelOverride } : null;
+  }
+
+  function metricRowHtml({ m, r, label }) {
+    const pct = pctOf(r.value, r.target);
+    const width = pct !== null ? Math.min(100, Math.max(0, pct)) : 0;
+    const explain = (typeof GSD_FORMULA_EXPLANATIONS !== 'undefined' && GSD_FORMULA_EXPLANATIONS[m.id]) || '';
+    return `
+      <div class="brand-metric">
+        <div class="bm-top">
+          <span class="bm-label">${label || m.name}</span>
+          <span class="pill ${r.status}">${r.status === 'no_data' ? 'NO TARGET' : r.status.toUpperCase()}</span>
+        </div>
+        <div class="bm-value">${fmt(r.value, m.unit)} ${deltaHtml(r.vs_prior, m.direction)}</div>
+        <div class="bm-bar"><div class="bm-bar-fill" style="width:${width}%; background:${barColor(r.status)};"></div></div>
+        <div class="bm-explain">${explain}</div>
+        <div class="bm-formula">${m.formula || ''}</div>
+      </div>`;
+  }
+
+  const conf = BRAND_CRITICAL[b.id];
+  let criticalHtml = '';
+  if (conf && conf.sections) {
+    // Sectioned board (franchise brands): Franchisor vs Brand split
+    criticalHtml = conf.sections.map(sec => {
+      const rows = sec.metrics.map(resolveReading).filter(Boolean).map(metricRowHtml).join('');
+      return `
+        <div class="section-title"><span class="bar"></span> ${sec.title}</div>
+        <div class="brand-metrics" style="margin-bottom:14px;">${rows}</div>`;
+    }).join('');
+  } else {
+    const readings = (conf || []).filter(mid => !UNIVERSAL_KPIS.includes(mid)).map(resolveReading).filter(Boolean);
+    criticalHtml = readings.length ? `<div class="brand-metrics">${readings.map(metricRowHtml).join('')}</div>` : '<div class="card"><div style="color:var(--muted); font-size:13px;">No brand-critical metrics beyond the KPI strip.</div></div>';
+  }
+
+  $('#brand-board').innerHTML = `
+    <div class="kpi-strip">${kpis}</div>
+    <div class="section-title"><span class="bar"></span> ${b.name} — Critical Metrics</div>
+    ${criticalHtml}
+    <div style="margin-top:12px; font-size:12px; color:var(--muted);">Full department breakdown lives in the <strong>Departments</strong> view — one BU across all brands.</div>`;
+}
+
+/* ================= Funnel ================= */
+function renderFunnelTabs() {
+  const html = GSD_PRODUCTS.map(p => `
+    <button class="brand-tab ${state.funnelProduct === p.id ? 'active' : ''}" data-product="${p.id}">
+      ${p.name}
+    </button>`).join('');
+  $('#funnel-product-tabs').innerHTML = html;
+  $$('#funnel-product-tabs .brand-tab').forEach(t => t.addEventListener('click', () => {
+    state.funnelProduct = t.dataset.product;
+    renderFunnelTabs();
+    renderFunnel();
+  }));
+}
+
+function renderFunnel() {
+  const p = productById(state.funnelProduct);
+  const line = p.line;
+  const stages = INF_GSD.funnel_model.stages;
+
+  const stageHtml = stages.map(s => {
+    const outMetric = s.stage === 1 ? 'funnel.leads' : s.stage === 2 ? 'funnel.opportunities' : (line === 'fnd' ? 'funnel.output_locations' : 'funnel.output_zar');
+    const outM = metricById(outMetric);
+    const rIn = latestReading(outMetric, null, p.id, 'inbound');
+    const rOut = latestReading(outMetric, null, p.id, 'outbound');
+    const convM = s.conversion_out ? metricById(s.conversion_out) : null;
+    const convRIn = s.conversion_out ? latestReading(s.conversion_out, null, p.id, 'inbound') : null;
+    const convROut = s.conversion_out ? latestReading(s.conversion_out, null, p.id, 'outbound') : null;
+    const outUnit = outM.unit === 'franchise_locations' ? 'loc' : outM.unit === 'ZAR' ? 'R' : '';
+    const outValIn = outM.unit === 'ZAR' ? fmt(rIn ? rIn.value : null, 'ZAR').replace('R', '') : fmt(rIn ? rIn.value : null, outM.unit);
+    const outValOut = outM.unit === 'ZAR' ? fmt(rOut ? rOut.value : null, 'ZAR').replace('R', '') : fmt(rOut ? rOut.value : null, outM.unit);
+    const convUnit = convM ? (convM.unit === 'percent' ? '%' : '') : '';
+    const convValIn = convRIn ? (convM.unit === 'percent' ? convRIn.value.toFixed(0) : fmt(convRIn.value, convM.unit)) : '';
+    const convValOut = convROut ? (convM.unit === 'percent' ? convROut.value.toFixed(0) : fmt(convROut.value, convM.unit)) : '';
+    return `
+      <div class="funnel-stage card">
+        <span class="stage-num">STAGE ${s.stage} · ${s.team.toUpperCase()}</span>
+        <div style="margin-top:14px;">
+          <div class="funnel-metric">
+            <div class="fm-label">${outM.name}</div>
+            <div class="fm-value">${outValIn}${outUnit ? `<span class="fm-unit"> ${outUnit}</span>` : ''}</div>
+            <div class="fm-formula">${outM.formula || ''}</div>
+            <div class="fm-status">${pill(rIn ? rIn.status : 'no_data')}</div>
+          </div>
+          ${convM && convRIn ? `
+          <div class="funnel-metric conv">
+            <div class="fm-label">${convM.name}</div>
+            <div class="fm-value">${convValIn}${convUnit ? `<span class="fm-unit"> ${convUnit}</span>` : ''}</div>
+            <div class="fm-formula">${convM.formula || ''}</div>
+            <div class="fm-status">${pill(convRIn.status)}</div>
+          </div>` : ''}
+        </div>
+      </div>`;
+  });
+
+  const arrows = ['<div class="funnel-arrow">➜</div>', '<div class="funnel-arrow">➜</div>'];
+
+  // 6-month trend table for this product — split by origin
+  const trendMetrics = ['funnel.leads', 'funnel.conv_lead_to_opp', 'funnel.opportunities', 'funnel.conv_opp_to_close', line === 'fnd' ? 'funnel.output_locations' : 'funnel.output_zar'];
+  const trendRows = GSD_MONTHS.map(period => {
+    const cells = trendMetrics.map(mid => {
+      const m = metricById(mid);
+      const rIn = GSD_READINGS.find(x => x.metric_id === mid && x.product_id === p.id && x.period === period && x.origin === 'inbound');
+      const rOut = GSD_READINGS.find(x => x.metric_id === mid && x.product_id === p.id && x.period === period && x.origin === 'outbound');
+      const inV = rIn ? fmt(rIn.value, m.unit) : '—';
+      const outV = rOut ? fmt(rOut.value, m.unit) : '—';
+      return `<td class="mono"><span style="color:var(--accent);">${inV}</span> / <span style="color:var(--muted);">${outV}</span></td>`;
+    }).join('');
+    return `<tr><td class="mono" style="color:var(--muted);">${period}</td>${cells}</tr>`;
+  }).join('');
+
+  const trendHeaders = trendMetrics.map(mid => `<th>${metricById(mid).name}<br><small style="font-weight:400; color:var(--muted);">IN / OUT</small></th>`).join('');
+
+  // Inbound vs Outbound split summary for the current month
+  const leadsM = metricById('funnel.leads');
+  const leadsIn = latestReading('funnel.leads', null, p.id, 'inbound');
+  const leadsOut = latestReading('funnel.leads', null, p.id, 'outbound');
+  const leadsInV = leadsIn ? leadsIn.value : 0;
+  const leadsOutV = leadsOut ? leadsOut.value : 0;
+  const leadsTotal = leadsInV + leadsOutV;
+  const inPct = leadsTotal > 0 ? Math.round((leadsInV / leadsTotal) * 100) : 0;
+  const outPct = leadsTotal > 0 ? 100 - inPct : 0;
+
+  $('#funnel-view').innerHTML = `
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <h3 style="margin:0;">${p.name} · ${line === 'fnd' ? 'FND — output in locations sold' : 'Professional Services — output in ZAR'}</h3>
+        <span class="pill ${line === 'fnd' ? 'amber' : 'green'}">${line === 'fnd' ? 'LOCATIONS' : 'ZAR'}</span>
+      </div>
+      <div class="funnel-row">${stageHtml[0]}${arrows[0]}${stageHtml[1]}${arrows[1]}${stageHtml[2]}</div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <h3>Lead Origin Split — ${p.name} · ${periodLabel()}</h3>
+      <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:center;">
+        <div style="flex:1; min-width:200px;">
+          <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px;">
+            <span style="color:var(--accent);">INBOUND ${leadsInV} (${inPct}%)</span>
+            <span style="color:var(--muted);">OUTBOUND ${leadsOutV} (${outPct}%)</span>
+          </div>
+          <div style="display:flex; height:14px; border-radius:7px; overflow:hidden; border:1px solid var(--border);">
+            <div style="width:${inPct}%; background:var(--accent);"></div>
+            <div style="width:${outPct}%; background:var(--muted);"></div>
+          </div>
+          <div style="margin-top:6px; font-size:11px; color:var(--muted);">Total leads: ${leadsTotal} · Inbound = marketing-generated · Outbound = SDR-generated</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>6-Month Trend — ${p.name} <small style="font-weight:400; color:var(--muted);">(IN / OUT)</small></h3>
+      <div style="overflow-x:auto;">
+        <table class="table">
+          <thead><tr><th>Period</th>${trendHeaders}</tr></thead>
+          <tbody>${trendRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+/* ================= Departments ================= */
+function renderDeptTabs() {
+  const html = Object.values(GSD_DEPTS).map(d => `
+    <button class="brand-tab ${state.dept === d.id ? 'active' : ''}" data-dept="${d.id}">
+      ${d.code} ${d.name}
+    </button>`).join('');
+  $('#dept-tabs').innerHTML = html;
+  $$('#dept-tabs .brand-tab').forEach(t => t.addEventListener('click', () => {
+    state.dept = t.dataset.dept;
+    renderDeptTabs();
+    renderDept();
+  }));
+}
+
+function renderDept() {
+  const d = deptById(state.dept);
+  // Curated scorecard per BU — the identity. Full metric set lives in the Metric Library.
+  const SCORECARD = {
+    fin: ['fin.opex_ratio', 'fin.revenue_vs_plan'],
+    hr: ['hr.rev_per_fte', 'hr.attrition', 'hr.team_satisfaction', 'hr.playbook_coverage', 'hr.interviews_done', 'hr.people_recruited', 'hr.training_hours_completed', 'hr.curriculum_completion_pct'],
+    adm: ['adm.projects_overdue', 'adm.projects_overdue_rate', 'adm.projects_completed', 'adm.inbox_unread', 'adm.inbox_response_time', 'adm.zeestore_turnover'],
+    it: ['it.system_uptime', 'it.mttr_p1', 'it.open_tickets', 'it.automation_coverage'],
+    mkt: ['mkt.cost_per_lead', 'mkt.marketing_roi', 'mkt.brand_reach', 'mkt.total_posts', 'mkt.video_posts', 'mkt.email_campaigns', 'mkt.email_open_rate'],
+    sal: ['sal.pipeline_coverage', 'sal.win_rate', 'sal.nrr', 'sal.churn', 'sal.calls_logged', 'sal.avg_call_time'],
+    ops1: ['ops.delivery_on_time', 'ops.csat', 'ops.unit_margin', 'ops.site_visits', 'ops.avg_site_visits_per_location', 'ops.brc_completed', 'ops.brc_score', 'ops.ticket_resolution_rate', 'ops.ticket_response_time', 'ops.success_tracker', 'ops.letters_of_concern'],
+    ops2: ['ops.delivery_on_time', 'ops.csat', 'ops.unit_margin', 'ops.site_visits', 'ops.avg_site_visits_per_location', 'ops.brc_completed', 'ops.brc_score', 'ops.ticket_resolution_rate', 'ops.ticket_response_time', 'ops.success_tracker', 'ops.letters_of_concern'],
+  };
+  const scorecardIds = SCORECARD[state.dept] || [];
+  const metrics = scorecardIds.map(mid => metricById(mid)).filter(Boolean);
+  const rows = metrics.map(m => {
+    const cells = Object.values(GSD_BRANDS).map(b => {
+      const r = latestReading(m.id, b.id);
+      if (!r) return `<td class="mono" style="color:var(--muted);">—</td>`;
+      return `<td class="mono">${fmt(r.value, m.unit)} ${pill(r.status)}</td>`;
+    }).join('');
+    const f = m.formula || '';
+    const plain = (typeof GSD_FORMULA_EXPLANATIONS !== 'undefined' && GSD_FORMULA_EXPLANATIONS[m.id]) || '';
+    return `<tr><td style="font-weight:600;">${m.name}</td><td class="mono" style="color:var(--muted);">${m.id}</td><td style="font-size:12px; color:var(--text); font-weight:600;">${plain}</td><td class="mono" style="color:var(--accent2); font-size:11px;">${f}</td>${cells}</tr>`;
+  }).join('');
+  const headers = Object.values(GSD_BRANDS).map(b => `<th>${b.name}</th>`).join('');
+
+  // Department NPS — internal + external, same for every department
+  const npsRows = ['nps.internal_dept', 'nps.external_dept'].map(nid => {
+    const m = metricById(nid);
+    const cells = Object.values(GSD_BRANDS).map(b => {
+      const r = latestReading(nid, b.id);
+      if (!r) return `<td class="mono" style="color:var(--muted);">—</td>`;
+      return `<td class="mono">${fmt(r.value, m.unit)} ${pill(r.status)}</td>`;
+    }).join('');
+    return `<tr><td style="font-weight:600;">${m.name}</td>${cells}</tr>`;
+  }).join('');
+
+  // Departmental costing: Cost, Cost-to-Serve, EBITDA per department across brands
+  // SAME three metrics for every department — consistent, no duplicates
+  const deptFinMetrics = [
+    { id: 'fin.cost_dept', name: 'Department Cost', unit: 'ZAR' },
+    { id: 'fin.cost_to_serve_dept', name: 'Cost-to-Serve', unit: 'percent' },
+    { id: 'fin.ebitda_dept', name: 'Department EBITDA', unit: 'ZAR' },
+  ];
+  const deptFinRows = deptFinMetrics.map(fm => {
+    const cells = Object.values(GSD_BRANDS).map(b => {
+      const r = latestReading(fm.id, b.id);
+      if (!r) return `<td class="mono" style="color:var(--muted);">—</td>`;
+      return `<td class="mono">${fmt(r.value, fm.unit)} ${pill(r.status)}</td>`;
+    }).join('');
+    return `<tr><td style="font-weight:600;">${fm.name}</td>${cells}</tr>`;
+  }).join('');
+
+  $('#dept-view').innerHTML = `
+    <div class="card" style="margin-bottom:14px;">
+      <h3>${d.full || d.name} — North Star: ${d.north_star}</h3>
+      <div style="overflow-x:auto;">
+        <table class="table">
+          <thead><tr><th>Metric</th><th>ID</th><th>What it means</th><th>Formula</th>${headers}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px;">
+      <h3>Department NPS — ${d.full || d.name}</h3>
+      <div style="overflow-x:auto;">
+        <table class="table">
+          <thead><tr><th>Metric</th>${headers}</tr></thead>
+          <tbody>${npsRows}</tbody>
+        </table>
+      </div>
+      <div class="sub" style="font-size:10px; color:var(--muted); margin-top:6px;">Internal = would the team recommend working here? · External = would customers recommend working with us?</div>
+    </div>
+    <div class="card">
+      <h3>Departmental Costing — ${d.full || d.name}</h3>
+      <div style="overflow-x:auto;">
+        <table class="table">
+          <thead><tr><th>Metric</th>${headers}</tr></thead>
+          <tbody>${deptFinRows}</tbody>
+        </table>
+      </div>
+      <div class="sub" style="font-size:10px; color:var(--muted); margin-top:6px;">Same three financial metrics for every department: Cost · Cost-to-Serve · EBITDA</div>
+    </div>`;
+}
+
+/* ================= Metric Library ================= */
+function renderLibrary() {
+  const q = ($('#metric-search').value || '').toLowerCase();
+  const list = Object.values(GSD_METRICS).filter(m => {
+    if (m.department === 'founder') return false;
+    if (!q) return true;
+    const hay = [m.id, m.name, m.department, m.owner, m.source, m.definition, m.unit].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+  const rows = list.map(m => {
+    const d = deptById(m.department);
+    const f = m.formula || '';
+    const plain = (typeof GSD_FORMULA_EXPLANATIONS !== 'undefined' && GSD_FORMULA_EXPLANATIONS[m.id]) || '';
+    return `
+      <tr>
+        <td class="mono" style="color:var(--accent2);">${m.id}</td>
+        <td style="font-weight:600;">${m.name}</td>
+        <td>${d ? d.name : m.department}</td>
+        <td>${m.type}</td>
+        <td class="mono">${m.unit}</td>
+        <td>${m.cadence}</td>
+        <td>${m.source}</td>
+        <td>${m.owner}</td>
+        <td>${m.impact_metric ? '<span class="pill green">IMPACT</span>' : '—'}</td>
+        <td style="font-size:12px; color:var(--text); font-weight:600;">${plain}</td>
+        <td class="mono" style="color:var(--accent2); font-size:11px;">${f}</td>
+      </tr>`;
+  }).join('');
+  $('#library-table').innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead><tr><th>ID</th><th>Name</th><th>Dept</th><th>Type</th><th>Unit</th><th>Cadence</th><th>Source</th><th>Owner</th><th>Impact</th><th>What it means</th><th>Formula</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px; color:var(--muted); font-size:12px;">${list.length} of ${Object.keys(GSD_METRICS).length} metrics</div>`;
+}
+$('#metric-search').addEventListener('input', renderLibrary);
+
+/* ================= Alerts ================= */
+function renderAlerts() {
+  const rules = INF_GSD.alerting.rules;
+  const alerts = [];
+  rules.forEach(rule => {
+    const m = metricById(rule.metric);
+    if (!m) return;
+    if (m.department === 'founder') return;
+    // evaluate against all brands (or products for funnel metrics)
+    if (m.id.startsWith('funnel.')) {
+      GSD_PRODUCTS.forEach(p => {
+        const r = latestReading(m.id, null, p.id);
+        if (!r) return;
+        if (evalRule(rule, r)) alerts.push({ rule, r, scope: p.name, m });
+      });
+    } else {
+      Object.values(GSD_BRANDS).forEach(b => {
+        const r = latestReading(m.id, b.id);
+        if (!r) return;
+        if (evalRule(rule, r)) alerts.push({ rule, r, scope: b.name, m });
+      });
+    }
+  });
+  // dedupe by metric+scope
+  const seen = new Set();
+  const deduped = alerts.filter(a => {
+    const k = a.rule.metric + '|' + a.scope;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+
+  $('#alert-count').textContent = deduped.length;
+  $('#alert-count').classList.toggle('zero', deduped.length === 0);
+
+  if (!deduped.length) {
+    $('#alerts-list').innerHTML = `<div class="card" style="text-align:center; padding:30px;"><div style="font-size:32px;">🟢</div><div style="margin-top:8px; font-weight:600;">No red flips this period.</div><div style="color:var(--muted); font-size:12px; margin-top:4px;">Green confirmations are never sent — they train people to ignore the channel.</div></div>`;
+    return;
+  }
+  $('#alerts-list').innerHTML = deduped.map(a => `
+    <div class="alert-item ${a.rule.severity}">
+      <div>
+        <div class="a-metric">${a.m.id} <span class="pill ${a.rule.severity}">${a.rule.severity.toUpperCase()}</span></div>
+        <div class="a-detail">${a.scope} · value ${fmt(a.r.value, a.m.unit)} · condition ${a.rule.condition}${a.rule.note ? ' · ' + a.rule.note : ''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function evalRule(rule, r) {
+  const cond = rule.condition;
+  const v = r.value;
+  if (typeof v !== 'number') return false;
+  const m = rule.metric;
+  if (cond.includes('*')) {
+    const t = r.target;
+    if (typeof t !== 'number') return false;
+    const parts = cond.split('*');
+    const op = parts[0].trim();
+    const mult = parseFloat(parts[1]);
+    if (op === '<') return v < t * mult;
+    if (op === '>') return v > t * mult;
+  }
+  const num = parseFloat(cond.replace(/[<>=]/g, ''));
+  if (cond.startsWith('<')) return v < num;
+  if (cond.startsWith('>')) return v > num;
+  return false;
+}
+
+/* ================= System ================= */
+function renderSystem() {
+  // Data sources
+  $('#data-sources').innerHTML = Object.entries(INF_GSD.data_sources).map(([k, v]) => `
+    <div class="src">
+      <div><div class="s-name">${k}</div><div class="s-desc">${v}</div></div>
+      <span class="pill green">WIRED</span>
+    </div>`).join('');
+
+  // Phases
+  $('#phases').innerHTML = INF_GSD.implementation_phases.map(p => `
+    <div class="phase ${p.status}">
+      <div class="p-num">${p.phase}</div>
+      <div>
+        <div class="p-name">${p.name}${p.blocker ? '<span class="p-blocker">⛔ BLOCKER</span>' : ''}</div>
+        <div class="p-status">${p.status === 'done' ? 'Done' : 'Pending'}</div>
+      </div>
+    </div>`).join('');
+
+  // Decisions
+  $('#decisions').innerHTML = INF_GSD.open_decisions.map(d => `
+    <div class="alert-item warning">
+      <div>
+        <div class="a-metric">Decision ${d.id} <span class="pill warning">BLOCKS PHASE ${d.blocks_phase}</span></div>
+        <div class="a-detail">${d.question}</div>
+      </div>
+    </div>`).join('');
+
+  // Escalation
+  $('#escalation').innerHTML = `
+    <div style="font-size:13px; color:var(--muted); margin-bottom:12px;">${INF_GSD.escalation.rule_1_3_1.description}</div>
+    ${INF_GSD.escalation.ladder.map(rung => `
+      <div class="src">
+        <div><div class="s-name">Week ${rung.weeks_red} red</div><div class="s-desc">${rung.action}</div></div>
+      </div>`).join('')}`;
+}
+
+/* ================= Master render ================= */
+function render() {
+  $('#date').textContent = new Date().toLocaleDateString('en-ZA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  $('#period-label').textContent = periodLabel();
+  $('#sim-badge').textContent = GSD_SIMULATED ? 'SIMULATED DATA — WIRE ZOHO VIA FLUXFLOW' : 'LIVE DATA';
+
+  switch (state.view) {
+    case 'ceo': renderCeoTabs(); renderCeo(); break;
+    case 'brands': renderBrandTabs(); renderBrandBoard(); break;
+    case 'funnel': renderFunnelTabs(); renderFunnel(); break;
+    case 'depts': renderDeptTabs(); renderDept(); break;
+    case 'library': renderLibrary(); break;
+    case 'alerts': renderAlerts(); break;
+    case 'system': renderSystem(); break;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', render);
+</script>
+</body>
+</html>
