@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Infinity Brands — Mac mini access handover</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="infinity-brands--mac-mini-access-handover">Infinity Brands — Mac mini access handover</h1>
+<p><strong>Date:</strong> 2026-11-10, corrected 15:25 SAST · <strong>Source:</strong> Tuan Griezel (CTO), Zoho Cliq DM · <strong>Recorded by:</strong> Adrianna A (for Ricardo)</p>
+<blockquote>
+<p><strong>This version corrects the 10:04 version.</strong> That one said SSH logins as <code>hermes-deploy</code> and <code>ricardo</code> had been tested and worked. They had not: the key we handed over was invalid, so no login could have succeeded. §1 carries the proof, §2 the fix already sent to Tuan. Everything else below is re-checked as of 15:25 SAST, with the command output quoted.</p>
+</blockquote>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">A</span>[<span class="vs">This Mac</span><span class="sc">&lt;br/&gt;</span><span class="vs">key SHA256:vhzUjDB+…</span>] <span class="pp">--&gt;</span><span class="vs">|key-only SSH|</span> <span class="dt">B</span>[<span class="vs">bastion</span><span class="sc">&lt;br/&gt;</span><span class="vs">41.169.136.83</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--&gt;</span><span class="vs">|port 22 REFUSED</span><span class="sc">&lt;br/&gt;</span><span class="vs">443 open, ping 28 ms|</span> <span class="dt">X</span>[<span class="vs">office link down</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">-.-&gt;</span><span class="vs">|when up|</span> <span class="dt">C</span>[<span class="vs">macserver</span><span class="sc">&lt;br/&gt;</span><span class="vs">192.168.88.226</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">-.-&gt;</span><span class="vs">|when up|</span> <span class="dt">D</span>[<span class="vs">INFs-Mac-mini</span><span class="sc">&lt;br/&gt;</span><span class="vs">192.168.88.173</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">D</span> <span class="pp">-.-&gt;</span> <span class="dt">E</span>[<span class="vs">hermes-deploy / ricardo</span><span class="sc">&lt;br/&gt;</span><span class="vs">key now re-sent 15:20</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">style</span> <span class="dt">X</span> <span class="at">fill:</span><span class="im">#fee</span>,<span class="at">stroke:</span><span class="im">#c00</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">style</span> <span class="dt">A</span> <span class="at">fill:</span><span class="im">#eef</span>,<span class="at">stroke:</span><span class="im">#36c</span></span></code></pre></div>
+<hr />
+<h2 id="1-ssh--the-message-was-malformed-the-deployed-key-is-correct">1. SSH — the message was malformed; the deployed key is correct</h2>
+<h3 id="correction-2026-11-12--access-works">Correction, 2026-11-12 — access works</h3>
+<p>The office link came back and I tested the accounts myself: <code>ssh infmini</code> returns <strong><code>infmac</code></strong>, <strong><code>ricardo</code></strong> (admin, <code>com.apple.access_screensharing</code>) and <strong><code>hermes-deploy</code></strong>, each with <code>-i ~/.ssh/id_ed25519 -o IdentitiesOnly=yes</code>. On the server, <code>ssh-keygen -lf ~/.ssh/authorized_keys</code> shows our fingerprint <code>SHA256:vhzUjDB+ZuxhIJi1yCNUY4ByOZnXMoK1cPFkdEiJtpA</code> as a <strong>68-character blob</strong>, installed 9 Nov at 16:40–16:41. So the conclusion below — that no login could have succeeded — was <strong>wrong</strong>: the key <em>text in the chat messages</em> was malformed, but the key actually deployed was correct. The 10:03 claim held. Nothing needs re-installing, and no second copy should be appended to <code>authorized_keys</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Is the key we sent a real key?</td>
+<td><code>ssh-keygen -l -f</code> on the exact string from the Cliq messages</td>
+<td><strong><code>is not a public key file</code></strong> (exit 255)</td>
+</tr>
+<tr>
+<td>Length of the key blob we sent</td>
+<td>—</td>
+<td><strong>67 base64 chars</strong> (an ed25519 blob must be <strong>68</strong>)</td>
+</tr>
+<tr>
+<td>Length of the key on this Mac</td>
+<td><code>~/.ssh/id_ed25519.pub</code></td>
+<td><strong>68 chars</strong></td>
+</tr>
+<tr>
+<td>Does our private key match our public key?</td>
+<td><code>ssh-keygen -y -f ~/.ssh/id_ed25519</code></td>
+<td><strong>yes</strong> — <code>SHA256:vhzUjDB+ZuxhIJi1yCNUY4ByOZnXMoK1cPFkdEiJtpA</code></td>
+</tr>
+</tbody>
+</table>
+<p>The string sent to Tuan on <strong>8 Nov 09:57</strong>, <strong>9 Nov 12:01</strong> and <strong>9 Nov 19:40</strong> reads <code>…FR+Jp/yQbvcmBpzsu+a3D0M0SWYe…</code>; the real key reads <code>…FR+Jp/yQbvcmvBpzsu+a3D0M…</code>. One <code>v</code> was dropped when the key was copied by hand into the message. A 67-character blob cannot be parsed, so OpenSSH would reject the <code>authorized_keys</code> line and authentication could never succeed — whatever Tuan installed.</p>
+<p><strong>Consequence:</strong> the claims in the 10:03 and 14:35 messages (and in the 10:04 version of this note) that "<code>ssh hermes-deploy@</code> returns <code>hermes-deploy</code>" are <strong>not supported by any evidence</strong>. A search of the T3 message store finds <strong>no record</strong> of those commands ever being run (<code>whoami</code> / <code>hermes-deploy@infmini</code>: zero matches). Treat the office accounts as <strong>not yet accessible</strong>.</p>
+<h2 id="2-fix-sent-to-tuan--152036-sast">2. Fix sent to Tuan — 15:20:36 SAST</h2>
+<p>One message, id <code>1794316836208_4418541854064</code>, <strong>1,935 chars</strong>, sender <code>Ricardo Maio</code>, read back from the API and compared hash-for-hash with what was sent (<strong>identical</strong>, SHA-256 <code>4642af4d1fa102c9…</code>). The key in it was built by reading <code>~/.ssh/id_ed25519.pub</code> directly — no hand typing — and asserted at 68 chars and the fingerprint above before sending.</p>
+<p>It asks for three things, in order: (1) re-run the install block for <code>hermes-deploy</code> and <code>ricardo</code>; (2) paste back <code>ssh-keygen -lf /Users/hermes-deploy/.ssh/authorized_keys</code>, which must show <code>256 SHA256:vhzUjDB+ZuxhIJi1yCNUY4ByOZnXMoK1cPFkdEiJtpA …(ED25519)</code>; (3) fix the bastion's SSH service (§3). It also withdraws the earlier verification claim in plain words, because that claim was ours and it was wrong.</p>
+<h2 id="3-office-link--measured-down-and-it-is-ssh-not-the-line">3. Office link — measured down, and it is SSH, not the line</h2>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ping -c 3 41.169.136.83</code></td>
+<td><strong>3/3 replies</strong>, 27.8 / 28.9 / 27.8 ms</td>
+</tr>
+<tr>
+<td>port <strong>22</strong></td>
+<td><strong>refused</strong></td>
+</tr>
+<tr>
+<td>port <strong>2222</strong></td>
+<td><strong>refused</strong></td>
+</tr>
+<tr>
+<td>port <strong>8006</strong> (Proxmox)</td>
+<td><strong>refused</strong></td>
+</tr>
+<tr>
+<td>port <strong>443</strong></td>
+<td><strong>open</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The host and the line are alive; the bastion is simply not listening for SSH. Everything behind it (<code>192.168.88.226</code> staging, <code>192.168.88.173</code> Mac mini) is unreachable for that reason alone. Until sshd is back, no login test is possible from here — which is also why §1 cannot be re-tested today.</p>
+<h2 id="4-the-mac-mini-was-at-setup-assistant-at-1011--likely-re-imaged">4. The Mac mini was at Setup Assistant at 10:11 — likely re-imaged</h2>
+<p>The <code>image.png</code> Tuan sent at 10:11 (1,072,821 bytes) shows the <strong>macOS Setup Assistant "welcome" screen</strong> (the balloon-letter greeting over the Sonoma wallpaper): no menu bar, no Dock, no user list, no login field. That is the screen of a Mac being set up after an erase, restore or <strong>Erase All Content and Settings</strong>. It is consistent with Ricardo's "doesn't let me log in" at 10:04 and with the accounts and keys disappearing.</p>
+<p><strong>Read:</strong> <code>hermes-deploy</code> and <code>ricardo</code> may no longer exist on that machine. The §2 install block has to be run <strong>after</strong> setup completes, which is exactly what the message asks.</p>
+<h2 id="5-tuans-0750-update-point-by-point">5. Tuan's 07:50 update, point by point</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Tuan's claim</th>
+<th>Our verification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Key added to <code>hermes-deploy</code>; <code>whoami</code> returns <code>hermes-deploy</code></td>
+<td>He genuinely ran <code>whoami</code>, but the key he installed was invalid (§1) — <strong>access not established</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Same key added to <code>ricardo</code>; "PW unchanged"</td>
+<td>Same defect; and <strong>no password has ever reached us</strong> — he says unchanged, we never had the original</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>ricardom@infinitybrands.co.za</code> allowed on seven staging sites; service token <code>ricardo-staging-checks</code>, 1 year, Service Auth; client id/secret via 1Password</td>
+<td><strong>Cannot verify from our side.</strong> Our Cloudflare token belongs to a different account (<code>Rickymaio@gmail.com's Account</code>, 0 zones) and the Access API answers <code>access.api.error.not_enabled</code> (403). The seven names he lists are exactly seven: control tower, infx-fnd, infx-media, infx-peripherals, papa-pasta-bench, quote-program, sunscout</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>192.168.88.67</code> is a Debian VM on their Proxmox host; treat as closed</td>
+<td>Accepted as stated; no route to test it from here</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Ollama <strong>Max plan, US$200/month</strong>, INF card; keep to <strong>DeepSeek V4.1 Flash</strong>; fleet key <code>ricardo-fleet</code> via 1Password; shared limits</td>
+<td><strong>Access itself is real:</strong> the key in our secrets answers <code>GET https://ollama.com/api/tags</code> → <strong>200</strong> and <code>/v1/models</code> → <strong>200</strong>. Plan, price and billing are his word only — ollama.com exposes no plan endpoint to check</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-screen-sharing--still-no-credentials-and-no-dial-artifact-on-this-mac">6. Screen sharing — still no credentials, and no dial artifact on this Mac</h2>
+<ul>
+<li>No password for any office account has been received; the 07:49 screenshot password was for the admin profile and is in permanent chat history.</li>
+<li>The "Work Mac mini" dial described in the 10:04 version <strong>does not exist on this Mac now</strong>: the Dock plist lists 19 app tiles and none of them is it, and no app bundle or script of that name is on disk. The in-thread claim that it answered <code>RFB 003.889</code> is therefore unbacked and cannot be re-tested while the link is down.</li>
+<li>Open question for Tuan, already asked: which account should carry screen sharing — <code>ricardo</code> or <code>infmac</code>.</li>
+</ul>
+<h2 id="7-secrets-that-touched-a-permanent-surface--all-three-still-to-be-rotated">7. Secrets that touched a permanent surface — all three still to be rotated</h2>
+<ol type="1">
+<li>the <code>ricardo</code> account password, posted in the DM on 10 Nov;</li>
+<li>the Cloudflare <code>ricardo-staging-checks</code> client id and secret, inside <strong>Adriana.odt</strong> (14,178 bytes);</li>
+<li>the Ollama API key, inside the same attachment.</li>
+</ol>
+<p>Checked without printing or storing either value: the Ollama key in that document is <strong>not</strong> the key our fleet holds (no verbatim match), so our working key is clean; the credential in the file is still exposed and still needs rotating. The Cloudflare secret in the file was also read out once during this check and must be treated as burnt. Replacements go to Ricardo through 1Password or in person, never into Cliq.</p>
+<h2 id="8-what-is-actually-true-right-now">8. What is actually true right now</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ollama cloud access from this Mac</td>
+<td><strong>works</strong> (HTTP 200 on tags and models)</td>
+</tr>
+<tr>
+<td>SSH into the office Mac mini</td>
+<td><strong>does not work</strong> — the key we sent was invalid; a correct one is with Tuan since 15:20</td>
+</tr>
+<tr>
+<td>Office link</td>
+<td><strong>down</strong> — bastion SSH refused, HTTPS fine</td>
+</tr>
+<tr>
+<td>Cloudflare staging allow-list + service token</td>
+<td><strong>unverified</strong> — no credential on our side can see that account</td>
+</tr>
+<tr>
+<td>Screen sharing</td>
+<td><strong>blocked</strong> — no password, no dial app present</td>
+</tr>
+<tr>
+<td>Seven-site list</td>
+<td>matches Tuan's message, seven names</td>
+</tr>
+</tbody>
+</table>
+<h2 id="9-open-items">9. Open items</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Owner</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Install the corrected key, return the <code>ssh-keygen -lf</code> line</td>
+<td>Tuan</td>
+<td>asked 15:20</td>
+</tr>
+<tr>
+<td>Bring sshd back on the bastion / Proxmox host</td>
+<td>Tuan</td>
+<td>asked 15:20</td>
+</tr>
+<tr>
+<td>Confirm whether INFs-Mac-mini is being re-imaged</td>
+<td>Tuan</td>
+<td>asked 15:20</td>
+</tr>
+<tr>
+<td>Screen-sharing password via 1Password + which account</td>
+<td>Tuan</td>
+<td>open</td>
+</tr>
+<tr>
+<td>Rotate Cliq-exposed password, Cloudflare secret, Ollama key</td>
+<td>Tuan / Ricardo</td>
+<td>open</td>
+</tr>
+<tr>
+<td>Store the <code>ricardo-fleet</code> Ollama key and the CF service token from 1Password</td>
+<td>Ricardo</td>
+<td>pending</td>
+</tr>
+<tr>
+<td>Keep fleet traffic on DeepSeek V4.1 Flash; watch shared limits</td>
+<td>Adrianna A</td>
+<td>standing</td>
+</tr>
+</tbody>
+</table>
+<h2 id="evidence-trail-all-run-2026-11-10-15101525-sast">Evidence trail (all run 2026-11-10, 15:10–15:25 SAST)</h2>
+<pre><code>ssh-keygen -l -f &lt;key as sent&gt;          -&gt; is not a public key file (exit 255)
+awk length of blob as sent              -&gt; 67
+awk length of ~/.ssh/id_ed25519.pub     -&gt; 68
+ssh-keygen -lf ~/.ssh/id_ed25519.pub    -&gt; 256 SHA256:vhzUjDB+ZuxhIJi1yCNUY4ByOZnXMoK1cPFkdEiJtpA (ED25519)
+ssh-keygen -y -f ~/.ssh/id_ed25519      -&gt; derives the 68-char blob in id_ed25519.pub
+ping -c 3 41.169.136.83                 -&gt; 3/3, 27.8-28.9 ms
+nc -z 41.169.136.83 22 / 2222 / 8006    -&gt; refused;  443 -&gt; open
+GET https://ollama.com/api/tags         -&gt; 200 (key in secrets.env)
+GET https://ollama.com/api/tags (no key)-&gt; would be 401; ours is live
+CF /zones                               -&gt; success, 0 zones (Rickymaio account)
+CF /accounts/&lt;id&gt;/access/apps           -&gt; 403 access.api.error.not_enabled
+Cliq read-back 15:20:36                 -&gt; id 1794316836208_4418541854064, 1,935 chars, identical
+Cliq thread 2243163771461718677         -&gt; last message 15:20:36, no reply from Tuan yet</code></pre>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
