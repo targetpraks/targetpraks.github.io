@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ClickUp — the UI half of the build (click runbook)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="clickup--the-ui-half-of-the-build-2026-11-13">ClickUp — the UI half of the build (2026-11-13)</h1>
+<p>Everything below is a thing the ClickUp public API refuses to do. Each item was tested against the live workspace <code>4627083</code> on 2026-11-13 and failed for a stated reason; the exact error is quoted so the gap is documented, not assumed.</p>
+<p>The API build (spaces, privacy, features, folders, lists, custom fields, chat channels, topics, channel retirement) is done and verified — see <code>BUILD-RESULT.md</code>. This runbook is the click pass.</p>
+<h2 id="1-status-sets--15-spaces">1. Status sets — 15 spaces</h2>
+<p><strong>Why it has to be clicked:</strong> <code>PUT /space/{id}</code> accepts a <code>statuses</code> array, returns <strong>200</strong>, and changes nothing (verified: the space still reports <code>to do</code> / <code>complete</code> afterwards). <code>PUT /space/{id}/status</code> returns <strong>404</strong>. There is no public endpoint for statuses.</p>
+<p><strong>Where:</strong> Space name → <code>…</code> menu → <em>Space settings</em> → <strong>Statuses</strong> → edit each row, then tick <em>Apply to all lists in this Space</em>.</p>
+<p><strong>The spine every space keeps</strong> (ClickUp's own status types in brackets):</p>
+<p><code>Open</code> (open) · <code>In Progress</code> (custom) · <code>In Review</code> (custom) · <code>Waiting</code> (custom) · <code>Blocked</code> (custom) · <code>On Hold</code> (custom) · <code>Done</code> (closed) · <code>Cancelled</code> (closed)</p>
+<p><strong>Add per space:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Space</th>
+<th>Code</th>
+<th>Extra statuses</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BU 1 FIN - Finance</td>
+<td><code>FIN</code></td>
+<td><code>Control Run</code> · <code>Exception</code> · <code>Awaiting Approval</code> · <code>Approved by Manager</code></td>
+</tr>
+<tr>
+<td>BU 2 HRM - Human Resources</td>
+<td><code>HRM</code></td>
+<td><code>Submitted</code> · <code>Screening</code> · <code>Interview</code> · <code>Offer</code> · <code>Accepted</code> · <code>Rejected</code></td>
+</tr>
+<tr>
+<td>BU 3 ADM - Administration</td>
+<td><code>ADM</code></td>
+<td><code>Awaiting Supplier</code> · <code>Awaiting Approval</code></td>
+</tr>
+<tr>
+<td>BU 4 ITC - Information Technology</td>
+<td><code>ITC</code></td>
+<td><code>Triage</code> · <code>Investigating</code> · <code>Awaiting Vendor</code> · <code>Resolved</code> · <code>Reopened</code></td>
+</tr>
+<tr>
+<td>BU 5 MKT - Marketing</td>
+<td><code>MKT</code></td>
+<td><code>Briefed</code> · <code>In Production</code> · <code>Client Review</code> · <code>Approved</code> · <code>Published</code></td>
+</tr>
+<tr>
+<td>BU 6 SAL - Sales</td>
+<td><code>SAL</code></td>
+<td><code>Proposal Sent</code> · <code>Negotiation</code> · <code>Won</code> · <code>Lost</code></td>
+</tr>
+<tr>
+<td>BU 7 Brand Ops 1</td>
+<td><code>BND1</code></td>
+<td><code>Store Submitted</code> · <code>Compliance Check</code> · <code>Opening</code> · <code>Trading</code></td>
+</tr>
+<tr>
+<td>BU 8 Brand Ops 2</td>
+<td><code>BND2</code></td>
+<td><code>Store Submitted</code> · <code>Compliance Check</code> · <code>Opening</code> · <code>Trading</code></td>
+</tr>
+<tr>
+<td>FXS - INFX Solutions</td>
+<td><code>FXS</code></td>
+<td><code>Onboarding</code> · <code>Client Review</code> · <code>Delivered</code></td>
+</tr>
+<tr>
+<td>FXL - INFX Labs</td>
+<td><code>FXL</code></td>
+<td><code>Onboarding</code> · <code>Client Review</code> · <code>Delivered</code></td>
+</tr>
+<tr>
+<td>FLF - FluxFlow Solutions</td>
+<td><code>FLF</code></td>
+<td><code>Onboarding</code> · <code>Client Review</code> · <code>Delivered</code></td>
+</tr>
+<tr>
+<td>EXCO</td>
+<td><code>EXCO</code></td>
+<td><code>proposed</code> · <code>decided</code> · <code>superseded</code></td>
+</tr>
+<tr>
+<td>MANCO</td>
+<td><code>MANCO</code></td>
+<td><code>proposed</code> · <code>decided</code> · <code>superseded</code></td>
+</tr>
+<tr>
+<td>SNR EXCO</td>
+<td><code>SNR EXCO</code></td>
+<td><code>proposed</code> · <code>decided</code> · <code>superseded</code></td>
+</tr>
+<tr>
+<td>REP - Reporting &amp; Notes</td>
+<td><code>REP</code></td>
+<td><code>Not Started</code> · <code>In Progress</code> · <code>Submitted</code> · <code>Reviewed</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ordering rule (§9): the open statuses first, the custom working statuses next, closed last. ClickUp will not delete a status that a task is currently using, and will not delete <code>Open</code>/<code>Closed</code> types at all — rename the two default rows rather than deleting them.</p>
+<h2 id="2-views--every-list">2. Views — every list</h2>
+<p><strong>Why it has to be clicked:</strong> <code>POST /list/{id}/view</code> creates the view, but the <code>filters</code> object comes back empty on read — the API drops filters silently. 98 views exist today and <strong>0 carry a filter</strong>.</p>
+<p><strong>Standard four views on each of the six format lists</strong>, in this order:</p>
+<ol type="1">
+<li><code>Board</code> — group by status, no filter.</li>
+<li><code>Table</code> — columns: name, assignee, priority, due date, Business Unit, Work Format.</li>
+<li><code>Waiting On</code> — filter: status is <code>Waiting</code> OR <code>Blocked</code>.</li>
+<li><code>This Week</code> — filter: due date is within this week, closed tasks hidden. <strong>SLA lists</strong> (<code>SLA - EXP</code>, <code>SLA - TLF</code>, <code>SLA - TIE</code>, <code>SLA - Breach Log</code>) get a fifth: <code>SLA Board</code> — group by <code>SLA State</code>, sorted by <code>First Response Due</code>.</li>
+</ol>
+<h2 id="3-formula-fields-f12-f13-f16--the-sla-clock">3. Formula fields F12, F13, F16 — the SLA clock</h2>
+<p><strong>Why it has to be clicked:</strong> <code>POST /list/{id}/field</code> with type <code>formula</code> and a field reference returns <strong>400 <code>Invalid formula</code></strong>. Only literal formulas are accepted (<code>CONCATENATE("a","b")</code> works), so the date arithmetic cannot be created by API.</p>
+<p><strong>Where:</strong> list → <code>…</code> → <em>Custom Fields</em> → <strong>+ New Field</strong> → <code>Formula</code>. Set them on the four SLA lists:</p>
+<pre><code>F12  First Response Due   =  DATE_ADD(created, 4, &quot;hours&quot;)        # Gold
+                             DATE_ADD(created, 8, &quot;hours&quot;)        # Silver
+                             DATE_ADD(created, 16, &quot;hours&quot;)       # Black
+F13  Resolution Due       =  DATE_ADD(created, 3, &quot;days&quot;)         # Gold
+                             DATE_ADD(created, 5, &quot;days&quot;)         # Silver
+                             DATE_ADD(created, 10, &quot;days&quot;)        # Black
+F16  SLA State            =  IF(Is Empty([Resolved At]), IF(TODAY() &gt; [First Response Due], &quot;Breached&quot;, &quot;On Track&quot;), &quot;Met&quot;)</code></pre>
+<p>If the ClickUp formula editor rejects <code>DATE_ADD</code>, use the same arithmetic on <code>Start Date</code> with the space's due-date ClickApp, or use a <em>Date</em> field filled by an automation. Either way the three fields are the only acceptable outcomes.</p>
+<h2 id="4-space-members-teams-and-owners">4. Space members, teams and owners</h2>
+<p><strong>Why it has to be clicked:</strong> the workspace holds <strong>1 member</strong> (Ricardo) against <strong>40 paid seats</strong>, and <strong>39 are empty</strong>. Team membership has no API write at all, and the plan refuses a 20th team (<code>GROUP_027: limited to 10 usages of Additional Teams, 19 usage</code>).</p>
+<p>Order that works: invite the staff → put them in the 19 standing teams → add the team to the matching Space as a member group. The 19 teams that already exist:</p>
+<p><code>EXCO</code> · <code>MANCO</code> · <code>BRAND OPS GMs</code> · <code>FINANCE</code> · <code>HUMAN RESOURCES</code> · <code>ADMINISTRATION</code> · <code>INFORMATION TECHNOLOGY</code> · <code>MARKETING</code> · <code>SALES</code> · <code>BRAND OPS 1</code> · <code>BRAND OPS 2</code> · <code>INFX SOLUTIONS</code> · <code>INFX LABS</code> · <code>FLUXFLOW</code> · <code>DIVORCED DADS</code> · <code>ACDC EXPRESS</code> · <code>THE LOCAL FARMER</code> · <code>PAPA PASTA</code> · <code>DATA SERVICES</code></p>
+<p>Missing from the team set against the business-unit table: <strong>SNR EXCO</strong>, <strong>REP</strong>. Both are blocked by the 10-team plan allowance — either fold SNR EXCO into EXCO with a <code>SNR</code> label, or drop a brand team.</p>
+<h2 id="5-timesheets">5. Timesheets</h2>
+<p>Time tracking is <strong>on in all 15 spaces</strong>, with rollup on, so the Timesheet view exists on every Space and every list. What cannot be set by API is the workspace money side:</p>
+<ul>
+<li>Workspace settings → <strong>Time &amp; Expenses</strong> → set the hourly rate per member and whether time is billable by default.</li>
+<li>Per person: <em>Profile → Time tracking</em> → working hours, so the Timesheet weekly grid is right.</li>
+<li>Nothing has been tracked yet — 0 time entries in 30 days — so the first entry will be the first data the Timesheet ever shows.</li>
+</ul>
+<h2 id="6-store-sla-channels">6. Store SLA channels</h2>
+<p>§11.2 asks for one <code>#SLA FIN: &lt;STORE&gt;</code> channel per store in the store register. <strong>There is no store register in the workspace</strong>, so none were created — a wrong store list is worse than none. This is open question §19-8. Once the register lands, they are 30 API calls.</p>
+<h2 id="7-chat-sidebar-sections">7. Chat sidebar sections</h2>
+<p><strong>Why it has to be clicked:</strong> the v3 chat API exposes channels, messages, replies, followers and reactions — <code>GET /workspaces/{id}/chat/sections</code> returns <strong>404</strong>, and ClickUp documents sections only as a Home sidebar setting. The 37 channels exist and each carries its purpose in its topic; the sidebar grouping does not.</p>
+<p><strong>Where:</strong> Home sidebar → <em>Reorder sections</em> → <strong>Create section</strong>, then drag channels in. Five sections, in this order:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Channels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Leadership</td>
+<td><code>#ANNOUNCEMENTS</code> <code>#EXCO</code> <code>#MANCO</code> <code>#SNR EXCO</code></td>
+</tr>
+<tr>
+<td>Business units</td>
+<td><code>#FIN</code> <code>#HRM</code> <code>#ADM</code> <code>#ITC</code> <code>#MKT</code> <code>#SAL</code> <code>#BND1</code> <code>#BND2</code> <code>#FXS</code> <code>#FXL</code> <code>#FLF</code> <code>#CORP</code> <code>#DAS</code> <code>#DID</code> <code>#REP</code></td>
+</tr>
+<tr>
+<td>Service desks</td>
+<td><code>#ITC: SUPPORT</code> <code>#FIN: SUPPORT</code> <code>#HRM: SUPPORT</code> <code>#EXP: SUPPORT</code> <code>#TLF: SUPPORT</code></td>
+</tr>
+<tr>
+<td>Brands</td>
+<td><code>#ACDC-EXPRESS</code> <code>#TITAN-ELECTRICAL</code> <code>#THE-LOCAL-FARMER</code> <code>#PAPA-PASTA</code> <code>#DIVORCED-DADS</code> <code>#DATA-SERVICES</code> <code>#INFX-SOLUTIONS</code> <code>#INFX-LABS</code> <code>#FLUXFLOW</code></td>
+</tr>
+<tr>
+<td>General</td>
+<td><code>#REPORTING</code> <code>#WINS</code> <code>#RANDOM</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-the-three-decisions-this-runbook-does-not-make">8. The three decisions this runbook does not make</h2>
+<ul>
+<li><code>FLF - FluxFlow Solutions</code> is retired (§19-4): it keeps its Space and lists, and should be archived or deleted by the owner's word.</li>
+<li><code>TIE</code> (Titan Electrical) and <code>DAS</code> (Data Services) keep their folders inside Brand Ops (§19-5/6).</li>
+<li><code>DID</code> (Divorced Dads) keeps its folder and desk channel (§19-7).</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
