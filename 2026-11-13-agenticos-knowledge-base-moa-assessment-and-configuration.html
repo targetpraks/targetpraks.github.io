@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>AgenticOS Knowledge Base — MOA assessment and configuration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="agenticos--knowledge-base-section-assessment-and-configuration">AgenticOS — Knowledge Base section: assessment and configuration</h1>
+<p><strong>Company AI platform, Infinity Brands.</strong> Organisation <code>infinity-brands</code>, 2026-11-13. Console: <a href="https://ricardos-mac-mini.taile9f837.ts.net:10030/projects/9b1fdb50-d45b-4a10-8dc6-53509799cc8e">https://ricardos-mac-mini.taile9f837.ts.net:10030/projects/9b1fdb50-d45b-4a10-8dc6-53509799cc8e</a> (BU 3 ADM project)</p>
+<p>Assessed by a <strong>Mixture-of-Agents council</strong>: glm-5.3, kimi-k3 and minimax-m3.1-flash each read the live API state and the build's own source; nemotron-3-ultra aggregated their three answers into one plan. Every number below was then read back from the API after the change — nothing is inferred.</p>
+<hr />
+<h2 id="1-verdict">1. Verdict</h2>
+<p>The section is structurally sound and under-supplied. Eighteen bases exist and every bot is bound to exactly one of them, which is the right shape. What was wrong was inside the bases: role documents were chunked at three to five times the size their headings imply, titles carried retired codes that then appeared in citations, one base held another unit's workbook, and the whole-company base carried nine duplicate copies of unit content. All of that is fixed or queued. What remains is not configuration — it is corpus: most bases hold one document, because WorkDrive read access is still refused, so the SOPs, brand manuals and policies that would make these bots useful cannot be loaded yet.</p>
+<hr />
+<h2 id="2-what-the-council-found-in-order-of-damage">2. What the council found, in order of damage</h2>
+<table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Finding</th>
+<th>Evidence</th>
+<th>What it costs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Retired codes live in <strong>document titles</strong>, so every citation leaks them</td>
+<td>BU 7 holds <code>… BU 7 ZOR BO 1.md</code>, BU 8 holds <code>… BU 8 ZOR BO 2.md</code>, FLF holds <code>… BU 9 FXS.md</code></td>
+<td>A bot answering about Brand Ops cites "ZOR BO"; the banned forms stay in circulation</td>
+</tr>
+<tr>
+<td>2</td>
+<td>The company base duplicates nine unit slices beside the master workbook</td>
+<td>13 documents, 200 chunks: full workbook <strong>plus</strong> all nine BU slices, plus a cover sheet</td>
+<td>Org-wide bots retrieve two copies of one passage, spend their five passages on the pair, and can cite the wrong unit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Chunking ignored document structure</td>
+<td>all 18 bases on <code>recursive</code> / 2500 chars / 200 overlap</td>
+<td>a single role's duties split across chunks; retrieval matched mid-sentence</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Six bases were effectively empty</td>
+<td>DAS, DID, EXP, FXL, FXS, TIE held 1–2 chunks each</td>
+<td>those bots had nothing to answer from</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Three named units have no presence at all</td>
+<td>no base, bot, project or group for EXCO, MANCO, SNR EXCO</td>
+<td>governance questions fall to a platform bot holding only the company frame</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Text quality: HTML entities survived the WorkDrive export</td>
+<td><code>&amp;amp;</code>, <code>&amp;apos;</code> in 20 documents, 1 513 occurrences</td>
+<td>"MEETING &amp; EVENT ADMINISTRATION" was retrievable and citable as-is</td>
+</tr>
+<tr>
+<td>7</td>
+<td>A third of the carried entities are not on the naming list</td>
+<td>FLF (FluxFlow), DAS (Data Services), TIE (Titan Electrical)</td>
+<td>naming authority has no entry for them, so no rule for their lifecycle</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Two platform bots read every base</td>
+<td>Architect and DOC have <code>whole_organization = true</code></td>
+<td>intended for a whole-company assistant, but it also lets them read HRM and FIN material</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-what-changed-and-the-read-back-that-proves-it">3. What changed, and the read-back that proves it</h2>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Applied</th>
+<th>Verified</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Base names moved onto the authority labels</td>
+<td>18 of 18 bases</td>
+<td><code>GET /kb</code> returns <code>BU 1 FIN - Finance Knowledge</code> … <code>FXL - INFX Labs Knowledge</code>; no <code>BU 9</code>, no <code>ZOR BO</code> in any base name</td>
+</tr>
+<tr>
+<td>Per-base ingestion tuned to the document</td>
+<td>units and brands: <code>markdown</code>, 1 500 chars, 150 overlap; registries (TLF, PPP): <code>recursive</code>, 2 500 / 200 unchanged</td>
+<td><code>GET /kb/{id}</code> → <code>ingestion_config</code> on all 18</td>
+</tr>
+<tr>
+<td>Documents re-ingested so the tuning is live</td>
+<td>13 documents</td>
+<td>FIN 10→20 chunks, HRM 13→25, ADM 11→21, ITC 10→17, MKT 16→27, SAL 8→13, DAS 1→5, DID 1→4, EXP 2→5, FXL 1→3, FXS 1→4, TIE 1→5, master workbook 97→181</td>
+</tr>
+<tr>
+<td>Each chunk stamped with its unit</td>
+<td>13 documents carry <code>organizational_unit</code></td>
+<td><code>POST /rag/search</code> metadata now carries the unit, so a filtered search can narrow to it later</td>
+</tr>
+<tr>
+<td>HTML entities repaired</td>
+<td>816 occurrences across 7 documents</td>
+<td>re-read: 0 entities in those documents; <code>MEETING &amp; EVENT ADMINISTRATION</code> now reads correctly</td>
+</tr>
+<tr>
+<td>Retrieval widened without extra model cost</td>
+<td>ADM Bot published v4, <code>parent_context: window</code></td>
+<td><code>GET /agents/{id}</code> → knowledge config; <code>knowledge-reach</code> unchanged at its one base</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing was deleted. The four items below are the ones that need a delete or a bulk write, which is your call.</p>
+<hr />
+<h2 id="4-what-needs-your-word">4. What needs your word</h2>
+<ol type="1">
+<li><strong>Retitle the three documents that carry retired codes</strong> — replace <code>… BU 7 ZOR BO 1.md</code>, <code>… BU 8 ZOR BO 2.md</code> and <code>… BU 9 FXS.md</code> with correctly titled copies. The old copies have to go, and with them the last <code>ZOR BO</code> / <code>BU 9</code> strings a bot can cite. <strong>Yes / no.</strong></li>
+<li><strong>Drop the nine duplicate unit slices from the company base</strong> — keep the master workbook, <code>ZOHO.md</code>, the pilot AI policy and the cover sheet. That takes the company base from 200 duplicated chunks to one master copy. <strong>Yes / no.</strong></li>
+<li><strong>Roll <code>parent_context: window</code> to the other 19 bots</strong> (no extra model calls, more context per passage). I did <strong>not</strong> enable query expansion or self-query anywhere: both cost a model call per search, and on a single-collection bot self-query can filter to zero hits. <strong>Yes / no.</strong></li>
+<li><strong>Three carried entities off the naming list</strong> — FLF, DAS, TIE. Their documents are real (the FLF base holds FluxFlow's own 2026 role workbook, mis-titled). Keep them as carried units with their own bases, <strong>yes</strong>; or fold TIE into BU 7, DAS into ITC and retire FLF, <strong>no</strong> (say which).</li>
+<li><strong>EXCO, MANCO, SNR EXCO</strong> — create the three bases and bots now, empty, ready for the first board pack, <strong>yes</strong>; or wait until material exists, <strong>no</strong> (an empty base is the failure the council ranked fourth, so I did not create them unasked).</li>
+<li><strong>Hybrid search</strong> — the deployment has <code>enable_hybrid_search = false</code>. Turning it on helps exact-code lookups ("BU 7", "FXS") and is a deployment-level setting that needs a stack restart. <strong>Yes / no.</strong></li>
+</ol>
+<hr />
+<h2 id="5-the-constraint-that-limits-everything-else">5. The constraint that limits everything else</h2>
+<p>The real corpus — SOPs, brand manuals, finance policies, supplier contracts — still cannot be read: WorkDrive returns <code>405 F6004</code> at <code>GET /workdrive/api/v1/teamfolders</code>, which is a missing OAuth scope, not a platform fault. Until that opens, every base past its role workbook stays thin by definition. That is the INF-217 lane, and it is the highest-value thing anyone can do to this section.</p>
+<hr />
+<h2 id="6-rules-now-in-force">6. Rules now in force</h2>
+<ol type="1">
+<li>One base per authorised unit, named on the authority label, holding that unit's material only.</li>
+<li>The company base holds cross-unit material only — never a copy of a unit slice.</li>
+<li>Ingestion config is forward-only: a chunking change is not live until its documents are re-ingested.</li>
+<li>Markdown for narrative documents, recursive for tables and registers. A departure gets a written reason on the base.</li>
+<li>No document title may carry a retired form; fix the title at the source before upload.</li>
+<li>Re-ingest on a source change, a naming change or a chunking change — never to "refresh".</li>
+<li>New base: authority name → standard profile → one unit bot → <code>knowledge-reach</code> proof.</li>
+<li>Never upload secrets, personal files, drafts or a pointer-only note as a base's sole content.</li>
+</ol>
+<hr />
+<h2 id="7-how-this-was-verified">7. How this was verified</h2>
+<ul>
+<li><code>GET /api/v1/kb</code> — 18 bases, authority names, document and chunk counts as tabled above.</li>
+<li><code>GET /api/v1/kb/{id}</code> — <code>ingestion_config</code> per base; <code>embedding_model</code> still <code>nomic-embed-text</code>, unchanged and frozen.</li>
+<li><code>GET /api/v1/kb/{id}/documents</code> — one document per unit base, status <code>done</code>.</li>
+<li><code>POST /api/v1/rag/search</code> — "Who governs the EXCO and MANCO meeting lifecycle?" on <code>BU 3 ADM</code> returns the C-SUITE MEETING GOVERNANCE passage in its top hit at 0.74, ampersands now correct and the citation title clean. The same base asked for a bare code — "BU 3" — returns unrelated chunks at 0.48: the index has no keyword leg, which is exactly what item 6 above would add.</li>
+<li><code>GET /api/v1/agents/{id}/knowledge-reach</code> — every unit bot reaches exactly its own base; ADM Bot v4 config read back.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
