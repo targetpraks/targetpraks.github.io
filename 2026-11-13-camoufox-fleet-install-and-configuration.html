@@ -187,7 +187,13 @@ camofox status</code></pre>
 <h2 id="identity-policy-decided-2026-11-13">Identity policy (decided 2026-11-13)</h2>
 <ul>
 <li>Default launch claims the <strong>host's own OS</strong> with <code>canvas_noise=False</code>, so a page reading back canvas or WebGL pixels sees what the fingerprint claims. Verified here: macOS UA, <code>Apple M1</code> renderer, <code>navigator.webdriver</code> false.</li>
-<li>Asking for a <strong>foreign OS</strong> turns canvas noise on, because the host's real GPU would otherwise leak through the pixels. That reads as a privacy-hardened Firefox (Tor/Mullvad/LibreWolf) — legitimate but rarer, so it is opt-in via <code>--os</code>, not the default.</li>
+<li>Three modes, and the difference matters:
+<ul>
+<li><strong>default / <code>--os host</code></strong> — claims the host OS, <code>canvas_noise=False</code>. Cleanest, verified macOS UA + <code>Apple M1</code> renderer.</li>
+<li><strong><code>--os random</code></strong> — lets Camoufox draw the OS itself across its whole profile set (verified: drew a Windows/ANGLE identity). Canvas noise on.</li>
+<li><strong><code>--os windows|linux|macos</code></strong> — pins that OS. Canvas noise on. Foreign and random identities turn noise on because the host's real GPU would otherwise leak through the pixels. That noise reads as a privacy-hardened Firefox (Tor/Mullvad/LibreWolf) — legitimate but rarer.</li>
+</ul></li>
+<li><strong>The macOS identity pool is small.</strong> Screen size varies, GPU (<code>Apple M1</code>) and core count do not, so two consecutive host-OS draws collide maybe one time in four. Do not treat "two launches look different" as a pass/fail property; use <code>--os random</code> when you need many genuinely distinct identities, and expect the canvas-noise trait in exchange.</li>
 <li>Proxies should always be passed: <code>geoip=True</code> then aligns timezone, locale, geolocation and the WebRTC IP to the exit IP. Without a proxy, IPv6 can geolocate elsewhere and Camoufox warns (<code>LeakWarning</code>).</li>
 </ul>
 <h2 id="pitfalls-found-while-installing">Pitfalls found while installing</h2>
@@ -197,6 +203,73 @@ camofox status</code></pre>
 <li><strong>The build is big</strong>: ~1.3 GB zip → 2.4 GB extracted, plus a 116 MB GeoIP database. First launch downloads both if <code>camoufox fetch</code> was skipped.</li>
 <li><strong>Cold start ~10 s</strong> per launch (browser fork + identity generation). Keep a browser open across pages when scraping in a loop; <code>camofox get</code> per URL pays it every time.</li>
 <li><code>bot.sannysoft.com</code> reports <code>Chrome (New) missing (failed)</code> for any Firefox — expected, not a defect.</li>
+</ul>
+<h2 id="tests">Tests</h2>
+<p>Two scripts, both run the real thing and exit non-zero on failure:</p>
+<pre><code>env -u PYTHONPATH .venv/bin/python smoke_test.py       # Camoufox + its MCP server, 10 checks, ~92 s
+env -u PYTHONPATH .venv/bin/python cua_mcp_test.py     # CUA Driver over MCP: 7 x 8 in Calculator, ~8 s</code></pre>
+<p>Result on the mac mini, 2026-11-13 12:2x:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Observed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>versions</td>
+<td>camoufox 0.5.9 · playwright 1.62.0 · 2533 MB browser</td>
+</tr>
+<tr>
+<td>plain page</td>
+<td>200 · <code>Example Domain</code> · 917 chars</td>
+</tr>
+<tr>
+<td>identity</td>
+<td><code>navigator.webdriver</code> False · macOS UA · gl <code>Apple M1</code> · tz Africa/Johannesburg · <code>WebDriver Advanced passed</code></td>
+</tr>
+<tr>
+<td>distinct identities</td>
+<td><code>2560x1440@1</code> vs <code>1792x1120@1</code> — different, both clean</td>
+</tr>
+<tr>
+<td>cloudflare</td>
+<td>nowsecure.nl 200</td>
+</tr>
+<tr>
+<td>js + wait_selector</td>
+<td>HN front page, <code>.athing</code> matched, 3955 chars</td>
+</tr>
+<tr>
+<td>html format</td>
+<td>1989 chars of source</td>
+</tr>
+<tr>
+<td>screenshot</td>
+<td>92 082 bytes written</td>
+</tr>
+<tr>
+<td>persistent profile</td>
+<td>cookie survived a full browser restart</td>
+</tr>
+<tr>
+<td>MCP server</td>
+<td>3 tools · fetch through MCP 200</td>
+</tr>
+<tr>
+<td><strong>CUA Driver</strong></td>
+<td>Calculator launched backgrounded (<code>self_activation_suppressed: true</code>), 34 AX elements, pressed 7 × 8 = → readout <code>"56"</code>, app closed</td>
+</tr>
+</tbody>
+</table>
+<p>Same suite on the other hosts: <strong>Air 10/10</strong>, <strong>infmini 10/10</strong> (screenshot fell back to <code>~/AI Hub/camoufox/shots</code>).</p>
+<p>Four things the tests taught:</p>
+<ul>
+<li><code>core._target()</code> must duck-type on <code>new_context</code>: with <code>persistent_context=True</code> Camoufox yields a <strong>BrowserContext</strong>, not a Browser, and the first version crashed on <code>BrowserContext.new_context</code>.</li>
+<li><strong><code>kill_app</code> is refused</strong> under this session's permission rules (<code>status: refused</code>), while <code>click</code> and <code>get_window_state</code> are allowed. Close apps with <code>osascript -e 'tell application "X" to quit'</code> instead, and never retry a refused call.</li>
+<li><strong>Screenshots fall back locally.</strong> The Air reaches <code>/Volumes/Hiksemi 1TB</code> over SMB; infmini and macserver cannot see it at all and got <code>Permission denied</code>. <code>core._artefact_dir()</code> now tries the canonical AI-Drive path first and falls back to <code>~/AI Hub/camoufox/shots</code> — infmini writes there, verified 10/10.</li>
+<li><strong>A per-URL <code>camofox get</code> re-launches the browser every call</strong> (~8-10 s). Batch work belongs in one <code>core.launch()</code> with multiple pages, or accept the cost.</li>
 </ul>
 <h2 id="hosts-verified-2026-11-13">Hosts (verified 2026-11-13)</h2>
 <table>
