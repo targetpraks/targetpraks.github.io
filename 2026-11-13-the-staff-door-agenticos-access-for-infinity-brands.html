@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Staff Door — how Infinity Brands staff reach AgenticOS</title>
+<style>
+  :root{
+    --paper:#fdfaf3; --ink:#12203a; --ink-soft:#41506b; --rule:#d9d2c4;
+    --card:#ffffff; --coral:#b8442e; --teal:#0f6b63; --gold:#a37a15;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       -webkit-text-size-adjust:100%}
+  .wrap{max-width:880px;margin:0 auto;padding:44px 22px 80px}
+  h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em}
+  h1{font-size:34px;line-height:1.15;margin:0 0 8px}
+  .kicker{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--coral);font-weight:700;margin-bottom:14px}
+  .sub{color:var(--ink-soft);font-size:15px;margin:0 0 26px}
+  h2{font-size:22px;margin:44px 0 6px;padding-bottom:8px;border-bottom:2px solid var(--ink)}
+  h3{font-size:17px;margin:26px 0 4px}
+  p{margin:10px 0}
+  .lead{font-size:17px}
+  .card{background:var(--card);border:2px solid var(--rule);border-radius:10px;padding:18px 20px;margin:16px 0}
+  .pick{border-left:6px solid var(--teal)}
+  .warn{border-left:6px solid var(--coral)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:15px}
+  th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--rule)}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);border-bottom:2px solid var(--ink)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  code{background:#f2ecdf;padding:1px 5px;border-radius:4px;font-size:13.5px}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px;margin:8px 0 2px}
+  .node{background:#fff;border:1.5px solid var(--rule);border-radius:8px;padding:7px 10px;line-height:1.35}
+  .node b{display:block;font-size:13px}
+  .arrow{color:var(--coral);font-weight:700}
+  ul,ol{margin:8px 0 8px 20px;padding:0}
+  li{margin:5px 0}
+  a{color:var(--teal);text-decoration:underline;text-underline-offset:2px}
+  .stage{font-weight:700;color:var(--gold)}
+  .muted{color:var(--ink-soft);font-size:13.5px}
+  footer{margin-top:52px;padding-top:16px;border-top:1px solid var(--rule);color:var(--ink-soft);font-size:13px}
+  @media print{body{background:#fff}.card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Infinity Brands · AgenticOS access</div>
+  <h1>The Staff Door</h1>
+  <p class="sub">How Infinity Brands staff should reach the agent platform — and why the tailscale link we have today cannot be it. Prepared for Ricardo Maio, 13 November 2026.</p>
+
+  <h2>The problem, exactly</h2>
+  <p class="lead">The chat link we are handing out points at <b>Ricardo's personal Mac mini, on Ricardo's personal tailnet</b>. The platform does not even live there — it lives in the office, and the mini merely relays it.</p>
+
+  <div class="card">
+    <div class="flow">
+      <span class="node"><b>Staff browser</b> must be signed into the tailnet</span>
+      <span class="arrow">→</span>
+      <span class="node"><b>ricardos-mac-mini</b>:10030 · tailscale serve</span>
+      <span class="arrow">→</span>
+      <span class="node"><b>ssh tunnel</b> 127.0.0.1:18080<br>pid 92382, up 18h</span>
+      <span class="arrow">→</span>
+      <span class="node"><b>macmini-inf</b> (office) :8080<br>docker: agenticos-app / db / redis</span>
+    </div>
+    <p class="muted" style="margin-bottom:0">Identity on that path is <code>rickymaio@gmail.com</code> — one man's personal account, not a company door. Every person we invite would join his tailnet or receive a share of his machine.</p>
+  </div>
+
+  <p>That is fine for one engineer testing. For eight department owners, and later for all staff, it is three failures at once: <b>an access model with no company identity</b>, <b>a per-person manual share</b> for every joiner and leaver, and <b>a company service riding on one person's hardware</b>.</p>
+
+  <h2>What I recommend</h2>
+
+  <div class="card pick">
+    <p style="margin-top:0"><b>Put a company door on the company domain, with identity checked before anything reaches the platform:</b> a Cloudflare Tunnel running from <code>macmini-inf</code>, published as <code>agenticos.infinitybrands.co.za</code>, with Cloudflare Access allowing only <code>@infinitybrands.co.za</code> addresses — and the platform keeping its own invite-only login behind that.</p>
+    <p style="margin-bottom:0">Two doors, both per-person: the edge checks who you are, the app checks whether you were invited. Nothing else on the machine is reachable. Staff install nothing — they tap a normal https link on a phone, the way they already use Zoho.</p>
+  </div>
+
+  <h3>Why this one, on our facts</h3>
+  <table>
+    <thead><tr><th>Fact</th><th>Why it decides the choice</th></tr></thead>
+    <tbody>
+      <tr><td><b>The domain is already on Cloudflare</b><br><span class="muted">NS: <code>chin.ns.cloudflare.com</code>, <code>west.ns.cloudflare.com</code></span></td><td>One subdomain and one tunnel. No DNS migration, no new vendor, no registrar work. This is the cheapest path available to us.</td></tr>
+      <tr><td><b>The app already runs in the office</b><br><span class="muted">9 containers on <code>macmini-inf</code>: app, worker, frontend, gateway, db, redis, embed</span></td><td>The door belongs in front of the app, not in front of a relay in Ricardo's house. The mini drops out of the staff path entirely.</td></tr>
+      <tr><td><b>The office link is the weak part</b><br><span class="muted">recorded as blocked (INF-217); the relay today is an <code>ssh -L</code> that dies with its session</span></td><td>A tunnel is outbound-only and reconnects by itself. It is strictly more reliable than a forwarded ssh socket — and opens no ports at the office.</td></tr>
+      <tr><td><b>Pilot is 8 department owners</b><br><span class="muted">account count on the platform today: one, the owner</span></td><td>Inside the free tier of Cloudflare Zero Trust (up to 50 users). No licence to buy before the pilot proves itself.</td></tr>
+      <tr><td><b>Google sign-in route already exists</b><br><span class="muted"><code>/api/oauth/google/login</code> → 302</span></td><td>Edge identity can go live first; app SSO follows without a rebuild.</td></tr>
+      <tr><td><b>PRD decision D4 is still open</b><br><span class="muted">"a new public entry point is not assumed approved"</span></td><td>This is the authenticated company address D4 describes — approved deliberately, on the record, rather than a public door arriving by accident.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>What I rejected, and why</h3>
+  <table>
+    <thead><tr><th>Option</th><th>Why it loses</th></tr></thead>
+    <tbody>
+      <tr><td><b>Share the mini with each person</b><br><span class="muted">what was asked of us this week</span></td><td>A machine share is whole-machine access — screen control (<code>3283</code>), the model gateway (<code>11434</code>), the Maio cockpit, Plex, the agent ports. One gmail address per person, granted by hand, revoked by hand.</td></tr>
+      <tr><td><b>A company tailnet for all staff</b></td><td>Clean network identity, but every staff member installs a VPN client to use a chat tool, and paid seats per user. Right answer for <b>admin</b> access, wrong answer for staff. Keep the tailnet for us.</td></tr>
+      <tr><td><b>Funnel on the mini</b> <span class="muted">(quickest)</span></td><td>Publishes a company service on Ricardo's personal tailnet domain, keeps the office relay hop, and leaves identity at the app login only.</td></tr>
+      <tr><td><b>A public hostname with app login only</b></td><td>One password between a stranger and a platform that holds shared Zoho credentials. No edge identity, no per-person audit, no rate limiting.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The order of work</h2>
+  <p class="muted">By dependency, not by date. Each stage ends on a yes/no fact, never on a week.</p>
+  <table>
+    <thead><tr><th class="num">Stage</th><th>What happens</th><th>Done when</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="num stage">1</td>
+        <td>Settle the door and answer this week's request. Nobody gets a whole-machine share.</td>
+        <td>Tuan has reached the console once through access limited to the console port only — or he holds a seat on the new door instead.</td>
+      </tr>
+      <tr>
+        <td class="num stage">2</td>
+        <td>Stand the door up: tunnel from <code>macmini-inf</code> → <code>agenticos.infinitybrands.co.za</code>; Access policy limited to company addresses; app stays invite-only.</td>
+        <td>Two named pilot staff sign in from a phone on mobile data, no VPN installed — and an address outside the company is refused at the edge.</td>
+      </tr>
+      <tr>
+        <td class="num stage">3</td>
+        <td>Identity behind the door: SSO (Google route already live, or Zoho Directory through generic SAML) and an entitlement list mapping each member to a Zoho user.</td>
+        <td>A suspended member's session dies and their next tool call is refused; the list answers "who is this person in Zoho".</td>
+      </tr>
+      <tr>
+        <td class="num stage">4</td>
+        <td>Retire the relay: no staff route through the mini, no ssh hop. The mini keeps admin access only, on a company-owned tailnet with tagged devices and group rules.</td>
+        <td><code>tailscale serve status</code> shows no staff-facing service, and staff use only the company hostname.</td>
+      </tr>
+      <tr>
+        <td class="num stage">5</td>
+        <td>Harden for real staff use: rate limits, session expiry, audit retention that names the human, backups, patch cadence.</td>
+        <td>An audit record answers "which person received this salary row" — not just which connection asked.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Risks I would not ship past</h2>
+  <div class="card warn">
+    <ul style="margin-bottom:0">
+      <li><b>Shared Zoho identity.</b> The platform calls Zoho as one shared connection while each person has their own app account. Before staff use it on real records, those two must be linked — otherwise a suspended person keeps read access through the shared connection.</li>
+      <li><b>The office box is the whole service.</b> One host, 76% full disk (18 GB free), no confirmed backup of the platform's database. A staff tool needs a restore someone has actually run.</li>
+      <li><b>Internet exposure changes the job.</b> TLS, session expiry, upload limits, lockout and a patching rhythm stop being optional once the link works from anywhere.</li>
+    </ul>
+  </div>
+
+  <h2>Sources</h2>
+  <ul>
+    <li><a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Zero Trust — Connect networks with a tunnel (outbound only, no open ports)</a></li>
+    <li><a href="https://developers.cloudflare.com/cloudflare-one/policies/access/">Cloudflare Access — per-application identity policies</a></li>
+    <li><a href="https://developers.cloudflare.com/cloudflare-one/identity/idp-integration/generic-saml/">Cloudflare Access — generic SAML identity provider (for Zoho Directory)</a></li>
+    <li><a href="https://help.zoho.com/portal/en/kb/directory">Zoho Directory — identity and SSO administration</a></li>
+    <li><a href="https://tailscale.com/kb/1084/sharing">Tailscale — sharing a machine, and exactly what a sharee can reach</a></li>
+    <li><a href="https://tailscale.com/kb/1018/acls">Tailscale — access control policies that restrict a shared machine to one port</a></li>
+  </ul>
+  <p class="muted">Machine facts in this page were read from the live systems on 13 November 2026: <code>tailscale serve status</code> and <code>tailscale debug prefs</code> on the mini, <code>lsof</code> for listening ports, the ssh process carrying <code>:18080</code>, <code>docker ps</code> on <code>macmini-inf</code>, and the AgenticOS deployment record at <code>Infinity Brands/AgenticOS/DEPLOYMENT-RECORD.md</code>.</p>
+
+  <footer>Prepared by Bruce Wayne · chief of staff · recommendation, not a decision taken · no access was granted, changed or revoked in the making of this page.</footer>
+</div>
+</body>
+</html>
