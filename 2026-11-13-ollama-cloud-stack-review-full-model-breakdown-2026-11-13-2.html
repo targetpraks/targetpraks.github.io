@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ollama Cloud stack review — 2026-11-13</title>
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#11141a; --panel2:#161a22; --line:#232a35;
+    --ink:#e6ebf2; --dim:#8a95a6; --dim2:#5f6b7d;
+    --acc:#4ea1ff; --good:#5ddc8a; --warn:#ffc857; --bad:#ff6b6b; --vio:#b48bff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 96px}
+  h1{font-size:34px;line-height:1.15;margin:0 0 10px;letter-spacing:-.6px;font-weight:680}
+  h2{font-size:21px;margin:56px 0 6px;letter-spacing:-.2px;font-weight:650}
+  h2 .num{color:var(--acc);font-variant-numeric:tabular-nums;margin-right:10px;font-weight:600}
+  h3{font-size:15px;margin:30px 0 10px;font-weight:650;color:var(--ink)}
+  p{margin:10px 0;color:#c3ccd9}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 6px}
+  .rule{height:1px;background:var(--line);margin:14px 0 0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+  .kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--acc);border:1px solid #1d3a5c;background:#0d1a29;padding:5px 10px;border-radius:999px;margin-bottom:18px}
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:900px){.g4,.g3,.g2{grid-template-columns:1fr 1fr}}
+  @media(max-width:640px){.g4,.g3,.g2{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card .lab{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim2);margin-bottom:8px}
+  .card .big{font-size:27px;font-weight:660;letter-spacing:-.5px}
+  .card .note{font-size:12.5px;color:var(--dim);margin-top:6px}
+  .verdict{border-left:3px solid var(--acc);background:linear-gradient(90deg,#0e1723,#0b0f15);
+    border-radius:0 12px 12px 0;padding:18px 22px;margin:22px 0}
+  .verdict ol{margin:6px 0 0;padding-left:22px}
+  .verdict li{margin:9px 0;color:#d3dbe6}
+  .verdict b{color:#fff}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th{text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim2);
+    font-weight:600;padding:8px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:8px 9px;border-bottom:1px solid #1a202a;vertical-align:middle}
+  tbody tr:hover{background:#131822}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .name{font-weight:600;color:#fff;white-space:nowrap}
+  .tag{display:inline-block;font-size:10.5px;padding:2px 6px;border-radius:5px;background:#1b2230;
+    color:var(--dim);border:1px solid #2a3341;margin-right:3px}
+  .tag.v{color:#9ad7ff;border-color:#21405c;background:#0f1d2a}
+  .tag.on{color:#9be7b4;border-color:#20492f;background:#0e1d15}
+  .bar{position:relative;height:9px;border-radius:6px;background:#1b212b;overflow:hidden;min-width:80px}
+  .bar > i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;display:block}
+  .bar.blue > i{background:linear-gradient(90deg,#2f6ea8,#4ea1ff)}
+  .bar.green > i{background:linear-gradient(90deg,#2b7d4d,#5ddc8a)}
+  .bar.red > i{background:linear-gradient(90deg,#8a3232,#ff6b6b)}
+  .bar.vio > i{background:linear-gradient(90deg,#5b3f99,#b48bff)}
+  .bar.gold > i{background:linear-gradient(90deg,#8a6a1f,#ffc857)}
+  .rowlead{display:flex;align-items:center;gap:10px}
+  .best{color:var(--good);font-weight:600}
+  .worst{color:var(--bad);font-weight:600}
+  .mute{color:var(--dim)}
+  .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:600}
+  .pill.keep{background:#0e2418;color:#7ce6a0;border:1px solid #1e5133}
+  .pill.move{background:#0d1e33;color:#7cb8ff;border:1px solid #1d4269}
+  .pill.hold{background:#2a2412;color:#ffd479;border:1px solid #4a3d17}
+  .pill.new{background:#1e1430;color:#c3a2ff;border:1px solid #3a2a5c}
+  .foot{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:var(--dim2);font-size:12.5px}
+  .callout{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:16px 0}
+  .callout.warn{border-color:#4a3d17;background:#191505}
+  .callout.good{border-color:#1e5133;background:#0b1a12}
+  .callout .h{font-weight:650;margin-bottom:6px;color:#fff;font-size:14px}
+  .kv{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:13.5px}
+  .kv div:nth-child(odd){color:var(--dim2)}
+  .axis{display:flex;justify-content:space-between;font-size:11px;color:var(--dim2);margin-top:4px}
+  code{background:#1a212c;padding:1px 6px;border-radius:5px;font-size:12.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe0f5}
+  .small{font-size:12.5px;color:var(--dim)}
+  a{color:var(--acc);text-decoration:none}
+  .rank{width:64px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="kicker">Adrianna A · AI stack review · 13 Nov 2026</span>
+  <h1>Ollama Cloud: the full model breakdown, and what to change</h1>
+  <p class="sub">A read-only audit of every Ollama Cloud model against our live routes, our own 30-day usage, and
+  four independent benchmark boards pulled this morning. <b>Nothing has been changed.</b></p>
+  <div class="rule"></div>
+
+  <div class="verdict">
+    <div style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc);font-weight:600">The answer in five lines</div>
+    <ol>
+      <li><b>Inkling 2 Small is not a vision upgrade.</b> It has no LMArena vision ranking at all, and its only
+      sibling there sits at #74. Our current vision model, GLM-5.3-Flash, is <b>#24 of 167</b> and the best-ranked
+      model we can reach under the proprietary wall. Its real weakness is <b>tool calling — τ-bench 0.633, last in
+      the cheap tier</b>, in a fleet that does nothing but tool calls. Hold it.</li>
+      <li><b>There is one free win on the board:</b> <code>kimi-k3</code> → <code>kimi-k3.1-pro</code>. Cheaper on both
+      input ($3.00 → $2.00) and output ($15.00 → $10.00), and a different league on quality (AA 17.4 → 46.5).
+      It is already on Ollama Cloud — our own October matrix says it is not.</li>
+      <li><b>Our primary is still the right primary.</b> No Ollama Cloud model at or near its price beats
+      deepseek-v4.1-flash on coding, long-agentic work or cost. It is 79% of our token spend and worth it.</li>
+      <li><b>The cheapest model in the catalogue is also the best tool-caller</b> (mimo-v2.6-flash, τ 0.779 at
+      $0.14/$0.28) and we barely use it — 8 calls in 30 days. That is the biggest unexploited lane.</li>
+      <li><b>The single largest lever is not a model at all: it is the clock.</b> Off-peak halves the deepseek price;
+      our 30-day main-lane spend is $128.80 at peak rates, <b>$64.40</b> if the heavy runs move outside the peak windows.</li>
+    </ol>
+  </div>
+
+  <h2><span class="num">01</span> What we actually run today</h2>
+  <p>Read from the live config tree and the usage ledger, not from documentation.</p>
+
+  <div class="grid g4" style="margin-top:18px">
+    <div class="card"><div class="lab">Homes pinned to one model</div><div class="big">35 / 35</div>
+      <div class="note">Every profile config, root included, sets <span class="mono">deepseek-v4.1-flash:1017-cloud</span>. One supplier, one model, no diversity.</div></div>
+    <div class="card"><div class="lab">30-day token spend (Ollama Cloud)</div><div class="big">$163</div>
+      <div class="note">Peak rates. <b>$99</b> if deepseek runs land off-peak. 195M input · 4.55B cached · 35.8M output.</div></div>
+    <div class="card"><div class="lab">Deepseek share of that spend</div><div class="big">79%</div>
+      <div class="note">$128.80 of $163. The next line is kimi-k3 at $23.46 — on 0.5% of the tokens.</div></div>
+    <div class="card"><div class="lab">Ollama Cloud catalogue</div><div class="big">20 models</div>
+      <div class="note">All 20 cloud manifests pulled and inspected with <span class="mono">ollama show</span> this morning.</div></div>
+  </div>
+
+  <h3>Routes as wired right now</h3>
+  <table>
+    <thead><tr><th>Seat</th><th>Model</th><th>Supplier</th><th class="n">In / cached / out</th><th>Why it is there</th></tr></thead>
+    <tbody>
+      <tr><td class="name">Main · fast · deep · all 35 homes</td><td class="mono">deepseek-v4.1-flash:1017-cloud</td><td>Ollama Cloud</td><td class="n">0.30 · 0.006 · 1.20</td><td class="mute">Best reachable composite at flash price</td></tr>
+      <tr><td class="name">Vision + auxiliary vision</td><td class="mono">glm-5.3-flash:cloud</td><td>Ollama Cloud</td><td class="n">0.15 · 0.03 · 0.50</td><td class="mute">#24 vision board, best under the wall</td></tr>
+      <tr><td class="name">Bulk (audio/video, 1M)</td><td class="mono">mimo-v2.6-flash:cloud</td><td>Ollama Cloud</td><td class="n">0.14 · 0.0028 · 0.28</td><td class="mute">Cheapest, best τ-bench, but barely used</td></tr>
+      <tr><td class="name">Local / offline net</td><td class="mono">local-delegate:latest</td><td>this Mac</td><td class="n">—</td><td class="mute">No cloud call, zero cost</td></tr>
+      <tr><td class="name">Council chairman</td><td class="mono">deepseek-v4.1-flash:1017-cloud</td><td>Ollama Cloud</td><td class="n">0.30 · 0.006 · 1.20</td><td class="mute">high reasoning effort</td></tr>
+      <tr><td class="name">MoA panel (3 references)</td><td class="mono">glm-5.3 · kimi-k3 · minimax-m3.1-flash</td><td>OC + NVIDIA</td><td class="n">1.40 · 0.26 · 4.40</td><td class="mute">The priciest per-token seat we own</td></tr>
+      <tr><td class="name">Decision gates (§8)</td><td class="mono">d3-flash-mlx</td><td>this Mac</td><td class="n">—</td><td class="mute">Local decision model, zero cost</td></tr>
+      <tr><td class="name">Big Brains deep option</td><td class="mono">kimi-k3:cloud</td><td>Ollama Cloud</td><td class="n">3.00 · 0.30 · 15.00</td><td class="mute">The most expensive line we run</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Where the money went — 30 days, real ledger</h3>
+  <table>
+    <thead><tr><th>Model</th><th class="n">Input</th><th class="n">Cached</th><th class="n">Output</th><th class="n">Cost @ peak</th><th style="width:26%">Share of spend</th></tr></thead>
+    <tbody>
+      <tr><td class="name">deepseek-v4.1-flash <span class="tag">main</span></td><td class="n">195.1M</td><td class="n">4,550.8M</td><td class="n">35.8M</td><td class="n">$128.80</td>
+        <td><div class="bar blue"><i style="width:79%"></i></div></td></tr>
+      <tr><td class="name">kimi-k3 <span class="tag">MoA · deep</span></td><td class="n">3.6M</td><td class="n">16.4M</td><td class="n">0.51M</td><td class="n worst">$23.46</td>
+        <td><div class="bar red"><i style="width:14.4%"></i></div></td></tr>
+      <tr><td class="name">kimi-k3.1-pro</td><td class="n">1.2M</td><td class="n">6.5M</td><td class="n">0.12M</td><td class="n">$4.86</td>
+        <td><div class="bar blue"><i style="width:3%"></i></div></td></tr>
+      <tr><td class="name">glm-5.3 <span class="tag">MoA ref</span></td><td class="n">0.37M</td><td class="n">3.6M</td><td class="n">0.17M</td><td class="n">$2.20</td>
+        <td><div class="bar blue"><i style="width:1.4%"></i></div></td></tr>
+      <tr><td class="name">kimi-k2.7-code</td><td class="n">0.32M</td><td class="n">8.1M</td><td class="n">0.08M</td><td class="n">$2.17</td>
+        <td><div class="bar blue"><i style="width:1.3%"></i></div></td></tr>
+      <tr><td class="name">glm-5.3-flash <span class="tag">vision</span></td><td class="n">0.90M</td><td class="n">13.4M</td><td class="n">1.23M</td><td class="n">$1.15</td>
+        <td><div class="bar blue"><i style="width:0.7%"></i></div></td></tr>
+      <tr><td class="name">everything else <span class="tag">minimax · mimo · gemma · nemotron</span></td><td class="n">0.23M</td><td class="n">0.01M</td><td class="n">0.25M</td><td class="n">$0.35</td>
+        <td><div class="bar blue"><i style="width:0.2%"></i></div></td></tr>
+    </tbody>
+  </table>
+  <p class="small">Spend computed from the live <span class="mono">session_model_usage</span> ledger × today's Ollama Cloud
+  price list. Deepseek cached reads are 96% of its token volume — the prefix cache is doing the heavy lifting and must
+  stay warm; that is why its effective cost is far below sticker price.</p>
+
+  <h2><span class="num">02</span> Every Ollama Cloud model, measured</h2>
+  <p>Twenty cloud models, each manifest pulled and read locally (<span class="mono">ollama show</span>), priced from
+  the live pricing page. Sizes and context windows below are the manifest's own numbers, not the marketing copy.</p>
+
+  <table>
+    <thead><tr><th>Model</th><th class="n">Params</th><th class="n">Context</th><th>Quant</th><th>Caps</th><th class="n">In</th><th class="n">Cached</th><th class="n">Out</th></tr></thead>
+    <tbody>
+      <tr><td class="name">kimi-k3.1-pro</td><td class="n">2.81T</td><td class="n">1M</td><td>MXFP4</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">2.00</td><td class="n">0.20</td><td class="n">10.00</td></tr>
+      <tr><td class="name">kimi-k3</td><td class="n">2.81T</td><td class="n">1M</td><td>MXFP4</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">3.00</td><td class="n">0.30</td><td class="n">15.00</td></tr>
+      <tr><td class="name">deepseek-v4-pro</td><td class="n">1.65T</td><td class="n">1M</td><td>FP8</td><td><span class="tag">tools</span></td><td class="n">1.32 / 0.66</td><td class="n">0.044</td><td class="n">3.96 / 1.98</td></tr>
+      <tr><td class="name">mistral-large-4</td><td class="n">1.05T</td><td class="n">1M</td><td>—</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">0.70</td><td class="n">0.07</td><td class="n">2.10</td></tr>
+      <tr><td class="name">kimi-k2.7-code</td><td class="n">1.04T</td><td class="n">256K</td><td>INT4</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">0.95</td><td class="n">0.19</td><td class="n">4.00</td></tr>
+      <tr><td class="name">mimo-v2.6-pro</td><td class="n">1.02T</td><td class="n">1M</td><td>FP8</td><td><span class="tag v">vision</span> <span class="tag">tools</span> <span class="tag on">audio</span></td><td class="n">0.435</td><td class="n">0.0036</td><td class="n">0.87</td></tr>
+      <tr><td class="name">muse-spark-open</td><td class="n">822B</td><td class="n">1M</td><td>FP8</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">1.25</td><td class="n">0.15</td><td class="n">4.25</td></tr>
+      <tr><td class="name">deepseek-v4.1-flash <span class="tag on">our primary</span></td><td class="n">763B</td><td class="n">1M</td><td>FP8</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n best">0.30 / 0.15</td><td class="n best">0.006</td><td class="n best">1.20 / 0.60</td></tr>
+      <tr><td class="name">glm-5.2</td><td class="n">756B</td><td class="n">1M</td><td>—</td><td><span class="tag">tools</span></td><td class="n">1.40</td><td class="n">0.26</td><td class="n">4.40</td></tr>
+      <tr><td class="name">glm-5.3</td><td class="n">753B</td><td class="n">1M</td><td>FP8</td><td><span class="tag">tools</span></td><td class="n">1.40</td><td class="n">0.26</td><td class="n">4.40</td></tr>
+      <tr><td class="name">inkling-2-small</td><td class="n">594B</td><td class="n">1M</td><td>NVFP4</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">0.30</td><td class="n">0.03</td><td class="n">1.00</td></tr>
+      <tr><td class="name">nemotron-3-ultra</td><td class="n">550B</td><td class="n">256K</td><td>—</td><td><span class="tag">tools</span></td><td class="n">0.10</td><td class="n">0.10</td><td class="n">3.00</td></tr>
+      <tr><td class="name">beam</td><td class="n">501B</td><td class="n">1M</td><td>—</td><td><span class="tag">tools</span></td><td class="n best">0.125</td><td class="n">0.015</td><td class="n">0.40</td></tr>
+      <tr><td class="name">minimax-m3.1-flash</td><td class="n">428B</td><td class="n">1M</td><td>—</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">0.15</td><td class="n">0.015</td><td class="n">0.60</td></tr>
+      <tr><td class="name">glm-5.3-flash <span class="tag on">our vision</span></td><td class="n">321B</td><td class="n">1M</td><td>FP8</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">0.15</td><td class="n">0.03</td><td class="n">0.50</td></tr>
+      <tr><td class="name">mimo-v2.6-flash <span class="tag on">our bulk</span></td><td class="n">309B</td><td class="n">1M</td><td>FP8</td><td><span class="tag v">vision</span> <span class="tag">tools</span> <span class="tag on">audio</span></td><td class="n best">0.14</td><td class="n best">0.0028</td><td class="n best">0.28</td></tr>
+      <tr><td class="name">nemotron-3-super</td><td class="n">120B</td><td class="n">256K</td><td>NVFP4</td><td><span class="tag">tools</span></td><td class="n best">0.015</td><td class="n">0.015</td><td class="n">0.60</td></tr>
+      <tr><td class="name">gemma4</td><td class="n">32.7B</td><td class="n">256K</td><td>BF16</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n best">0.14</td><td class="n">0.05</td><td class="n">0.40</td></tr>
+      <tr><td class="name">clef</td><td class="n">27.4B</td><td class="n">64K</td><td>BF16</td><td><span class="tag v">vision</span></td><td class="n">0.24</td><td class="n">—</td><td class="n">—</td></tr>
+      <tr><td class="name">minimax-m3</td><td class="n">—</td><td class="n">512K</td><td>—</td><td><span class="tag v">vision</span> <span class="tag">tools</span></td><td class="n">0.60</td><td class="n">0.12</td><td class="n">2.40</td></tr>
+    </tbody>
+  </table>
+  <p class="small">Prices are USD per 1M tokens. Two-column figures are peak / off-peak. Off-peak, per the pricing page,
+  applies outside the 12:00 and 18:00 UTC windows on weekdays and all day at weekends — deepseek is the only family that
+  discounts. <b>minimax-m3</b> reports 512K in the manifest while its page advertises 1M; trust the manifest.</p>
+
+  <h2><span class="num">03</span> The evidence, board by board</h2>
+  <p class="small">All four boards pulled fresh this morning with <span class="mono">bench-pull</span>:
+  Artificial Analysis 111 models · LMArena 421 text / 156 code / 167 vision / 46 document ·
+  LiveBench release 2026-11-06 (35 models) · OpenRouter self-reported 287 models. Where a board has no row for a model,
+  that is shown as a dash — it is not a zero.</p>
+
+  <h3>Intelligence — Artificial Analysis index</h3>
+  <table>
+    <thead><tr><th>Model</th><th class="n">AA index</th><th style="width:44%">Relative</th><th class="n">Input $</th><th class="n">Output $</th></tr></thead>
+    <tbody>
+      <tr><td class="name">kimi-k3.1-pro</td><td class="n">46.45</td><td><div class="bar vio"><i style="width:100%"></i></div></td><td class="n">2.00</td><td class="n">10.00</td></tr>
+      <tr><td class="name">deepseek-v4.1-flash:1017 <span class="tag on">ours</span></td><td class="n">32.59</td><td><div class="bar blue"><i style="width:70%"></i></div></td><td class="n">0.30</td><td class="n">1.20</td></tr>
+      <tr><td class="name">glm-5.3</td><td class="n">31.65</td><td><div class="bar blue"><i style="width:68%"></i></div></td><td class="n">1.40</td><td class="n">4.40</td></tr>
+      <tr><td class="name">inkling-2-small <span class="tag">the new one</span></td><td class="n">30.63</td><td><div class="bar gold"><i style="width:66%"></i></div></td><td class="n">0.30</td><td class="n">1.00</td></tr>
+      <tr><td class="name">mimo-v2.6-pro</td><td class="n">29.90</td><td><div class="bar blue"><i style="width:64%"></i></div></td><td class="n">0.435</td><td class="n">0.87</td></tr>
+      <tr><td class="name">minimax-m3.1-flash</td><td class="n">29.06</td><td><div class="bar blue"><i style="width:63%"></i></div></td><td class="n">0.15</td><td class="n">0.60</td></tr>
+      <tr><td class="name">glm-5.3-flash <span class="tag on">ours</span></td><td class="n">27.80</td><td><div class="bar blue"><i style="width:60%"></i></div></td><td class="n">0.15</td><td class="n">0.50</td></tr>
+      <tr><td class="name">mimo-v2.6-flash <span class="tag on">ours</span></td><td class="n">26.70</td><td><div class="bar blue"><i style="width:57%"></i></div></td><td class="n">0.14</td><td class="n">0.28</td></tr>
+      <tr><td class="name">mistral-large-4</td><td class="n">26.12</td><td><div class="bar blue"><i style="width:56%"></i></div></td><td class="n">0.70</td><td class="n">2.10</td></tr>
+      <tr><td class="name">muse-spark-open</td><td class="n">24.88</td><td><div class="bar blue"><i style="width:54%"></i></div></td><td class="n">1.25</td><td class="n">4.25</td></tr>
+      <tr><td class="name">deepseek-v4-pro</td><td class="n">23.06</td><td><div class="bar blue"><i style="width:50%"></i></div></td><td class="n">1.32</td><td class="n">3.96</td></tr>
+      <tr><td class="name">minimax-m3</td><td class="n">18.88</td><td><div class="bar blue"><i style="width:41%"></i></div></td><td class="n">0.60</td><td class="n">2.40</td></tr>
+      <tr><td class="name">beam</td><td class="n">17.73</td><td><div class="bar blue"><i style="width:38%"></i></div></td><td class="n">0.125</td><td class="n">0.40</td></tr>
+      <tr><td class="name">kimi-k3 <span class="tag">today's MoA ref</span></td><td class="n">17.40</td><td><div class="bar red"><i style="width:37%"></i></div></td><td class="n">3.00</td><td class="n">15.00</td></tr>
+      <tr><td class="name">nemotron-3-super</td><td class="n">13.62</td><td><div class="bar blue"><i style="width:29%"></i></div></td><td class="n">0.015</td><td class="n">0.60</td></tr>
+      <tr><td class="name">nemotron-3-ultra</td><td class="n">11.76</td><td><div class="bar blue"><i style="width:25%"></i></div></td><td class="n">0.10</td><td class="n">3.00</td></tr>
+      <tr><td class="name">gemma4</td><td class="n">4.38</td><td><div class="bar blue"><i style="width:9%"></i></div></td><td class="n">0.14</td><td class="n">0.40</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Tool calling — τ-bench verified (airline), the number that matters for this fleet</h3>
+  <p class="small">Axis zoomed to 0.60 – 0.80. Every agent turn in this house is a tool call; a model that cannot
+  call tools reliably is a liability no matter how well it reasons.</p>
+  <table>
+    <thead><tr><th>Model</th><th class="n">τ-bench</th><th style="width:46%">0.60 → 0.80</th><th>Read</th></tr></thead>
+    <tbody>
+      <tr><td class="name">mimo-v2.6-flash <span class="tag on">our bulk</span></td><td class="n">0.779</td><td><div class="bar green"><i style="width:90%"></i></div></td><td class="mute">Best in the cheap tier</td></tr>
+      <tr><td class="name">deepseek-v4-pro</td><td class="n">0.775</td><td><div class="bar green"><i style="width:88%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">glm-5.3</td><td class="n">0.773</td><td><div class="bar green"><i style="width:87%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">mimo-v2.6-pro</td><td class="n">0.768</td><td><div class="bar green"><i style="width:84%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">kimi-k3.1-pro</td><td class="n">0.759</td><td><div class="bar green"><i style="width:79%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">muse-spark-open</td><td class="n">0.757</td><td><div class="bar green"><i style="width:78%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">glm-5.3-flash <span class="tag on">our vision</span></td><td class="n">0.756</td><td><div class="bar green"><i style="width:78%"></i></div></td><td class="mute">Refuses rather than fabricates</td></tr>
+      <tr><td class="name">gemma4</td><td class="n">0.753</td><td><div class="bar green"><i style="width:77%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">minimax-m3</td><td class="n">0.745</td><td><div class="bar green"><i style="width:73%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">kimi-k3</td><td class="n">0.736</td><td><div class="bar green"><i style="width:68%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">deepseek-v4.1-flash:1017 <span class="tag on">ours</span></td><td class="n">0.723</td><td><div class="bar green"><i style="width:62%"></i></div></td><td class="mute">Solid, not the best</td></tr>
+      <tr><td class="name">beam</td><td class="n">0.693</td><td><div class="bar gold"><i style="width:47%"></i></div></td><td class="mute">—</td></tr>
+      <tr><td class="name">minimax-m3.1-flash</td><td class="n">0.667</td><td><div class="bar red"><i style="width:34%"></i></div></td><td class="mute">Weak for a tool loop</td></tr>
+      <tr><td class="name">inkling-2-small <span class="tag">the new one</span></td><td class="n">0.633</td><td><div class="bar red"><i style="width:17%"></i></div></td><td class="worst">Worst in the tier</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn">
+    <div class="h">The launch post says "tool calling with MCP". The board says 0.633 — the weakest tool-caller
+    on this list, below every cheap model we already run.</div>
+    <p style="margin:6px 0 0">Its knowledge is genuinely strong (GPQA-Diamond 0.911, above our primary's 0.901 and
+    below only kimi-k3.1-pro's 0.929). The gap between <i>what it knows</i> and <i>what it can do</i> is the whole story:
+    a reading model, not an agent.</p>
+  </div>
+
+  <h3>Coding and long-agentic work — LiveBench, release 2026-11-06</h3>
+  <table>
+    <thead><tr><th>Model</th><th class="n">Long agentic</th><th class="n">Coding</th><th class="n">Reasoning</th><th class="n">Data analysis</th><th class="n">Research</th></tr></thead>
+    <tbody>
+      <tr><td class="name">deepseek-v4.1-flash:1017 <span class="tag on">ours</span></td><td class="n best">38.8</td><td class="n best">80.4</td><td class="n">89.1</td><td class="n">79.5</td><td class="n">78.6</td></tr>
+      <tr><td class="name">kimi-k3.1-pro</td><td class="n">38.7</td><td class="n">67.8</td><td class="n best">91.1</td><td class="n">79.1</td><td class="n best">82.1</td></tr>
+      <tr><td class="name">mimo-v2.6-pro</td><td class="n">36.4</td><td class="n">64.5</td><td class="n">79.6</td><td class="n">72.3</td><td class="n">84.8</td></tr>
+      <tr><td class="name">kimi-k3</td><td class="n">36.0</td><td class="n">53.1</td><td class="n">90.7</td><td class="n">78.7</td><td class="n">79.8</td></tr>
+      <tr><td class="name">minimax-m3.1-flash</td><td class="n">25.7</td><td class="n">68.8</td><td class="n">82.9</td><td class="n">71.4</td><td class="n">76.7</td></tr>
+      <tr><td class="name">mistral-large-4</td><td class="n">24.7</td><td class="n">79.4</td><td class="n">85.2</td><td class="n">76.6</td><td class="n">80.3</td></tr>
+      <tr><td class="name">glm-5.3-flash <span class="tag on">ours</span></td><td class="n">20.7</td><td class="n">70.9</td><td class="n">77.6</td><td class="n">76.4</td><td class="n">73.9</td></tr>
+      <tr><td class="name">muse-spark-open</td><td class="n">12.1</td><td class="n">55.1</td><td class="n">73.7</td><td class="n">60.2</td><td class="n">82.7</td></tr>
+      <tr><td class="name">inkling-2-small <span class="tag">the new one</span></td><td class="n worst">9.8</td><td class="n worst">48.7</td><td class="n">78.3</td><td class="n">72.8</td><td class="n">60.3</td></tr>
+      <tr><td class="name">gemma4</td><td class="n">8.5</td><td class="n">20.3</td><td class="n">68.3</td><td class="n">53.3</td><td class="n">38.1</td></tr>
+    </tbody>
+  </table>
+  <p class="small">LiveBench 2026-11-06 carries 35 models; a model absent from the release is not scoring zero.
+  Note mistral-large-4's 79.4 coding at $0.70/$2.10 — the strongest alternative coder we have not wired, and it is
+  weak where we need strength (long agentic 24.7).</p>
+
+  <h2><span class="num">04</span> The vision question, answered directly</h2>
+  <p>You asked whether this is a better stack for our vision. The vision board is the only independent
+  human-preference vision ranking available to us (167 models), so it decides the question.</p>
+
+  <table>
+    <thead><tr><th class="n">Rank</th><th>Model</th><th class="n">Rating</th><th style="width:34%">1200 → 1330</th><th>Reachable</th></tr></thead>
+    <tbody>
+      <tr><td class="rank">1–3</td><td class="name">Claude Fable 5 / Opus 5.5 / Fable 5.1</td><td class="n">1326–1322</td><td><div class="bar vio"><i style="width:100%"></i></div></td><td class="worst">no</td></tr>
+      <tr><td class="rank">12</td><td class="name">Muse Spark 1.3 (Max)</td><td class="n">1310</td><td><div class="bar vio"><i style="width:93%"></i></div></td><td class="worst">no</td></tr>
+      <tr><td class="rank">14</td><td class="name">Muse Spark <span class="small">(open variant unconfirmed)</span></td><td class="n">1306</td><td><div class="bar gold"><i style="width:90%"></i></div></td><td class="mute">maybe — $1.25/$4.25</td></tr>
+      <tr><td class="rank">24</td><td class="name">GLM-5.3-Flash <span class="tag on">our vision route</span></td><td class="n">1295</td><td><div class="bar green"><i style="width:81%"></i></div></td><td class="best">yes — $0.15/$0.50</td></tr>
+      <tr><td class="rank">36</td><td class="name">Gemma 4 31B</td><td class="n">1279</td><td><div class="bar green"><i style="width:68%"></i></div></td><td class="best">yes — $0.14/$0.40</td></tr>
+      <tr><td class="rank">37</td><td class="name">DeepSeek-V4.1-Flash (0910)</td><td class="n">1279</td><td><div class="bar green"><i style="width:68%"></i></div></td><td class="best">yes — already ours</td></tr>
+      <tr><td class="rank">47</td><td class="name">MiMo-V2.6-Pro</td><td class="n">1266</td><td><div class="bar green"><i style="width:57%"></i></div></td><td class="best">yes — $0.435/$0.87</td></tr>
+      <tr><td class="rank">56</td><td class="name">MiMo-V2.6-Flash</td><td class="n">1260</td><td><div class="bar green"><i style="width:52%"></i></div></td><td class="best">yes — $0.14/$0.28</td></tr>
+      <tr><td class="rank">70</td><td class="name">Mistral Large 4</td><td class="n">1244</td><td><div class="bar gold"><i style="width:38%"></i></div></td><td class="best">yes — $0.70/$2.10</td></tr>
+      <tr><td class="rank">74</td><td class="name">Inkling-Small <span class="tag">the sibling</span></td><td class="n">1236</td><td><div class="bar gold"><i style="width:31%"></i></div></td><td class="best">yes</td></tr>
+      <tr><td class="rank">—</td><td class="name">Inkling 2 Small <span class="tag">the announcement</span></td><td class="n">—</td><td><div class="bar red"><i style="width:2%"></i></div></td><td class="mute">no vision row at all</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout good">
+    <div class="h">Verdict on vision: keep what we have.</div>
+    <p style="margin:6px 0 0">GLM-5.3-Flash is <b>#24 of 167</b> and 31 rating points clear of the nearest Inkling.
+    Inkling 2 Small has no vision ranking; its sibling sits at #74. Swapping would be trading a measured
+    #24 for an unmeasured unknown at twice the output price. If we want more vision headroom the ranked evidence
+    points at
+    <b>Gemma 4 31B</b> (document board #35 — a board GLM-5.3-Flash does not appear on at all, at $0.14/$0.40)
+    and, for genuinely hard scans and charts, <b>Muse Spark Open</b> at 8× the price on demand only.</p>
+  </div>
+
+  <h3>The document board — the one we actually need for filings and statements</h3>
+  <p>Only 46 models are ranked on documents. Of everything we can reach at Ollama Cloud prices:</p>
+  <table>
+    <thead><tr><th class="n">Rank</th><th>Model</th><th class="n">Rating</th><th class="n">Input $</th><th class="n">Output $</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="rank">34</td><td class="name">MiniMax-M3</td><td class="n">1437</td><td class="n">0.60</td><td class="n">2.40</td><td class="mute">Best ranked, 4–5× the price</td></tr>
+      <tr><td class="rank">35</td><td class="name">Gemma 4 31B</td><td class="n">1434</td><td class="n">0.14</td><td class="n">0.40</td><td class="mute">Cheapest ranked option; 256K ctx</td></tr>
+      <tr><td class="rank">—</td><td class="name">GLM-5.3-Flash <span class="tag on">our vision route</span></td><td class="n">—</td><td class="n">0.15</td><td class="n">0.50</td><td class="worst">not ranked on documents</td></tr>
+      <tr><td class="rank">—</td><td class="name">Inkling 2 Small</td><td class="n">—</td><td class="n">0.30</td><td class="n">1.00</td><td class="worst">not ranked on documents</td></tr>
+    </tbody>
+  </table>
+  <p class="small">This is the one place the current vision route has no evidence behind it. For
+  financial-document reading specifically — a real Infinity use case — <b>Gemma 4 31B is both cheaper and better
+  documented than what we run today</b>, at a quarter of the context window.</p>
+
+  <h2><span class="num">05</span> What I suggest, seat by seat</h2>
+  <table>
+    <thead><tr><th>Seat</th><th>Today</th><th>Suggested</th><th>Evidence</th><th class="n">Δ / month</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="name">Main · fast · deep · all 35 homes</td>
+        <td class="mono mute">deepseek-v4.1-flash:1017</td>
+        <td><span class="pill keep">Keep</span></td>
+        <td>AA 32.59 is the best under $0.31; LiveBench coding 80.4 and long-agentic 38.8 lead everything reachable; τ 0.723; LMArena code #18. Nothing in the catalogue replaces it inside 2× the price.</td>
+        <td class="n">$0</td>
+      </tr>
+      <tr>
+        <td class="name">Deep / reason seat <span class="small">(Big Brains, MoA panel)</span></td>
+        <td class="mono mute">kimi-k3</td>
+        <td><span class="pill move">Move → kimi-k3.1-pro</span></td>
+        <td>AA 17.4 → <b>46.45</b> (highest we can reach, +13.9 over our primary). τ 0.736 → 0.759. LMArena code #19 → #12. GPQA 0.919 → 0.929. And <b>cheaper on both sides</b>: $3.00/$15.00 → $2.00/$10.00.</td>
+        <td class="n best">−$14</td>
+      </tr>
+      <tr>
+        <td class="name">Vision + auxiliary vision</td>
+        <td class="mono mute">glm-5.3-flash</td>
+        <td><span class="pill keep">Keep</span> · add gemma4 doc fallback</td>
+        <td>#24 of 167 on vision, best reachable under the proprietary wall; refuses rather than fabricates (τ 0.756). Gemma 4 31B is the only cheap reachable model <i>ranked on documents</i> (#35) at $0.14/$0.40.</td>
+        <td class="n">+$0–2</td>
+      </tr>
+      <tr>
+        <td class="name">Hard vision <span class="small">(dense scans, charts, low-quality photos)</span></td>
+        <td class="mono mute">none</td>
+        <td><span class="pill new">Add on-demand</span> muse-spark-open</td>
+        <td>Vision #12–14 tier, 1M ctx, 822B. 8× the price, so it stays a deliberate escalation, never a default.</td>
+        <td class="n">$0 unless used</td>
+      </tr>
+      <tr>
+        <td class="name">Bulk / batch / audio</td>
+        <td class="mono mute">mimo-v2.6-flash</td>
+        <td><span class="pill move">Keep and widen</span></td>
+        <td>τ 0.779 — the best tool-caller in the cheap tier, at $0.14/$0.28, code #25, audio input. Used 8 times in 30 days. This is the lane we are wasting.</td>
+        <td class="n">~$0</td>
+      </tr>
+      <tr>
+        <td class="name">Second worker instead of minimax-m3.1-flash</td>
+        <td class="mono mute">minimax-m3.1-flash</td>
+        <td><span class="pill move">Prefer mimo-v2.6-flash</span></td>
+        <td>Same money (0.15/0.60 vs 0.14/0.28), but τ 0.667 vs 0.779 and 6× the cache price. Minimax keeps a seat only where a distinct lineage is wanted.</td>
+        <td class="n">−$0.10</td>
+      </tr>
+      <tr>
+        <td class="name">§8 decision gates</td>
+        <td class="mono mute">d3-flash-mlx (local)</td>
+        <td><span class="pill new">Trial clef</span></td>
+        <td>27B, 64K, vision, $0.24/Mtok input, purpose-built for <i>state + typed schema → decision</i>. New to the catalogue and not in our October matrix. A gate bake-off is cents.</td>
+        <td class="n">+$1–2 on trial</td>
+      </tr>
+      <tr>
+        <td class="name">Inkling 2 Small</td>
+        <td class="mono mute">not wired</td>
+        <td><span class="pill hold">Hold</span></td>
+        <td>τ 0.633 (last), LiveBench long-agentic 9.8 and coding 48.7 (last), LMArena text #152, no vision or document ranking. One strength: GPQA-D 0.911. Wire it only for a knowledge/reading seat that never touches a tool.</td>
+        <td class="n">$0</td>
+      </tr>
+      <tr>
+        <td class="name">The clock <span class="small">(not a model)</span></td>
+        <td class="mono mute">any hour</td>
+        <td><span class="pill move">Batch off-peak</span></td>
+        <td>Deepseek is exactly half price outside the 12:00 and 18:00 UTC windows on weekdays, and all weekend. Our main lane is $128.80 at peak, <b>$64.40 off-peak</b>.</td>
+        <td class="n best">−$64 potential</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="h">If you only approve one thing</div>
+    <p style="margin:6px 0 0">Move <code>kimi-k3</code> to <code>kimi-k3.1-pro</code> in the deep option and the MoA
+    reference panel. It is strictly better on every board we have, strictly cheaper on both input and output,
+    already available on the same key, and it removes the most expensive line in the ledger.</p>
+  </div>
+
+  <h2><span class="num">06</span> Corrections to our own matrix</h2>
+  <table>
+    <thead><tr><th>Where</th><th>What it says</th><th>What is true today</th></tr></thead>
+    <tbody>
+      <tr><td class="name">§3.1, kimi-k3.1-pro</td><td>"Not on Ollama Cloud … OpenRouter only as a paid model"</td><td><b>It is on Ollama Cloud.</b> Verified: 2.812T params, 1M ctx, MXFP4, vision, $2.00/$10.00. This is the single most consequential error in the document — it hid our best reachable model.</td></tr>
+      <tr><td class="name">§1, catalogue size</td><td>"authenticated catalog read back 23 models"</td><td>20 in the cloud browse list; 23 local manifests including custom tags. Worth restating precisely.</td></tr>
+      <tr><td class="name">§3.1, minimax-m3 context</td><td>1M</td><td>Manifest reports <b>512K</b>. The page and the manifest disagree; trust the manifest.</td></tr>
+      <tr><td class="name">Missing rows</td><td>inkling-2-small, mimo-v2.6-flash/pro, clef, gemma4 evidence</td><td>Added above from this morning's pull.</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="num">07</span> What I need from you</h2>
+  <div class="kv">
+    <div>Approve the kimi move</div><div>kimi-k3 → kimi-k3.1-pro in the deep option and MoA panel. Better and cheaper. No other change.</div>
+    <div>Approve a vision bake-off</div><div>Three real documents (a scanned statement, a filing table, an annual-report infographic) through glm-5.3-flash vs gemma4 vs inkling-2-small, scored blind. Costs a few cents; decides the document lane on evidence instead of marketing.</div>
+    <div>Approve a gate trial</div><div>clef vs local d3-flash-mlx on 20 recorded gate states we already have. Cents.</div>
+    <div>Spend permission</div><div>Both trials need tokens on the company Ollama key, which is currently limited to deepseek-v4.1-flash and mimo-v2.6-flash. Nothing has been spent.</div>
+    <div>Nothing else</div><div>The primary, the vision route, the bulk lane and the local seats all stay exactly as they are.</div>
+  </div>
+
+  <div class="foot">
+    <b>Method.</b> Every Ollama Cloud manifest pulled locally and read with <span class="mono">ollama show</span>
+    (params, context, quantisation, capabilities). Prices scraped from ollama.com/pricing and the per-model pages.
+    Spend computed from the live <span class="mono">session_model_usage</span> ledger over the last 30 days against those
+    prices. Benchmarks pulled fresh with <span class="mono">bench-pull</span> on 2026-11-13 09:43 SAST:
+    Artificial Analysis (111 models), LMArena (790 records across text/code/vision/document), LiveBench release
+    2026-11-06 (35 models), OpenRouter self-reported (287 models). Config state read from all 35 live profile
+    configs. No inference was run on any restricted key; no route, config or price was changed.
+    <br><br>
+    Source files: <span class="mono">Agent-Output/adrianna/ollama-cloud-inventory-2026-11-13.json</span> ·
+    <span class="mono">bench-sources/data/2026-11-13/</span> ·
+    <span class="mono">scripts/ollama_cloud_inventory.py</span>
+    <br>Adrianna A · 2026-11-13 · read-only review.
+  </div>
+
+</div>
+</body>
+</html>
