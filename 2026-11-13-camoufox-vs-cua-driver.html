@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camoufox vs CUA Driver</title>
+<style>
+  :root{
+    --ink: var(--foreground);
+    --dim: var(--muted-foreground);
+    --line: var(--border);
+    --panel: var(--card);
+    --panel2: var(--secondary);
+    --fox: #ff7a3d;
+    --cua: #4fb0ff;
+    --win: var(--success);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:0; color:var(--ink);
+    font-family: var(--font-sans);
+    font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:100%; padding: 4px 0 30px}
+  h1{font-size:25px; line-height:1.15; margin:2px 0 6px; letter-spacing:-.02em; font-weight:650}
+  h2{font-size:13px; letter-spacing:.09em; text-transform:uppercase; color:var(--dim);
+     margin:30px 0 10px; font-weight:600}
+  p{margin:0 0 10px}
+  .kicker{font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); font-weight:600}
+  .lede{font-size:15.5px; color:var(--ink); max-width:74ch}
+  .lede b{font-weight:650}
+  .muted{color:var(--dim)}
+  code, .mono{font-family:var(--font-mono); font-size:12.2px}
+
+  .duo{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px}
+  @media (max-width:640px){ .duo{grid-template-columns:1fr} }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px;
+  }
+  .card.fox{border-top:3px solid var(--fox)}
+  .card.cua{border-top:3px solid var(--cua)}
+  .card h3{margin:0 0 2px; font-size:17px; letter-spacing:-.01em}
+  .tagline{font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px}
+  .facts{list-style:none; padding:0; margin:12px 0 0; font-size:13.8px}
+    .facts li{padding:7px 0; border-top:1px dashed var(--line); display:flex; gap:8px}
+  .facts li span:first-child{color:var(--dim); min-width:104px; flex:none}
+  .facts li span:last-child{flex:1}
+
+  table{width:100%; border-collapse:collapse; margin-top:6px; font-size:13.9px}
+  th,td{text-align:left; padding:11px 11px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); font-weight:600; background:var(--panel2)}
+  td.dim{color:var(--dim); width:21%}
+  .chip{display:inline-block; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+        padding:2px 7px; border-radius:999px; font-weight:700; white-space:nowrap}
+  .chip.fox{background:rgba(255,122,61,.14); color:var(--fox); border:1px solid rgba(255,122,61,.35)}
+  .chip.cua{background:rgba(79,176,255,.14); color:var(--cua); border:1px solid rgba(79,176,255,.35)}
+  .chip.tie{background:var(--panel2); color:var(--dim); border:1px solid var(--line)}
+
+  .score{display:grid; grid-template-columns:150px 1fr 54px; gap:10px; align-items:center;
+         padding:9px 0; font-size:13.6px}
+  .score .bar{display:flex; flex-direction:column; gap:3px}
+  .score .bar b{display:block; height:5px; width:100%; border-radius:3px; background:var(--panel2); overflow:hidden}
+  .score .bar b i{display:block; height:100%; border-radius:3px}
+  .score .num{font-family:var(--font-mono); font-size:12.6px; color:var(--dim); text-align:right}
+
+  .picker{display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 12px}
+  .picker button{
+    font-family:var(--font-sans); font-size:13px; padding:8px 12px; cursor:pointer;
+    border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--ink);
+    transition:border-color .15s, background .15s;
+  }
+  .picker button:hover{border-color:var(--ring)}
+  .picker button[aria-pressed="true"]{background:var(--accent); border-color:var(--ring); font-weight:600}
+  .verdict{border:1px solid var(--line); border-radius:var(--radius); padding:14px 16px; background:var(--panel)}
+  .verdict .pick{font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase}
+  .verdict .pick.fox{color:var(--fox)} .verdict .pick.cua{color:var(--cua)} .verdict .pick.both{color:var(--win)}
+
+  .pattern{display:grid; grid-template-columns:1fr 26px 1fr; gap:8px; align-items:stretch; margin-top:10px}
+  .pattern .step{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:13px 14px}
+  .pattern .arrow{display:flex; align-items:center; justify-content:center; color:var(--dim); font-size:17px}
+  .pattern h4{margin:0 0 4px; font-size:13.5px}
+  .pattern p{margin:0; font-size:12.8px; color:var(--dim)}
+  @media (max-width:640px){ .pattern{grid-template-columns:1fr} .pattern .arrow{display:none} }
+
+  pre.evidence{
+    background:var(--code-background); border:1px solid var(--line); border-radius:var(--radius);
+    padding:13px 14px; overflow-x:auto; margin:8px 0 0;
+    font-family:var(--font-mono); font-size:12.3px; line-height:1.62; color:var(--ink);
+  }
+  pre.evidence .c{color:var(--dim)}
+  pre.evidence .g{color:var(--win)}
+  pre.evidence .r{color:var(--destructive)}
+
+  .cols2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  @media (max-width:640px){ .cols2{grid-template-columns:1fr} }
+  ul.tight{margin:6px 0 0; padding-left:18px; font-size:13.3px}
+  ul.tight li{margin-bottom:6px}
+  .risk{border-left:3px solid var(--warning); background:var(--warning-surface, var(--panel2));
+        padding:11px 14px; border-radius:0 var(--radius) var(--radius) 0; font-size:13.2px; margin-top:10px}
+  .bottom{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px}
+  @media (max-width:640px){ .bottom{grid-template-columns:1fr} }
+  .bottom .b{border:1px solid var(--line); border-radius:var(--radius); padding:13px; background:var(--panel)}
+  .bottom .b b{display:block; font-size:12px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:5px}
+  .bottom .b span{font-size:13px; color:var(--dim)}
+  footer{margin-top:28px; font-size:12px; color:var(--dim); border-top:1px solid var(--line); padding-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Tool comparison · 13 Nov 2026</div>
+  <h1>Camoufox vs CUA Driver</h1>
+  <p class="lede">They are not rivals. <b>Camoufox is a browser that hides you</b> — a patched Firefox whose
+  fingerprint is spoofed in C++ so a site cannot tell a bot is there. <b>CUA Driver is a hand that uses your Mac</b> —
+  a native daemon that reads windows, clicks and types in real apps without stealing your cursor.
+  One evades detection on the web. The other operates your actual desktop. Pick by target, not by preference.</p>
+
+  <div class="duo">
+    <div class="card fox">
+      <h3>Camoufox</h3>
+      <div class="tagline">Anti-detect browser · Playwright launcher</div>
+      <p class="muted" style="font-size:13.2px;margin:0">A debloated Firefox build, driven by Playwright through the
+      Juggler protocol. Every launch draws a fresh, internally consistent device identity from BrowserForge and spoofs
+      navigator, WebGL, fonts, screen, voices, timezone and WebRTC — before the page's first script runs.</p>
+      <ul class="facts">
+        <li><span>Scope</span> <span>Web pages only, in a browser it launches</span></li>
+        <li><span>Control</span> <span>Python / TS code — ordinary Playwright objects, sync + async</span></li>
+        <li><span>Identity</span> <span>Spoofed in C++, not JS-injected, no <code>navigator.webdriver</code></span></li>
+        <li><span>Footprint</span> <span>~200 MB per instance, headless-first, no desktop presence</span></li>
+        <li><span>Status</span> <span>Open source since v146.0.1-beta.25 · PyPI 0.5.9 · self-declared "under development"</span></li>
+      </ul>
+    </div>
+    <div class="card cua">
+      <h3>CUA Driver</h3>
+      <div class="tagline">Background computer-use driver · 62 tools</div>
+      <p class="muted" style="font-size:13.2px;margin:0">A daemon on the real machine: accessibility trees, per-window
+      captures and background input, plus a CDP lane that binds one Chromium tab to its native window. The user keeps
+      working in the foreground while the agent acts behind them, with its own visible cursor.</p>
+      <ul class="facts">
+        <li><span>Scope</span> <span>Any app or window on macOS / Windows / Linux</span></li>
+        <li><span>Control</span> <span>62 MCP + CLI tools — observe, act, verify; agent-driven</span></li>
+        <li><span>Identity</span> <span>None. Your real browser, real profile, real IP, trusted input</span></li>
+        <li><span>Footprint</span> <span>Runs invisibly over your session; no Space switching</span></li>
+        <li><span>Status</span> <span>v0.47.10 installed here, healthy; commercial backing (trycua)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Head to head</h2>
+  <table>
+    <thead><tr><th style="width:21%">Dimension</th><th style="width:39.5%">Camoufox</th><th style="width:39.5%">CUA Driver</th></tr></thead>
+    <tbody>
+      <tr><td class="dim">What it targets</td>
+          <td>A hostile website, at scale, many times</td>
+          <td>Your own machine and sessions, once or a few times</td></tr>
+      <tr><td class="dim">Anti-bot / fingerprint</td>
+          <td><span class="chip fox">Camoufox</span> C++-level spoofing, market-share-realistic identities, WebRTC IP matched to the proxy exit, humanised cursor</td>
+          <td>No spoofing at all — which is itself stealthy: a real Chrome, a real profile, trusted input. It loses to rate limits and behavioural analysis, and gives up nothing to fingerprint checks</td></tr>
+      <tr><td class="dim">Logged-in state</td>
+          <td>Its own profiles only (<code>persistent_context</code> + <code>user_data_dir</code>); cannot adopt your Chrome profile</td>
+          <td><span class="chip cua">CUA</span> Attaches to your real Chrome / Edge profile — cookies, sessions, history — and to apps with no API at all</td></tr>
+      <tr><td class="dim">Parallelism</td>
+          <td><span class="chip fox">Camoufox</span> Many headless instances per host, ~200 MB each; one identity per <code>NewContext</code></td>
+          <td>One controller per desktop. Sessions do not isolate focus or keyboard; scale means more machines, not more sessions</td></tr>
+      <tr><td class="dim">Determinism</td>
+          <td><span class="chip fox">Camoufox</span> Selectors, loops, retries, CI — it is code end to end</td>
+          <td>An observe → act → verify loop against trees that sometimes lie (Electron echo-confirms, Catalyst nulls)</td></tr>
+      <tr><td class="dim">Non-web surfaces</td>
+          <td>Nothing. No OS dialogs, no native apps, no file pickers</td>
+          <td><span class="chip cua">CUA</span> Numbers/Excel, print dialogs, legacy ERP, Electron/Tauri, simulators, canvas apps</td></tr>
+      <tr><td class="dim">Does not disturb you</td>
+          <td>Headless — no window to disturb</td>
+          <td><span class="chip cua">CUA</span> Its whole design: works in windows behind you, never moves your cursor</td></tr>
+      <tr><td class="dim">Setup on this Mac</td>
+          <td>Not installed. Needs <code>pip install -U "camoufox[geoip]"</code> + <code>camoufox fetch</code> on Python ≥ 3.10 (system python is 3.9.6; 3.11–3.15 present)</td>
+          <td><span class="chip cua">CUA</span> Already installed, daemon live, both TCC grants pass</td></tr>
+      <tr><td class="dim">Maturity</td>
+          <td>Author's own warning: "may not be suitable for stable production use"; a year of maintenance lost, base Firefox now the 152 line, anti-bot vendors actively hunt its inconsistencies</td>
+          <td>Steady release cadence, versioned contract, health report, recording/replay</td></tr>
+      <tr><td class="dim">Cost</td>
+          <td>Free, open source</td>
+          <td>Free driver, open source core; cloud/Spaces optional</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Scored against what each is actually for</h2>
+  <p class="muted" style="font-size:12.8px;margin-bottom:4px">Orange = Camoufox, blue = CUA Driver, 0–5. A low score on identity
+  is not a flaw in CUA any more than a low score on desktop apps is a flaw in Camoufox.</p>
+  <div id="scores"></div>
+
+  <h2>Which one for the job in front of you</h2>
+  <div class="picker" id="picker"></div>
+  <div class="verdict" id="verdict"></div>
+
+  <h2>The pattern that uses both</h2>
+  <div class="pattern">
+    <div class="step">
+      <h4>Get in once, as me</h4>
+      <p>CUA Driver binds the logged-in Chrome tab or the native portal window, does the one-off thing —
+      a supplier portal, a bank read-out, a form only a human session can submit — then leaves the window as it found it.</p>
+    </div>
+    <div class="arrow">→</div>
+    <div class="step">
+      <h4>Do it 1 000×, as nobody</h4>
+      <p>Anything that repeats against a hostile site (prices, SERPs, listings, geo-specific data) goes to Camoufox as
+      Playwright code: fresh identity per context, proxy-matched timezone and locale, no desktop in the loop.</p>
+    </div>
+  </div>
+
+  <h2>Reality check on this Mac · 13 Nov 2026</h2>
+  <pre class="evidence"><span class="c">$ cua-driver --version</span>
+cua-driver 0.47.10
+<span class="c">$ cua-driver list-tools | wc -l</span>
+62
+<span class="c">$ cua-driver health_report   # overall: ok</span>
+<span class="g">pass</span>  binary_version             cua-driver 0.47.10
+<span class="g">pass</span>  platform_supported         macOS 27.2.1 (arm64)
+<span class="g">pass</span>  bundle_identity            com.trycua.driver
+<span class="g">pass</span>  tcc_accessibility          Accessibility is granted.
+<span class="g">pass</span>  tcc_screen_recording       Screen Recording is granted.
+<span class="g">pass</span>  ax_capability              AX is trusted and reachable.
+<span class="c">     screen_capture_capability  not probed (health_report is read-only by design)</span>
+<span class="c">$ pgrep -fl "cua-driver serve"</span>
+66296 /Applications/CuaDriver.app/Contents/MacOS/cua-driver serve
+
+<span class="c">$ python3 -c "import camoufox"</span>
+<span class="r">ModuleNotFoundError: No module named 'camoufox'</span>
+<span class="c">$ python3 -V          # system</span>
+Python 3.9.6          <span class="c">← below Camoufox's 3.10 floor</span>
+<span class="c">$ ls /opt/homebrew/bin/python3.*</span>
+3.11  3.12  3.13  3.14  3.15   <span class="c">← any of these satisfies it</span>
+<span class="c">$ ls -d /Applications/*.app | grep -iE "chrome|firefox|safari|dia"</span>
+Dia.app  Firefox.app  Google Chrome.app  Safari.app</pre>
+
+  <div class="risk">
+    <b>Two things to hold in mind.</b> First, Camoufox's purpose is defeating bot detection — that breaks the terms of
+    most sites it is aimed at, and multi-account use is the sharper edge of it. It is a scraping tool, applied to targets
+    where scraping is defensible. Second, CUA is not a stealth tool: it acts as you, with your cookies and your IP, so
+    anything it does on a live business system carries your authority. Both need the same discipline — decide the target
+    and the permission before the first click, not after.
+  </div>
+
+  <h2>Bottom line</h2>
+  <div class="bottom">
+    <div class="b"><b style="color:var(--fox)">Choose Camoufox</b> <span>when the enemy is a website and you need volume,
+    fresh identities, or geo-consistent scraping — and you are happy to own it as a Playwright pipeline.</span></div>
+    <div class="b"><b style="color:var(--cua)">Choose CUA Driver</b> <span>when the target is your own desktop: logged-in
+    portals, apps with no API, OS dialogs, visual QA — or when being a real human's browser is the advantage.</span></div>
+    <div class="b"><b style="color:var(--win)">Running today</b> <span>CUA is installed, healthy and wired into the agent
+    tool surface. Camoufox is a 10-minute install on any Homebrew Python ≥ 3.11, but it adds a new lane, not a new app
+    on your screen.</span></div>
+  </div>
+
+  <footer>Sources: camoufox.com (introduction, stealth overview, Python interface, installation, usage) · PyPI camoufox 0.5.9 ·
+  github.com/daijro/camoufox · cua.ai/docs/cua-driver and /guides/browsers · live output from this Mac, 13 Nov 2026.</footer>
+</div>
+
+<script>
+const axes = [
+  ["Anti-bot / identity",        5, 1],
+  ["Real logged-in sessions",    2, 5],
+  ["Scale & parallelism",        5, 2],
+  ["Native apps, no API",        0, 5],
+  ["Never disturbs you",         4, 5],
+  ["Deterministic control",      5, 3],
+  ["Production readiness",       2, 4],
+  ["Ready on this Mac",          2, 5]
+];
+const host = document.getElementById('scores');
+axes.forEach(([label, fox, cua])=>{
+  const row = document.createElement('div');
+  row.className = 'score';
+  row.innerHTML = `<span>${label}</span>
+    <span class="bar" title="Camoufox ${fox}/5 (orange, top) · CUA ${cua}/5 (blue, bottom)">
+      <b><i style="width:${fox/5*100}%;background:var(--fox)"></i></b>
+      <b><i style="width:${cua/5*100}%;background:var(--cua)"></i></b>
+    </span>
+    <span class="num">${fox} · ${cua}</span>`;
+  host.appendChild(row);
+});
+
+const tasks = [
+  {q:"Scrape 10 000 prices a night",        pick:"fox",  why:"Volume, fresh identity per context, no desktop involved. Camoufox is a Playwright loop; CUA would be 10 000 windows and one very tired Mac."},
+  {q:"Read a supplier portal I'm logged into", pick:"cua", why:"The signed-in Chrome profile is the whole point. CUA binds that tab and acts in the background; Camoufox cannot adopt your profile and would hit the login wall."},
+  {q:"Bypass a Cloudflare-walled site",      pick:"fox",  why:"This is the case Camoufox exists for — C++-level fingerprint spoofing, no CDP leaks, Juggler patched so Playwright is invisible. CUA offers nothing here."},
+  {q:"Submit a form on a live business system", pick:"cua", why:"One human-shaped action, on your authority, verifiable by AX read-back. Do not build a bot identity for a system you already have an account on."},
+  {q:"Test my own web app as a user",        pick:"both", why:"CUA for the real-browser pass with your extensions and profile; Camoufox for the same suite as many device identities, headless, in CI."},
+  {q:"Drive Numbers / an OS print dialog",   pick:"cua",  why:"Camoufox has no concept of a desktop. This is accessibility trees, background input and per-window capture — CUA's home ground."},
+  {q:"Multi-account research across regions", pick:"fox", why:"Region-matched proxy, timezone, locale and WebRTC IP per context is Camoufox's core feature. Note the terms-of-service question before you scale it."}
+];
+const picker = document.getElementById('picker');
+const verdict = document.getElementById('verdict');
+function show(i){
+  [...picker.children].forEach((b,j)=> b.setAttribute('aria-pressed', j===i ? 'true':'false'));
+  const t = tasks[i];
+  const cls = t.pick, name = t.pick==='fox' ? 'Camoufox' : t.pick==='cua' ? 'CUA Driver' : 'Both, different passes';
+  verdict.innerHTML = `<div class="pick ${cls}">${name}</div>
+    <div style="font-size:13.4px;margin-top:5px">${t.why}</div>`;
+}
+tasks.forEach((t,i)=>{
+  const b = document.createElement('button');
+  b.type='button'; b.textContent = t.q; b.setAttribute('aria-pressed','false');
+  b.onclick = ()=> show(i);
+  picker.appendChild(b);
+});
+show(1);
+</script>
+</body>
+</html>
