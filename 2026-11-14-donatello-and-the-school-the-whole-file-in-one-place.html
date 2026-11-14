@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Donatello and the school — the whole file, in one place</title>
+<style>
+  :root{--bg:#0d1117;--panel:#151b23;--line:#2a3441;--ink:#e8eef5;--dim:#9aa8b8;--faint:#6f7f92;
+        --good:#7fc79a;--mid:#e0a458;--bad:#e07a5f;--accent:#6ea8fe}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:44px 26px 90px}
+  .kicker{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:14px}
+  h1{font-size:clamp(28px,4.4vw,44px);line-height:1.12;letter-spacing:-.02em;margin:0 0 16px}
+  h1 em{font-style:normal;color:var(--good)}
+  h2{font-size:clamp(20px,2.6vw,27px);letter-spacing:-.01em;margin:58px 0 6px}
+  h2 .num{color:var(--faint);font-weight:500;margin-right:10px;font-variant-numeric:tabular-nums}
+  h3{font-size:19px;margin:0 0 6px}
+  h4{margin:18px 0 4px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  p{margin:0 0 14px;color:#cfd9e4}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(110,168,254,.32)}
+  a:hover{border-bottom-color:var(--accent)}
+  .lede{font-size:18.5px;color:var(--dim);max-width:78ch}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin:20px 0}
+  .answer{background:linear-gradient(180deg,#16211b,#141a22);border:1px solid #2d4436}
+  .answer h3{color:var(--good);font-size:14px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14.2px}
+  th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  tbody tr:hover{background:#131a22}
+  .scroll{overflow-x:auto}
+  .scroll table{min-width:780px}
+  td.rk{font-variant-numeric:tabular-nums;color:var(--faint);width:30px;font-weight:600}
+  td.rk.gold{color:#f2c14e} td.rk.silver{color:#c9d5e1}
+  td.num{font-variant-numeric:tabular-nums;color:#c9d5e1;white-space:nowrap}
+  .sub{display:block;font-size:12.6px;color:var(--faint);margin-top:2px}
+  td.tot{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .of{color:var(--faint);font-size:12px}
+  .statband{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0 6px}
+  @media(max-width:820px){.statband{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat b{display:block;font-size:25px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+  .stat span{display:block;font-size:12.4px;color:var(--faint);margin-top:5px}
+  .callout{border-left:3px solid var(--accent);background:#141b25;padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0}
+  .callout p{margin:0;font-size:14.8px;color:#d5e2f0}
+  .warn{border-left-color:var(--bad);background:#1d1715}
+  .warn p{color:#e8cfc8}
+  .ok{border-left-color:var(--good);background:#141d18}
+  .ok p{color:#cfe3d7}
+  .barrow{display:grid;grid-template-columns:210px 1fr 92px;gap:12px;align-items:center;margin:8px 0;font-size:14px}
+  .barrow .lbl{color:var(--dim)}
+  .track{display:block;background:#111820;border:1px solid var(--line);border-radius:6px;height:22px;overflow:hidden}
+  .fill{display:block;height:100%;background:linear-gradient(90deg,#2f5f47,var(--good));border-radius:5px 0 0 5px}
+  .fill.amber{background:linear-gradient(90deg,#6b4d24,var(--mid))}
+  .barrow .val{text-align:right;font-variant-numeric:tabular-nums;color:#dbe6ef}
+  .src{columns:2;column-gap:34px;font-size:13.4px;list-style:none;padding:0}
+  @media(max-width:780px){.src{columns:1}}
+  .src li{margin:0 0 9px;break-inside:avoid;color:var(--dim)}
+  .trail{list-style:none;padding:0;margin:10px 0}
+  .trail li{border-left:2px solid #2a3441;padding:10px 0 10px 16px;margin:0}
+  .trail .when{display:inline-block;min-width:104px;color:var(--faint);font-size:12.5px;letter-spacing:.05em;text-transform:uppercase}
+  .trail .what{color:#dbe6ef}
+  .trail .path{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.6px;color:#5f7183;margin-top:3px;word-break:break-all}
+  .q{color:var(--faint);font-size:13.5px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.6px;color:#9fb2c6}
+  .pill{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:1px 9px;border:1px solid var(--line);color:var(--dim)}
+  .pill.done{color:#7fc79a;border-color:#2d4436;background:#141d18}
+  .pill.open{color:#e0a458;border-color:#4a3a20;background:#1d1a15}
+  .pill.stop{color:#e07a5f;border-color:#4a2b24;background:#1d1715}
+  footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);color:var(--faint);font-size:13px}
+  strong{color:#fff;font-weight:600}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid #2a3441;color:#c9d5e1;font-size:14.6px}
+  blockquote cite{display:block;color:var(--faint);font-size:12.4px;font-style:normal;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Donatello · Grade 4 in 2027 · the whole file · 14 November 2026</div>
+  <h1>Donatello and the school — <em>everything we have looked at, joined up</em></h1>
+  <p class="lede">Two months of work sits behind this decision: a school's letter, four routes, twelve schools scored, a repeat-versus-promote argument tested against the research, a support stack priced line by line, and two readings. This page puts it in one place, in the order it happened, with a link to each document it came from. Nothing here is new — it is the file, assembled.</p>
+
+  <div class="card answer">
+    <h3>Where it stands, 14 November 2026</h3>
+    <p><strong>The place is confirmed. The method is not.</strong> On 10 November Mrs Márjó Prins, Head of Early Learning and Junior Preparatory at Reddam House Durbanville, confirmed in writing that Donatello has a <strong>Grade 4 place for 2027</strong> — "with the understanding that the support plan discussed will be in place from the very first day of the new academic year". She asked for two things with it: the facilitator's name once appointed, and a recent police clearance for that person.</p>
+    <p><strong>The fork that is still open.</strong> Curro Uitzicht — the school every scoring exercise on this file ranks first — will take him <em>only</em> if he repeats Grade 3. Its own screening puts his Maths as very strong and his English well below a Grade 3 level, and its support lead, Veronica Handley, wrote that sending him to Grade 4 "would do him a huge injustice". The support professionals at his current school put his English at the same level. So the Grade 4 place now confirmed is a decision taken against both schools' reading of him, and the plan attached to it is what has to answer that.</p>
+    <p><strong>What is being built around him, whatever the school.</strong> An accommodation-format psycho-educational assessment; a structured-literacy programme (Barton) run by a classroom facilitator; a reading pen for access in class and in tests; and weekly play therapy for the anxiety underneath it. All four were chosen on the local decision gate, all four are still to be booked or bought.</p>
+    <p class="q">The one thing no document on this file can do for you: put the three options to him and let him choose, and take him to stand in the school before anything is signed. Both readings say to, and neither has happened yet. Section 10.</p>
+  </div>
+
+  <div class="statband">
+    <div class="stat"><b>12</b> <span>schools scored on the same six criteria</span></div>
+    <div class="stat"><b>20 <span class="of">wpm</span></b> <span>his reading, against 80 expected at his level (5 Oct 2026)</span></div>
+    <div class="stat"><b>R57 333,80</b> <span>therapy and extra lessons billed, Aug 2021 – Nov 2026</span></div>
+    <div class="stat"><b>27 <span class="of">months</span></b> <span>of school learning support, never itemised by hours</span></div>
+  </div>
+
+  <h2><span class="num">01</span> The boy, in evidence</h2>
+  <p>Everything below is what a professional wrote or a test produced, not an impression. It is the file the schools have been reading, and it is the thing each school option is being judged against.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>What</th><th>The number or the finding</th><th>Source, and when</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Verbal comprehension</strong></td><td><strong>Index 112</strong> — above average. The thinking is not the problem; the reading is.</td><td>WISC-IV, 2023 and 2026, via <a href="https://targetpraks.github.io/2026-10-31-should-you-ask-veronica-about-grade-4.html">the Veronica file</a></td></tr>
+      <tr><td><strong>Reading speed</strong></td><td><strong>20 words per minute</strong> against <strong>80 wpm</strong> expected at his level</td><td>Reading assessment, 5 October 2026</td></tr>
+      <tr><td><strong>Written output</strong></td><td>Visual-motor integration <strong>87</strong> — below average. This is the handwriting and copying side of school, not the thinking side.</td><td>2026 assessment battery</td></tr>
+      <tr><td><strong>Expressive language</strong></td><td>Word structure and expressive vocabulary in the <strong>5–6</strong> range against an average of 8–12</td><td>Speech and language findings, 2026</td></tr>
+      <tr><td><strong>Diagnosis on record</strong></td><td>Neurological ADD; slow working memory; specific learning barriers in reading and writing</td><td>Inez Saunders psycho-educational evaluation, June 2026</td></tr>
+      <tr><td><strong>School record</strong></td><td>Did not meet the pass criteria in <strong>two of three terms</strong>; below the minimum in both <strong>English and Afrikaans</strong>; Maths mark moved significantly</td><td>Reddam letter, Hettitia Dircksen, 17 September 2026</td></tr>
+      <tr><td><strong>A second school's screen</strong></td><td>"Very strong in his Mathematics … his English scoring was well below a Grade 3 level"; the class teacher confirmed it</td><td>Veronica Handley, Curro Uitzicht, late October 2026</td></tr>
+      <tr><td><strong>Support already running</strong></td><td>In-school learning support since August 2024; occupational therapy (Christa Agenbag, in-school); speech therapy (Christopher Rorke); reading at the Tina Cowley Centre</td><td><a href="https://targetpraks.github.io/2026-11-04-donatello-therapy-reading-and-extra-lesson-spend-aug-2021.html">The spend audit</a>, 4 November 2026</td></tr>
+      <tr><td><strong>Age at the start of 2027</strong></td><td>Turns <strong>ten on 8 February 2027</strong>. A repeat puts him in a class of nine-year-olds at ten, spends the last Foundation Phase year available to him, and has him writing matric at 19 rather than 18.</td><td><a href="https://targetpraks.github.io/2026-10-31-repeat-grade-3-or-move-to-grade-4.html">The repeat file</a> and <a href="https://targetpraks.github.io/2026-10-31-curro-uitzicht-vs-reddam-house-durbanville-the-2027-head-to.html">the head-to-head</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Why this list decides the school question, in one sentence.</strong> From Grade 4 the curriculum stops teaching him <em>how</em> to read and starts expecting him to read <em>in order to learn</em> — so a child below a Grade 3 English level is not behind in one subject, he is behind in the tool every other subject is taught with. Which means the only question that matters about any school is: <strong>who, on the staff, is paid to sit with him about it, for how many minutes a week, inside the school day.</strong> Every section below is a version of that question.</p>
+  </div>
+
+  <h2><span class="num">02</span> The decision, in the order it happened</h2>
+  <p>This is not a tidy process — it moved as documents arrived. Laid out on one line, it reads like this.</p>
+
+  <svg viewBox="0 0 1080 300" width="100%" role="img" aria-label="Timeline of the school decision from September 2026 to January 2027" style="background:#111820;border:1px solid #2a3441;border-radius:12px;margin:8px 0 6px">
+    <line x1="40" y1="150" x2="1040" y2="150" stroke="#2a3441" stroke-width="2"/>
+    <g font-family="-apple-system,Segoe UI,Inter,sans-serif">
+      <!-- ticks -->
+      <g stroke="#3a4757" stroke-width="2">
+        <line x1="90" y1="144" x2="90" y2="156"/><line x1="240" y1="144" x2="240" y2="156"/>
+        <line x1="390" y1="144" x2="390" y2="156"/><line x1="540" y1="144" x2="540" y2="156"/>
+        <line x1="690" y1="144" x2="690" y2="156"/><line x1="840" y1="144" x2="840" y2="156"/>
+        <line x1="990" y1="144" x2="990" y2="156"/>
+      </g>
+      <g fill="#6f7f92" font-size="11.5" text-anchor="middle">
+        <text x="90" y="176">17 Sep</text><text x="240" y="176">26 Oct</text><text x="390" y="176">31 Oct</text>
+        <text x="540" y="176">5 Nov</text><text x="690" y="176">10 Nov</text><text x="840" y="176">13 Nov</text><text x="990" y="176">Jan 2027</text>
+      </g>
+      <!-- above -->
+      <g fill="#e8eef5" font-size="12.5">
+        <text x="90" y="126" text-anchor="middle">Reddam recommends</text><text x="90" y="110" text-anchor="middle" fill="#e07a5f">repeat Grade 3</text>
+        <text x="390" y="126" text-anchor="middle">Repeat tested against</text><text x="390" y="110" text-anchor="middle" fill="#9aa8b8">the research</text>
+        <text x="690" y="126" text-anchor="middle">Prins confirms</text><text x="690" y="110" text-anchor="middle" fill="#7fc79a">Grade 4 for 2027</text>
+        <text x="990" y="126" text-anchor="middle">Support plan in place</text><text x="990" y="110" text-anchor="middle" fill="#e0a458">from day one</text>
+      </g>
+      <g fill="#e8eef5" font-size="12.5">
+        <text x="240" y="200" text-anchor="middle">Four routes priced;</text><text x="240" y="216" text-anchor="middle" fill="#9aa8b8">gate picks C, 74.5%</text>
+        <text x="540" y="200" text-anchor="middle">Meeting with Prins</text><text x="540" y="216" text-anchor="middle" fill="#9aa8b8">and Dircksen, at Reddam</text>
+        <text x="840" y="200" text-anchor="middle">Twelve schools scored;</text><text x="840" y="216" text-anchor="middle" fill="#9aa8b8">Uitzicht 4.60 first</text>
+      </g>
+      <g fill="#2f3b49"><circle cx="90" cy="150" r="6"/><circle cx="240" cy="150" r="6"/><circle cx="390" cy="150" r="6"/><circle cx="540" cy="150" r="6"/><circle cx="690" cy="150" r="6"/><circle cx="840" cy="150" r="6"/><circle cx="990" cy="150" r="6"/></g>
+      <g fill="#7fc79a"><circle cx="690" cy="150" r="4"/><circle cx="990" cy="150" r="4"/></g>
+      <text x="40" y="266" fill="#6f7f92" font-size="11.5">The term runs to the December holidays · the facilitator needs a police clearance in hand before mid-January · 15 working days, so appoint by 1 December</text>
+    </g>
+  </svg>
+
+  <ul class="trail">
+    <li><span class="when">17 Sep 2026</span> <span class="what">Reddam's letter lands. He did not meet the pass criteria in two of three terms and fell below the minimum in English and Afrikaans. Hettitia Dircksen recommends considering a <strong>repeat of Grade 3</strong>, and writes the sentence the whole file turns on: <em>"Should he go to Grade 4, he will require substantial ongoing support … Grade 4 would also necessitate a reader, scribe and ideally a facilitator."</em></span></li>
+    <li><span class="when">15 Oct 2026</span> <span class="what">The priorities are set: <strong>trajectory first, confidence and belonging second, the mainstream path third, cost last.</strong> Every score on this page is weighted against that order, not against mine.</span></li>
+    <li><span class="when">26 Oct 2026</span> <span class="what">Four routes are priced and profiled — repeat at Reddam, Grade 4 with a facilitator, a specialist day school, boarding with support — alongside ten schools profiled by education system. The weighted matrix puts the specialist day school first at 3.95 against 3.65 for Grade 4 with a facilitator.</span></li>
+    <li><span class="when">31 Oct 2026</span> <span class="what">The argument is tested. The retention research is read properly (a bare repeat is worth about zero; the gain tracks the intervention), Curro Uitzicht's offer arrives verbatim in writing, and the two schools are put head-to-head: <strong>Uitzicht 0.89</strong>, on staffed capacity over goodwill.</span></li>
+    <li><span class="when">5 Nov 2026</span> <span class="what">The meeting at Reddam with Mrs Márjó Prins and Mrs Hettitia Dircksen. The request goes in writing as <em>Grade 4 in 2027 with support from day one</em> — three lines and one ask: confirm the place with the support plan in writing.</span></li>
+    <li><span class="when">10 Nov 2026</span> <span class="what"><strong>Prins confirms the Grade 4 place</strong>, conditional on the support plan being in place from the first day. She asks for the facilitator's name and a police clearance. That is the day the decision stopped being "which school" and became "which plan".</span></li>
+    <li><span class="when">10–11 Nov 2026</span> <span class="what">The support stack is chosen and priced: <strong>Barton</strong> as the literacy programme (gate 0.986), <strong>Little Sunshines</strong> as the facilitator route (0.995 pairwise), the <strong>C-Pen Exam Reader 2</strong> as the in-class and exam reader (0.913), the assessment practices named, and a daily home programme written for both houses.</span></li>
+    <li><span class="when">13 Nov 2026</span> <span class="what">Every school within reach is scored on one rubric (<strong>Curro Uitzicht 4.60</strong>, Tafelberg 4.40, Dunatos 4.20), seven models are polled anonymously (<strong>Tafelberg first, 5 votes to 2</strong>), and the two smallest-class options are compared directly.</span></li>
+    <li><span class="when">14 Nov 2026</span> <span class="what">The therapist is chosen: <strong>Marleen Germishuys</strong>, 1.8 km away, clinical psychologist, play therapy — 0.94 in both directions against the specialist 600 m from the house.</span></li>
+  </ul>
+
+  <h2><span class="num">03</span> The four routes, and what the gate said</h2>
+  <p>Before any school was ranked, the question was the shape of the year. Four routes, eight criteria, weights from the 15 October priority order. A score of 3 is neutral, not a failure.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Code</th><th>Route</th><th>What it costs a year</th><th>Weighted</th><th>What carries it, and what it costs him</th></tr></thead>
+    <tbody>
+      <tr><td class="rk">A</td><td><strong>Repeat Grade 3 at Reddam</strong></td><td>R118 750</td><td class="tot">2.50</td><td>Same curriculum, same pace, one year spent. The research says a bare repeat buys almost nothing. <span class="pill stop">effectively closed</span></td></tr>
+      <tr><td class="rk">B</td><td><strong>Grade 4 at Reddam, with a facilitator</strong></td><td>R130 460 fee + R96 000–R216 000 facilitator → <strong>R226 460–R346 460</strong>, typical R262 460</td><td class="tot">3.65</td><td>The only route that keeps his sister, his football team and the teacher who knows him. Support is parent-bought and not yet on paper. <span class="pill done">place confirmed 10 Nov</span></td></tr>
+      <tr><td class="rk">C</td><td><strong>Specialist day school</strong> (Curro Uitzicht, Dunatos)</td><td>R101 520 + R6 230 enrolment</td><td class="tot">3.95</td><td>Staffed support, 12 to a class, therapists in the building — but Uitzicht's version of it is conditional on repeating Grade 3. <span class="pill open">conditional</span></td></tr>
+      <tr><td class="rk">D</td><td><strong>Boarding with support</strong> (Treverton, St Andrew's, Cordwalles)</td><td>R214 270 – R293 829</td><td class="tot">2.90</td><td>The only full therapy team on a boarding campus — and a nine-year-old 1 000 km from home. <span class="pill stop">not live</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="card">
+    <h4>The gate, asked four ways</h4>
+    <table>
+      <thead><tr><th>Question</th><th>Answer</th><th>How to read it</th></tr></thead>
+      <tbody>
+        <tr><td>Four-way pick</td><td class="num">C 74.5% · B 23.9% · A 1.2% · D 0.3%</td><td>confidence 0.54 — a lead, not a verdict</td></tr>
+        <tr><td>Is C better than B?</td><td class="num">No — 0.20</td><td rowspan="2">read rows two and three as one pairwise verdict: B is not worse than C. The two answers are a mirror, not corroboration.</td></tr>
+        <tr><td>Is B better than C?</td><td class="num">Yes — 0.97</td></tr>
+        <tr><td>If Reddam will not commit the package, is C the answer?</td><td class="num">Yes — 0.98</td><td>and Reddam did commit the place — not yet the package</td></tr>
+      </tbody>
+    </table>
+    <p class="q" style="margin:10px 0 0">The matrix and the gate disagree on purpose, and the disagreement is the useful part: the matrix scores the <em>instruments</em>, the pairwise question asks whether one is actually better than the other <em>for him, now</em>. What resolved it was not more scoring. It was Prins's email on 10 November.</p>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>The version of route C that wins does not exist yet.</strong> Grade 4 at Uitzicht, with in-class support, beats every other option on paper — 12 to a class, learning-support teachers and an occupational therapist on site, reader and scribe written into the prospectus. Uitzicht will not offer it: its professional opinion is that he repeats. So the email asking for it is the highest-value unanswered question on this file.</p>
+  </div>
+
+  <h2><span class="num">04</span> Everything considered: the twelve schools</h2>
+  <p>One rubric, six criteria, weighted 30/20/10/15/15/10 — the model built for this (30%), support staffed on site (20%), class size (10%), the drive from Welgemoed (15%), the published 2027 price (15%), and what he leaves with at 18 (10%). Out of 5.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>School</th><th>Model</th><th>Drive</th><th>Price</th><th>Score</th></tr></thead>
+    <tbody>
+      <tr><td class="rk gold">1</td><td><strong><a href="https://www.curro.co.za/schools/curro-uitzicht-primary-school/" target="_blank" rel="noopener">Curro Uitzicht</a></strong></td><td>Assisted learning, CAPS · <span class="sub">12 per class, OT + LS teachers on site</span></td><td class="num">13 min</td><td class="num">R101 520 <span class="of">2027</span></td><td class="tot"><strong>4.60</strong></td></tr>
+      <tr><td class="rk silver">2</td><td><strong><a href="https://tafelbergschool.co.za/" target="_blank" rel="noopener">Tafelberg School</a></strong></td><td>Government remedial · <span class="sub">therapy is a standing department</span></td><td class="num">15 min</td><td class="num">gov. fee, on enquiry</td><td class="tot"><strong>4.40</strong></td></tr>
+      <tr><td class="rk">3</td><td><strong><a href="https://www.dunatos.co.za/" target="_blank" rel="noopener">Dunatos Private School</a></strong></td><td>Therapeutic CAPS · <span class="sub">tightest staff ratio on the list</span></td><td class="num">10 min</td><td class="num">on enquiry</td><td class="tot"><strong>4.20</strong></td></tr>
+      <tr><td class="rk">4</td><td><strong>Hillview Academy</strong></td><td>Tiered support, vocational stream · <span class="sub">site unreachable, none of it confirmed</span></td><td class="num">unverified</td><td class="num">on enquiry</td><td class="tot"><strong>4.00</strong></td></tr>
+      <tr><td class="rk">5</td><td><strong><a href="https://www.lavigneschool.co.za/" target="_blank" rel="noopener">La Vigne Educational House</a></strong></td><td>Inclusive CAPS, Christian ethos · <span class="sub">8 per class, no matric record yet</span></td><td class="num">10 min</td><td class="num">R8 300–8 600 <span class="of">/mo</span></td><td class="tot"><strong>3.95</strong></td></tr>
+      <tr><td class="rk">6</td><td><strong><a href="https://tateinternational.co.za/" target="_blank" rel="noopener">Tate International School</a></strong></td><td>Cambridge-aligned, 57 learners · <span class="sub">continuous assessment, no therapy team</span></td><td class="num">12 min</td><td class="num">R85 800 <span class="of">2026</span></td><td class="tot"><strong>3.85</strong></td></tr>
+      <tr><td class="rk">7</td><td><strong><a href="https://shelantiprivateschool.co.za/" target="_blank" rel="noopener">Shelanti Private School</a></strong></td><td>Registered remedial, Parklands · <span class="sub">stops at Grade 7</span></td><td class="num">21 min</td><td class="num">R121 000 <span class="of">2027</span></td><td class="tot"><strong>3.80</strong></td></tr>
+      <tr><td class="rk">8</td><td><strong><a href="https://bostonprivate.co.za/" target="_blank" rel="noopener">Boston Private School</a></strong></td><td>Mainstream CAPS + remedial add-on · <span class="sub">closest and cheapest</span></td><td class="num">7 min</td><td class="num">R56 580 <span class="of">2026</span></td><td class="tot"><strong>3.50</strong></td></tr>
+      <tr><td class="rk">9</td><td><strong><a href="https://www.oakleyhouse.co.za/" target="_blank" rel="noopener">Oakley House</a></strong></td><td>Dyslexia specialist, Diep River · <span class="sub">the reference school among professionals</span></td><td class="num">28 min</td><td class="num">R175 920 <span class="of">2027</span></td><td class="tot"><strong>3.50</strong></td></tr>
+      <tr><td class="rk">10</td><td><strong><a href="https://generationschools.co.za/sunningdale/" target="_blank" rel="noopener">Generation Schools Sunningdale</a></strong></td><td>Montessori-inspired micro-school · <span class="sub">daily Real Madrid football, no LS team</span></td><td class="num">24 min</td><td class="num">R91 428 <span class="of">2027</span></td><td class="tot"><strong>3.05</strong></td></tr>
+      <tr><td class="rk">11</td><td><strong><a href="https://durbanville.reddamhouse.com/" target="_blank" rel="noopener">Reddam House Durbanville</a></strong> <span class="sub">the current school</span></td><td>Mainstream Cambridge + IEB · <span class="sub">best sport and houses on the list</span></td><td class="num">11 min</td><td class="num">R130 460 <span class="of">2026</span></td><td class="tot"><strong>3.05</strong></td></tr>
+      <tr><td class="rk">12</td><td><strong>Green School South Africa</strong></td><td>Sustainability-led, Paarl · <span class="sub">40 km, no literacy intervention</span></td><td class="num">30 min</td><td class="num">R105–173k</td><td class="tot"><strong>2.55</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 style="margin-top:26px">The same twelve scores, three different priorities</h3>
+  <div class="barrow"><span class="lbl">As scored — support first</span><span class="track"><span class="fill" style="width:92%"></span></span><span class="val">Curro 4.60</span></div>
+  <div class="barrow"><span class="lbl">&nbsp;</span><span class="track"><span class="fill" style="width:88%"></span></span><span class="val">Tafelberg 4.40</span></div>
+  <div class="barrow"><span class="lbl">&nbsp;</span><span class="track"><span class="fill" style="width:84%"></span></span><span class="val">Dunatos 4.20</span></div>
+  <div class="barrow" style="margin-top:16px"><span class="lbl">If price matters most</span><span class="track"><span class="fill amber" style="width:90%"></span></span><span class="val">Curro 4.50</span></div>
+  <div class="barrow"><span class="lbl">&nbsp;</span><span class="track"><span class="fill amber" style="width:88%"></span></span><span class="val">Tafelberg 4.40</span></div>
+  <div class="barrow" style="margin-top:16px"><span class="lbl">If the drive matters most</span><span class="track"><span class="fill amber" style="width:90%"></span></span><span class="val">Curro 4.50</span></div>
+  <div class="barrow"><span class="lbl">&nbsp;</span><span class="track"><span class="fill amber" style="width:87%"></span></span><span class="val">Dunatos 4.35</span></div>
+  <p class="q">The top two are stable under every weighting; past that it is a rounding error and a preference. Two things do move the order: <strong>the readings' lens</strong> (emotional 30, academic 30, physical 20, spiritual 20), which puts La Vigne first at 4.00 and Curro second at 3.90 — and <strong>whether a place actually exists</strong>, which is what made Tafelberg second rather than first despite winning seven models' votes 5–2.</p>
+
+  <h2><span class="num">05</span> The link: what each school actually does about his gap</h2>
+  <p>This is the part that matters more than any score. Six columns, one per thing he needs, and the honest answer for each of the serious options.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>School</th><th>Class cap</th><th>Learning support on the staff</th><th>Therapy in the school day</th><th>Reader / scribe / concession route</th><th>Belonging: sport, code, peers</th></tr></thead>
+    <tbody>
+      <tr><td><strong><a href="https://www.curro.co.za/schools/curro-uitzicht-primary-school/" target="_blank" rel="noopener">Curro Uitzicht</a></strong></td><td class="num"><strong>12</strong></td><td>Learning-support teachers, on the staff list</td><td class="num">Yes — OT on site</td><td>Documented service; R460 per sitting at matric</td><td>No sport on campus — via Curro Durbanville, an extra trip</td></tr>
+      <tr><td><strong><a href="https://tafelbergschool.co.za/" target="_blank" rel="noopener">Tafelberg</a></strong></td><td class="num">small, not published</td><td>Remedial teaching <em>is</em> the school</td><td class="num">Yes — standing department</td><td>Through the school, then NSC at remedial pace</td><td>Thin. A state school gives structure, not a brotherhood</td></tr>
+      <tr><td><strong><a href="https://www.dunatos.co.za/" target="_blank" rel="noopener">Dunatos</a></strong></td><td class="num">~4–5 per staff member</td><td>Named learner-support team</td><td class="num">Yes — therapeutic school</td><td>CAPS/NSC route; confirm who files</td><td>"Special school" identity is the risk the reading warns about</td></tr>
+      <tr><td><strong><a href="https://www.lavigneschool.co.za/" target="_blank" rel="noopener">La Vigne</a></strong></td><td class="num"><strong>8</strong></td><td>One support educator, foundation + intermediate</td><td class="num">No — therapists allowed in, parent-paid</td><td>Not published; ask what was granted last year</td><td>The strongest frame on the list: 8 to a class, a Christian family-shaped school, inclusive rather than remedial</td></tr>
+      <tr><td><strong><a href="https://www.oakleyhouse.co.za/" target="_blank" rel="noopener">Oakley House</a></strong></td><td class="num">small</td><td>RAVE-O literacy programme</td><td class="num">Yes — speech and OT during the day</td><td>Its core business</td><td>Every child there struggles to read — identity protected, neighbourhood lost</td></tr>
+      <tr><td><strong><a href="https://durbanville.reddamhouse.com/" target="_blank" rel="noopener">Reddam (stay)</a></strong></td><td class="num">not published</td><td>Learning support exists and is billed per withdrawal lesson (R190 per 30 min) on top of R11 630 a month</td><td class="num">Partly — withdrawal lessons, billed</td><td>Named in the 17 Sep letter — reader, scribe, "ideally a facilitator" — not committed to paper</td><td>The best on the list — and the place where he is currently failing</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>Read that table against the boy in section 01 and the answer is structural, not sentimental.</strong> The two options that staff the literacy hours inside the school day are the two that also cap the class at twelve and have a therapist in the building — Curro Uitzicht and Tafelberg. The one that has the brotherhood (Reddam) is the one where the support is a package the family pays for and the school has not put on paper. There is no single school on this list that does both, and the honest resolution is to <strong>buy the literacy deliberately and build the belonging somewhere else</strong> — a team, a club, a dojo, a church, a boarding decision at 12.</p>
+  </div>
+
+  <h2><span class="num">06</span> Named, checked, and ruled out — with the reason</h2>
+  <p>These were not skipped. Each was looked at and dropped for a specific reason, so the same ground is not covered twice.</p>
+
+  <h4>Not a place to apply</h4>
+  <table>
+    <thead><tr><th>School</th><th>Where</th><th>Why it is not an option</th></tr></thead>
+    <tbody>
+      <tr><td><strong><a href="https://lilyhouseschool.co.za/lily-house-durbanville/" target="_blank" rel="noopener">Lily House Durbanville</a></strong></td><td>13 min</td><td>No Grade 4 exists — that campus takes 18 months to 6 years. Only Melkbos runs the 9–12 class.</td></tr>
+      <tr><td><strong><a href="https://jankriel.co.za/tuis/" target="_blank" rel="noopener">Jan Kriel School</a></strong></td><td>Kuils River, 15 min</td><td>An LSEN special school. He is not a special-school learner; a place there is a placement of last resort, not a fit.</td></tr>
+      <tr><td><strong><a href="https://www.herbertstrschool.co.za/" target="_blank" rel="noopener">Herbert Street Special School</a></strong></td><td>Bellville, 7 min</td><td>Autism-specific. Excellent at what it does, and the wrong population entirely.</td></tr>
+      <tr><td><strong><a href="https://www.malaikahouse.co.za/" target="_blank" rel="noopener">Malaika House</a></strong></td><td>Durbanville, 15 min</td><td>Autism and PDA centre, ages 10–18. Not built for a literacy difficulty.</td></tr>
+      <tr><td><strong><a href="https://www.carlumhouse.co.za/" target="_blank" rel="noopener">Carlum House</a></strong></td><td>Cape Town campuses</td><td>No verifiable campus address or fee, and it stops at Grade 7.</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Boarding — kept on file, not live</h4>
+  <table>
+    <thead><tr><th>School</th><th>Board from</th><th>Learning support</th><th>Cost</th></tr></thead>
+    <tbody>
+      <tr><td><strong><a href="https://www.treverton.co.za/" target="_blank" rel="noopener">Treverton Preparatory</a></strong> <span class="sub">Mooi River, KZN</span></td><td>Grade 1</td><td class="num">The LEAP Centre — ed-psych, speech, OT and facilitators on campus</td><td class="num">R214 270 <span class="of">Gr 3, 2026</span></td></tr>
+      <tr><td><strong>St Andrew's Preparatory</strong> <span class="sub">Makhanda, EC</span></td><td>Grades 1–3 house</td><td>LS teachers on staff; concession capacity not published</td><td class="num">not published</td></tr>
+      <tr><td><strong>St Andrew's School</strong> <span class="sub">Bloemfontein</span></td><td>Grade 1</td><td>House tutor system; no specialist unit found</td><td class="num">not published</td></tr>
+      <tr><td><strong>Cordwalles Preparatory</strong> <span class="sub">Pietermaritzburg</span></td><td>Grade 4 only</td><td>Head of Learning Support + remedial therapist</td><td class="num">R293 829 <span class="of">Gr 4, 2026</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>Also checked</h4>
+  <p class="q">Clifton Nottingham Road (no verified specialist unit) · Uplands Preparatory (boarding from Grade 4) · Elkanah House (mainstream IEB, R94 008 for Grades 1–3 in 2027) · Parklands College (mainstream with support) · Oakley House Durbanville (that campus has closed; only Diep River remains) · Paarl School (admission limited to cerebral palsy and high physical support needs).</p>
+
+  <h2><span class="num">07</span> What it costs</h2>
+  <p>Every fee below is a school's own published figure for the year shown. Where a school publishes none, that is said instead of guessed.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>School</th><th>Year</th><th>Annual</th><th>Monthly</th><th>One-off</th><th>Is support inside the fee?</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://bostonprivate.co.za/" target="_blank" rel="noopener">Boston Private</a></td><td>2026</td><td class="num">~R56 580</td><td class="num">R4 715</td><td>—</td><td>No — remedial is an add-on</td></tr>
+      <tr><td><a href="https://tafelbergschool.co.za/" target="_blank" rel="noopener">Tafelberg</a></td><td>2027</td><td class="num">government fee — on enquiry</td><td>—</td><td>—</td><td><strong>Yes — therapy department</strong></td></tr>
+      <tr><td><a href="https://tateinternational.co.za/fees-and-admission-tate/" target="_blank" rel="noopener">Tate International</a></td><td>2026</td><td class="num">R85 800</td><td class="num">R7 150</td><td class="num">R5 500 levy</td><td>No — classroom support only</td></tr>
+      <tr><td><a href="https://generationschools.co.za/sunningdale/" target="_blank" rel="noopener">Generation Sunningdale</a></td><td>2027</td><td class="num">R91 428</td><td class="num">R7 619</td><td class="num">R5 350 enrolment · R3 170 resource · R1 585 outings</td><td>No — no LS team named</td></tr>
+      <tr><td><a href="https://www.lavigneschool.co.za/" target="_blank" rel="noopener">La Vigne</a></td><td>undated</td><td class="num">R99 600–103 200</td><td class="num">R8 300–8 600</td><td>registration</td><td>No — therapists at parents' cost</td></tr>
+      <tr><td><a href="https://www.curro.co.za/schools/curro-uitzicht-primary-school/" target="_blank" rel="noopener">Curro Uitzicht</a></td><td>2027</td><td class="num">R101 520</td><td class="num">R8 460</td><td class="num">R6 230</td><td><strong>Yes — OT, LS teachers, counsellor, concessions</strong></td></tr>
+      <tr><td><a href="https://shelantiprivateschool.co.za/" target="_blank" rel="noopener">Shelanti</a></td><td>2027</td><td class="num">R121 000</td><td class="num">R10 100</td><td class="num">R11 000 + R5 100</td><td>Partly — remedial yes, therapy no</td></tr>
+      <tr><td><a href="https://durbanville.reddamhouse.com/admissions/fees" target="_blank" rel="noopener">Reddam (stay)</a></td><td>2026</td><td class="num">R130 460</td><td class="num">R11 630</td><td>—</td><td>Partly — withdrawal lessons R190/30 min</td></tr>
+      <tr><td><a href="https://www.oakleyhouse.co.za/fees.html" target="_blank" rel="noopener">Oakley House</a></td><td>2027</td><td class="num">R175 920</td><td class="num">R14 660</td><td class="num">R32 400 placement</td><td>Partly — therapy on site, billed separately</td></tr>
+      <tr><td><a href="https://www.dunatos.co.za/" target="_blank" rel="noopener">Dunatos</a> · Hillview</td><td>—</td><td colspan="4">No fee published anywhere. The single most important call on the list.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>To matric, on stated assumptions</h3>
+  <table>
+    <thead><tr><th>Route</th><th>Years</th><th>Total to matric</th><th>How it is built</th></tr></thead>
+    <tbody>
+      <tr><td>Uitzicht, repeat Grade 3 in 2027</td><td class="num">2027–2036</td><td class="num"><strong>R1 632 377</strong></td><td rowspan="3">Published 2027 schedule by grade, then 7% a year. The 7% and the 8% Reddam uplift are assumptions, not quotes — use them to see the size of the gap, never as a price.</td></tr>
+      <tr><td>Uitzicht, supported Grade 4 in 2027</td><td class="num">2027–2035</td><td class="num"><strong>R1 435 979</strong></td></tr>
+      <tr><td>Reddam, Grade 4 in 2027</td><td class="num">2027–2035</td><td class="num"><strong>R2 165 885</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="q">On published numbers the year-one gap between Uitzicht Grade 4 (2027) and Reddam Grade 4 (2026) is <strong>R28 940</strong> — and it widens once Reddam's 2027 schedule lands, since it has not been published. Carried all the way to matric on the same assumptions, that gap becomes <strong>R729 906</strong>. One side-effect worth knowing: Reddam gives 3% off the second and subsequent children, with the eldest at full rate — so if Donatello leaves, Gianna becomes the eldest and that discount falls away, about R3 092 a year.</p>
+
+  <h3>The parent-funded part nobody prices</h3>
+  <table>
+    <thead><tr><th>Band</th><th>Monthly</th><th>11-month salary</th><th>Placement fee (10%)</th><th>Barton L1–3</th><th>Clearance</th><th>Year one</th></tr></thead>
+    <tbody>
+      <tr><td>Junior</td><td class="num">R9 000</td><td class="num">R99 000</td><td class="num">R10 800</td><td class="num">R16 810</td><td class="num">R190</td><td class="num"><strong>R126 800</strong></td></tr>
+      <tr><td>Mid</td><td class="num">R12 500</td><td class="num">R137 500</td><td class="num">R15 000</td><td class="num">R16 810</td><td class="num">R190</td><td class="num"><strong>R169 500</strong></td></tr>
+      <tr><td>Senior</td><td class="num">R16 500</td><td class="num">R181 500</td><td class="num">R19 800</td><td class="num">R16 810</td><td class="num">R190</td><td class="num"><strong>R218 300</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="q">A facilitator is an employment, not a school fee: salary, UIF, leave cover, and the risk that they resign in March. Budget for a replacement, not the monthly rate.</p>
+
+  <div class="callout warn">
+    <p><strong>What seven years of support has actually cost — and what came back for it.</strong> <strong>R57 333,80</strong> billed across three core streams from August 2021 to November 2026, plus up to R13 613 on a family maths account and R4 757 of early enrichment. But the money is not the problem; the paperwork is. From October 2024 to January 2026 he had weekly in-school occupational therapy and there is <strong>no invoice, no payment record and no report</strong> for a single session. The learning-support line on the Reddam invoice has run <strong>27 months without ever being itemised by hours</strong>. And of the three providers, the two that cost the most report the least — <strong>no OT report since December 2022</strong>. That is the file the accommodation assessment is about to fix.</p>
+  </div>
+
+  <h2><span class="num">08</span> The support stack being built around him</h2>
+  <p>Four pieces, each decided on the local gate, each independent of which school wins — and all four of them, together, are what "the support plan in place from day one" actually means.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Piece</th><th>Who</th><th>Why this one</th><th>Gate</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>The assessment</strong><br><span class="sub">psycho-educational, in accommodation format</span></td>
+        <td><strong><a href="https://neurodiversitycentre.co.za/durbanville/" target="_blank" rel="noopener">Neurodiversity Centre</a></strong>, Durbanville/Bellville · 021 975 0376<br><span class="sub">or <a href="http://www.charlenewessels.co.za/" target="_blank" rel="noopener">Charlene Wessels</a>, Educational Psychologist · 076 090 2181</span></td>
+        <td>The only document that unlocks all three: the school's written support plan, the exam concessions (including the pen), and the facilitator's brief. Ask for "accommodation assessment to IEB format" and a school observation.</td>
+        <td class="num">—</td>
+        <td><span class="pill open">not booked</span></td>
+      </tr>
+      <tr>
+        <td><strong>The literacy programme</strong><br><span class="sub">structured, scripted, measurable</span></td>
+        <td><a href="https://store.bartonreading.com/" target="_blank" rel="noopener">Barton Reading &amp; Spelling</a>, Levels 1–3<br><span class="sub">$1 025 ≈ R16 810</span></td>
+        <td>A scripted programme a facilitator can deliver daily and a school can see results from — not a weekly tutoring hour that leaves the classroom unchanged.</td>
+        <td class="num">0.986</td>
+        <td><span class="pill open">not bought</span></td>
+      </tr>
+      <tr>
+        <td><strong>The facilitator</strong><br><span class="sub">in class, every day</span></td>
+        <td><a href="https://www.littlesunshines.co.za/school-facilitator/" target="_blank" rel="noopener">Little Sunshines</a> · 063 742 7122<br><span class="sub">alternatives: <a href="https://www.proplacements.co.za/school-facilitators/" target="_blank" rel="noopener">Pro Placements</a> 083 270 5060 · NDC Facilitation Academy</span></td>
+        <td>Reddam asked for the name and a police clearance. The clearance takes about 15 working days, so appoint by 1 December for a mid-January start — or ask for a candidate who already holds a current certificate.</td>
+        <td class="num">0.995</td>
+        <td><span class="pill open">not appointed</span></td>
+      </tr>
+      <tr>
+        <td><strong>The reading pen</strong><br><span class="sub">access in class and in tests</span></td>
+        <td><strong>C-Pen Exam Reader 2</strong> — quote from <a href="https://editmicro.co.za/product/examreader-pen/" target="_blank" rel="noopener">Edit Microsystems</a> (SA distributor) · 086 111 3973</td>
+        <td>A closed system with no storage and no dictionary, which is why exam boards accept it — the <a href="https://www.sacai.org.za/wp-content/uploads/SACAI-2026-Policy-on-Accommodations-and-Concessions.pdf" target="_blank" rel="noopener">SACAI 2026 policy</a> names C-Pen as a listed accommodation. The original at R5 000 is the budget fallback, not the pick.</td>
+        <td class="num">0.913</td>
+        <td><span class="pill open">not bought</span></td>
+      </tr>
+      <tr>
+        <td><strong>Play therapy</strong><br><span class="sub">weekly, for the anxiety underneath</span></td>
+        <td><strong><a href="https://mgermishuyspsych.co.za/" target="_blank" rel="noopener">Marleen Germishuys</a></strong> · 064 684 3633<br><span class="sub">1.8 km · HPCSA PS 0131431 · children "in the form of play therapy"</span></td>
+        <td>Registration and scope ahead of distance and modality depth: René Ohlhoff holds the deepest play-therapy training in the area (600 m away, R650) but is ASCHP-registered and cash-only — no medical-aid claim and no assessment scope. Tanja Smuts (R1 250, Discovery, Tygerberg child psychiatry) is the name worth waiting for.</td>
+        <td class="num">0.94 ×2</td>
+        <td><span class="pill open">not called</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="q">The home side runs in parallel and needs nobody's permission: <a href="https://targetpraks.github.io/2026-11-10-the-daily-five-donatello-s-grade-4-home-programme.html">Don's Daily Five</a> — ten minutes reading aloud, fifteen journaling, five on words, three on letters, ten at bedtime, the same five at both houses — and <a href="https://targetpraks.github.io/2026-10-26-12-writing-prompts-for-donatello-2.html">twelve writing prompts</a> for the journal. The reading is not the problem; volume and writing are.</p>
+
+  <h2><span class="num">09</span> What the readings said</h2>
+  <p>Two sittings sit behind this decision, and neither is treated as fact — they are the frame the family asked to be judged against, and they say things the market cannot. <strong>Kim</strong>, 14 September 2026, 2 h 09 m: numerology and astrology on both children. <strong>Andrew</strong>, 5 November 2026, 1 h 25 m: on the school decision itself.</p>
+
+  <h4>Kim — the body, the brotherhood, the belonging</h4>
+  <table>
+    <thead><tr><th>Time</th><th>What she said</th><th>What it asks of a school</th></tr></thead>
+    <tbody>
+      <tr><td class="num">24:27 · 53:17</td><td>"He needs to be in the discipline of sport. He needs to be in the discipline of his body." … "this boy needs a religion, and his religion needs to be 'I wake up in the morning and I've got to be out there doing my training.' … if he's not doing that, he's just becoming an addict."</td><td>Daily physical training as a structure, not a Friday club. The addiction warning is why it is non-negotiable.</td></tr>
+      <tr><td class="num">1:07:43 · 1:08:45</td><td>Not heavy contact, not me-against-you — "more like a team based sport"; rowing named approvingly, cricket suggested, tennis called "the worst side"</td><td>Team sport, low contact: rowing, cricket, hockey, football. Not rugby, not tennis.</td></tr>
+      <tr><td class="num">1:06:39</td><td>"Your son needs something larger than himself, greater than himself, to believe in. So he has to believe in the brotherhood."</td><td>A code, a house, a tradition — something to belong to.</td></tr>
+      <tr><td class="num">1:07:09 · 1:50:13</td><td>A traditional, structured school with a brotherhood — "like a Michael House or like a Bishop's"; boarding at 12–14, or senior years</td><td>Her direction of travel points at a school type that is not on this list.</td></tr>
+      <tr><td class="num">1:50:47</td><td>"He needs like a small group, like a group of four or five or seven that are meaningful."</td><td>Friendship depth over crowd size — a class of 8 beats a class of 23.</td></tr>
+      <tr><td class="num">12:56</td><td>Both children need play therapy; if it is blocked, he does it with them — "we don't demand anything of them. We just sit there and play"</td><td>Not a school decision — a parallel one, and it is section 08.</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Andrew — the boy chooses</h4>
+  <table>
+    <thead><tr><th>Time</th><th>What he said</th><th>What it asks of the decision</th></tr></thead>
+    <tbody>
+      <tr><td class="num">39:36</td><td>"It comes down to choices, consequences, and accountability. That is the sequencing."</td><td>Explain all three options and their consequences, then do not decide for him.</td></tr>
+      <tr><td class="num">42:58</td><td>If the father keeps him back instead: "it is going to erupt into something like, 'You think I'm stupid, and now you're keeping me behind.'"</td><td>The decision has to be his, or it becomes evidence against him.</td></tr>
+      <tr><td class="num">45:52</td><td>Moving up with a facilitator makes him visible to his peers, and "kids are absolute bastards when it comes to that"</td><td>A visible helper in a mainstream class is a social cost, not just a support.</td></tr>
+      <tr><td class="num">44:41</td><td>Take him to the school to "meet the teachers or just feel the energy"</td><td>The visit is the decision instrument — and it has not happened.</td></tr>
+      <tr><td class="num">44:41</td><td>At nine turning ten he shifts from mother to father — "your relationship with him has actually now got to start to expand"</td><td>Whichever school wins, the father is the one who carries it.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <p><strong>Where the two lenses collide, and this is the honest part.</strong> Kim's direction is a traditional school with a brotherhood and daily sport, and eventually boarding. Nothing within half an hour of Welgemoed offers that <em>and</em> teaches a boy with his reading profile to read. The schools with the brotherhood and the sport are the ones where he is currently drowning; the schools that teach reading have no brotherhood at all. <strong>The resolution is not to pick one lens — it is to buy the literacy deliberately and build the brotherhood somewhere else</strong>, which is exactly what Kim says when she calls sport his religion rather than his hobby.</p>
+  </div>
+
+  <h2><span class="num">10</span> Where it stands — the critical path to January</h2>
+  <p>The 2027 year opens in mid-January, and exactly one item on this list has a lead time: a police clearance runs about 15 working days once the candidate applies — so 1 December is the safe line for the appointment. Everything else can be done between now and then, and most of it can be done this week. Status is as the file stood on 14 November — where a document says "not done", that is what it means.</p>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th></th><th>What</th><th>Why it is on the critical path</th><th>By when</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="rk">1</td><td><strong>Appoint the facilitator</strong> and send Prins the name and police clearance</td><td>It is her two conditions. The clearance alone takes about 15 working days.</td><td class="num">1 Dec</td><td><span class="pill open">open</span></td></tr>
+      <tr><td class="rk">2</td><td><strong>Book the accommodation assessment</strong> (NDC, or Wessels for a faster date)</td><td>Without it there is no support plan, no exam concession, and no facilitator brief.</td><td class="num">this week</td><td><span class="pill open">open</span></td></tr>
+      <tr><td class="rk">3</td><td><strong>Get Curro's answer on a supported Grade 4</strong> — and send the speech report and Prof Fourie's report</td><td>The email is the only thing that can create the option that beats everything else on paper. Uitzicht is still waiting for both reports.</td><td class="num">now</td><td><span class="pill open">drafted, no reply on file</span></td></tr>
+      <tr><td class="rk">4</td><td><strong>Put the three options to Donatello</strong> — Grade 4 at Reddam with support, repeat Grade 3 at Uitzicht, a specialist school — with the consequences of each</td><td>Andrew, 39:36. A decision made <em>about</em> him becomes evidence against him; a decision made <em>by</em> him becomes his own.</td><td class="num">before signing</td><td><span class="pill stop">not done</span></td></tr>
+      <tr><td class="rk">5</td><td><strong>Take him to the school</strong> to meet a teacher and feel the room</td><td>Andrew, 44:41 — the visit is the decision instrument.</td><td class="num">before signing</td><td><span class="pill stop">not done</span></td></tr>
+      <tr><td class="rk">6</td><td><strong>Get Reddam's 2027 fee schedule and the support plan in writing</strong></td><td>The place is confirmed; the price for 2027 and the plan are not. And the school must own the Cambridge accommodation application from term one, not from the first exam.</td><td class="num">with the acceptance</td><td><span class="pill open">open</span></td></tr>
+      <tr><td class="rk">7</td><td><strong>Start team sport now</strong>, not in January — low contact, daily</td><td>Kim, 24:27 and 53:17. Rowing or cricket over rugby and tennis.</td><td class="num">now</td><td><span class="pill stop">not started</span></td></tr>
+      <tr><td class="rk">8</td><td><strong>Call Marleen Germishuys</strong> on 064 684 3633 and book the free fifteen-minute consult; join Tanja Smuts' waitlist in parallel</td><td>Play therapy for both children, independent of which school wins.</td><td class="num">Monday</td><td><span class="pill open">open</span></td></tr>
+      <tr><td class="rk">9</td><td><strong>Ask Uitzicht and Tafelberg the questions only a phone call settles</strong> — Dunatos' 2027 fee, Tafelberg's district placement route and timing, Hillview's existence as described, La Vigne's per-grade schedule</td><td>These are the four facts that could still reorder the table.</td><td class="num">this week</td><td><span class="pill open">open</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="callout ok">
+    <p><strong>The one-line read of the whole file.</strong> The school question was answered on 10 November — he has a Grade 4 place — and the answer to the harder question, <em>what is different in his week</em>, is now entirely a matter of four bookings and one conversation with a nine-year-old. Every document in section 11 is either the evidence for that, the price of it, or the argument for it.</p>
+  </div>
+
+  <h2><span class="num">11</span> The whole trail — every document, in order</h2>
+  <p>Eleven documents in seven weeks. Each line is what it settled at the time, and the link opens it as it was published.</p>
+
+  <ul class="trail">
+    <li><span class="when">17 Sep 2026</span> <span class="what"><strong>Reddam's letter</strong> — the school's own recommendation to consider repeating Grade 3, and the sentence naming a reader, a scribe and "ideally a facilitator" for Grade 4. <span class="sub">Held in the family's file; not published.</span></span></li>
+    <li><span class="when">26 Oct 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-10-26-donatello-school-options-for-2027.html"><strong>School options for 2027</strong></a> — ten schools profiled by education system (CAPS, IEB, Cambridge, DCAPS), day and boarding, with fees and the repeat question. <span class="path">vault: Personal/2.Automations-Skills/Reports/2026-10-26-donatello-school-options-for-2027.md</span></span></li>
+    <li><span class="when">26 Oct 2026</span> <span class="what"><strong>The 2027 decision</strong> — the four routes, the eight-criterion weighted matrix and the four gate questions. <span class="path">vault: Personal/2.Automations-Skills/Reports/2026-10-26-donatello-the-2027-decision.md</span></span></li>
+    <li><span class="when">26 Oct 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-10-26-12-writing-prompts-for-donatello-2.html"><strong>Twelve writing prompts</strong></a> — the journal half of the home programme.</span></li>
+    <li><span class="when">31 Oct 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-10-31-repeat-grade-3-or-move-to-grade-4.html"><strong>Repeat Grade 3 or move to Grade 4?</strong></a> — the retention research tested claim by claim, the South African four-year Foundation Phase cap, and the message to Lauren.</span></li>
+    <li><span class="when">31 Oct 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-10-31-should-you-ask-veronica-about-grade-4.html"><strong>Should you ask Veronica about Grade 4?</strong></a> — the case tested against the record (IQ holds, "one subject" does not), and the email asking for hours, mechanism and a comparison in writing. Gate: ask as questions, 0.96.</span></li>
+    <li><span class="when">31 Oct 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-10-31-curro-uitzicht-vs-reddam-house-durbanville-the-2027-head-to.html"><strong>Curro Uitzicht vs Reddam — the head-to-head</strong></a> — staffed capacity against goodwill, Uitzicht 0.89, and the finding that changed the weight: Reddam's own support teacher told Uitzicht he should repeat.</span></li>
+    <li><span class="when">4 Nov 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-11-04-donatello-therapy-reading-and-extra-lesson-spend-aug-2021.html"><strong>What the therapy and extra lessons have actually cost</strong></a> — R57 333,80 across three streams, 92 OT sessions, 27 months of un-itemised learning support, and no OT report since December 2022.</span></li>
+    <li><span class="when">10 Nov 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-11-10-donatello-2027-the-reading-programme-and-the-facilitator.html"><strong>The reading programme and the facilitator</strong></a> — Barton chosen at 0.986, Little Sunshines at 0.995 pairwise, and the year-one facilitator cost by band.</span></li>
+    <li><span class="when">10 Nov 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-11-10-the-daily-five-donatello-s-grade-4-home-programme.html"><strong>Don's Daily Five</strong></a> — the same five things every day, at both houses.</span></li>
+    <li><span class="when">11 Nov 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-11-11-donatello-2027-the-places-the-people-and-the-reading-pen-2.html"><strong>The places, the people and the reading pen</strong></a> — the assessment practices with addresses and numbers, Kip McGrath, the facilitator agencies, and the C-Pen Exam Reader 2 (pick revised from the original on 11 November, gate 0.913).</span></li>
+    <li><span class="when">13 Nov 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-11-13-la-vigne-vs-curro-uitzicht-and-the-other-small-support.html"><strong>La Vigne vs Curro Uitzicht</strong></a> — the two small-class CAPS schools side by side: 8 per class against 12, a Christian family frame against a support machine, no matric record against three years of NSC results.</span></li>
+    <li><span class="when">14 Nov 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-11-14-nine-schools-rated-for-a-grade-4-place-in-2027-distance.html"><strong>Twelve schools, rated for him</strong></a> — the full ranking, the two gate runs, the seven-model council, and the whole-child lens the readings set.</span></li>
+    <li><span class="when">14 Nov 2026</span> <span class="what"><a href="https://targetpraks.github.io/2026-11-14-play-therapy-for-donatello-the-best-person-in-the-area.html"><strong>Play therapy — the best person in the area</strong></a> — seven practitioners, six ruled out, and Marleen Germishuys at 0.94 in both directions.</span></li>
+  </ul>
+
+  <h2><span class="num">12</span> Sources</h2>
+  <ul class="src">
+    <li><a href="https://www.curro.co.za/media/5ytfvyol/curro-uitzicht-2027-primary-school-fee-letter-final-for-web.pdf" target="_blank" rel="noopener">Curro Uitzicht — 2027 primary fee letter (PDF)</a></li>
+    <li><a href="https://www.curro.co.za/media/c04l5upy/curro-uitzicht-primary-fact-sheet-2027.pdf" target="_blank" rel="noopener">Curro Uitzicht — 2027 primary fact sheet (PDF)</a></li>
+    <li><a href="https://durbanville.reddamhouse.com/sites/school24/files/2025-11/2026_Fees_DURBANVILLE.pdf" target="_blank" rel="noopener">Reddam House Durbanville — 2026 fee schedule (PDF)</a></li>
+    <li><a href="https://tafelbergschool.co.za/theraphy/" target="_blank" rel="noopener">Tafelberg School — therapy department</a></li>
+    <li><a href="https://www.oakleyhouse.co.za/fees.html" target="_blank" rel="noopener">Oakley House — 2027 fees</a></li>
+    <li><a href="https://lavigneschool.co.za/primary-school/" target="_blank" rel="noopener">La Vigne — primary school (class ratios)</a></li>
+    <li><a href="https://shelantiprivateschool.co.za/wp-content/uploads/2026/08/SHELANTI-2027-FEE-STRUCTURE.pdf" target="_blank" rel="noopener">Shelanti — 2027 fee structure (PDF)</a></li>
+    <li><a href="https://generationschools.co.za/wp-content/uploads/2026/10/0362_GS-SUNN-FEE-STRUCTURE-2027.pdf" target="_blank" rel="noopener">Generation Sunningdale — 2027 fee structure (PDF)</a></li>
+    <li><a href="https://tateinternational.co.za/fees-and-admission-tate/" target="_blank" rel="noopener">Tate International — 2026 fees and admission</a></li>
+    <li><a href="https://bostonprivate.co.za/primary-school" target="_blank" rel="noopener">Boston Private School — primary</a></li>
+    <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2921809/" target="_blank" rel="noopener">Allen et al. 2009 — 207 effect sizes on grade retention</a></li>
+    <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9683349/" target="_blank" rel="noopener">Denton et al. 2021 — structured literacy, g = 0.37</a></li>
+    <li><a href="https://www.education.gov.za/Portals/0/Documents/Policies/PolicyProgPromReqNCS.pdf" target="_blank" rel="noopener">NPPPR — Foundation Phase progression policy (PDF)</a></li>
+    <li><a href="https://www.sacai.org.za/wp-content/uploads/SACAI-2026-Policy-on-Accommodations-and-Concessions.pdf" target="_blank" rel="noopener">SACAI 2026 — accommodations policy (C-Pen named)</a></li>
+    <li><a href="https://childpsych.co.za/accommodations-concessions/" target="_blank" rel="noopener">IEB — accommodations and concessions route</a></li>
+    <li><a href="https://neurodiversitycentre.co.za/assessments/" target="_blank" rel="noopener">Neurodiversity Centre — diagnostic assessments</a></li>
+    <li><a href="http://www.charlenewessels.co.za/" target="_blank" rel="noopener">Charlene Wessels — educational psychologist</a></li>
+    <li><a href="https://www.kipmcgrath.co.za/durbanville" target="_blank" rel="noopener">Kip McGrath Durbanville</a></li>
+    <li><a href="https://mgermishuyspsych.co.za/" target="_blank" rel="noopener">Marleen Germishuys — clinical psychologist</a></li>
+    <li><a href="https://www.reneohlhoff.co.za/" target="_blank" rel="noopener">René Ohlhoff — play therapy</a></li>
+    <li><a href="https://www.psychologytoday.com/za/counselling/tanja-smuts-bellville-wc/837316" target="_blank" rel="noopener">Tanja Smuts — fee and waitlist</a></li>
+    <li><a href="https://editmicro.co.za/product/examreader-pen/" target="_blank" rel="noopener">Edit Microsystems — C-Pen Exam Reader 2</a></li>
+    <li><a href="https://store.bartonreading.com/" target="_blank" rel="noopener">Barton Reading — levels and single-tutor pricing</a></li>
+    <li><a href="https://www.littlesunshines.co.za/school-facilitator/" target="_blank" rel="noopener">Little Sunshines — school facilitator service</a></li>
+    <li><a href="https://www.proplacements.co.za/school-facilitators/" target="_blank" rel="noopener">Pro Placements — facilitators and scribes</a></li>
+    <li>Kim, 14 September 2026 — numerology and astrology on both children (2 h 09 m): <span class="mono">AI-Drive/Media/Recordings/reports/2026-09-14-20260914-111226-776451a8.md</span></li>
+    <li>Andrew, 5 November 2026 — the school decision (1 h 25 m): <span class="mono">AI-Drive/Media/Recordings/reports/2026-11-05-20261105-120557-273bf61e.md</span></li>
+    <li>Distances: OpenStreetMap routing, queried 13 November 2026 — off-peak, driven from Welgemoed. Lauren Roux's street address is held out deliberately.</li>
+  </ul>
+
+  <footer>
+    Compiled 14 November 2026 by Splinter for Ricardo Maio, from the documents listed in section 11 — no new research, no school visited, no place requested beyond the Grade 4 confirmation recorded above. Every fee is the school's own published figure for the year shown; the to-matric totals and the 7% escalation are labelled assumptions, not quotes. Scores are a reading of the priority order set on 15 October 2026 and are editable. Decision provenance: <span class="mono">AI-Drive/Agent-Output/splinter/gates.csv</span>. Nothing here enrols, holds, signs or pays for anything — the placement and every signature remain Ricardo's.
+  </footer>
+
+</div>
+</body>
+</html>
