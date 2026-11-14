@@ -124,91 +124,94 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </style></head>
 <body><main>
 
-<h1 id="engagement-tier-folders--every-bu-space-2026-11-14">Engagement-tier folders — every BU space (2026-11-14)</h1>
-<p>Ricardo's request: in each business-unit space, a folder for <strong>HOF</strong>, <strong>ZOR</strong> and <strong>ZEE</strong>; under ZOR and ZEE a grouping per brand (<strong>EXP</strong>, <strong>TLF</strong>, <strong>PPP</strong>); inside each, four work lanes — <strong>Recurring</strong>, <strong>Ad-hoc</strong>, <strong>Briefed-In</strong>, <strong>Projects</strong>.</p>
-<p>Workspace <strong>Infinity Brands <code>4627083</code></strong> · applied and read back from the live API on 2026-11-14.</p>
-<h2 id="the-one-constraint-stated-plainly">The one constraint, stated plainly</h2>
-<p>ClickUp nests <strong>Space → Folder → List</strong> and nothing deeper — a folder cannot hold a folder (no UI action, no API endpoint). So "a brand sub-folder inside the ZOR folder" is built as one folder per tier+brand:</p>
-<pre><code>Space: BU 1 FIN - Finance
-├── HOF              → FIN HOF Recurring · Ad-hoc · Briefed-In · Projects
-├── ZOR - EXP        → FIN ZOR EXP Recurring · Ad-hoc · Briefed-In · Projects
-├── ZOR - TLF        → …
-├── ZOR - PPP        → …
-├── ZEE - EXP        → …
-├── ZEE - TLF        → …
-└── ZEE - PPP        → …</code></pre>
-<p>Tier stays the folder, brand stays a visible grouping (adjacent in the sidebar), lanes stay lists. Exactly the shape asked for, one visual level flatter than drawn — nothing lost.</p>
-<h2 id="what-was-built">What was built</h2>
+<h1 id="engagement-tier-folders-in-every-bu-space-2026-11-14">Engagement-tier folders in every BU space (2026-11-14)</h1>
+<p>Ricardo's brief: in each business-unit space, a folder for <strong>HOF</strong>, <strong>ZOR</strong> and <strong>ZEE</strong>; under ZOR and ZEE a folder per brand (<strong>EXP</strong>, <strong>TLF</strong>, <strong>PPP</strong>); inside each of those, four work lanes — <strong>Recurring</strong>, <strong>Ad-hoc</strong>, <strong>Briefed-In</strong>, <strong>Projects</strong>.</p>
+<p>Workspace <strong>Infinity Brands <code>4627083</code></strong> · built and read back from the live API on 2026-11-14.</p>
+<h2 id="correction-to-the-first-build">Correction to the first build</h2>
+<p>The first pass flattened the tier+brand into single folders (<code>ZOR - EXP</code>, …) on the claim that ClickUp cannot nest folders. <strong>That claim was wrong.</strong> ClickUp supports exactly <strong>one level of subfolders</strong> (Space → Folder → Subfolder → List), and this Workspace has it enabled. Proven live before rebuilding:</p>
+<pre><code>POST /space/901211092557/folder  {&quot;name&quot;:&quot;ZZ Probe Parent&quot;}                         → 901215910244
+POST /space/901211092557/folder  {&quot;name&quot;:&quot;ZZ Probe Sub&quot;,&quot;parent_folder_id&quot;:&quot;…244&quot;}  → 901215910245
+POST /folder/901215910245/list   {&quot;name&quot;:&quot;ZZ Probe List&quot;}                           → 901223608153
+GET  /space/901211092557/folder   → both entries, the sub carrying parent_folder 901215910244</code></pre>
+<p>Both probes deleted afterwards. Sources: ClickUp Help "What are Subfolders?" (one level only) and the API reference for Create Folder (<code>parent_folder_id</code>) and Get Folders (<code>parent_folder</code>, flat list).</p>
+<h2 id="the-tree-that-is-now-live-in-every-bu-space">The tree that is now live, in every BU space</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">graph</span> <span class="cn">TD</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S</span>[<span class="st">&quot;Space: BU 1 FIN - Finance&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">HOF</span>[<span class="st">&quot;Folder HOF&quot;</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">ZOR</span>[<span class="st">&quot;Folder ZOR&quot;</span>]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">ZEE</span>[<span class="st">&quot;Folder ZEE&quot;</span>]</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">HOF</span> <span class="pp">--&gt;</span> <span class="dt">H1</span>[<span class="st">&quot;Recurring&quot;</span>] <span class="kw">&amp; </span><span class="dt">H2</span>[<span class="st">&quot;Ad-hoc&quot;</span>] <span class="kw">&amp; </span><span class="dt">H3</span>[<span class="st">&quot;Briefed-In&quot;</span>] <span class="kw">&amp; </span><span class="dt">H4</span>[<span class="st">&quot;Projects&quot;</span>]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ZOR</span> <span class="pp">--&gt;</span> <span class="dt">Z1</span>[<span class="st">&quot;Subfolder ZOR - EXP&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">E1</span>[<span class="st">&quot;Recurring · Ad-hoc · Briefed-In · Projects&quot;</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ZOR</span> <span class="pp">--&gt;</span> <span class="dt">Z2</span>[<span class="st">&quot;Subfolder ZOR - TLF&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">E2</span>[<span class="st">&quot;Recurring · Ad-hoc · Briefed-In · Projects&quot;</span>]</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ZOR</span> <span class="pp">--&gt;</span> <span class="dt">Z3</span>[<span class="st">&quot;Subfolder ZOR - PPP&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">E3</span>[<span class="st">&quot;Recurring · Ad-hoc · Briefed-In · Projects&quot;</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ZEE</span> <span class="pp">--&gt;</span> <span class="dt">Z4</span>[<span class="st">&quot;Subfolder ZEE - EXP&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">E4</span>[<span class="st">&quot;Recurring · Ad-hoc · Briefed-In · Projects&quot;</span>]</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ZEE</span> <span class="pp">--&gt;</span> <span class="dt">Z5</span>[<span class="st">&quot;Subfolder ZEE - TLF&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">E5</span>[<span class="st">&quot;Recurring · Ad-hoc · Briefed-In · Projects&quot;</span>]</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">ZEE</span> <span class="pp">--&gt;</span> <span class="dt">Z6</span>[<span class="st">&quot;Subfolder ZEE - PPP&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">E6</span>[<span class="st">&quot;Recurring · Ad-hoc · Briefed-In · Projects&quot;</span>]</span></code></pre></div>
+<p>Subfolders carry the tier in their name (<code>ZOR - EXP</code>) because ClickUp requires folder names to be unique <strong>within a space</strong> — a bare <code>EXP</code> under ZOR collides with <code>EXP</code> under ZEE, and in Brand Ops 1/2 it also collides with the existing top-level brand folders.</p>
+<p>List names carry the whole coordinate and stay unique per space: <code>{CODE} {TIER} [{BRAND}] {LANE}</code> — <code>FIN ZOR EXP Briefed-In</code>.</p>
+<h2 id="verified-from-the-live-api-read-back-not-the-runs-own-log">Verified from the live API (read-back, not the run's own log)</h2>
+<pre><code>BU 1 FIN - Finance                   folders 3/3  subfolders 6/6  lists 28/28
+BU 2 HRM - Human Resources           folders 3/3  subfolders 6/6  lists 28/28
+BU 3 ADM - Administration            folders 3/3  subfolders 6/6  lists 28/28
+BU 4 ITC - Information Technology    folders 3/3  subfolders 6/6  lists 28/28
+BU 5 MKT - Marketing                 folders 3/3  subfolders 6/6  lists 28/28
+BU 6 SAL - Sales                     folders 3/3  subfolders 6/6  lists 28/28
+BU 7 Brand Ops 1                     folders 3/3  subfolders 6/6  lists 28/28
+BU 8 Brand Ops 2                     folders 3/3  subfolders 6/6  lists 28/28
+
+TOTAL folders 24/24  subfolders 48/48  lists 224/224  gaps=0</code></pre>
+<p>Field sets confirmed by reading every HOF and ZOR list in FIN (16 lists, none under three fields) and every ZEE list in FIN (12 lists): <strong>Briefed-In = 8 fields</strong> (Brand, Department, Function, Business Unit, Work Format, Requested By, Engagement Tier, Priority), <strong>Recurring / Ad-hoc / Projects = 3</strong> (Business Unit, Work Format, Priority).</p>
+<h2 id="run-ledger">Run ledger</h2>
 <table>
 <thead>
 <tr>
-<th>Space</th>
-<th>Tier folders</th>
-<th>Tier lists</th>
+<th>Run</th>
+<th>What</th>
+<th>Calls</th>
+<th>Failures</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>BU 1 FIN - Finance</td>
-<td>7</td>
-<td>28</td>
+<td>13 Nov</td>
+<td>first structure build</td>
+<td>345</td>
+<td>0</td>
 </tr>
 <tr>
-<td>BU 2 HRM - Human Resources</td>
-<td>7</td>
-<td>28</td>
+<td>13 Nov</td>
+<td>field placement</td>
+<td>1368</td>
+<td>0</td>
 </tr>
 <tr>
-<td>BU 3 ADM - Administration</td>
-<td>7</td>
-<td>28</td>
+<td>14 Nov</td>
+<td>flat tier build (superseded by this one)</td>
+<td>345 + 1368</td>
+<td>0</td>
 </tr>
 <tr>
-<td>BU 4 ITC - Information Technology</td>
-<td>7</td>
-<td>28</td>
+<td>14 Nov 13:48</td>
+<td>subfolder rebuild with bare brand names</td>
+<td>—</td>
+<td>27 <code>400 Folder name taken</code> (<code>CAT_014</code>)</td>
 </tr>
 <tr>
-<td>BU 5 MKT - Marketing</td>
-<td>7</td>
-<td>28</td>
-</tr>
-<tr>
-<td>BU 6 SAL - Sales</td>
-<td>7</td>
-<td>28</td>
-</tr>
-<tr>
-<td>BU 7 Brand Ops 1</td>
-<td>7</td>
-<td>28</td>
-</tr>
-<tr>
-<td>BU 8 Brand Ops 2</td>
-<td>7</td>
-<td>28</td>
-</tr>
-<tr>
-<td><strong>Total</strong></td>
-<td><strong>56</strong></td>
-<td><strong>224</strong></td>
+<td>14 Nov</td>
+<td>final rebuild, tier-carrying subfolder names</td>
+<td><strong>1024</strong></td>
+<td><strong>0</strong></td>
 </tr>
 </tbody>
 </table>
-<p>Read-back verification: every one of the 8 BU spaces returns 7/7 tier folders and 28/28 tier lists, all named <code>{CODE} {TIER} [{BRAND}] {LANE}</code>. Apply run: <code>api_calls=345 failures=0</code>.</p>
-<h2 id="fields-on-the-new-lists">Fields on the new lists</h2>
-<ul>
-<li><strong>Briefed-In</strong> lists carry the intake eight — Brand, Department, Function, Business Unit, Work Format, Requested By, Engagement Tier, Priority.</li>
-<li><strong>Recurring / Ad-hoc / Projects</strong> lists carry Business Unit, Work Format, Priority.</li>
-</ul>
+<p>The 27 refusals were the only failures today; all were resolved by the naming fix above, and the rebuild then created every folder, subfolder and list. Nothing is half-built. The older 43 refusals in <code>build-log.jsonl</code> are <code>List name taken</code> (<code>SUBCAT_016</code>) from 13 Nov.</p>
 <h2 id="open-question-for-ricardo">Open question for Ricardo</h2>
 <p>Each BU space still holds the earlier numbered skeleton (<code>00 Intake</code>, <code>01 Operations</code>, <code>02 Projects</code>, <code>03 Reporting</code>, <code>99 Registers</code>) plus the discipline folders (<code>FIN - Creditors &amp; Approvals</code>, <code>ITC - Service Desk</code>, …). The tier lanes now duplicate <code>00 Intake</code>, <code>01 Operations</code> and <code>02 Projects</code>.</p>
-<p>Recommendation: retire <code>00 Intake / 01 Operations / 02 Projects</code> per BU and keep <code>03 Reporting</code> and <code>99 Registers</code> (the tier model has no reporting or decision lane), keeping every discipline folder as is. Nothing is deleted without Ricardo's word.</p>
+<p>Recommendation: retire <code>00 Intake / 01 Operations / 02 Projects</code> per BU, keep <code>03 Reporting</code> and <code>99 Registers</code> (the tier model has no reporting or decision lane), and leave every discipline folder untouched. Nothing is deleted without Ricardo's word.</p>
 <h2 id="files">Files</h2>
 <ul>
-<li><code>build-kit/model.py</code> — tier model (<code>TIERS</code>, <code>TIER_BRANDS</code>, <code>LANES</code>, <code>tier_structure()</code>), merged into <code>STRUCTURE</code> for the eight BU codes.</li>
-<li><code>build-kit/tier-apply.log</code>, <code>build-kit/tier-fields.log</code> — run logs.</li>
-<li><code>build-kit/build-log.jsonl</code> — per-call audit trail.</li>
+<li><code>build-kit/tiers.py</code> — the tree builder: <code>--plan</code>, <code>--apply</code>, <code>--verify</code>, idempotent, logs every call.</li>
+<li><code>build-kit/model.py</code> — <code>TIERS</code>, <code>TIER_BRANDS</code>, <code>LANES</code>, <code>sub_name()</code>, <code>tier_tree()</code>.</li>
+<li><code>build-kit/tier-rebuild.log</code>, <code>build-kit/build-log.jsonl</code> — run log and per-call audit trail.</li>
 </ul>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
