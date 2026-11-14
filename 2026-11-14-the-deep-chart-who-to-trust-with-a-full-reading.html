@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Deep Chart — who to trust with a full reading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#05070f; --bg2:#0a1024; --ink:#e9ecf5; --dim:#98a0b8; --dim2:#6e7793;
+    --gold:#e8c37a; --violet:#9b8cff; --teal:#6fe3c4; --line:rgba(255,255,255,.10);
+    --glass:rgba(255,255,255,.045);
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    margin:0; background:
+      radial-gradient(1100px 700px at 12% -10%, rgba(155,140,255,.16), transparent 60%),
+      radial-gradient(900px 600px at 92% 8%, rgba(232,195,122,.10), transparent 60%),
+      radial-gradient(900px 700px at 50% 110%, rgba(111,227,196,.07), transparent 60%),
+      linear-gradient(180deg,#05070f 0%, #070c1a 40%, #05070f 100%);
+    color:var(--ink); font-family:'Inter',-apple-system,sans-serif; font-weight:300;
+    line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1080px; margin:0 auto; padding:64px 26px 100px; }
+  .kicker { font-size:11.5px; letter-spacing:.26em; text-transform:uppercase; color:var(--gold); font-weight:600; }
+  h1 { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(34px,6vw,60px); line-height:1.05;
+        letter-spacing:-.02em; margin:14px 0 16px; }
+  h1 em { font-style:normal; color:var(--gold); }
+  .sub { font-size:18px; color:var(--dim); max-width:74ch; }
+  .meta { display:flex; flex-wrap:wrap; gap:10px; margin:26px 0 0; }
+  .chip { font-size:12px; padding:6px 12px; border:1px solid var(--line); border-radius:999px; color:var(--dim);
+           background:var(--glass); backdrop-filter:blur(10px); }
+  h2 { font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(22px,3vw,30px); letter-spacing:-.01em;
+        margin:64px 0 6px; }
+  h2 .n { color:var(--gold); font-size:.62em; vertical-align:middle; margin-right:12px; letter-spacing:.1em; }
+  .h2sub { color:var(--dim); margin:0 0 26px; font-size:15px; max-width:78ch; }
+  .verdict { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px; margin-top:8px; }
+  .v a { white-space:nowrap; }
+  .card-links a { white-space:normal; overflow-wrap:anywhere; }
+  .v { border:1px solid var(--line); border-radius:18px; padding:24px; background:var(--glass);
+        backdrop-filter:blur(14px); position:relative; overflow:hidden; }
+  .v::before { content:''; position:absolute; inset:0 0 auto 0; height:1px;
+                background:linear-gradient(90deg,transparent,rgba(232,195,122,.55),transparent); }
+  .v .tag { font-size:10.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim2); font-weight:600; }
+  .v h3 { font-family:'Space Grotesk',sans-serif; font-size:21px; margin:10px 0 4px; font-weight:600; }
+  .v .p { font-family:'Space Grotesk',sans-serif; font-size:30px; color:var(--gold); font-weight:600; letter-spacing:-.02em; }
+  .v p { font-size:14.5px; color:var(--dim); margin:10px 0 0; }
+  .v a { color:var(--teal); text-decoration:none; border-bottom:1px solid rgba(111,227,196,.3); }
+  .pick { border-color:rgba(232,195,122,.4); background:linear-gradient(160deg,rgba(232,195,122,.09),rgba(255,255,255,.03)); }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+  .card { border:1px solid var(--line); border-radius:20px; padding:26px; background:var(--glass);
+           backdrop-filter:blur(14px); transition:border-color .25s, transform .25s; }
+  .card:hover { border-color:rgba(232,195,122,.34); transform:translateY(-2px); }
+  .card-top { display:flex; justify-content:space-between; align-items:baseline; gap:14px; }
+  .card-id { font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--dim2); font-weight:600; }
+  .card-price { font-family:'Space Grotesk',sans-serif; font-size:19px; color:var(--gold); font-weight:600; white-space:nowrap; }
+  .card h3 { font-family:'Space Grotesk',sans-serif; font-size:23px; margin:12px 0 2px; font-weight:600; letter-spacing:-.01em; }
+  .card-place { font-size:12.5px; color:var(--dim2); margin-bottom:14px; }
+  .lede { font-size:15.5px; color:var(--ink); font-weight:500; margin:0 0 12px; }
+  .card p { font-size:14.4px; color:#a9b2c8; margin:0 0 12px; }
+  .card .caveat { font-size:13.4px; color:#c9b9a3; background:rgba(232,195,122,.07);
+                   border-left:2px solid rgba(232,195,122,.45); padding:10px 14px; border-radius:0 10px 10px 0; }
+  .card .caveat strong { color:var(--gold); font-weight:600; letter-spacing:.06em; text-transform:uppercase; font-size:10.5px; }
+  .price-note { font-size:12.5px; color:#8f98b0; border-top:1px solid var(--line); padding-top:12px; }
+  .card-links { font-size:12.8px; margin-top:10px; line-height:2; }
+  .card-links a { color:var(--teal); text-decoration:none; border-bottom:1px solid rgba(111,227,196,.25); }
+  .card-links a:hover { border-bottom-color:var(--teal); }
+  table { width:100%; border-collapse:collapse; margin-top:6px; font-size:14px; }
+  th { text-align:left; font-family:'Space Grotesk',sans-serif; font-size:10.5px; letter-spacing:.16em;
+        text-transform:uppercase; color:var(--dim2); font-weight:600; padding:0 14px 10px 0; border-bottom:1px solid var(--line); }
+  td { padding:14px 14px 14px 0; border-bottom:1px solid rgba(255,255,255,.055); color:var(--dim); vertical-align:top; }
+  td.rn { color:var(--ink); font-weight:500; white-space:nowrap; }
+  td.rp { color:var(--gold); white-space:nowrap; font-size:13px; }
+  td.g { color:var(--violet); white-space:nowrap; font-size:13px; }
+  .mono { font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:12.4px; color:#cfd6e8; }
+  table a { color:var(--teal); text-decoration:none; border-bottom:1px solid rgba(111,227,196,.25); }
+  .steps { counter-reset:s; display:grid; gap:16px; }
+  .step { border:1px solid var(--line); border-radius:16px; padding:22px 24px 22px 66px; position:relative;
+           background:var(--glass); }
+  .step::before { counter-increment:s; content:counter(s,decimal-leading-zero); position:absolute; left:22px; top:20px;
+                   font-family:'Space Grotesk',sans-serif; font-size:15px; color:var(--gold); font-weight:600; }
+  .step h4 { margin:0 0 6px; font-family:'Space Grotesk',sans-serif; font-size:17px; font-weight:600; }
+  .step p { margin:0; font-size:14.2px; color:var(--dim); }
+  .step code { font-family:ui-monospace,'SF Mono',Menlo,monospace; font-size:12.6px; color:#dfe5f4;
+                background:rgba(255,255,255,.06); padding:2px 7px; border-radius:6px; }
+  .note { border:1px solid rgba(155,140,255,.28); background:rgba(155,140,255,.07); border-radius:16px;
+           padding:20px 24px; margin-top:22px; font-size:14.2px; color:#c6c0e8; }
+  .note strong { color:var(--violet); }
+  footer { margin-top:70px; padding-top:26px; border-top:1px solid var(--line); font-size:12.6px; color:var(--dim2); }
+  footer a { color:var(--dim); }
+  @media(max-width:640px){
+    .wrap { padding:44px 18px 70px; }
+    .card { padding:22px; }
+    td, th { font-size:12.8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Personal · Esoteric · Deep research</div>
+  <h1>The Deep Chart<br><em>who to trust with a full reading</em></h1>
+  <p class="sub">Eight practitioners compared across three lanes, every price taken from the practitioner's own
+  page and converted at today's rate. The question was never "who does astrology" — it was who can run the whole
+  chart, keep working with you, and not cost a fortune doing it.</p>
+  <div class="meta">
+    <span class="chip">14 November 2026</span>
+    <span class="chip">8 candidates + 4 ruled out</span>
+    <span class="chip">1 USD = R16.90 · 1 INR = R0.179</span>
+    <span class="chip">Decision by the local gate lane</span>
+  </div>
+
+  <h2><span class="n">01</span> The short answer</h2>
+  <p class="h2sub">The gate chose on your stated rules — bookable now, verifiable depth, under R3,000, able to continue.
+  Two names come out of it, because Western and Jyotish are two different jobs.</p>
+
+  <div class="verdict">
+    <div class="v pick">
+      <div class="tag">Start here · depth per rand</div>
+      <h3>Dr. R.P. Sharma</h3>
+      <div class="p">R914</div>
+      <p>47 years, PhD plus Acharya in Jyotish, full kundli read in advance, one flat fee with no upsells, bookable
+      this week. <a href="https://drrpsharma.com/kundli-consultation.html" target="_blank" rel="noopener">Book a consultation →</a></p>
+    </div>
+    <div class="v">
+      <div class="tag">The Western lane · local</div>
+      <h3>Astro Anya</h3>
+      <div class="p">R1,500</div>
+      <p>90 minutes, recorded, natal plus transits, solar return and progressions. Rod Suskin diploma, practising
+      since 2010, and she does ongoing insight coaching. <a href="https://astroanya.co.za/readings" target="_blank" rel="noopener">Readings &amp; prices →</a></p>
+    </div>
+    <div class="v">
+      <div class="tag">The long game · book now, use later</div>
+      <h3>Dianne Garven</h3>
+      <div class="p">On request</div>
+      <p>25 years, 5,500 clients, and a six-session deep dive that is the closest thing to a real programme in Cape
+      Town. Also the natural next step after one-off readings. <a href="https://diannegarven.com/" target="_blank" rel="noopener">Services →</a></p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>One booking, not three.</strong> The gate's six-way pick landed on Astro Anya first — but at
+    confidence 0.14, which is not a decision. The pairwise that put the rules into the question — depth for the money,
+    run twice in both directions — chose Sharma both times (0.892 and 0.841). So: Sharma is the depth buy, Anya is the
+    Western buy. If you only ever do one, do Sharma, then decide whether the Western lens matters enough for a second
+    R1,500.
+  </div>
+
+  <h2><span class="n">02</span> What "full chart" actually means</h2>
+  <p class="h2sub">Most people selling "a reading" are selling an hour of personality. These are the four things worth
+  insisting on — every name below clears at least three.</p>
+  <div class="verdict">
+    <div class="v"><div class="tag">1 · The whole chart</div><p style="margin-top:8px">Sun, Moon, Ascendant, every house, every aspect, the ruler of the chart — not a sun-sign scaffold with transits bolted on.</p></div>
+    <div class="v"><div class="tag">2 · Timing, not just character</div><p style="margin-top:8px">Transits, progressions, solar return — or dashas and divisional charts in the Jyotish lane. "Who am I" without "when" is half a reading.</p></div>
+    <div class="v"><div class="tag">3 · Something you keep</div><p style="margin-top:8px">A recording or a written summary. Anya records; Kerby sends a written summary; Sharma's fee includes the prepared chart.</p></div>
+    <div class="v"><div class="tag">4 · A second session</div><p style="margin-top:8px">An ongoing relationship with a return price, not a one-night event. Anya, Diana Rose and Garven all price the repeat visit.</p></div>
+  </div>
+
+  <h2><span class="n">03</span> Cape Town and South Africa</h2>
+  <p class="h2sub">Four locals who clear the credential bar. COSAPA registration and a Rod Suskin diploma are the two
+  filters that separate astrologers from the 35-name "esoteric provider" database, most of which is tarot and reiki.
+  The fifth worth a call is <a href="https://www.cosapa.org.za/louise-kerby/" target="_blank" rel="noopener">Louise Kerby</a>
+  in Newlands — Rod Suskin diploma with distinction, and she sends a written summary after every session, which none
+  of the others do.</p>
+  <div class="cards">
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">01 · Western (Rod Suskin school)</div>
+        <div class="card-price">R1,500</div>
+      </div>
+      <h3>Astro Anya — Anya Kotzuba</h3>
+      <div class="card-place">Kommetjie, Cape Town · in person or online</div>
+      <p class="lede">The best-priced serious Western chart reading in Cape Town, and you can book it now</p>
+      <p>Rod Suskin three-year diploma, re-studied in full, professional since 2010. The Full Reading is a birth chart analysis plus transits, solar return, progressions and other timing methods — 90 minutes, recorded, R1,500. Birth Chart alone is R1,200 for an hour. She works life-navigational: individuals, couples, children and family overlays, plus Insight Coaching for repeat sessions, which is exactly the 'work on me' part. Testimonials include a client on a ten-year annual run and parents who had their kids' charts done.</p>
+      <p class="caveat"><strong>Watch</strong> Google footprint is thin — 5.0 but a single review in the Cape Town provider database, so the proof is her testimonials page and the 16 years of practice, not a review count. She asks you to WhatsApp for local SA rates, so R1,500 may come down further for a South African client.</p>
+      <div class="price-note">1.5 h full reading + recording · R1,200 birth chart</div>
+      <div class="card-links"><a href="https://astroanya.co.za/readings" target="_blank" rel="noopener">Readings &amp; prices</a> · <a href="https://astroanya.co.za/" target="_blank" rel="noopener">About &amp; credentials</a> · <a href="https://astroanya.co.za/testimonials" target="_blank" rel="noopener">Testimonials</a></div>
+    </article>
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">02 · Ancient / Hellenistic + astrocartography</div>
+        <div class="card-price">On request</div>
+      </div>
+      <h3>Dianne Garven</h3>
+      <div class="card-place">Cape Town · in person or online</div>
+      <p class="lede">The deepest long-arc work available on your doorstep</p>
+      <p>25+ years, 5,500+ clients, teacher and published astrologer, described as chairperson of the Cape Astrology Association, trained through the Rod Suskin school. Reads ancient astrology and offers the whole stack you already use: natal, predictive over 12–18 months, synastry, children's charts, career, relocation and astrocartography, electional and horary. The one that matters here is the Cosmic Resonance Deep Dive — six one-hour sessions unpacking the structure of the chart, the patterns and the cycles. That is a real 'work on me' programme, not a one-off.</p>
+      <p class="caveat"><strong>Watch</strong> No prices published anywhere on her site — every service is 'book' or 'enquire'. You would be quoting blind. Expect R1,500–R2,500 per session by comparison with her peers, but that is an inference, not a fact, and the six-session programme could be R9,000+.</p>
+      <div class="price-note">single readings and a 6-session deep dive</div>
+      <div class="card-links"><a href="https://diannegarven.com/" target="_blank" rel="noopener">Services (incl. the six-session deep dive)</a> · <a href="https://www.bodyandmind.co.za/dianne-garven/" target="_blank" rel="noopener">Profile naming her as Cape Astrology Association chair</a></div>
+    </article>
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">03 · Western + Vedic · sangoma</div>
+        <div class="card-price">R2,500</div>
+      </div>
+      <h3>Rod Suskin</h3>
+      <div class="card-place">Cape Town · Zoom worldwide</div>
+      <p class="lede">The elder of South African astrology — if you can wait six months</p>
+      <p>In practice over 30 years as both astrologer and sangoma, author of astrology books, runs a three-year school that most of the credible Cape Town practitioners came through. Reads Western and offers a Vedic reading as well. R2,500 for a first appointment in South Africa, R2,000 thereafter, R900 for email questions — and those email questions are a genuine low-cost way to test him before committing.</p>
+      <p class="caveat"><strong>Watch</strong> The site says plainly: be prepared to wait at least six months for a full reading. Urgent slots exist but only by emailing with 'urgent appointment' in the subject. Book now if you want him at all — the queue only grows.</p>
+      <div class="price-note">first consultation · R2,000 follow-up · $175 abroad</div>
+      <div class="card-links"><a href="https://rodsuskin.com/pay.html" target="_blank" rel="noopener">Fees (valid from Aug 2024)</a> · <a href="https://rodsuskin.com/privateconsultat.html" target="_blank" rel="noopener">Readings, Zoom and the six-month wait</a> · <a href="http://rodsuskin.com/aboutrod.html" target="_blank" rel="noopener">About: 30+ years, astrologer and sangoma</a></div>
+    </article>
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">04 · Jyotish / Indian astrology</div>
+        <div class="card-price">On request</div>
+      </div>
+      <h3>Dr. Nick Simpson</h3>
+      <div class="card-place">Cape Town (Flourish Medical) · online</div>
+      <p class="lede">A working medical doctor who reads Jyotish — rare anywhere, let alone here</p>
+      <p>An integrative medical doctor in Cape Town who trained in Indian astrology under Richard Fidler, through Dr. E.K. Dhillip Kumar's beginner and intermediate courses, and Freedom Cole's Science of Light 1 and 2. COSAPA-registered, offering natal, predictive, synastry, electional and medical astrology. A clinician who can hold a chart and a body at the same time is the unusual combination you asked for.</p>
+      <p class="caveat"><strong>Watch</strong> No published fee, and a doctor's calendar — expect a wait and a professional rate. Verify the astrology fee directly before booking; do not assume it tracks Anya's.</p>
+      <div class="price-note">COSAPA-registered practitioner</div>
+      <div class="card-links"><a href="https://www.cosapa.org.za/nick-simpson/" target="_blank" rel="noopener">COSAPA profile &amp; qualifications</a> · <a href="https://www.flourishmedi.co.za/" target="_blank" rel="noopener">Medical practice</a></div>
+    </article></div>
+
+  <h2><span class="n">04</span> Overseas, on a screen</h2>
+  <p class="h2sub">Where the depth-per-rand actually lives. The Jyotish lane is dramatically cheaper than the Western
+  one, and the Hellenistic lane gives you a genuinely different lens from the modern Western reading you already run weekly.</p>
+  <div class="cards">
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">05 · Jyotish (Vedic)</div>
+        <div class="card-price">R914</div>
+      </div>
+      <h3>Dr. R.P. Sharma</h3>
+      <div class="card-place">Faridabad / Delhi NCR · online worldwide</div>
+      <p class="lede">47 years, a PhD, and the cheapest serious reading on this page</p>
+      <p>PhD (University of Delhi) and an Acharya in Phalit Jyotish from Central Sanskrit University; practising since 1979. The ₹5,100 buys the full kundli read in advance — lagna, divisional charts, running dasha, current transits — then a private session by phone, WhatsApp or video, in English, scheduled to your time zone, with your questions answered. His own page states remedies only where the chart calls for them and no gemstones or rituals sold, which is the single best anti-upsell signal in this whole list. Independently rated 4.8 across 66 reviews on JustDial; 47.7K subscribers, 591 videos on YouTube.</p>
+      <p class="caveat"><strong>Watch</strong> His site is SEO-heavy — geo landing pages for Leicester, Adelaide, Dublin, Los Angeles. The practitioner is real and independently reviewed; the marketing is not a credential. The ₹5,100 is the whole fee: no per-minute meter. Read within 48 hours of booking.</p>
+      <div class="price-note">flat ₹5,100 · no upsells</div>
+      <div class="card-links"><a href="https://drrpsharma.com/kundli-consultation.html" target="_blank" rel="noopener">Consultation &amp; what the fee covers</a> · <a href="https://drrpsharma.com/dr-r-p-sharma.html" target="_blank" rel="noopener">Profile &amp; credentials</a> · <a href="https://www.justdial.com/Faridabad/Dr-R-P-Sharma-Faridabad-Sector-28/011PXX11-XX11-230905231427-A3M8_BZDET/reviews" target="_blank" rel="noopener">66 reviews on JustDial</a> · <a href="https://www.youtube.com/@drrpsharmaastro/videos" target="_blank" rel="noopener">YouTube channel</a></div>
+    </article>
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">06 · Hellenistic</div>
+        <div class="card-price">≈ R2,687</div>
+      </div>
+      <h3>Adam Elenbaas — Nightlight Astrology</h3>
+      <div class="card-place">Online (US)</div>
+      <p class="lede">13,000 natal readings in 16 years, at a price that undercuts most juniors</p>
+      <p>The largest verified reading volume on this list: 13,000+ birth chart readings over 16 years, a school, a podcast and a published book. Nightlight runs a need-based reading clinic: $159 buys a full birth chart reading from a Nightlight-trained Hellenistic astrologer in the whole-sign house system, with tiers up to his course directors. If you want him personally, it is $299 for an oracle reading built on your natal chart plus horary, tarot or I Ching, or $149 for a straight horary question.</p>
+      <p class="caveat"><strong>Watch</strong> At $159 you get a clinic astrologer, not Elenbaas himself — the clinic says every reader is trained and that each brings their own gifts, which is honest but means the name on the door is not always the voice on the call. Whole-sign Hellenistic is a different lens from the modern Western you already get weekly.</p>
+      <div class="price-note">$159 birth chart via the reading clinic · $299 his own oracle reading</div>
+      <div class="card-links"><a href="https://nightlightastrology.com/need-based-astrology-readings/" target="_blank" rel="noopener">Reading clinic (need-based, $159)</a> · <a href="https://nightlightastrology.com/readings-with-adam" target="_blank" rel="noopener">His own readings ($299 / $149)</a> · <a href="https://nightlightastrology.com/about" target="_blank" rel="noopener">About: 13,000 readings, 16 years</a></div>
+    </article>
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">07 · Traditional + modern hybrid</div>
+        <div class="card-price">≈ R5,069</div>
+      </div>
+      <h3>Nick Dagan Best</h3>
+      <div class="card-place">Vancouver · Zoom worldwide</div>
+      <p class="lede">Chris Brennan's own shortlist, and the specialist in planetary cycles and place</p>
+      <p>22 years as a professional, 28 years of study, workshops on three continents, and one of the names Chris Brennan personally endorses on The Astrology Podcast's consultations page. Hybrid ancient and modern technique, known as an expert on planetary synodic cycles, and he reads locational astrology — the astrocartography lane you already work in. One hour, online, with both recordings sent afterwards.</p>
+      <p class="caveat"><strong>Watch</strong> $300 is roughly R5,070, which is the top of the 'reasonable' band. Worth it specifically if you want place-based work or cycle timing from a named specialist rather than a general reading.</p>
+      <div class="price-note">$300 one hour, audio + video recording · $550 rectification</div>
+      <div class="card-links"><a href="https://www.nickdaganbestastrologer.com/consultations" target="_blank" rel="noopener">Consultations &amp; prices</a> · <a href="https://theastrologypodcast.com/consultations/" target="_blank" rel="noopener">Endorsed on The Astrology Podcast consultations page</a></div>
+    </article>
+    <article class="card">
+      <div class="card-top">
+        <div class="card-id">08 · Relational / modern natal</div>
+        <div class="card-price">≈ R4,225</div>
+      </div>
+      <h3>Diana Rose Harper</h3>
+      <div class="card-place">Online (US)</div>
+      <p class="lede">The depth reader — full chart as a healing conversation</p>
+      <p>A relational astrologer, tarot reader and educator with a following in the astro community and multiple podcast appearances. A 60-minute full-chart consult is $250 new, $225 returning — the returning price is the tell that she expects an ongoing relationship, which is what you asked for. Natal-focused, animist framing, less prediction, more pattern and meaning.</p>
+      <p class="caveat"><strong>Watch</strong> Less timing and forecasting than the others; if what you want is dates and windows, Sharma or Dagan Best serve you better. Her work is best for the 'who am I and why does this keep happening' layer.</p>
+      <div class="price-note">$250 new client 60-min full-chart · $225 returning</div>
+      <div class="card-links"><a href="https://ddamascenaa.com/astrology" target="_blank" rel="noopener">Astrology services &amp; prices</a> · <a href="https://ddamascenaa.com/mission" target="_blank" rel="noopener">About</a></div>
+    </article></div>
+
+  <h2><span class="n">05</span> Ruled out, and why</h2>
+  <p class="h2sub">The famous names are mostly closed, and the cheap ones are software. This is the part that saves you money.</p>
+  <table>
+    <thead><tr><th>Name</th><th>Price</th><th>Why not</th></tr></thead>
+    <tbody>
+      <tr><td class="rn">Steven Forrest</td><td class="rp">$350 recorded / $290 in person</td><td>Closed. His own readings page says he is no longer accepting requests — the in-person wait is about eight years and the recorded wait is longer. He points to a directory of astrologers he trained instead. <a href="https://forrestastrology.com/readings" target="_blank" rel="noopener">source</a></td></tr>
+      <tr><td class="rn">Austin Coppock</td><td class="rp">$100–$500, consultations 2–3 times a year</td><td>A genuine master of traditional astrology and astrological magic, but he opens consultations only two or three times a year. Fine as a 'when the window opens' name, useless as a first booking this month. <a href="https://austincoppock.com/" target="_blank" rel="noopener">source</a></td></tr>
+      <tr><td class="rn">Etsy / Fiverr natal charts</td><td class="rp">$6–$60</td><td>These are software reports with a name on top. Nothing on this page is in that category — and none of the people above will send you a 40-page PDF of boilerplate and call it a reading. <a href="https://www.etsy.com/market/natal_reading_for_2026" target="_blank" rel="noopener">source</a></td></tr>
+      <tr><td class="rn">Cape Town 'psychic' listings</td><td class="rp">R750–R2,300</td><td>The Cape Town esoteric provider database has 35 names; only 3 publish prices and only two of them are actually astrologers. Most of the field is tarot, reiki and mediumship — not chart work. Do not book a natal reading from a psychic listing. <a href="https://cosapa.org.za/practitioners/" target="_blank" rel="noopener">source</a></td></tr></tbody>
+  </table>
+
+  <h2><span class="n">06</span> How the decision was made</h2>
+  <p class="h2sub">The local decision lane, not a model's taste. Probabilities are the lane's own; the low-confidence
+  multi-way is reported as low-confidence rather than dressed up.</p>
+  <table>
+    <thead><tr><th>Question</th><th>Type</th><th>Result</th><th>Reading</th></tr></thead>
+    <tbody>
+      <tr><td>Which first booking?</td><td class="g">6-way choice</td><td class="mono">anya 0.449 · sharma 0.200 · garven 0.164 · elenbaas 0.118 · suskin 0.046 · simpson 0.024</td><td>confidence 0.14 — too low to stand alone</td></tr>
+      <tr><td>Anya vs Garven (Western, local)</td><td class="g">pairwise</td><td class="mono">anya 0.957 / garven 0.043</td><td>confidence 0.84 — decisive</td></tr>
+      <tr><td>Anya vs Sharma (depth per rand)</td><td class="g">pairwise</td><td class="mono">sharma 0.892 / anya 0.108</td><td>confidence 0.62</td></tr>
+      <tr><td>Sharma vs Anya (mirror)</td><td class="g">pairwise</td><td class="mono">sharma 0.841 / anya 0.159</td><td>confidence 0.47 — mirror agrees, verdict holds</td></tr></tbody>
+  </table>
+  <div class="note">
+    <strong>Provenance.</strong> The local d3-gate daemon was down for this session, so every call answered on the
+    cloud fallback leg (<span class="mono">cloud-ollama:clef:cloud</span>), which is legitimate but not the same
+    provenance as a local run. All four calls are logged to
+    <span class="mono">AI-Drive/Agent-Output/splinter/gates.csv</span>. If you want the local numbers, re-run the same
+    four questions once the daemon is back.
+  </div>
+
+  <h2><span class="n">07</span> What to send, and what to ask</h2>
+  <div class="steps">
+    <div class="step">
+      <h4>Send the birth data exactly as you have it</h4>
+      <p><code>19 August 1984 · 20:20 SAST · Johannesburg</code> — with the recorded time source. Your chart is already
+      computed to the arcsecond (Swiss Ephemeris, Sun Leo 26.92°, Moon Taurus 26.28°, Asc Aries 1.19°), so no
+      rectification is needed and you should not pay for one.</p>
+    </div>
+    <div class="step">
+      <h4>Ask each one the same three questions before paying</h4>
+      <p>How long is a full first reading; do I get a recording or written summary; and what does a follow-up cost?
+      Sharma publishes all three. Anya publishes all three. Garven, Simpson and Kerby publish none — those are the
+      three conversations to have before any money moves.</p>
+    </div>
+    <div class="step">
+      <h4>Say what you actually want read</h4>
+      <p>Not "tell me about myself" — name the live questions: the business, the move (Rhodes, Portugal, the town
+      shortlist), the family charts, the 2026 turn. Every practitioner on this page does better work against a real
+      question, and the good ones will tell you when a question is outside the chart.</p>
+    </div>
+    <div class="step">
+      <h4>Refuse the upsell</h4>
+      <p>Gemstones, ritual packages, "removal" ceremonies, or a fee that climbs once you are on the call. Sharma's page
+      explicitly rules this out; that is the standard to hold everyone else to. If a reading ends with a product, the
+      reading was the sales pitch.</p>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>Sources.</strong> Every price above was read on the practitioner's own page on 14 November 2026:
+      <a href="https://drrpsharma.com/kundli-consultation.html" target="_blank" rel="noopener">Sharma</a> ·
+      <a href="https://astroanya.co.za/readings" target="_blank" rel="noopener">Anya</a> ·
+      <a href="https://diannegarven.com/" target="_blank" rel="noopener">Garven</a> ·
+      <a href="https://rodsuskin.com/pay.html" target="_blank" rel="noopener">Suskin</a> ·
+      <a href="https://www.cosapa.org.za/nick-simpson/" target="_blank" rel="noopener">Simpson</a> ·
+      <a href="https://nightlightastrology.com/need-based-astrology-readings/" target="_blank" rel="noopener">Elenbaas / Nightlight</a> ·
+      <a href="https://www.nickdaganbestastrologer.com/consultations" target="_blank" rel="noopener">Dagan Best</a> ·
+      <a href="https://ddamascenaa.com/astrology" target="_blank" rel="noopener">Diana Rose Harper</a>.
+      Currency: <a href="https://open.er-api.com/v6/latest/USD" target="_blank" rel="noopener">open.er-api.com</a>, 14 Nov 2026, 1 USD = R16.898.</p>
+    <p style="margin-top:10px">Prepared by Splinter for Ricardo · research artifact under
+      <span class="mono">AI-Drive/Agent-Output/splinter/</span> · the vault copy is filed separately.</p>
+  </footer>
+</div>
+</body>
+</html>
