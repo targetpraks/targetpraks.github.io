@@ -160,7 +160,7 @@ tr.pick td b { color: var(--accent); }
 .bar-val small { font: 400 .78rem var(--text); color: var(--muted); margin-left: .3rem; }
 .axis { display: grid; grid-template-columns: var(--lw, 12.5rem) minmax(0, 1fr); gap: .8rem; margin-top: .3rem; font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .axis .ticks { position: relative; height: 1rem; margin-right: 7.5rem; }
-.axis .ticks span { position: absolute; transform: translateX(-50%); }
+.axis .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
 .axis .ticks span:first-child { transform: none; }
 .legend { display: flex; flex-wrap: wrap; gap: .4rem 1.1rem; font-size: .84rem; color: var(--muted); margin-bottom: .8rem; }
 .legend span { display: inline-flex; align-items: center; gap: .45rem; }
@@ -190,6 +190,10 @@ tr.pick td b { color: var(--accent); }
 .branch .if { font: 600 1.06rem var(--display); color: var(--ink); margin: 0 0 .5rem; }
 .branch p { font-size: .95rem; margin-bottom: .7rem; }
 .branch ul { margin: 0; padding-left: 1.1rem; color: var(--ink-2); font-size: .92rem; display: grid; gap: .35rem; }
+.branch { display: flex; flex-direction: column; }
+.branch .tag { align-self: flex-start; }
+.branch > ul { margin-bottom: 1rem; }
+.branch > .mini { margin-top: auto; }
 .branch .tag { display: inline-block; font-size: .78rem; color: var(--accent-ink); background: var(--accent); border-radius: 999px; padding: .08rem .55rem; margin-bottom: .55rem; font-weight: 600; }
 @media (max-width: 860px) { .branches { grid-template-columns: 1fr; } .branches::before { display: none; } }
 
@@ -303,6 +307,120 @@ input[type=range] { width: 100%; accent-color: var(--accent); height: 1.6rem; }
 .legend i.k-key { background: var(--accent); width: .7rem; height: .7rem; border-radius: 50%; }
 .legend i.k-friend { background: transparent; border: 2.5px solid var(--accent); width: .7rem; height: .7rem; border-radius: 50%; }
 
+/* v5.1 diagrams: decision ladders, the 60-day year, a chain, fork outcomes, break-even dots, cost steps */
+.fig { margin: 1.6rem 0 1.2rem; }
+.fig h4 { margin: 0 0 .75rem; font: 600 .98rem/1.25 var(--display); color: var(--ink); }
+.fig figcaption { margin-top: .9rem; font-size: .88rem; color: var(--muted); max-width: 64ch; }
+/* decision ladder: an arrow to the right is an exit, the teal line down is the way through */
+.ladder { display: grid; grid-template-columns: minmax(0, 1.15fr) 4.6rem minmax(0, 1fr); align-items: center; }
+.ladder + h4 { margin-top: 1.6rem; }
+.ladder > .q, .ladder > .end, .ladder > .down { grid-column: 1; }
+.ladder > .go { grid-column: 2; align-self: stretch; position: relative; }
+.ladder > .out { grid-column: 3; }
+.ladder > :is(.q, .out, .end) { border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: .65rem .8rem; }
+.ladder > :is(.q, .out, .end) b { display: block; font: 600 .98rem/1.3 var(--display); color: var(--ink); }
+.ladder > :is(.q, .out, .end) span { display: block; margin-top: .15rem; font-size: .84rem; line-height: 1.4; color: var(--muted); }
+.ladder > .out.warn { border-color: rgba(240, 160, 143, .75); background: #221a35; }
+.ladder > .out.warn b { color: var(--warn); }
+.ladder > .end { border-color: var(--accent); background: #0f2a3a; }
+.ladder > .end b { color: var(--accent); }
+.ladder > .go::before { content: ""; position: absolute; left: .35rem; right: .75rem; top: 50%; height: 2px; margin-top: -1px; background: var(--deemph); }
+.ladder > .go::after { content: ""; position: absolute; right: .3rem; top: 50%; margin-top: -6px; border-style: solid; border-width: 6px 0 6px 9px; border-color: transparent transparent transparent var(--deemph); }
+.ladder > .down { position: relative; height: 3rem; }
+.ladder > .down::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 8px; width: 2px; margin-left: -1px; background: var(--accent); }
+.ladder > .down::after { content: ""; position: absolute; left: 50%; bottom: 0; margin-left: -6px; border-style: solid; border-width: 9px 6px 0; border-color: var(--accent) transparent transparent; }
+.ladder i { position: absolute; font: 500 .78rem/1.2 var(--text); font-style: normal; color: var(--ink-2); white-space: nowrap; }
+.ladder > .go i { left: .35rem; right: .75rem; bottom: calc(50% + .35rem); text-align: center; }
+.ladder > .down i { left: calc(50% + .7rem); top: 50%; transform: translateY(-55%); }
+@media (max-width: 560px) {
+  .ladder { grid-template-columns: minmax(0, 1fr) 3rem minmax(0, .92fr); }
+  .ladder > :is(.q, .out, .end) { padding: .55rem .6rem; }
+  .ladder > :is(.q, .out, .end) b { font-size: .9rem; }
+  .ladder > :is(.q, .out, .end) span { font-size: .79rem; }
+}
+/* the 60-day year: the days each rule allows, on one axis */
+.days { display: grid; gap: .55rem; }
+.day-row { display: grid; grid-template-columns: 15rem minmax(0, 1fr); align-items: center; gap: .8rem; }
+.day-name { font-size: .92rem; color: var(--ink-2); line-height: 1.35; }
+.day-name small { display: block; font-size: .8rem; color: var(--muted); }
+.day-track { position: relative; height: 1.6rem; border-left: 1px solid var(--line); }
+.day-track i { position: absolute; top: 50%; height: 12px; margin-top: -6px; left: var(--a); width: var(--w); background: var(--deemph); }
+.day-track i.from { border-radius: 4px 0 0 4px; }
+.day-track i.upto { border-radius: 0 4px 4px 0; }
+.day-track i.pick { background: var(--accent); }
+.days + .axis .ticks { margin-right: 0; }
+.days + .axis .ticks span:last-child { transform: translateX(-100%); }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; margin-top: 1.2rem; }
+.tile { border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: .7rem .85rem .8rem; }
+.tile b { display: block; font: 600 .98rem/1.3 var(--display); color: var(--ink); }
+.tile > span { display: block; margin-top: .15rem; font-size: .85rem; color: var(--muted); }
+.tile .seats { justify-content: flex-start; }
+@media (max-width: 640px) { .day-row { grid-template-columns: 1fr; gap: .25rem; } .tiles { grid-template-columns: 1fr; } }
+/* a chain: left to right on wide screens, top to bottom on phones */
+.chain { display: grid; grid-template-columns: minmax(0, 1fr) 5.4rem minmax(0, 1fr) 5.4rem minmax(0, 1fr); align-items: center; row-gap: 1.1rem; }
+.chain > .node { width: auto; padding: .6rem .7rem; }
+.chain > .node b { font-size: 1.02rem; }
+.chain > .node span { font-size: .83rem; }
+.chain > .link { position: relative; align-self: stretch; min-height: 3rem; }
+.chain > .link::before { content: ""; position: absolute; left: .3rem; right: .75rem; top: 50%; height: 2px; margin-top: -1px; background: var(--accent); }
+.chain > .link::after { content: ""; position: absolute; right: .3rem; top: 50%; margin-top: -6px; border-style: solid; border-width: 6px 0 6px 9px; border-color: transparent transparent transparent var(--accent); }
+.chain > .link i { position: absolute; left: 0; right: .45rem; bottom: calc(50% + .35rem); text-align: center; font: 500 .76rem/1.25 var(--text); font-style: normal; color: var(--ink-2); }
+.chain > .lab { grid-column: 1 / 3; margin: 0; padding-right: .8rem; text-align: right; font-size: .84rem; color: var(--muted); }
+.chain > .c3 { grid-column: 3; } .chain > .c4 { grid-column: 4; } .chain > .c5 { grid-column: 5; }
+@media (max-width: 640px) {
+  .chain { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+  .chain > .c3, .chain > .c4, .chain > .c5, .chain > .lab { grid-column: 1; }
+  .chain > .link { min-height: 3.2rem; }
+  .chain > .link::before { left: 50%; right: auto; top: 0; bottom: 8px; width: 2px; height: auto; margin: 0 0 0 -1px; }
+  .chain > .link::after { left: 50%; right: auto; top: auto; bottom: 0; margin: 0 0 0 -6px; border-width: 9px 6px 0; border-color: var(--accent) transparent transparent; }
+  .chain > .link i { left: calc(50% + .7rem); right: 0; bottom: auto; top: 50%; transform: translateY(-50%); text-align: left; }
+  .chain > .lab { padding: 1.3rem 0 .5rem; text-align: left; }
+}
+/* fork outcomes: what reaches you from R100 on each branch */
+.mini { margin-top: 1rem; padding-top: .8rem; border-top: 1px solid var(--line-soft); display: grid; gap: .35rem; }
+.mini p { margin: 0 0 .15rem; font-size: .8rem; color: var(--muted); }
+.mini-row { display: grid; grid-template-columns: 7.4rem minmax(0, 1fr); align-items: center; gap: .5rem; font-size: .82rem; color: var(--ink-2); }
+.mini-t { display: flex; align-items: center; gap: .4rem; padding-right: 3.4rem; }
+.mini-t i { display: block; flex: none; width: var(--w); height: 8px; border-radius: 0 4px 4px 0; }
+.mini-t b { font: 600 .84rem var(--display); color: var(--ink); white-space: nowrap; }
+/* break-even dots: where each set-up starts to pay */
+.dumb { display: grid; gap: .45rem; }
+.dumb-row { display: grid; grid-template-columns: 15rem minmax(0, 1fr); align-items: center; gap: .8rem; }
+.dumb-name { font-size: .92rem; color: var(--ink-2); line-height: 1.35; }
+.dumb-name small { display: block; font-size: .8rem; color: var(--muted); }
+.dumb-row.pick .dumb-name { color: var(--ink); }
+.dumb-track { position: relative; height: 2.9rem; border-left: 1px solid var(--line); margin-right: 1.8rem; }
+.dumb-track .seg { position: absolute; top: 68%; height: 2px; margin-top: -1px; left: var(--a); width: var(--w); background: var(--line); }
+.dumb-track .dot { position: absolute; top: 68%; left: var(--x); width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink-2); box-shadow: 0 0 0 2px var(--bg); }
+.dumb-track .dot.cy { background: var(--bg); border: 2.5px solid var(--ink-2); }
+.dumb-row.pick .dot { background: var(--accent); }
+.dumb-row.pick .dot.cy { background: var(--bg); border-color: var(--accent); }
+.dumb-row.pick .seg { background: rgba(89, 216, 201, .45); }
+.dumb-track .dot b { position: absolute; bottom: 13px; left: 50%; transform: translateX(-50%); font: 600 .82rem var(--display); color: var(--ink); white-space: nowrap; }
+.dumb + .axis .ticks { margin-right: 1.8rem; }
+.legend i.k-dot { background: var(--ink-2); width: .7rem; height: .7rem; border-radius: 50%; }
+.legend i.k-ring { background: transparent; border: 2.5px solid var(--ink-2); width: .7rem; height: .7rem; border-radius: 50%; }
+@media (max-width: 640px) { .dumb-row { grid-template-columns: 1fr; gap: .1rem; } }
+/* cost steps: each lever removes one segment of the running cost */
+.wf-row, .wf-step { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: .8rem; }
+.wf-row { align-items: center; }
+.wf-name { font-size: .92rem; color: var(--ink-2); line-height: 1.35; }
+.wf-row.pick .wf-name { color: var(--ink); }
+.wf-row.pick .bar-val { color: var(--accent); }
+.wf-track { display: flex; align-items: center; min-height: 1.7rem; border-left: 1px solid var(--line); padding-right: 4.5rem; }
+.wf-step span { grid-column: 2; position: relative; display: block; padding: .55rem 0 .65rem 1.5rem; font-size: .84rem; line-height: 1.35; color: var(--ink-2); }
+.wf-step span::before { content: ""; position: absolute; left: 9px; top: .25rem; bottom: .6rem; width: 2px; background: var(--accent); }
+.wf-step span::after { content: ""; position: absolute; left: 4px; bottom: .2rem; border-style: solid; border-width: 8px 6px 0; border-color: var(--accent) transparent transparent; }
+.wf-step b { color: var(--accent); font-family: var(--display); white-space: nowrap; }
+@media (max-width: 640px) { .wf-row, .wf-step { grid-template-columns: 1fr; gap: .25rem; } .wf-step span { grid-column: 1; } }
+/* notes under a diagram, and lanes that don't line up row by row */
+.fig-note { width: 100%; margin-top: .9rem; border: 1px solid rgba(240, 160, 143, .75); background: #221a35; border-radius: 12px; padding: .7rem .9rem; text-align: left; }
+.fig-note b { font: 600 .98rem/1.3 var(--display); color: var(--warn); }
+.fig-note span { display: block; margin-top: .15rem; font-size: .86rem; color: var(--ink-2); }
+.fig-note.plain { border-color: var(--line); background: var(--surface); }
+.fig-note.plain b { color: var(--ink); }
+.cmp.free > .lane { grid-row: auto; grid-template-rows: none; align-content: start; }
+
 footer { border-top: 1px solid var(--line); margin-top: 3rem; padding-block: 2.4rem 3.4rem; }
 footer p { font-size: .88rem; color: var(--muted); }
 .src h3 { margin: 1.4rem 0 .4rem; font-size: 1rem; }
@@ -336,7 +454,7 @@ footer p { font-size: .88rem; color: var(--muted); }
   <div class="wrap">
     <h1>A trust above a Cyprus company, once the family home moves</h1>
     <p class="lead">Where to put a trust and the company it owns, for a Portuguese passport holder with a South African business who wants no personal tax residence and will live off distributions from the trust. Ranked on the law, debated by a council of five AI models, costed from published 2026 fee schedules, and rebuilt around the cash that actually reaches you.</p>
-    <p class="meta"><span>15 November 2026 (first published 14 November)</span><span>Version 5 · adds your friend in Cyprus, diagrams, and the 2026 change to Cyprus's 60-day rule</span><span>Research for advisers, not legal or tax advice</span></p>
+    <p class="meta"><span>15 November 2026 (first published 14 November)</span><span>Version 5.1 · a diagram for every mechanism, your friend in Cyprus, and the 2026 change to Cyprus's 60-day rule</span><span>Research for advisers, not legal or tax advice</span></p>
     <dl class="verdict">
       <div><dt>Cash to you</dt><dd><b>About R69 of every R100</b> the SA companies earn reaches you through the trust if you live in Cyprus, the UAE or nowhere. Owning the SA shares yourself, R58 to R66.</dd></div>
       <div><dt>Company</dt><dd><b>Cyprus.</b> 5% SA dividends tax instead of 20%, 0% on royalties, no withholding when it pays the trust. It needs a real board in Cyprus.</dd></div>
@@ -374,6 +492,7 @@ footer p { font-size: .88rem; color: var(--muted); }
       <li><b>Move nothing while you're SA-resident.</b> Prepare first, leave, then incorporate the company and settle the trust, in that order.</li>
       <li class="key"><b>New in version 4.</b> Hong Kong and Malta deliver the same cash as Cyprus at a higher cost. A gift to your wife has to happen before she leaves SA and saves no income tax on the business. An IP company pays only for brands created outside SA from day one. <a href="#more">The detail</a>.</li>
       <li class="key"><b>New in version 5: your friend in Cyprus.</b> He can be a director of the Cyprus holding company and the trust's protector without a licence, and he can rent you your Cyprus home. He can't be the trustee or hold shares for you. As a director he protects the 5% treaty rate, which is worth far more than the fee he saves, but only if the board really decides in Cyprus. That starts after you leave SA. <a href="#friend">The detail</a>.</li>
+      <li><b>New in version 5.1: diagrams.</b> Each mechanism now has a picture: SARS's residence test, the 60-day year, the exit tax, estate duty, break-even, the cost levers and the timing of a gift to your wife. One correction: if you're resident nowhere, your friend as a director brings the break-even to about R2.0m, not R1.5m, because you can't be the other Cyprus director.</li>
     </ul>
   </div>
 </section>
@@ -383,6 +502,33 @@ footer p { font-size: .88rem; color: var(--muted); }
     <h2>Where you live decides the tax, not the passport</h2>
     <p style="margin-top:1rem">South Africa taxes by residence, and there are two tests. The first is <b>ordinarily resident</b>: where your home, family, business and belongings are, the place you naturally return to. The day count comes second: more than 91 days this year and in each of the previous five, and more than 915 days over those five years. While your wife and children live in Cape Town, the first test keeps you resident wherever you travel. SARS reviewed the years in which people stopped being resident closely through 2026. If you keep the house available to you, it counts against you in any treaty tie-break: let it at arm's length, or accept that risk.</p>
     <p>Being resident nowhere has a cost of its own. SA's definition of a resident leaves out only someone a treaty treats as resident somewhere else. With no residence anywhere, there's no tie-breaker, and the ordinarily-resident test stands alone.</p>
+    <figure class="fig" aria-label="How SA decides whether you're still resident, in two stages. Stage 1, SA's own tests: if SA is still your home, meaning your home, family, business and belongings, SA claims you whatever your days. If not, SA claims you on days alone when you spend more than 91 days in SA this year and in each of the previous five, and more than 915 over those five. Otherwise you're not SA-resident. Stage 2, if SA claims you: if you aren't also tax-resident in a treaty country such as Cyprus, the UAE, Greece or Portugal, SA keeps you, because being resident nowhere gives no tie-break. If you are, the treaty tie-break looks at your permanent home first and, if you have one in both countries, your centre of vital interests. If that points to SA, SA keeps you. If it points abroad, you're not SA-resident.">
+      <h4>1 · Does SA claim you?</h4>
+      <div class="ladder">
+        <div class="q"><b>Is SA still your home?</b><span>Your home, family, business and belongings: the place you naturally return to</span></div>
+        <div class="go"><i>yes</i></div>
+        <div class="out warn"><b>SA claims you</b><span>whatever your days. A family home in Cape Town does this</span></div>
+        <div class="down"><i>no</i></div>
+        <div class="q"><b>Do your days in SA add up?</b><span>More than 91 this year and in each of the previous five, and more than 915 over those five</span></div>
+        <div class="go"><i>yes</i></div>
+        <div class="out warn"><b>SA claims you</b><span>on the day count alone</span></div>
+        <div class="down"><i>no</i></div>
+        <div class="end"><b>Not SA-resident</b><span>SA then taxes only income from SA</span></div>
+      </div>
+      <h4>2 · If SA claims you, can a treaty take you out?</h4>
+      <div class="ladder">
+        <div class="q"><b>Are you also tax-resident in a treaty country?</b><span>Cyprus, the UAE, Greece or Portugal</span></div>
+        <div class="go"><i>no</i></div>
+        <div class="out warn"><b>SA keeps you</b><span>resident nowhere means no tie-break to rely on</span></div>
+        <div class="down"><i>yes</i></div>
+        <div class="q"><b>The treaty tie-break</b><span>Your permanent home first; with a home in both countries, your centre of vital interests</span></div>
+        <div class="go"><i>SA</i></div>
+        <div class="out warn"><b>SA keeps you</b><span>a Cape Town house you keep available counts as a home</span></div>
+        <div class="down"><i>abroad</i></div>
+        <div class="end"><b>Not SA-resident</b><span>the treaty gives you to the other country</span></div>
+      </div>
+      <figcaption>The teal line is the way out. Your family home decides both stages: it makes you ordinarily resident, and it's the first thing the tie-break looks at. That's why the move waits for the family home. Resident nowhere, you stop at the first question of stage 2, and SA's claim stands.</figcaption>
+    </figure>
     <div class="scroll"><table class="stack-m">
       <thead><tr><th>Where you live</th><th>Tax on trust distributions to you</th><th>If you owned the SA shares yourself</th><th>Can you beat SARS's residence claim?</th><th>Cost to you</th></tr></thead>
       <tbody>
@@ -394,10 +540,38 @@ footer p { font-size: .88rem; color: var(--muted); }
         <tr><td><b>Portugal</b></td><td>28%; 35% if the trust is in a listed jurisdiction (Jersey, Guernsey, Mauritius)</td><td>28% in total: SA's 15% is credited against Portugal's 28%</td><td>Yes, with the Portugal–SA treaty tie-break. Its IFICI regime (20% on qualifying Portuguese work income) needs a qualifying activity and is likely a poor fit for a franchise owner</td><td>The structure leaves you less than owning the shares yourself</td></tr>
       </tbody></table></div>
     <p class="muted">Cyprus 60-day conditions since 1 January 2026, when the "no other tax residence" condition was removed: at least 60 days in Cyprus; no more than 183 days in any other single country; a Cyprus business, job or directorship, held through the year; a Cyprus home you own or rent (your friend can be the landlord, with a real lease in your name). If SA still claims you, the treaty tie-break decides: permanent home first, then centre of vital interests. Non-dom status lasts 17 of 20 years, extendable since 2026 at €250k per five years. The health levy is 2.65%, on income up to €180,000. Portugal's IFICI regime may exempt some foreign income; whether it covers trust distributions is unconfirmed.</p>
+    <figure class="fig" aria-label="One calendar year under the Cyprus 60-day rule. Days: at least 60 in Cyprus, and no more than 183 in any other single country. For SA's own day count, 91 days or fewer in SA means that test can't claim you. The two other Cyprus conditions: a Cyprus business, job or directorship held for the whole year, which your Cyprus directorship can be, and a Cyprus home you own or rent, which your friend can let to you on a real lease in your name.">
+      <h4>The 60-day rule in one calendar year</h4>
+      <div class="days" role="list">
+        <div class="day-row" role="listitem"><span class="day-name">In Cyprus<small>at least 60 days</small></span><span class="day-track"><i class="from pick" style="--a:16.44%;--w:83.56%"></i></span></div>
+        <div class="day-row" role="listitem"><span class="day-name">Any other single country<small>no more than 183 days</small></span><span class="day-track"><i class="upto" style="--a:0%;--w:50.14%"></i></span></div>
+        <div class="day-row" role="listitem"><span class="day-name">South Africa<small>91 days or fewer, for SA's own day count</small></span><span class="day-track"><i class="upto" style="--a:0%;--w:24.93%"></i></span></div>
+      </div>
+      <div class="axis" aria-hidden="true" style="--lw:15rem"><span></span><span class="ticks"><span style="left:0%">0</span><span style="left:16.44%">60</span><span style="left:24.93%">91</span><span style="left:50.14%">183</span><span style="left:100%">365 days</span></span></div>
+      <div class="tiles">
+        <div class="tile"><b>A Cyprus business, job or directorship</b><span>held for the whole year</span><div class="seats"><span class="seat you">Your Cyprus directorship</span></div></div>
+        <div class="tile"><b>A Cyprus home you own or rent</b><span>a real lease in your name</span><div class="seats"><span class="seat friend">Landlord: your friend</span></div></div>
+      </div>
+      <figcaption>Cyprus asks for all four conditions every calendar year. The South Africa line isn't part of Cyprus's rule: at 91 days or fewer, SA's own day count can't claim you, though a family home in SA still can (the test above).</figcaption>
+    </figure>
     <h3 style="margin-top:1.4rem">Timing</h3>
     <p>Your own plan rules out a move before late 2027, so the earliest realistic exit is the 2028 tax year, and only if the family's home moves with you.</p>
     <h3 style="margin-top:1.4rem">Leaving costs one exit tax, paid in cash</h3>
     <p>The day before you stop being resident, SA treats you as selling everything at market value, except SA property and retirement funds. Gains are taxed at up to 18%, and a founder's base cost is near zero, so this is roughly 18% of the whole value: <b>R9m on a R50m group</b>. Funding it with dividends while you're still resident costs 20% more: R11.25m of dividends to net R9m. Exit early, while values are low, and plan the cash.</p>
+    <figure class="fig" aria-label="The exit tax on a R50m group. The day before you leave, SA treats the group as sold at market value. A founder's base cost is near zero, so the gain is about the whole R50m, and gains tax of up to 18% makes the bill about R9m, due in cash, once. Paying it from dividends while you're still resident takes R11.25m of dividends: 20% dividends tax takes R2.25m and leaves the R9m.">
+      <div class="chain">
+        <div class="node"><b>R50m group</b><span>its value the day before you leave</span></div>
+        <div class="link"><i>treated as sold</i></div>
+        <div class="node"><b>About R50m of gain</b><span>a founder's base cost is near zero</span></div>
+        <div class="link"><i>up to 18%</i></div>
+        <div class="node warn"><b>R9m exit tax</b><span>due in cash, once</span></div>
+        <p class="lab">Paid from dividends while you're still resident:</p>
+        <div class="node c3"><b>R11.25m of dividends</b><span>paid to you before you leave</span></div>
+        <div class="link c4"><i>20% dividends tax</i></div>
+        <div class="node good c5"><b>R9m in cash</b><span>enough to pay the bill</span></div>
+      </div>
+      <figcaption>Everything is treated as sold except SA property and retirement funds. The bill grows with the value, so leaving while values are low costs less.</figcaption>
+    </figure>
     <h3 style="margin-top:1.4rem">What 2026 changed</h3>
     <ul class="points" style="margin-top:.8rem">
       <li><b>Allowances:</b> the single discretionary allowance doubled to R2m a year; the foreign investment allowance stays at R10m a year with SARS clearance. Draft Capital Flow Management Regulations (April 2026) would replace exchange control, but aren't in force.</li>
@@ -418,17 +592,20 @@ footer p { font-size: .88rem; color: var(--muted); }
         <p class="if">Stays in Cape Town</p>
         <p>You stay SA-resident. SA's trust and foreign-company rules bring offshore income back to you, so an offshore structure saves little tax.</p>
         <ul><li>Keep the SA group as it is</li><li>Do the preparation work now</li><li>Use a local trust and will for estate planning</li></ul>
+        <div class="mini" role="img" aria-label="Reaches you from R100 of SA profit, at best: through the trust R55.48, owning the shares yourself R58.40."><p>Reaches you from R100 of SA profit, at best</p><div class="mini-row"><span>Through the trust</span><span class="mini-t"><i style="--w:69.35%;background:var(--s1)"></i><b>R55.48</b></span></div><div class="mini-row"><span>Shares yourself</span><span class="mini-t"><i style="--w:73.00%;background:var(--s2)"></i><b>R58.40</b></span></div></div>
       </div>
       <div class="branch main">
         <span class="tag">The structure in this report</span>
         <p class="if">Moves to Cyprus</p>
         <p>You use the 60-day non-dom rule, cease SA residence and pay the exit tax once. Then distributions reach you tax-free, bar a capped health levy: about R69 of every R100 of SA profit, against R66 owning the shares yourself. SA estate duty falls away.</p>
         <ul><li>Incorporate the Cyprus company only after you leave SA</li><li>Sit on its board yourself, with your friend as the second Cyprus director</li><li>Add the Jersey trust when the group passes about R50m</li></ul>
+        <div class="mini" role="img" aria-label="Reaches you from R100 of SA profit: through the trust R69.35, owning the shares yourself R65.70."><p>Reaches you from R100 of SA profit</p><div class="mini-row"><span>Through the trust</span><span class="mini-t"><i style="--w:86.69%;background:var(--s1)"></i><b>R69.35</b></span></div><div class="mini-row"><span>Shares yourself</span><span class="mini-t"><i style="--w:82.12%;background:var(--s2)"></i><b>R65.70</b></span></div></div>
       </div>
       <div class="branch">
         <p class="if">Moves to Greece</p>
         <p>You become Greek-resident however few days you spend there. The €100,000 flat tax on foreign income is then the route, not Cyprus.</p>
         <ul><li>Own Greek property personally or through an EU company with disclosed owners</li><li>Check Greek rules on foreign companies and trusts before relying on Cyprus</li></ul>
+        <div class="mini" role="img" aria-label="Reaches you from R100 of SA profit, before the €100,000 flat tax: through the trust R69.35, owning the shares yourself R62.05."><p>Reaches you from R100 of SA profit, before the €100,000 flat tax</p><div class="mini-row"><span>Through the trust</span><span class="mini-t"><i style="--w:86.69%;background:var(--s1)"></i><b>R69.35</b></span></div><div class="mini-row"><span>Shares yourself</span><span class="mini-t"><i style="--w:77.56%;background:var(--s2)"></i><b>R62.05</b></span></div></div>
       </div>
     </div>
   </div>
@@ -489,7 +666,43 @@ footer p { font-size: .88rem; color: var(--muted); }
         <tr><td>SA estate duty on your SA shares: R3.3m on R20m, R10.1m on R50m, R22.6m on R100m</td><td><b>Holding company</b>, once you're non-resident</td><td>If you die while SA-resident, duty reaches your worldwide estate, so exclude yourself and your spouse as trust beneficiaries</td></tr>
         <tr><td>Succession across three children and several countries; no probate; protection from forced heirship and creditors</td><td><b>Trust</b></td><td>Jurisdiction quality matters most here, which is why Jersey ranks first</td></tr>
       </tbody></table></div>
+    <figure class="cmp-fig" aria-label="Estate duty on a R50m group, two ways. If you own the SA shares yourself and die, they're SA assets, so SA estate duty applies even years after you've left SA: R46.5m is taxed after the R3.5m abatement, at 20% up to R30m and 25% above, which comes to about R10.1m. If a Cyprus company owns them and you're non-resident, you own shares in a foreign company, a foreign asset of a non-resident, which is outside SA estate duty: R0 on a R50m group.">
+      <div class="cmp stack-s" style="--rows:6">
+        <div class="lane">
+          <h4><i style="background:var(--s2)"></i>You own the SA shares yourself</h4>
+          <div class="node"><b>You die owning SA shares</b><span>even years after you've left SA</span></div>
+          <div class="flow hot warn"><span>SA assets stay inside SA estate duty</span></div>
+          <div class="node"><b>R46.5m is taxed</b><span>R50m less the R3.5m abatement</span></div>
+          <div class="flow"><span>20% up to R30m, 25% above</span></div>
+          <div class="node warn"><b>R10.1m estate duty</b><span>on a R50m group</span></div>
+        </div>
+        <div class="lane">
+          <h4><i style="background:var(--s1)"></i>A Cyprus company owns them, and you're non-resident</h4>
+          <div class="node"><b>You die owning a Cyprus company</b><span>its shares, not the SA shares</span></div>
+          <div class="flow hot"><span>a foreign asset of a non-resident</span></div>
+          <div class="node"><b>Outside SA estate duty</b><span>SA has no claim on those shares</span></div>
+          <div class="flow"><span>nothing to pay in SA</span></div>
+          <div class="node good"><b>R0 SA estate duty</b><span>on a R50m group</span></div>
+        </div>
+      </div>
+      <figcaption>The saving comes from the holding company, not the trust, and only once you're non-resident: R3.3m on R20m, R10.1m on R50m, R22.6m on R100m. If you die while SA-resident, duty reaches your worldwide estate. The country you live in may have its own inheritance tax: in Greece the top rate for a spouse or children is 10%.</figcaption>
+    </figure>
     <p><b>Gains on selling:</b> after you've left, SA taxes non-residents only on SA property and on shares in "land-rich" companies (80% or more of value from SA property, held 20% or more). Test that at every level, including the Cyprus company. <b>No SA donations tax for non-residents:</b> it applies only to donations by residents (SARS ruling BPR 194), which is why the trust is settled after you leave.</p>
+    <figure class="fig" aria-label="Whether SA can tax a gain after you've left. If what's sold is SA property itself, SA taxes the gain, whoever owns it. If not, but it's shares in a land-rich company, meaning 80% or more of the value comes from SA property and the holding is 20% or more, SA taxes the gain, and the test applies at every level, the Cyprus company included. Otherwise SA can't tax the gain once you're non-resident.">
+      <h4>Selling after you've left: can SA tax the gain?</h4>
+      <div class="ladder">
+        <div class="q"><b>Is it SA property itself?</b><span>land or buildings in SA</span></div>
+        <div class="go"><i>yes</i></div>
+        <div class="out warn"><b>SA taxes the gain</b><span>whoever owns it</span></div>
+        <div class="down"><i>no</i></div>
+        <div class="q"><b>Is it shares in a land-rich company?</b><span>80% or more of the value from SA property, and a holding of 20% or more</span></div>
+        <div class="go"><i>yes</i></div>
+        <div class="out warn"><b>SA taxes the gain</b><span>test every level, the Cyprus company too</span></div>
+        <div class="down"><i>no</i></div>
+        <div class="end"><b>SA can't tax the gain</b><span>once you're non-resident</span></div>
+      </div>
+      <figcaption>The SA property company that holds the office building will usually be land-rich. Whether the companies above it are depends on how much of their value it makes up.</figcaption>
+    </figure>
     <div class="chart">
       <h3>Total tax on every R100 of SA profit paid out</h3>
       <p class="sub">27% company tax, then dividends tax at the rate each route gets. Lower is better. This stops before the distribution leg above.</p>
@@ -610,6 +823,17 @@ footer p { font-size: .88rem; color: var(--muted); }
       </div>
     </form>
     <p class="muted" id="calc-note" style="margin-top:.8rem">Through the structure = (dividends × 95% − running cost) × (1 − tax on distributions where you live) − any flat tax or levy. Shares yourself = dividends × (1 − SA dividends tax at your treaty rate), or Portugal's 28% after credit, minus any flat tax or levy. Running costs are mid estimates (section below).</p>
+    <div class="chart">
+      <h3>Dividends a year at which each set-up starts to pay</h3>
+      <p class="sub">Against owning the SA shares yourself, after running costs (mid). The company saves 15 points of dividends tax if you're resident nowhere (20% down to 5%) and 5 points if you're Cyprus-resident (10% down to 5%), so in Cyprus it needs three times the dividends. Left of a dot the structure costs you more than it saves; right of it, it pays.</p>
+      <div class="legend"><span><i class="k-dot"></i>Resident nowhere</span><span><i class="k-ring"></i>Cyprus-resident</span></div>
+      <div class="dumb" role="list">
+<div class="dumb-row pick" role="listitem" aria-label="Cyprus company alone, your friend a director: pays for itself from R2.0m of dividends a year if you&#x27;re resident nowhere, and from R4.6m if you&#x27;re Cyprus-resident."><span class="dumb-name">Cyprus company alone, your friend a director<small>R294k a year resident nowhere, R228k in Cyprus</small></span><span class="dumb-track"><span class="seg" style="--a:15.05%;--w:20.03%"></span><span class="dot" style="--x:15.05%" title="Resident nowhere: R1.96m a year"><b>R2.0m</b></span><span class="dot cy" style="--x:35.08%" title="Cyprus-resident: R4.56m a year"><b>R4.6m</b></span></span></div>
+<div class="dumb-row" role="listitem" aria-label="Cyprus company alone: pays for itself from R2.4m of dividends a year if you&#x27;re resident nowhere, and from R7.2m if you&#x27;re Cyprus-resident."><span class="dumb-name">Cyprus company alone<small>R359k a year</small></span><span class="dumb-track"><span class="seg" style="--a:18.41%;--w:36.82%"></span><span class="dot" style="--x:18.41%" title="Resident nowhere: R2.39m a year"><b>R2.4m</b></span><span class="dot cy" style="--x:55.23%" title="Cyprus-resident: R7.18m a year"><b>R7.2m</b></span></span></div>
+<div class="dumb-row" role="listitem" aria-label="Cyprus trust + Cyprus company: pays for itself from R3.0m of dividends a year if you&#x27;re resident nowhere, and from R9.0m if you&#x27;re Cyprus-resident."><span class="dumb-name">Cyprus trust + Cyprus company<small>R448k a year</small></span><span class="dumb-track"><span class="seg" style="--a:22.97%;--w:45.95%"></span><span class="dot" style="--x:22.97%" title="Resident nowhere: R2.99m a year"><b>R3.0m</b></span><span class="dot cy" style="--x:68.92%" title="Cyprus-resident: R8.96m a year"><b>R9.0m</b></span></span></div>
+<div class="dumb-row" role="listitem" aria-label="Jersey trust + Cyprus company: pays for itself from R4.1m of dividends a year if you&#x27;re resident nowhere, and from R12.3m if you&#x27;re Cyprus-resident."><span class="dumb-name">Jersey trust + Cyprus company<small>R614k a year</small></span><span class="dumb-track"><span class="seg" style="--a:31.49%;--w:62.97%"></span><span class="dot" style="--x:31.49%" title="Resident nowhere: R4.09m a year"><b>R4.1m</b></span><span class="dot cy" style="--x:94.46%" title="Cyprus-resident: R12.28m a year"><b>R12.3m</b></span></span></div>
+</div><div class="axis" aria-hidden="true" style="--lw:15rem"><span></span><span class="ticks"><span style="left:0.00%">R0</span><span style="left:15.38%">R2m</span><span style="left:30.77%">R4m</span><span style="left:46.15%">R6m</span><span style="left:61.54%">R8m</span><span style="left:76.92%">R10m</span><span style="left:92.31%">R12m</span></span></div>
+    </div>
     <details class="tv" open><summary>Break-even at a glance: dividends a year before the structure leaves you more</summary><div class="scroll"><table class="stack-m">
       <thead><tr><th>Structure</th><th class="num">Resident nowhere</th><th class="num">Cyprus or UAE</th><th class="num">Greece flat tax</th><th>Portugal or SA</th></tr></thead>
       <tbody><tr><td>Cyprus company only, no trust</td><td class='num'>R2.4m</td><td class='num'>R7.2m</td><td class='num'>R3.6m</td><td>never</td></tr><tr><td>Cyprus trust + Cyprus company</td><td class='num'>R3.0m</td><td class='num'>R9.0m</td><td class='num'>R4.5m</td><td>never</td></tr><tr><td>Jersey trust + Cyprus company</td><td class='num'>R4.1m</td><td class='num'>R12.3m</td><td class='num'>R6.1m</td><td>never</td></tr></tbody></table></div></details>
@@ -692,6 +916,7 @@ footer p { font-size: .88rem; color: var(--muted); }
         <tr><td><b>Resident nowhere</b></td><td class="num">R0 direct</td><td>But 20% SA dividends tax on any shares you own yourself, with no treaty to claim, plus banking friction</td></tr>
       </tbody></table></div>
     <h3 style="margin-top:1.4rem">How to keep it down</h3>
+    <figure class="fig" aria-label="Running cost a year, mid estimates. Jersey trust plus Cyprus company: R614k. Staging the trust until the group passes about R50m removes R255k, so the Cyprus company alone is R359k. Once you live in Cyprus, you and your friend as its two directors remove the R131k directors line: R228k."><h4>Two levers take the running cost from R614k to R228k a year</h4><div class="legend"><span><i style="background:#d95926"></i>Company admin</span><span><i style="background:#c98500"></i>Substance</span><span><i style="background:#199e70"></i>Local directors</span><span><i style="background:#3987e5"></i>Trust</span></div><div class="wf" role="list"><div class="wf-row" role="listitem" aria-label="Jersey trust + Cyprus company: R614k a year (Company admin R113k, Substance R116k, Local directors R131k, Trust R255k)"><span class="wf-name">Jersey trust + Cyprus company</span><span class="wf-track"><span class="stack" style="--w:87.71%"><span class="seg" style="flex:113 1 0;background:#d95926" title="Company admin R113k"></span><span class="seg" style="flex:116 1 0;background:#c98500" title="Substance R116k"></span><span class="seg" style="flex:131 1 0;background:#199e70" title="Local directors R131k"></span><span class="seg" style="flex:255 1 0;background:#3987e5" title="Trust R255k"></span></span><span class="bar-val">R614k</span></span></div><div class="wf-step" aria-hidden="true"><span>Stage it: start with the company, and add the Jersey trust once the group passes about R50m <b>−R255k</b></span></div><div class="wf-row" role="listitem" aria-label="Cyprus company alone: R359k a year (Company admin R113k, Substance R116k, Local directors R131k)"><span class="wf-name">Cyprus company alone</span><span class="wf-track"><span class="stack" style="--w:51.29%"><span class="seg" style="flex:113 1 0;background:#d95926" title="Company admin R113k"></span><span class="seg" style="flex:116 1 0;background:#c98500" title="Substance R116k"></span><span class="seg" style="flex:131 1 0;background:#199e70" title="Local directors R131k"></span></span><span class="bar-val">R359k</span></span></div><div class="wf-step" aria-hidden="true"><span>Once you live in Cyprus: you and your friend as its two directors <b>−R131k</b></span></div><div class="wf-row pick" role="listitem" aria-label="Cyprus company, you and your friend as directors: R228k a year (Company admin R113k, Substance R116k)"><span class="wf-name">Cyprus company, you and your friend as directors</span><span class="wf-track"><span class="stack" style="--w:32.57%"><span class="seg" style="flex:113 1 0;background:#d95926" title="Company admin R113k"></span><span class="seg" style="flex:116 1 0;background:#c98500" title="Substance R116k"></span></span><span class="bar-val">R228k</span></span></div></div><figcaption>Mid estimates. R228k needs you to live in Cyprus and be the other director. Resident nowhere, your friend replaces one of two paid directors instead: about R66k saved, so R294k. A €2,000 fee to him adds about R37k.</figcaption></figure>
     <ul class="points" style="margin-top:.8rem">
       <li><b>Use one provider for the trust and the company:</b> one compliance fee, bundled minimums.</li>
       <li><b>Be your own second Cyprus director</b> once you live there. It saves R40k–R110k a year and is the substance SARS looks for.</li>
@@ -699,7 +924,7 @@ footer p { font-size: .88rem; color: var(--muted); }
       <li><b>Choose Nicosia or Larnaca over Limassol:</b> desks are 20–30% cheaper and rent about 45% cheaper.</li>
       <li><b>Keep the holding company passive</b> (dividends only) until royalties justify the transfer-pricing paperwork.</li>
       <li><b>Agree fixed fees</b> with an agreed list of in-scope events (dividends, board meetings, reporting), so time charges don't creep.</li>
-      <li><b>Stage it:</b> start with the Cyprus company and a will choosing SA law, and add the Jersey trust when the group passes about R50m. That defers R110k–R290k of set-up and about R230k a year.</li>
+      <li><b>Stage it:</b> start with the Cyprus company and a will choosing SA law, and add the Jersey trust when the group passes about R50m. That defers R110k–R290k of set-up and about R255k a year (R230k without a professional protector).</li>
       <li><b>Check VAT:</b> ask whether the holding company can register and recover VAT, or have fees priced VAT-inclusive.</li>
     </ul>
     <h3 style="margin-top:1.4rem">What to ask each provider, for three quotes</h3>
@@ -793,7 +1018,7 @@ footer p { font-size: .88rem; color: var(--muted); }
         <tr><td><b>Cyprus trust + Cyprus company</b></td><td class="num">R448k</td><td class="num">R317k</td><td class="num">R354k</td></tr>
         <tr><td><b>Jersey trust + Cyprus company</b></td><td class="num">R614k</td><td class="num">R483k</td><td class="num">R520k</td></tr>
       </tbody></table></div>
-    <p>The Cyprus company alone then pays for itself from about R1.5m of dividends a year if you're resident nowhere (R2.4m today), or R4.6m if you're Cyprus-resident (R7.2m today). If you stay resident nowhere, you can't be a Cyprus director yourself, so he replaces one of two paid directors: about R66k a year saved. The €2,000 fee is an illustration, not a quote.</p>
+    <p>With the two of you as its directors, the Cyprus company alone pays for itself from about R4.6m of dividends a year if you're Cyprus-resident (R7.2m today). If you stay resident nowhere, you can't be a Cyprus director yourself, so he replaces one of two paid directors: about R66k a year saved, which brings the break-even down from about R2.4m to R2.0m. The €2,000 fee is an illustration, not a quote. <span class="muted">Corrected in version 5.1: version 5 put the resident-nowhere break-even at R1.5m, which assumed you could be the other Cyprus director.</span></p>
 
     <h3 style="margin-top:1.8rem">Protect him, and the structure</h3>
     <ol class="steps" style="margin-top:.8rem">
@@ -824,6 +1049,20 @@ footer p { font-size: .88rem; color: var(--muted); }
 
     <h3 style="margin-top:1.8rem">Hong Kong and Malta: the same money as Cyprus</h3>
     <p>SA withholds 5% on dividends to a Hong Kong or Malta company that holds at least 10%. Neither country taxes those dividends, and neither withholds when it pays the trust. So R69.35 of every R100 of SA profit reaches the trust in all three. The choice comes down to cost, banking and fit.</p>
+    <figure class="diagram" aria-label="The money path is the same through Cyprus, Malta or Hong Kong. R100 of SA profit, less 27% SA company tax, leaves a R73 dividend. SA withholds 5% under each treaty, R3.65. None of the three taxes the dividend, and none withholds when it pays the trust, so R69.35 reaches the trust in all three. They differ elsewhere. Cyprus: company score 8.20, first of 12; royalties 0% SA tax; €7k to €27k a year; a home under the 60-day non-dom rule. Malta: 7.35, fifth; royalties 10%; €20k to €40k a year; the fallback, and a Malta trust makes an all-EU pair. Hong Kong: 7.15, seventh; royalties 5%; $15k to $35k a year; hard banking and six hours ahead, so only for a push into Asia.">
+      <div class="node"><b>R73 dividend from the SA companies</b><span>R100 of profit, less 27% SA company tax</span></div>
+      <div class="flow"><span>5% SA dividends tax in all three · −R3.65</span></div>
+      <div class="node hold"><b>Cyprus, Malta or Hong Kong company</b><span>none of the three taxes the dividend</span></div>
+      <div class="flow"><span>0% withholding when it pays the trust, in all three</span></div>
+      <div class="node good"><b>R69.35 reaches the trust</b><span>the same in all three</span></div>
+      <div class="flow"><span>where they differ</span></div>
+      <div class="row3">
+        <div class="node good"><b>Cyprus</b><span>company score 8.20, #1 of 12</span><span>royalties: 0% SA tax</span><span>€7k–€27k a year</span><span>a home under the 60-day rule</span></div>
+        <div class="node"><b>Malta</b><span>company score 7.35, #5</span><span>royalties: 10% SA tax</span><span>€20k–€40k a year</span><span>the fallback; a Malta trust makes an all-EU pair</span></div>
+        <div class="node"><b>Hong Kong</b><span>company score 7.15, #7</span><span>royalties: 5% SA tax</span><span>$15k–$35k a year</span><span>hard banking, six hours ahead: for Asia only</span></div>
+      </div>
+      <figcaption>The rand path is identical down to the trust. Cost, banking and fit decide it, which is why Cyprus stays first and Malta is the fallback.</figcaption>
+    </figure>
     <div class="scroll"><table class="stack-m">
       <thead><tr><th>Item</th><th>Cyprus</th><th>Malta</th><th>Hong Kong</th></tr></thead>
       <tbody>
@@ -853,6 +1092,27 @@ footer p { font-size: .88rem; color: var(--muted); }
     </ul>
 
     <h3 style="margin-top:1.8rem">A gift to your wife, taken to Greece</h3>
+    <figure class="cmp-fig" aria-label="The same cash gift to your wife, at two moments. Given while she's SA-resident: no SA donations tax between spouses; she can move it out with her own R2m and R10m allowances each year; once abroad it's hers, with no exit tax on cash and no Greek gift tax, because she wasn't Greek-resident when it was given. Given after she has left SA: 20% SA donations tax, 25% above R30m, if the 2026 bill passes as drafted, backdated to 25 February 2026; and if she's Greek-resident by then, Greek gift tax as well, tax-free between spouses up to €800,000 and 10% above.">
+      <div class="cmp stack-s" style="--rows:6">
+        <div class="lane">
+          <h4>Given while she's SA-resident</h4>
+          <div class="node"><b>Cash gift to your wife</b><span>money already taxed as your dividend</span></div>
+          <div class="flow hot"><span>0% SA donations tax between spouses</span></div>
+          <div class="node"><b>Her money, in SA</b><span>she moves it with her own R2m + R10m allowances a year</span></div>
+          <div class="flow"><span>then she leaves SA with the family</span></div>
+          <div class="node good"><b>Hers, abroad</b><span>no exit tax on cash, and no Greek gift tax: she wasn't Greek-resident when you gave it</span></div>
+        </div>
+        <div class="lane">
+          <h4>Given after she has left SA</h4>
+          <div class="node"><b>Cash gift to your wife</b><span>while you're still SA-resident</span></div>
+          <div class="flow hot warn"><span>20% SA donations tax, 25% above R30m</span></div>
+          <div class="node warn"><b>Taxed on the way out</b><span>if the 2026 bill passes as drafted, backdated to 25 February 2026</span></div>
+          <div class="flow"><span>and if she's Greek-resident by then</span></div>
+          <div class="node warn"><b>Greek gift tax as well</b><span>tax-free between spouses up to €800,000, 10% above</span></div>
+        </div>
+      </div>
+      <figcaption>Either way, while you're SA-resident SA taxes you on what the gift earns, so it saves no income tax until you've left too. Give cash, not shares: cash carries no gain.</figcaption>
+    </figure>
     <ol class="steps" style="margin-top:.8rem">
       <li><b>Give before she leaves SA, never after.</b> Gifts between spouses are free of SA donations tax (s56(1)(b)). The draft 2026 tax bill limits that to a spouse who is SA tax-resident, backdated to 25 February 2026. A gift once she has left would cost 20% (25% above R30m). Treasury's memo describes exactly this sequence: "one spouse first ceases to be a South African tax resident. The remaining resident spouse subsequently transfers substantial assets". The bill isn't law yet, so plan as if it will be. SA's capital gains roll-over between spouses (s9HB) is already limited where the receiving spouse isn't resident.</li>
       <li><b>It doesn't cut the tax on the business profits.</b> The money reaches you as a dividend first: R58.40 of every R100 of profit while you're SA-resident, against R69.35 through the Cyprus company and trust once you've left. A gift moves money that has already been taxed.</li>
@@ -944,6 +1204,29 @@ footer p { font-size: .88rem; color: var(--muted); }
 <section class="sec" id="property">
   <div class="wrap">
     <h2>Property</h2>
+    <figure class="cmp-fig" aria-label="Where each property sits. In your own name: the family home in Cape Town, let at arm's length once you claim non-residence, and property in Greece, owned personally as EU citizens or through a Cyprus or Greek company that discloses its owners. Inside the structure: the trust owns 100% of the Cyprus holding company, which owns the SA property company that holds the office building; its rent stays taxed in SA. Property in Portugal must never be held through the Jersey trust or any other entity on Portugal's list.">
+      <div class="cmp free stack-s">
+        <div class="lane">
+          <h4>In your own name</h4>
+          <div class="node you"><b>You and your wife</b><span>as EU citizens</span></div>
+          <div class="flow"><span>own directly</span></div>
+          <div class="row3 two">
+            <div class="node"><b>Family home in Cape Town</b><span>let it at arm's length once you claim non-residence</span></div>
+            <div class="node"><b>Property in Greece</b><span>personally, or a Cyprus or Greek company that discloses its owners</span></div>
+          </div>
+        </div>
+        <div class="lane">
+          <h4>Inside the structure</h4>
+          <div class="node trust"><b>Trust · Jersey</b><span>holds the company for the family</span></div>
+          <div class="flow"><span>owns 100%</span></div>
+          <div class="node hold"><b>Cyprus holding company</b><span>board meets in Cyprus</span></div>
+          <div class="flow"><span>owns</span></div>
+          <div class="node"><b>SA property company</b><span>holds the office building; its rent stays taxed in SA</span></div>
+        </div>
+      </div>
+      <div class="fig-note"><b>Property in Portugal: never through the Jersey trust</b><span>or any other entity on Portugal's list. For owners in listed jurisdictions, annual property tax rises to 7.5% and purchase tax to 10%.</span></div>
+      <figcaption>SA taxes SA property whoever owns it, so moving the home into the structure would only cost transfer duty and gains tax. Greece charges 15% a year on property held by an entity that doesn't document its owners.</figcaption>
+    </figure>
     <div class="scroll"><table class="stack-m">
       <thead><tr><th>Asset</th><th>Recommendation</th><th>Why</th></tr></thead>
       <tbody>
@@ -987,6 +1270,17 @@ footer p { font-size: .88rem; color: var(--muted); }
     <div class="phase"><h3>Later <span>when the group passes about R50m</span></h3></div>
     <p>Add a Jersey trust, or a private trust company, above the same Cyprus company. Until then, "no trust yet" is legitimate: own the Cyprus company personally, with a will that chooses SA law.</p>
     <p><b>Beneficiaries:</b> any child who stays SA-resident is taxed in SA on amounts that vest in them (s25B), and a minor's income can be attributed to a parent (s7(3)). CRS reports the trust to SARS while any controlling person is SA-resident. Plan distributions with that in mind.</p>
+    <figure class="diagram" style="margin-top:1.4rem" aria-label="Who the trust pays, and who taxes it. Each person is taxed where they live. You: nothing in Cyprus as a non-dom, in the UAE, or if you're resident nowhere. Your wife: where she lives; in Greece, ask whether the flat tax covers trust distributions. Your children: a child who stays SA-resident is taxed in SA on amounts that vest in them, and a minor's income can be taxed as a parent's. CRS reports the trust to SARS while any controlling person is SA-resident.">
+      <div class="node trust"><b>The trust</b><span>pays distributions to the family</span></div>
+      <div class="flow"><span>each person is taxed where they live</span></div>
+      <div class="row3">
+        <div class="node you"><b>You</b><span>0% in Cyprus as a non-dom, in the UAE, or resident nowhere</span></div>
+        <div class="node"><b>Your wife</b><span>taxed where she lives; in Greece, ask whether the flat tax covers it</span></div>
+        <div class="node"><b>Your children</b><span>if SA-resident, taxed in SA on what vests in them (s25B); a minor's income can be taxed as a parent's (s7(3))</span></div>
+      </div>
+      <div class="fig-note plain"><b>Reported, not hidden</b><span>CRS reports the trust to SARS while any controlling person is SA-resident.</span></div>
+      <figcaption>The trust's own location changes the tax only for someone living in Portugal: 35% from a Jersey trust, 28% from a Cyprus one.</figcaption>
+    </figure>
     <h3 style="margin-top:1.6rem">How this fits your earlier research</h3>
     <ul class="points" style="margin-top:.8rem">
       <li><b>August 2026</b> ("no structure shields an SA resident"): confirmed.</li>
