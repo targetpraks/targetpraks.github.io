@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cape Town investment deals — beating the bank, honestly</title>
+<style>
+  :root {
+    --paper:#fdfaf3; --ink:#12203a; --ink-soft:#4a5670; --card:#ffffff;
+    --rule:#e3dccd; --coral:#c2492b; --gold:#a8791a; --teal:#0d6e6e;
+    --good:#0d6e6e; --warn:#a8791a; --bad:#c2492b;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width:1080px; margin:0 auto; padding:56px 28px 96px; }
+  h1,h2,h3 { font-family:Georgia,"Iowan Old Style","Times New Roman",serif; font-weight:600; letter-spacing:-0.01em; }
+  h1 { font-size:44px; line-height:1.12; margin:0 0 18px; }
+  h2 { font-size:27px; margin:0 0 6px; }
+  h3 { font-size:19px; margin:0 0 4px; }
+  a { color:var(--teal); text-decoration:none; border-bottom:1px solid rgba(13,110,110,.28); }
+  a:hover { border-bottom-color:var(--teal); }
+  p { margin:0 0 16px; }
+  .kicker { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--coral); font-weight:700; margin-bottom:14px; }
+  .standfirst { font-size:19px; line-height:1.6; color:var(--ink-soft); max-width:74ch; }
+  .meta { font-size:13px; color:var(--ink-soft); margin-top:22px; padding-top:14px; border-top:1px solid var(--rule); }
+
+  section { margin-top:56px; }
+  .sec-head { border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:26px; display:flex; align-items:baseline; gap:14px; }
+  .sec-num { font-family:Georgia,serif; font-size:14px; color:var(--coral); font-weight:700; letter-spacing:.08em; }
+
+  /* verdict chips */
+  .verdict { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:34px 0 0; }
+  .chip { background:var(--card); border:2px solid var(--ink); padding:20px 20px 18px; }
+  .chip .lbl { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; }
+  .chip .big { font-family:Georgia,serif; font-size:30px; line-height:1.1; margin:8px 0 6px; }
+  .chip .sub { font-size:13px; color:var(--ink-soft); line-height:1.45; }
+  .chip.win { border-color:var(--teal); }
+  .chip.win .big { color:var(--teal); }
+  .chip.lose { border-color:var(--coral); }
+  .chip.lose .big { color:var(--coral); }
+
+  /* tables */
+  table { width:100%; border-collapse:collapse; font-size:14.5px; background:var(--card); margin:0 0 10px; }
+  th { text-align:left; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);
+        font-weight:700; padding:12px 10px; border-bottom:2px solid var(--ink); vertical-align:bottom; }
+  th.n, td.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  td { padding:11px 10px; border-bottom:1px solid var(--rule); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  td.name { font-weight:600; }
+  td.strong { font-weight:700; }
+  .pos { color:var(--good); }
+  .neg { color:var(--bad); }
+  .table-wrap { overflow-x:auto; }
+  caption { caption-side:bottom; text-align:left; font-size:12.5px; color:var(--ink-soft); padding-top:10px; line-height:1.5; }
+
+  /* bars */
+  .bar-row { display:grid; grid-template-columns:220px 1fr 96px; align-items:center; gap:14px; margin-bottom:9px; }
+  .bar-label { font-size:13.5px; text-align:right; line-height:1.25; }
+  .bar-label a { border-bottom:none; color:var(--ink); }
+  .bar-track { position:relative; height:26px; background:#f2ecdf; border:1px solid var(--rule); }
+  .bar-net { position:absolute; left:0; top:0; bottom:0; background:var(--teal); }
+  .bar-growth { position:absolute; top:0; bottom:0; background:repeating-linear-gradient(45deg,#cfe4e4,#cfe4e4 5px,#e6f2f2 5px,#e6f2f2 10px); }
+  .bar-bank { position:absolute; top:-6px; bottom:-6px; width:2px; background:var(--coral); }
+  .chart { padding-top:22px; }
+  .bar-bank span { position:absolute; top:-21px; left:-34px; font-size:10.5px; color:var(--coral); font-weight:700;
+      white-space:nowrap; background:var(--paper); padding:0 3px; }
+  .bar-val { font-size:13px; font-variant-numeric:tabular-nums; text-align:right; }
+  .muted { color:var(--ink-soft); }
+  .legend { display:flex; gap:22px; font-size:12.5px; color:var(--ink-soft); margin:34px 0 0; }
+  .legend i { display:inline-block; width:14px; height:11px; margin-right:6px; vertical-align:middle; }
+
+  /* deals */
+  .deals { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .deal { background:var(--card); border:2px solid var(--rule); padding:20px 22px; }
+  .deal-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+  .deal-area { font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; }
+  .deal h3 a { border-bottom:none; color:var(--ink); }
+  .deal-price { font-family:Georgia,serif; font-size:22px; white-space:nowrap; }
+  .deal-flags { margin:12px 0 14px; }
+  .pill { display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:.04em; padding:4px 9px; border:1px solid; }
+  .pill-good { color:var(--good); border-color:var(--good); background:#eef7f7; }
+  .pill-warn { color:var(--warn); border-color:var(--warn); background:#fdf5e6; }
+  .pill-bad { color:var(--bad); border-color:var(--bad); background:#fbeee9; }
+  .deal-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px 14px; padding:14px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); }
+  .deal-grid span { display:block; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .deal-grid b { font-size:15px; font-variant-numeric:tabular-nums; }
+  .deal-grid .accent { color:var(--teal); }
+  .deal-note { font-size:13px; color:var(--ink-soft); margin:12px 0 0; line-height:1.5; }
+
+  /* prose blocks */
+  .callout { background:#fff; border-left:4px solid var(--coral); padding:20px 24px; margin:0 0 20px; }
+  .callout.teal { border-left-color:var(--teal); }
+  .callout p:last-child { margin-bottom:0; }
+  ol.fail { list-style:none; counter-reset:f; padding:0; margin:0; }
+  ol.fail li { counter-increment:f; position:relative; padding:0 0 18px 52px; }
+  ol.fail li:before { content:counter(f); position:absolute; left:0; top:1px; width:32px; height:32px;
+      border:2px solid var(--ink); border-radius:50%; display:grid; place-items:center; font-family:Georgia,serif; font-size:14px; font-weight:700; }
+  ol.fail strong { display:block; font-size:16px; margin-bottom:2px; }
+  ol.fail p { margin:0; font-size:14.5px; color:var(--ink-soft); }
+  ul.plain { padding-left:20px; }
+  ul.plain li { margin-bottom:9px; }
+  .assume { font-size:13.5px; color:var(--ink-soft); }
+  .assume b { color:var(--ink); }
+  footer { margin-top:70px; padding-top:20px; border-top:1px solid var(--rule); font-size:12.5px; color:var(--ink-soft); }
+
+  @media (max-width:820px) {
+    h1 { font-size:32px; }
+    .verdict, .deals { grid-template-columns:1fr; }
+    .bar-row { grid-template-columns:1fr; gap:4px; }
+    .bar-label { text-align:left; }
+    .bar-val { text-align:left; }
+  }
+  @media print {
+    body { background:#fff; font-size:11pt; }
+    .wrap { padding:0; max-width:none; }
+    section { page-break-inside:avoid; }
+    a { color:var(--ink); border-bottom:none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Investment brief · Cape Town · 15 November 2026</div>
+  <h1>Nothing in Cape Town guarantees more than the bank.<br>Three deals clear it anyway — with no growth at all.</h1>
+  <p class="standfirst">
+    You asked for deals that guarantee a better return than leaving the money in a bank. No property does that — a guarantee
+    is a promise, and only National Treasury makes one. But the comparison is still worth making properly, because the bank's
+    9.0% is not the free ride it looks like once SARS and inflation take their share. Below: nine live Cape Town listings,
+    priced and costed from their own listings, set against what the money actually earns in a bank.
+  </p>
+
+  <div class="verdict">
+    <div class="chip win">
+      <div class="lbl">Certainty</div>
+      <div class="big">9.0%</div>
+      <div class="sub">RSA Retail Savings Bond, 5 years, fixed, government-guaranteed. Nothing beats this for certainty.</div>
+    </div>
+    <div class="chip win">
+      <div class="lbl">Best cash yield found</div>
+      <div class="big">14.4%</div>
+      <div class="sub">Kalkfontein, Kuils River — three self-contained units, R550 000. Beats the bank before any capital growth.</div>
+    </div>
+    <div class="chip lose">
+      <div class="lbl">The catch</div>
+      <div class="big">3 of 9</div>
+      <div class="sub">deals beat the bank on cash flow alone. The other six need the property to grow in value. That is the part nobody can promise you.</div>
+    </div>
+  </div>
+
+  <div class="meta">
+    Prepared for Ricardo · all nine listings verified live on Property24 on 15 November 2026 · bank and tax rates from SARB, SARS,
+    Stats SA and National Treasury · full sources at the end.
+  </div>
+
+  <!-- 1 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>The hurdle: what the bank actually pays you</h2></div>
+    <p>
+      South Africa is an unusually good place to hold cash right now. The repo rate sits at 7.25% and prime at 10.75% after
+      two hikes in 2026, which drags deposit rates up with it. Inflation is only 3.6%, so a nominal return in the nines is a
+      real return near 5%. That is the number any property has to beat.
+    </p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Product</th><th>Term</th><th class="n">Nominal</th><th class="n">Effective</th>
+        <th class="n">After 41% tax</th><th class="n">Real, after tax</th>
+      </tr></thead>
+      <tbody>
+        <tr><td class="name"><a href="https://secure.rsaretailbonds.gov.za/" target="_blank" rel="noopener">RSA Retail Savings Bond</a> — fixed</td>
+            <td>5 years</td><td class="n strong">9.00%</td><td class="n">9.20%</td><td class="n">5.31%</td><td class="n">1.71%</td></tr>
+        <tr><td class="name"><a href="https://secure.rsaretailbonds.gov.za/" target="_blank" rel="noopener">RSA Retail Savings Bond</a> — fixed</td>
+            <td>3 years</td><td class="n">8.50%</td><td class="n">8.68%</td><td class="n">5.02%</td><td class="n">1.42%</td></tr>
+        <tr><td class="name"><a href="https://ratecompare.co.za/best-rates/36-month-fixed-deposit" target="_blank" rel="noopener">GoTyme Bank</a> fixed deposit</td>
+            <td>36 months</td><td class="n">8.58%</td><td class="n">8.93%</td><td class="n">5.06%</td><td class="n">1.46%</td></tr>
+        <tr><td class="name"><a href="https://ratecompare.co.za/latest-rankings" target="_blank" rel="noopener">African Bank</a> fixed deposit (R1m min)</td>
+            <td>60 months</td><td class="n">8.47%</td><td class="n">8.81%</td><td class="n">5.00%</td><td class="n">1.40%</td></tr>
+        <tr><td class="name"><a href="https://ratecompare.co.za/latest-rankings" target="_blank" rel="noopener">Capitec</a> fixed deposit (R1m min)</td>
+            <td>60 months</td><td class="n">8.40%</td><td class="n">8.73%</td><td class="n">4.96%</td><td class="n">1.36%</td></tr>
+        <tr><td class="name">Cash in a call account</td><td>Daily</td><td class="n">4.15–6.50%</td><td class="n">—</td><td class="n">2.45–3.84%</td><td class="n">−1.15 to 0.24%</td></tr>
+      </tbody>
+      <caption>
+        Nominal rates as published for November 2026. "After 41% tax" applies the marginal rate for taxable income of
+        R887 001–R1 878 600 (<a href="https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/" target="_blank" rel="noopener">SARS</a>).
+        The 45% bracket starts at R1 878 601 and cuts these figures by another 7%. Real return is nominal after tax, less
+        Stats SA's October 2026 CPI of 3.6% (<a href="https://www.statssa.gov.za/" target="_blank" rel="noopener">Stats SA</a>).
+        Interest is taxed in full every year whether you spend it or not.
+      </caption>
+    </table>
+    </div>
+    <div class="callout">
+      <p><strong>The real hurdle is not 9.00%.</strong> It is <strong>5.31%</strong>. That is what survives SARS. And after
+      3.6% inflation it is <strong>1.71%</strong> of actual purchasing power a year. A property needs to clear
+      5.31% net, not 9.00%, to be worth the extra work — and on that test far more Cape Town deals qualify.</p>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>The nine deals, against the bank</h2></div>
+    <p>
+      Solid bar is what the deal keeps after every cost — levies, rates, insurance, maintenance, managing agent and a 5% void.
+      Hatched bar is Cape Town's ten-year compound capital growth for sectional title, 5.1% a year (Lightstone: +64% over ten years).
+      The red line is the bank.
+    </p>
+    <div class="chart">
+      
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/kalkfontein/kuils-river/western-cape/16175/117804782" target="_blank" rel="noopener">Kalkfontein 3-unit house</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:65.5%"></div>
+          <div class="bar-growth" style="left:65.5%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"><span>bank 9.00%</span></div>
+        </div>
+        <div class="bar-val">14.4% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/fisantekraal/cape-town/western-cape/9529/117551672" target="_blank" rel="noopener">Fisantekraal 2-bed flatlet</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:45.0%"></div>
+          <div class="bar-growth" style="left:45.0%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">9.9% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/parklands/blouberg/western-cape/11588/117734257" target="_blank" rel="noopener">Parklands flat</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:43.2%"></div>
+          <div class="bar-growth" style="left:43.2%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">9.5% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/parow-valley/parow/western-cape/8189/117544171" target="_blank" rel="noopener">Parow Valley flat</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:34.1%"></div>
+          <div class="bar-growth" style="left:34.1%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">7.5% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/brackenfell-central/brackenfell/western-cape/16670/117798968" target="_blank" rel="noopener">Brackenfell Central flat</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:32.7%"></div>
+          <div class="bar-growth" style="left:32.7%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">7.2% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/parow-central/parow/western-cape/17457/116812825" target="_blank" rel="noopener">Parow Central flat</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:29.5%"></div>
+          <div class="bar-growth" style="left:29.5%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">6.5% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/maitland/cape-town/western-cape/9153/117695065" target="_blank" rel="noopener">Maitland flat</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:25.9%"></div>
+          <div class="bar-growth" style="left:25.9%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">5.7% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/stellendale/kuils-river/western-cape/17516/117440456" target="_blank" rel="noopener">Stellendale (Kuils River) flat</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:21.8%"></div>
+          <div class="bar-growth" style="left:21.8%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">4.8% <span class="muted">+5.1</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label"><a href="https://www.property24.com/for-sale/brooklyn/milnerton/western-cape/8005/117659672" target="_blank" rel="noopener">Brooklyn (Milnerton) flat</a></div>
+        <div class="bar-track">
+          <div class="bar-net" style="width:14.1%"></div>
+          <div class="bar-growth" style="left:14.1%;width:23.2%"></div>
+          <div class="bar-bank" style="left:40.9%"></div>
+        </div>
+        <div class="bar-val">3.1% <span class="muted">+5.1</span></div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--teal)"></i>Net yield after all costs</span>
+      <span><i style="background:repeating-linear-gradient(45deg,#cfe4e4,#cfe4e4 5px,#e6f2f2 5px,#e6f2f2 10px)"></i>Capital growth at 5.1%/yr</span>
+      <span><i style="background:var(--coral);width:3px"></i>Bank, 9.0%</span>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>The deals themselves</h2></div>
+    <p>
+      Every price, levy and rate below was read off the listing itself on 15 November 2026. Rent is not the seller's claim — it is the
+      lower quartile of comparable live rentals advertised in the same suburb for the same bedroom count. Each card links to the listing.
+    </p>
+    <div class="deals">
+      
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Kuils River</div>
+          <h3><a href="https://www.property24.com/for-sale/kalkfontein/kuils-river/western-cape/16175/117804782" target="_blank" rel="noopener">Kalkfontein 3-unit house</a></h3>
+        </div>
+        <div class="deal-price">R550 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-good">clears the bank with no growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>204 m²</b></div>
+        <div><span>Levies / mo</span> <b>none</b></div>
+        <div><span>Rates / mo</span> <b>R450</b></div>
+        <div><span>Rent used</span> <b>R9 000</b></div>
+        <div><span>Gross yield</span> <b>19.6%</b></div>
+        <div><span>Net yield</span> <b class="accent">14.4%</b></div>
+      </div>
+      <p class="deal-note">Three self-contained units, each shower + kitchenette. Room-by-room letting. Listed 10 Nov 2026.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Fisantekraal</div>
+          <h3><a href="https://www.property24.com/for-sale/fisantekraal/cape-town/western-cape/9529/117551672" target="_blank" rel="noopener">Fisantekraal 2-bed flatlet</a></h3>
+        </div>
+        <div class="deal-price">R495 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-good">clears the bank with no growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>n/a</b></div>
+        <div><span>Levies / mo</span> <b>none</b></div>
+        <div><span>Rates / mo</span> <b>R380</b></div>
+        <div><span>Rent used</span> <b>R6 000</b></div>
+        <div><span>Gross yield</span> <b>14.5%</b></div>
+        <div><span>Net yield</span> <b class="accent">9.9%</b></div>
+      </div>
+      <p class="deal-note">Separate entrance flatlet, new node. Listed 21 Aug 2026. Rent is an estimate — no live comps.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Blouberg</div>
+          <h3><a href="https://www.property24.com/for-sale/parklands/blouberg/western-cape/11588/117734257" target="_blank" rel="noopener">Parklands flat</a></h3>
+        </div>
+        <div class="deal-price">R800 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-good">clears the bank with no growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>61 m²</b></div>
+        <div><span>Levies / mo</span> <b>R1 500</b></div>
+        <div><span>Rates / mo</span> <b>R350</b></div>
+        <div><span>Rent used</span> <b>R10 500</b></div>
+        <div><span>Gross yield</span> <b>15.8%</b></div>
+        <div><span>Net yield</span> <b class="accent">9.5%</b></div>
+      </div>
+      <p class="deal-note">1st floor, small complex, low levy. Listed 19 Oct 2026.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Parow Valley</div>
+          <h3><a href="https://www.property24.com/for-sale/parow-valley/parow/western-cape/8189/117544171" target="_blank" rel="noopener">Parow Valley flat</a></h3>
+        </div>
+        <div class="deal-price">R800 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-warn">needs 1.5% growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>73 m²</b></div>
+        <div><span>Levies / mo</span> <b>R1 700</b></div>
+        <div><span>Rates / mo</span> <b>R120</b></div>
+        <div><span>Rent used</span> <b>R9 000</b></div>
+        <div><span>Gross yield</span> <b>13.5%</b></div>
+        <div><span>Net yield</span> <b class="accent">7.5%</b></div>
+      </div>
+      <p class="deal-note">2nd floor, 1 bath, 1 parking. Listed 19 Aug 2026.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Brackenfell</div>
+          <h3><a href="https://www.property24.com/for-sale/brackenfell-central/brackenfell/western-cape/16670/117798968" target="_blank" rel="noopener">Brackenfell Central flat</a></h3>
+        </div>
+        <div class="deal-price">R899 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-warn">needs 1.8% growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>48 m²</b></div>
+        <div><span>Levies / mo</span> <b>R1 705</b></div>
+        <div><span>Rates / mo</span> <b>R79</b></div>
+        <div><span>Rent used</span> <b>R9 500</b></div>
+        <div><span>Gross yield</span> <b>12.7%</b></div>
+        <div><span>Net yield</span> <b class="accent">7.2%</b></div>
+      </div>
+      <p class="deal-note">Fairbridge Terraces, St Michaels. Listed 9 Nov 2026 — fresh stock.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Parow Central</div>
+          <h3><a href="https://www.property24.com/for-sale/parow-central/parow/western-cape/17457/116812825" target="_blank" rel="noopener">Parow Central flat</a></h3>
+        </div>
+        <div class="deal-price">R850 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-warn">needs 2.5% growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>70 m²</b></div>
+        <div><span>Levies / mo</span> <b>R1 800</b></div>
+        <div><span>Rates / mo</span> <b>R400</b></div>
+        <div><span>Rent used</span> <b>R9 000</b></div>
+        <div><span>Gross yield</span> <b>12.7%</b></div>
+        <div><span>Net yield</span> <b class="accent">6.5%</b></div>
+      </div>
+      <p class="deal-note">Levies/rates not published — modelled. Listed Jan 2026: stale, negotiate.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Maitland</div>
+          <h3><a href="https://www.property24.com/for-sale/maitland/cape-town/western-cape/9153/117695065" target="_blank" rel="noopener">Maitland flat</a></h3>
+        </div>
+        <div class="deal-price">R849 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-warn">needs 3.3% growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>71 m²</b></div>
+        <div><span>Levies / mo</span> <b>R2 099</b></div>
+        <div><span>Rates / mo</span> <b>R450</b></div>
+        <div><span>Rent used</span> <b>R8 750</b></div>
+        <div><span>Gross yield</span> <b>12.4%</b></div>
+        <div><span>Net yield</span> <b class="accent">5.7%</b></div>
+      </div>
+      <p class="deal-note">Description says R899k, listing shows R849k — price cut, confirm. Listed 7 Oct 2026.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Kuils River</div>
+          <h3><a href="https://www.property24.com/for-sale/stellendale/kuils-river/western-cape/17516/117440456" target="_blank" rel="noopener">Stellendale (Kuils River) flat</a></h3>
+        </div>
+        <div class="deal-price">R735 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-warn">needs 4.2% growth</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>40 m²</b></div>
+        <div><span>Levies / mo</span> <b>R2 500</b></div>
+        <div><span>Rates / mo</span> <b>R1 000</b></div>
+        <div><span>Rent used</span> <b>R8 500</b></div>
+        <div><span>Gross yield</span> <b>13.9%</b></div>
+        <div><span>Net yield</span> <b class="accent">4.8%</b></div>
+      </div>
+      <p class="deal-note">Small 40 m² two-bed. Rents R9,650 for 47 m² comps. Listed 23 Jul 2026.</p>
+    </article>
+    <article class="deal">
+      <div class="deal-head">
+        <div>
+          <div class="deal-area">Milnerton</div>
+          <h3><a href="https://www.property24.com/for-sale/brooklyn/milnerton/western-cape/8005/117659672" target="_blank" rel="noopener">Brooklyn (Milnerton) flat</a></h3>
+        </div>
+        <div class="deal-price">R695 000</div>
+      </div>
+      <div class="deal-flags"><span class="pill pill-bad">needs 5.9% growth — too much</span></div>
+      <div class="deal-grid">
+        <div><span>Size</span> <b>57 m²</b></div>
+        <div><span>Levies / mo</span> <b>R3 120</b></div>
+        <div><span>Rates / mo</span> <b>R288</b></div>
+        <div><span>Rent used</span> <b>R7 000</b></div>
+        <div><span>Gross yield</span> <b>12.1%</b></div>
+        <div><span>Net yield</span> <b class="accent">3.1%</b></div>
+      </div>
+      <p class="deal-note">Levies R3,120 — the deal killer. Listed 26 Sep 2026.</p>
+    </article>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>The full maths</h2></div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Property</th><th class="n">Price</th><th class="n">Rent/mo</th><th class="n">Gross</th><th class="n">Net</th>
+        <th class="n">Net income/yr</th><th class="n">Bond/mo at 10.25%</th><th class="n">Cash flow, 100% bond</th>
+        <th class="n">Cash flow, cash</th><th class="n">Growth needed</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/kalkfontein/kuils-river/western-cape/16175/117804782" target="_blank" rel="noopener">Kalkfontein 3-unit house</a></td>
+      <td class="n">R550 000</td>
+      <td class="n">R9 000</td>
+      <td class="n">19.6%</td>
+      <td class="n strong">14.4%</td>
+      <td class="n">R79 292</td>
+      <td class="n">R5 399</td>
+      <td class="n pos">+R1 209</td>
+      <td class="n pos">+R6 608</td>
+      <td class="n">-5.4%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/fisantekraal/cape-town/western-cape/9529/117551672" target="_blank" rel="noopener">Fisantekraal 2-bed flatlet</a></td>
+      <td class="n">R495 000</td>
+      <td class="n">R6 000</td>
+      <td class="n">14.5%</td>
+      <td class="n strong">9.9%</td>
+      <td class="n">R49 218</td>
+      <td class="n">R4 859</td>
+      <td class="n neg">−R758</td>
+      <td class="n pos">+R4 102</td>
+      <td class="n">-0.9%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/parklands/blouberg/western-cape/11588/117734257" target="_blank" rel="noopener">Parklands flat</a></td>
+      <td class="n">R800 000</td>
+      <td class="n">R10 500</td>
+      <td class="n">15.8%</td>
+      <td class="n strong">9.5%</td>
+      <td class="n">R75 724</td>
+      <td class="n">R7 853</td>
+      <td class="n neg">−R1 543</td>
+      <td class="n pos">+R6 310</td>
+      <td class="n">-0.5%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/parow-valley/parow/western-cape/8189/117544171" target="_blank" rel="noopener">Parow Valley flat</a></td>
+      <td class="n">R800 000</td>
+      <td class="n">R9 000</td>
+      <td class="n">13.5%</td>
+      <td class="n strong">7.5%</td>
+      <td class="n">R60 352</td>
+      <td class="n">R7 853</td>
+      <td class="n neg">−R2 824</td>
+      <td class="n pos">+R5 029</td>
+      <td class="n">1.5%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/brackenfell-central/brackenfell/western-cape/16670/117798968" target="_blank" rel="noopener">Brackenfell Central flat</a></td>
+      <td class="n">R899 000</td>
+      <td class="n">R9 500</td>
+      <td class="n">12.7%</td>
+      <td class="n strong">7.2%</td>
+      <td class="n">R65 038</td>
+      <td class="n">R8 825</td>
+      <td class="n neg">−R3 405</td>
+      <td class="n pos">+R5 420</td>
+      <td class="n">1.8%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/parow-central/parow/western-cape/17457/116812825" target="_blank" rel="noopener">Parow Central flat</a></td>
+      <td class="n">R850 000</td>
+      <td class="n">R9 000</td>
+      <td class="n">12.7%</td>
+      <td class="n strong">6.5%</td>
+      <td class="n">R55 292</td>
+      <td class="n">R8 344</td>
+      <td class="n neg">−R3 736</td>
+      <td class="n pos">+R4 608</td>
+      <td class="n">2.5%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/maitland/cape-town/western-cape/9153/117695065" target="_blank" rel="noopener">Maitland flat</a></td>
+      <td class="n">R849 000</td>
+      <td class="n">R8 750</td>
+      <td class="n">12.4%</td>
+      <td class="n strong">5.7%</td>
+      <td class="n">R48 492</td>
+      <td class="n">R8 334</td>
+      <td class="n neg">−R4 293</td>
+      <td class="n pos">+R4 041</td>
+      <td class="n">3.3%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/stellendale/kuils-river/western-cape/17516/117440456" target="_blank" rel="noopener">Stellendale (Kuils River) flat</a></td>
+      <td class="n">R735 000</td>
+      <td class="n">R8 500</td>
+      <td class="n">13.9%</td>
+      <td class="n strong">4.8%</td>
+      <td class="n">R35 598</td>
+      <td class="n">R7 215</td>
+      <td class="n neg">−R4 249</td>
+      <td class="n pos">+R2 966</td>
+      <td class="n">4.2%</td>
+    </tr><tr>
+      <td class="name"><a href="https://www.property24.com/for-sale/brooklyn/milnerton/western-cape/8005/117659672" target="_blank" rel="noopener">Brooklyn (Milnerton) flat</a></td>
+      <td class="n">R695 000</td>
+      <td class="n">R7 000</td>
+      <td class="n">12.1%</td>
+      <td class="n strong">3.1%</td>
+      <td class="n">R21 370</td>
+      <td class="n">R6 822</td>
+      <td class="n neg">−R5 042</td>
+      <td class="n pos">+R1 781</td>
+      <td class="n">5.9%</td>
+    </tr>
+      </tbody>
+      <caption>
+        Net income deducts 5% vacancy, 8% managing agent, published levies and rates, R4 200 insurance and 1% of price for
+        maintenance. Bond is a 20-year home loan at prime less 0.5% (10.25%). Transfer duty is <strong>zero</strong> on all
+        nine — the duty-free threshold is R1 210 000 (<a href="https://www.sars.gov.za/tax-rates/transfer-duty/" target="_blank" rel="noopener">SARS</a>),
+        so only conveyancing (about R48 000) is added to the purchase price. "Growth needed" is the annual capital growth required
+        for total return to match the bank's 9.0%.
+      </caption>
+    </table>
+    </div>
+
+    <div class="callout teal">
+      <p><strong>Read that last column again.</strong> Cape Town sectional title has compounded at 5.1% a year for a decade.
+      On that figure, <strong>8 of the 9 deals beat the bank</strong> and only Brooklyn misses. On zero growth,
+      <strong>3 beat it</strong>. The whole question is not "which deal is best" — it is "how much do you believe in
+      Cape Town prices for the next five to ten years".</p>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>The bond problem nobody quotes you</h2></div>
+    <p>
+      Prime is 10.75%. A home loan at prime less 0.5% costs <strong>10.25%</strong> — more than most of these
+      properties yield after costs. Look at the fourth column from the right in the table above: <strong>every single one of the
+      nine is cash-negative on a full bond</strong>, except Kalkfontein, which scrapes R1 209 a month.
+    </p>
+    <p>
+      This is the structural change from the last cycle. In 2021 prime was 7% and gearing a rental made sense. At 10.75% it
+      does not — the bank takes the entire net yield and asks for more. Two hikes in 2026 (May and September) moved the repo rate
+      from 7.00% to 7.25%, and the next MPC decision is on 19 November.
+    </p>
+    <div class="callout">
+      <p><strong>So the honest reading:</strong> these deals work for <em>cash</em>, or with a deposit of at least half. At 50%
+      gearing, Parklands, Kalkfontein, Fisantekraal, Parow Valley and Brackenfell all stay cash-positive. Maitland and Stellendale
+      go slightly negative. Brooklyn is negative either way — its R3 120 monthly levy eats 45% of the rent before anyone is paid.</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><h2>How each one fails</h2></div>
+    <p>This is the section that matters more than the yields. Every item below has bitten a Cape Town landlord this year.</p>
+    <ol class="fail">
+      <li><strong>The tenant leaves.</strong>
+        <p>One month void plus a re-let fee is about R12 000 on a R9 000 rental — roughly a fifth of a year's net income, gone, for one ordinary changeover.</p></li>
+      <li><strong>The levy climbs faster than the rent.</strong>
+        <p>Brooklyn's levy is already R3 120 against R7 000 rent. Levies rise with the scheme's insurance and the management contract, not with what the market will pay you.</p></li>
+      <li><strong>A special levy lands.</strong>
+        <p>One roof, one lift, one repaint: R40 000 to R150 000 across the scheme. That is five years of net income on a R700 000 flat, payable in 30 days.</p></li>
+      <li><strong>Rates go up when the city revalues.</strong>
+        <p>Some listings show absurdly low rates — Parow Valley's is R120 a month. That is a valuation artefact, not a permanent condition.</p></li>
+      <li><strong>Room-by-room letting is a business, not an investment.</strong>
+        <p>Kalkfontein's 14.4% is real, but it is three tenants, three deposits, three sets of arrears and a turnover problem. Price that in honestly.</p></li>
+      <li><strong>Capital growth does not repeat.</strong>
+        <p>Ten years of flats: +64% in Cape Town. The last year alone: +11.2% in the Western Cape. Those cannot both continue. The 10-year number is the one to model, and it is barely above the bank on its own.</p></li>
+      <li><strong>You cannot get out quickly or cheaply.</strong>
+        <p>Two to four months to sell, 5% agent commission, conveyancing, and CGT at an 18% effective rate on the gain. The bank returns your money in seven days with no penalty after year one.</p></li>
+      <li><strong>Arrears are normal now.</strong>
+        <p>PayProp measured 16.9% of tenants in arrears in Q2 2026. Roughly one in six. Budget for it rather than being surprised by it.</p></li>
+    </ol>
+  </section>
+
+  <!-- 7 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">07</span><h2>Which one, for which situation</h2></div>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:46%">If this is you</th><th>Then this</th></tr></thead>
+      <tbody>
+        <tr><td class="name">You want certainty and zero admin</td><td>RSA Retail Savings Bond, 9.0% fixed for 5 years. Not a property. Not close.</td></tr>
+        <tr><td class="name">You have R500 000 cash and will self-manage</td><td>Fisantekraal flatlet, R495 000 — 9.9% net, the cheapest way into a positive cash flow.</td></tr>
+        <tr><td class="name">You want the highest return and can run three tenancies</td><td>Kalkfontein, R550 000 — 14.4% net, clears the bank with no growth at all.</td></tr>
+        <tr><td class="name">You want one tenant and a normal flat</td><td>Parklands, R800 000 — 9.5% net, low levy, strong rental node. The best balance of yield and low hassle.</td></tr>
+        <tr><td class="name">You must bond more than half</td><td>None of these. At 10.75% prime you will feed the property monthly. Wait for the rate cycle to turn.</td></tr>
+        <tr><td class="name">You might need the money inside two years</td><td>The bank. Exit costs of 6–7% wipe out two years of yield on every deal here.</td></tr>
+        <tr><td class="name">You are holding for ten years or more</td><td>Parklands or Brackenfell. Growth does the heavy lifting and the entry price is defensible.</td></tr>
+        <tr><td class="name">You were thinking Southern Suburbs or City Bowl</td><td>Don't, for yield. Those trade at 3–5% gross. The yield is in the northern suburbs and the Cape Flats, and you pay for it in tenant risk.</td></tr>
+        <tr><td class="name">You want a property but hate levies</td><td>Kalkfontein or Fisantekraal — freehold, no body corporate, no special levy.</td></tr>
+        <tr><td class="name">You are doing this for the tax break</td><td>There isn't one worth chasing. Rental profit is taxed at your marginal rate like salary; only the growth gets CGT treatment.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">08</span><h2>What I rejected, and why</h2></div>
+    <p>Four listings scored well and were cut. Listing them is the honest thing to do — a shortlist you cannot audit is a sales pitch.</p>
+    <ul class="plain">
+      <li><strong>Strand, Rome — R660 000, 2 bed.</strong> 12.1% gross on paper. Marked <em>Under Offer</em>: not available.</li>
+      <li><strong>Bellville Central — R675 000, 1 bed, 76 m².</strong> Showed 7.5% on my first pass. It is an over-50s retirement unit — you cannot let it on the open market. Cut.</li>
+      <li><strong>Strand, Guldenland — R730 000, 1 bed.</strong> 12%+ gross. Also marked <em>Under Offer</em>.</li>
+      <li><strong>Milnerton, Rugby — R995 000, 3 bed.</strong> Looked like the best yield in Milnerton until the levies and the R995 000 price met the R6 000 rentals in that street.</li>
+    </ul>
+    <p class="assume">
+      Two more carry a flag rather than a rejection: <b>Maitland</b> is advertised at R849 000 while its own description still says
+      R899 000 — confirm the price with the agent. <b>Parow Central</b> has been listed since January 2026, which usually means
+      the price is soft and negotiable.
+    </p>
+  </section>
+
+  <!-- 9 -->
+  <section>
+    <div class="sec-head"><span class="sec-num">09</span><h2>Sources and assumptions</h2></div>
+    <p class="assume">
+      <b>Rates.</b>
+      Repo 7.25% and prime 10.75%
+      (<a href="https://www.resbank.co.za/en/home/what-we-do/statistics/key-statistics/selected-historical-rates" target="_blank" rel="noopener">SARB rates data</a>, hiked 25bp on 23 September 2026);
+      CPI 3.6% for October 2026 (<a href="https://www.statssa.gov.za/" target="_blank" rel="noopener">Stats SA</a>);
+      RSA Retail Savings Bond fixed rates for 1–30 November 2026, 8.25% / 8.50% / 9.00%
+      (<a href="https://secure.rsaretailbonds.gov.za/" target="_blank" rel="noopener">National Treasury</a>);
+      best bank fixed deposits per <a href="https://ratecompare.co.za/latest-rankings" target="_blank" rel="noopener">ratecompare</a>,
+      last updated 2 October 2026.
+      <b>Tax.</b> Marginal brackets 2026/27 (<a href="https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/" target="_blank" rel="noopener">SARS</a>);
+      transfer duty unchanged since 1 April 2026, 0% to R1 210 000
+      (<a href="https://www.sars.gov.za/tax-rates/transfer-duty/" target="_blank" rel="noopener">SARS</a>).
+      <b>Market.</b> Western Cape house prices +11.2% year on year, national +7.9%, Stats SA Residential Property Price Index
+      for April 2026, via <a href="https://propertybureau.co.za/news/the-cape-town-property-market-in-mid-2026-what-it-actually-means-if-you-own-here" target="_blank" rel="noopener">Property Bureau</a>;
+      sectional title prices +64% over ten years and freehold +41%
+      (<a href="https://corporate.lightstone.co.za/result/Articles/Property-Newsletter-October-2026-25698" target="_blank" rel="noopener">Lightstone</a>, October 2026);
+      Western Cape average rent R12 561 in Q2 2026, +9.7% year on year, five-year growth +35.8%
+      (<a href="https://capetowndata.com/en/housing/rental-market" target="_blank" rel="noopener">PayProp / TPN, via Cape Town Data</a>);
+      Western Cape vacancy the lowest in the country at 1.51%
+      (<a href="https://reports.tpn.co.za/" target="_blank" rel="noopener">TPN</a>);
+      16.9% of tenants in arrears in Q2 2026
+      (<a href="https://www.payprop.com/rental-index" target="_blank" rel="noopener">PayProp</a>).
+    </p>
+    <p class="assume">
+      <b>Assumptions I made, so you can argue with them.</b> 5% vacancy; 8% managing agent; R4 200 a year landlord insurance;
+      maintenance at 1% of purchase price; 41% marginal tax rate; R48 000 conveyancing and no bond registration (adjust up about
+      R28 000 if you bond); 20-year loan at 10.25%; rents held flat in the cash-flow columns (they actually rose 9.7%
+      in the Western Cape last year, so these figures are conservative); no allowance for special levies.
+      <b>Not assumed:</b> short-term letting. Airbnb rates in the CBD run at a median R1 768 a night, but that is a hospitality
+      business with a 25.8%-multi-host market already in it, and it is a different risk class from everything above.
+    </p>
+    <p class="assume">
+      <b>Method.</b> Nine live Property24 listings in nine Cape Town areas, each opened individually and read for price, floor size,
+      levies, rates and listing date. Rental comparables from 1 300+ live rental listings scraped across the same areas on the same
+      day, filtered for long-term residential lets only (short-lets, room-shares and commercial units removed) and taken at the
+      lower quartile of the same bedroom count. All 20 rental yields and the full model are reproducible from the scrape file held
+      with this document.
+    </p>
+  </section>
+
+  <footer>
+    <p><strong>The one-line answer.</strong> Nothing guarantees more than the bank's 9.0%. But 9.0% shrinks to 5.31% after
+    SARS and 1.71% after inflation, and at that hurdle three of these deals win on cash flow alone and eight win if
+    Cape Town keeps compounding at its ten-year rate. Buy one with cash, or not at all — at 10.75% prime, a bond turns every
+    one of them negative.</p>
+    <p>Cape Town investment brief · 15 November 2026 · prepared by Bruce Wayne for Ricardo · not financial advice · verify every listing
+    before you offer, and get a conveyancer to check the levy schedules.</p>
+  </footer>
+</div>
+</body>
+</html>
