@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cape Town — safety is a number</title>
+<style>
+  :root {
+    --paper:#fdfaf3; --ink:#12203a; --mute:#5c6980; --line:#e2dbcc; --card:#fff;
+    --coral:#c4452f; --gold:#b08324; --teal:#1f6f6b; --green:#2c7a4b; --amber:#a9761a;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink);
+    font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1080px; margin:0 auto; padding:56px 30px 96px; }
+  h1,h2,h3 { font-family:Georgia,"Times New Roman",serif; font-weight:600; letter-spacing:-.2px; }
+  h1 { font-size:44px; line-height:1.12; margin:14px 0 16px; }
+  h2 { font-size:27px; margin:0 0 6px; }
+  h3 { font-size:19px; margin:0 0 8px; }
+  p { margin:0 0 15px; }
+  a { color:var(--coral); text-decoration:none; border-bottom:1px solid rgba(196,69,47,.28); }
+  a:hover { border-bottom-color:var(--coral); }
+  .kicker { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); font-weight:700; }
+  .deck { font-size:19px; line-height:1.58; color:#2a3752; max-width:78ch; margin:0 0 26px; }
+  .rule { height:3px; background:var(--ink); width:64px; margin:0 0 30px; }
+  section { margin:0 0 54px; }
+  .shead { display:flex; align-items:baseline; gap:14px; margin:0 0 18px; border-bottom:2px solid var(--ink); padding-bottom:10px; }
+  .snum { font-family:Georgia,serif; font-size:15px; color:var(--coral); font-weight:700; }
+  .chips { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:0 0 34px; }
+  .chip { background:var(--card); border:2px solid var(--ink); border-radius:3px; padding:16px 16px 14px; }
+  .chip b { display:block; font-family:Georgia,serif; font-size:26px; line-height:1.15; margin:0 0 5px; }
+  .chip span { font-size:12.5px; color:var(--mute); line-height:1.4; display:block; }
+  .chip.hot b { color:var(--coral); }
+  .chip.cool b { color:var(--teal); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:2px solid var(--ink);
+    border-radius:3px; overflow:hidden; font-size:14px; }
+  th { text-align:left; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--mute);
+    padding:11px 10px; border-bottom:2px solid var(--ink); background:#f7f4ee; font-weight:700; }
+  td { padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  .num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .strong { font-weight:700; }
+  .good { color:var(--green); } .bad { color:var(--coral); } .warn { color:var(--amber); }
+  .nm { font-weight:600; }
+  .sub { display:block; font-weight:400; font-size:12px; color:var(--mute); margin-top:2px; }
+  .v { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    padding:3px 8px; border-radius:2px; white-space:nowrap; }
+  .v-good { background:#e6f2e9; color:var(--green); }
+  .v-warn { background:#fbf0dc; color:var(--amber); }
+  .v-bad { background:#fbe7e3; color:var(--coral); }
+  .v-unknown { background:#eceae4; color:var(--mute); }
+  .crow { display:grid; grid-template-columns:150px 1fr 62px 62px; align-items:center; gap:12px;
+    padding:7px 0; border-bottom:1px dotted var(--line); font-size:13.5px; }
+  .crow.ref { opacity:.62; }
+  .cl { text-align:right; color:var(--ink); font-weight:600; }
+  .ctrack { background:#efeade; border-radius:2px; height:17px; overflow:hidden; }
+  .cbar { display:block; height:100%; background:var(--coral); }
+  .crow.ref .cbar { background:var(--teal); }
+  .cv { text-align:right; font-variant-numeric:tabular-nums; color:var(--mute); }
+  .cy { text-align:right; font-variant-numeric:tabular-nums; font-weight:700; }
+  .note { font-size:13px; color:var(--mute); margin:10px 0 0; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .card { background:var(--card); border:2px solid var(--ink); border-radius:3px; padding:22px; }
+  .card.win { border-color:var(--green); box-shadow:6px 6px 0 #e6f2e9; }
+  .card h3 { font-size:21px; }
+  .kv { display:flex; justify-content:space-between; gap:10px; border-bottom:1px dotted var(--line);
+    padding:7px 0; font-size:14px; }
+  .kv:last-of-type { border-bottom:none; }
+  .kv b { font-variant-numeric:tabular-nums; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    padding:4px 9px; border-radius:2px; background:#e6f2e9; color:var(--green); margin:0 0 12px; }
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:16px 0 0; }
+  .tile { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--teal);
+    padding:10px 12px; font-size:13px; }
+  .tile b { display:block; font-size:13.5px; }
+  .tile span { display:block; color:var(--ink); font-variant-numeric:tabular-nums; margin:2px 0 0; }
+  .tile i { font-style:normal; color:var(--mute); font-size:11.5px; }
+  .tile em { font-style:normal; color:var(--mute); font-size:11.5px; }
+  blockquote { margin:0 0 20px; padding:16px 20px; background:#f7f4ee; border-left:4px solid var(--gold);
+    font-family:Georgia,serif; font-size:17.5px; line-height:1.55; }
+  ul.src { list-style:none; padding:0; margin:0; font-size:13.5px; }
+  ul.src li { padding:8px 0; border-bottom:1px dotted var(--line); }
+  .foot { margin-top:44px; padding-top:18px; border-top:2px solid var(--ink); font-size:12.5px; color:var(--mute); }
+  @media (max-width:820px) {
+    .chips,.cards,.tiles { grid-template-columns:1fr 1fr; }
+    h1 { font-size:32px; } .wrap { padding:34px 16px 64px; }
+    table { font-size:12px; } th,td { padding:8px 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker">Cape Town capital · 15 November 2026</div>
+  <h1>Safety is a number.<br>Here it is, next to the yield.</h1>
+  <p class="deck">You did not reject the cheap areas — you asked for nothing dangerous. That is a
+  measurable filter, so I stopped guessing and used SAPS violent-crime rates for all 63 Cape Town
+  precincts. Nine deals, two tests, and the answer changes: <b>2 of 9</b> clear both
+  the bank and the safety line, and one of them is a suburb I had already written off.</p>
+  <div class="rule"></div>
+
+  <div class="chips">
+    <div class="chip cool"><b>2 of 9</b> <span>deals clear both the bank and the safety line</span></div>
+    <div class="chip"><b>1 224</b> <span>violent crimes per 100,000 — the Cape Town median across 63 precincts</span></div>
+    <div class="chip hot"><b>5.31%</b> <span>the bank after tax: 9.00% in, 41% out</span></div>
+    <div class="chip"><b>149</b> <span>violent crimes per 100,000 in Rondebosch — the safest suburb compared, and it still misses the bank</span></div>
+  </div>
+
+  <section>
+    <div class="shead"><span class="snum">01</span><h2>What I got wrong</h2></div>
+    <blockquote>“I didn't reject it all — I asked for it not to be dangerous.”</blockquote>
+    <p>Fair. I heard <i>dangerous</i> and answered <i>unattractive</i>. Then I built a whole second
+    document on the assumption that the only alternative to a Cape Flats flat was a Sea Point one — and
+    that framing was mine, not yours.</p>
+    <p>It also produced a wrong conclusion. My good-area median was 3.85% net against a
+    5.31% after-tax bond, and I read that as “residential loses to the bank.” But a median
+    across fourteen suburbs is not the same thing as a well-chosen unit in an ordinary, safe suburb.
+    Those are two different claims and I conflated them.</p>
+    <p>So here is the filter you actually asked for, applied properly: <b>is the area dangerous, and does
+    the deal still beat the bank?</b> Both questions have real data behind them. Only one of them had
+    been answered.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="snum">02</span><h2>The measure that matters</h2></div>
+    <p>SAPS publishes crime by police precinct. The tempting column is <i>total reported crime</i> — and it
+    is close to useless for personal safety, because a dense shopping strip generates theft and
+    commercial crime all day long without being dangerous to live in.</p>
+    <p><b>Sea Point proves it.</b> It ranks 33rd of 63 on total crime (4,727 per
+    100,000 — grade F) but its violent-contact rate is
+    <b>381</b>, which is the
+    <b>15th safest</b> in the metro. Meanwhile Parow looks milder on paper and carries
+    <b>1320</b> violent crimes per 100,000 — 2.3 times Sea Point's.</p>
+    <p>So the test is <b>violent contact crime per 100,000 residents</b>. The Cape Town median across all
+    63 precincts is <b>1 224</b>. A deal is “safe enough” here if its precinct sits at or below that
+    line — a mid-metro suburb, not a fortress, but not a gamble either.</p>
+    <h3 style="margin-top:26px">The twelve safest precincts in the metro</h3>
+    <div class="tiles">
+        <div class="tile"><b>Table Bay Harbour</b>
+          <span>51 <i>per 100k violent</i></span>
+          <em>#1 of 63</em></div>
+        <div class="tile"><b>Melkbosstrand</b>
+          <span>90 <i>per 100k violent</i></span>
+          <em>#2 of 63</em></div>
+        <div class="tile"><b>Camps Bay</b>
+          <span>91 <i>per 100k violent</i></span>
+          <em>#3 of 63</em></div>
+        <div class="tile"><b>Simon&#x27;s Town</b>
+          <span>100 <i>per 100k violent</i></span>
+          <em>#4 of 63</em></div>
+        <div class="tile"><b>Philadelphia</b>
+          <span>141 <i>per 100k violent</i></span>
+          <em>#5 of 63</em></div>
+        <div class="tile"><b>Rondebosch</b>
+          <span>149 <i>per 100k violent</i></span>
+          <em>#6 of 63</em></div>
+        <div class="tile"><b>Mowbray</b>
+          <span>162 <i>per 100k violent</i></span>
+          <em>#7 of 63</em></div>
+        <div class="tile"><b>Fish Hoek</b>
+          <span>205 <i>per 100k violent</i></span>
+          <em>#8 of 63</em></div>
+        <div class="tile"><b>Gordons Bay</b>
+          <span>259 <i>per 100k violent</i></span>
+          <em>#9 of 63</em></div>
+        <div class="tile"><b>Strandfontein</b>
+          <span>260 <i>per 100k violent</i></span>
+          <em>#10 of 63</em></div>
+        <div class="tile"><b>Pinelands</b>
+          <span>281 <i>per 100k violent</i></span>
+          <em>#11 of 63</em></div>
+        <div class="tile"><b>Kirstenhof</b>
+          <span>301 <i>per 100k violent</i></span>
+          <em>#12 of 63</em></div>
+    </div>
+    <p class="note">Violent contact crime per 100,000 residents, SAPS 2025 release, ranked across all 63
+    City of Cape Town precincts. Table Bay Harbour is a port precinct, not a residential one.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="snum">03</span><h2>The nine deals, scored</h2></div>
+    <p>Same nine properties as before, same costs, same 5.31% after-tax hurdle. Now with the
+    precinct's violent-crime rate beside each one. Sorted by what the yield actually pays you.</p>
+    <table>
+      <thead><tr>
+        <th>Deal</th><th class="num">Price</th><th class="num">Rent/mo</th><th class="num">Gross</th>
+        <th class="num">Net</th><th class="num">Precinct</th><th class="num">Violent/100k</th>
+        <th class="num">Rank</th><th>Verdict</th>
+      </tr></thead>
+      <tbody>
+      <tr class="row-warn">
+        <td class="nm"><a href="https://www.property24.com/for-sale/kalkfontein/kuils-river/western-cape/16175/117804782">Kalkfontein 3-unit house</a>
+          <span class="sub">3 bed · 204 m² · Kuils River</span></td>
+        <td class="num">R550 000</td>
+        <td class="num">R9 000</td>
+        <td class="num">19.6%</td>
+        <td class="num strong">14.40%</td>
+        <td class="num">Kuilsrivier</td>
+        <td class="num">1 684</td>
+        <td class="num">#40</td>
+        <td><span class="v v-warn">Safety fails</span></td>
+      </tr>
+      <tr class="row-unknown">
+        <td class="nm"><a href="https://www.property24.com/for-sale/fisantekraal/cape-town/western-cape/9529/117551672">Fisantekraal 2-bed flatlet</a>
+          <span class="sub">2 bed · None m² · Fisantekraal</span></td>
+        <td class="num">R495 000</td>
+        <td class="num">R6 000</td>
+        <td class="num">14.5%</td>
+        <td class="num strong">9.90%</td>
+        <td class="num">not reported</td>
+        <td class="num">—</td>
+        <td class="num">—</td>
+        <td><span class="v v-unknown">Not measurable</span></td>
+      </tr>
+      <tr class="row-warn">
+        <td class="nm"><a href="https://www.property24.com/for-sale/parklands/blouberg/western-cape/11588/117734257">Parklands flat</a>
+          <span class="sub">2 bed · 61 m² · Blouberg</span></td>
+        <td class="num">R800 000</td>
+        <td class="num">R10 500</td>
+        <td class="num">15.8%</td>
+        <td class="num strong">9.50%</td>
+        <td class="num">Table View</td>
+        <td class="num">1 728</td>
+        <td class="num">#41</td>
+        <td><span class="v v-warn">Safety fails</span></td>
+      </tr>
+      <tr class="row-warn">
+        <td class="nm"><a href="https://www.property24.com/for-sale/parow-valley/parow/western-cape/8189/117544171">Parow Valley flat</a>
+          <span class="sub">2 bed · 73 m² · Parow Valley</span></td>
+        <td class="num">R800 000</td>
+        <td class="num">R9 000</td>
+        <td class="num">13.5%</td>
+        <td class="num strong">7.50%</td>
+        <td class="num">Parow</td>
+        <td class="num">1 320</td>
+        <td class="num">#34</td>
+        <td><span class="v v-warn">Safety fails</span></td>
+      </tr>
+      <tr class="row-good">
+        <td class="nm"><a href="https://www.property24.com/for-sale/brackenfell-central/brackenfell/western-cape/16670/117798968">Brackenfell Central flat</a>
+          <span class="sub">2 bed · 48 m² · Brackenfell</span></td>
+        <td class="num">R899 000</td>
+        <td class="num">R9 500</td>
+        <td class="num">12.7%</td>
+        <td class="num strong">7.20%</td>
+        <td class="num">Brackenfell</td>
+        <td class="num">426</td>
+        <td class="num">#18</td>
+        <td><span class="v v-good">Passes both</span></td>
+      </tr>
+      <tr class="row-warn">
+        <td class="nm"><a href="https://www.property24.com/for-sale/parow-central/parow/western-cape/17457/116812825">Parow Central flat</a>
+          <span class="sub">2 bed · 70 m² · Parow Central</span></td>
+        <td class="num">R850 000</td>
+        <td class="num">R9 000</td>
+        <td class="num">12.7%</td>
+        <td class="num strong">6.50%</td>
+        <td class="num">Parow</td>
+        <td class="num">1 320</td>
+        <td class="num">#34</td>
+        <td><span class="v v-warn">Safety fails</span></td>
+      </tr>
+      <tr class="row-good">
+        <td class="nm"><a href="https://www.property24.com/for-sale/maitland/cape-town/western-cape/9153/117695065">Maitland flat</a>
+          <span class="sub">2 bed · 71 m² · Maitland</span></td>
+        <td class="num">R849 000</td>
+        <td class="num">R8 750</td>
+        <td class="num">12.4%</td>
+        <td class="num strong">5.70%</td>
+        <td class="num">Maitland</td>
+        <td class="num">813</td>
+        <td class="num">#24</td>
+        <td><span class="v v-good">Passes both</span></td>
+      </tr>
+      <tr class="row-bad">
+        <td class="nm"><a href="https://www.property24.com/for-sale/stellendale/kuils-river/western-cape/17516/117440456">Stellendale (Kuils River) flat</a>
+          <span class="sub">2 bed · 40 m² · Kuils River</span></td>
+        <td class="num">R735 000</td>
+        <td class="num">R8 500</td>
+        <td class="num">13.9%</td>
+        <td class="num strong">4.80%</td>
+        <td class="num">Kuilsrivier</td>
+        <td class="num">1 684</td>
+        <td class="num">#40</td>
+        <td><span class="v v-bad">Fails both</span></td>
+      </tr>
+      <tr class="row-bad">
+        <td class="nm"><a href="https://www.property24.com/for-sale/brooklyn/milnerton/western-cape/8005/117659672">Brooklyn (Milnerton) flat</a>
+          <span class="sub">2 bed · 57 m² · Milnerton</span></td>
+        <td class="num">R695 000</td>
+        <td class="num">R7 000</td>
+        <td class="num">12.1%</td>
+        <td class="num strong">3.10%</td>
+        <td class="num">Milnerton</td>
+        <td class="num">2 575</td>
+        <td class="num">#51</td>
+        <td><span class="v v-bad">Fails both</span></td>
+      </tr>
+      </tbody>
+    </table>
+    <p class="note">Net yield is after levies, rates, insurance, maintenance and a vacancy allowance, on
+    the asking price plus transfer costs. Rank is by violent crime across 63 precincts — lower is safer.
+    “Not measurable” means the suburb is too small a share of its precinct to separate out.</p>
+
+    <div class="cards" style="margin-top:22px">
+      <div class="card">
+        <h3>The four that fail on safety</h3>
+        <p style="font-size:14px;margin:0 0 10px">Good yields, above the bank, but above the violent-crime
+        line too:</p>
+        <div class="kv"><span>Kalkfontein 3-unit house</span> <b>14.40% · 1,684/100k</b></div>
+        <div class="kv"><span>Parklands flat</span> <b>9.50% · 1,728/100k</b></div>
+        <div class="kv"><span>Parow Valley flat</span> <b>7.50% · 1,320/100k</b></div>
+        <div class="kv"><span>Parow Central flat</span> <b>6.50% · 1,320/100k</b></div>
+        <p class="note" style="margin-top:10px">Kalkfontein pays 14.40% net and that is
+        genuinely double the bank. It also sits in the bottom third of the metro for violent crime. That
+        is a trade, not a free lunch — and it is your call, not mine to make quietly.</p>
+      </div>
+      <div class="card">
+        <h3>The two that fail on both counts</h3>
+        <p style="font-size:14px;margin:0 0 10px">Stellendale and Brooklyn lose on both counts — below
+        the bank <i>and</i> above the crime line. They are not compromises, they are just worse.</p>
+        <div class="kv"><span>Stellendale (Kuils River)</span> <b>4.80% · 1,684/100k</b></div>
+        <div class="kv"><span>Brooklyn (Milnerton)</span> <b>3.10% · 2,575/100k</b></div>
+        <p class="note" style="margin-top:10px">Brooklyn is the only deal that loses to the bank by more
+        than two points while sitting in the worst-measured fifth of the metro. Drop it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="snum">04</span><h2>What survives both tests</h2></div>
+    <div class="cards">
+      <div class="card win">
+        <div class="badge">Passes both</div>
+        <h3>Brackenfell Central</h3>
+        <p style="font-size:14px">The deal I filed under “cheap areas” is in fact the
+        <b>18th safest precinct in Cape Town</b> — safer on violent crime than
+        Table View, Parow, Milnerton, Kuilsrivier and the city centre. It pays 7.20% net.
+        I was wrong to bundle it with Fisantekraal.</p>
+        <div class="kv"><span>Price</span> <b>R899 000</b></div>
+        <div class="kv"><span>Size</span> <b>48 m² · 2 bed</b></div>
+        <div class="kv"><span>Net yield</span> <b class="good">7.20%</b></div>
+        <div class="kv"><span>Violent crime /100k</span> <b>426</b></div>
+        <div class="kv"><span>Against the bank</span> <b class="good">+1.89% after tax</b></div>
+      </div>
+      <div class="card win">
+        <div class="badge">Passes both</div>
+        <h3>Maitland</h3>
+        <p style="font-size:14px">Mid-table precinct (24th of 63) and the yield
+        clears the bar by a whisker. It is a margin play, not a comfortable one — and the listing's own
+        description says R899 000 against a R849 000 asking price, so confirm the cut before you
+        offer.</p>
+        <div class="kv"><span>Price</span> <b>R849 000</b></div>
+        <div class="kv"><span>Size</span> <b>71 m² · 2 bed</b></div>
+        <div class="kv"><span>Net yield</span> <b class="good">5.70%</b></div>
+        <div class="kv"><span>Violent crime /100k</span> <b>813</b></div>
+        <div class="kv"><span>Against the bank</span> <b class="good">+0.39% after tax</b></div>
+      </div>
+    </div>
+    <p style="margin-top:20px"><b>And one from the “good areas” side reconciles the two documents:</b>
+    Observatory nets 6.79% in a 27th-ranked precinct
+    (941/100k). It is a desirable area, it is not dangerous by the metro's own
+    numbers, and it still clears the bank. So “good area” was never the problem — paying Sea Point prices
+    for Sea Point was.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="snum">05</span><h2>What safety actually costs</h2></div>
+    <p>Here is every deal and the three safest good-area nodes, by violent crime. The red bars are the
+    nine deals; the teal are reference points. The yield column is the price you pay for the bar.</p>
+    <div class="crow" style="border-bottom:2px solid var(--ink);font-size:11px;letter-spacing:.08em;
+      text-transform:uppercase;color:var(--mute);font-weight:700">
+      <span class="cl">Area</span> <span>Violent crime per 100,000 →</span>
+      <span class="cv">rate</span> <span class="cy">net</span>
+    </div>
+      <div class="crow ref">
+        <span class="cl">Rondebosch</span>
+        <span class="ctrack"><span class="cbar" style="width:5.8%"></span></span>
+        <span class="cv">149</span>
+        <span class="cy warn">5.2%</span>
+      </div>
+      <div class="crow ref">
+        <span class="cl">Green Point</span>
+        <span class="ctrack"><span class="cbar" style="width:14.8%"></span></span>
+        <span class="cv">381</span>
+        <span class="cy bad">2.9%</span>
+      </div>
+      <div class="crow ref">
+        <span class="cl">Sea Point</span>
+        <span class="ctrack"><span class="cbar" style="width:14.8%"></span></span>
+        <span class="cv">381</span>
+        <span class="cy bad">3.7%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Brackenfell</span>
+        <span class="ctrack"><span class="cbar" style="width:16.5%"></span></span>
+        <span class="cv">426</span>
+        <span class="cy good">7.2%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Maitland</span>
+        <span class="ctrack"><span class="cbar" style="width:31.6%"></span></span>
+        <span class="cv">813</span>
+        <span class="cy good">5.7%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Parow Valley</span>
+        <span class="ctrack"><span class="cbar" style="width:51.3%"></span></span>
+        <span class="cv">1 320</span>
+        <span class="cy good">7.5%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Parow Central</span>
+        <span class="ctrack"><span class="cbar" style="width:51.3%"></span></span>
+        <span class="cv">1 320</span>
+        <span class="cy good">6.5%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Stellendale</span>
+        <span class="ctrack"><span class="cbar" style="width:65.4%"></span></span>
+        <span class="cv">1 684</span>
+        <span class="cy warn">4.8%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Kalkfontein</span>
+        <span class="ctrack"><span class="cbar" style="width:65.4%"></span></span>
+        <span class="cv">1 684</span>
+        <span class="cy good">14.4%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Parklands</span>
+        <span class="ctrack"><span class="cbar" style="width:67.1%"></span></span>
+        <span class="cv">1 728</span>
+        <span class="cy good">9.5%</span>
+      </div>
+      <div class="crow">
+        <span class="cl">Brooklyn</span>
+        <span class="ctrack"><span class="cbar" style="width:100.0%"></span></span>
+        <span class="cv">2 575</span>
+        <span class="cy bad">3.1%</span>
+      </div>
+    <p class="note">Teal rows are reference suburbs from the good-area set. Metro median is
+    1 224 violent crimes per 100,000.</p>
+    <p style="margin-top:18px"><b>The most useful number on this page:</b>
+    Rondebosch is the 6th safest precinct in Cape Town at
+    149 per 100,000 — and it nets 5.19%, which is
+    <b>−0.12%</b> against the bank. The market prices safety almost
+    exactly to the point where it stops paying. You are not choosing between safe and profitable; you are
+    choosing how much of a 5.31% certainty you want to give up for a number that might be
+    7.20%.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="snum">06</span><h2>Commercial and listed: the safety filter barely applies</h2></div>
+    <p>This is the part that changes the shape of the answer. Personal-safety risk is mostly about
+    <i>being there</i> — viewings, tenant meetings, midnight repairs. You do not live in a commercial unit,
+    a managing agent runs the site, and the tenant signs a three-to-five-year lease and pays the rates,
+    insurance and repairs.</p>
+    <table>
+      <thead><tr><th>Node</th><th class="num">Sale /m²</th><th class="num">Rent /m²</th>
+        <th class="num">Gross</th><th class="num">Net</th><th class="num">Precinct</th></tr></thead>
+      <tbody>
+      <tr>
+        <td class="nm">Woodstock <span class="sub">26 sales · 41 rentals</span></td>
+        <td class="num">R17 524/m²</td>
+        <td class="num">R148/m²</td>
+        <td class="num">10.13%</td>
+        <td class="num strong">8.21%</td>
+        <td class="num">Woodstock precinct</td>
+      </tr>
+      <tr>
+        <td class="nm">Paarden Eiland <span class="sub">3 sales · 42 rentals</span></td>
+        <td class="num">R17 734/m²</td>
+        <td class="num">R134/m²</td>
+        <td class="num">9.07%</td>
+        <td class="num strong">7.30%</td>
+        <td class="num">Milnerton precinct</td>
+      </tr>
+      </tbody>
+    </table>
+    <p class="note">Asking prices and asking rents per square metre, small industrial and mixed-use nodes,
+    Property24 November 2026. Net of a management and vacancy allowance. Personal safety is not the risk
+    here — an empty unit and a tenant who cannot pay are.</p>
+    <p style="margin-top:16px">And the institutions agree with the maths: Spear REIT bought Western Cape
+    offices at a <b>9.67%</b> and <b>8.37%</b> initial yield. That is what
+    real money pays for these buildings — not an asking-price fantasy.</p>
+
+    <h3 style="margin-top:26px">Listed property and index funds — zero personal exposure</h3>
+    <p>The SA REIT sector pays a <b>7.09%</b> forward yield with
+    <b>11.09%</b> distribution growth. The FTSE/JSE SA Listed Property
+    Index returned <b>+4.38%</b> over twelve months — the sector spent that year re-rating,
+    not distributing.</p>
+    <table>
+      <thead><tr><th>Global index fund</th><th class="num">YTD</th><th class="num">1 yr</th>
+        <th class="num">3 yr p.a.</th><th class="num">5 yr p.a.</th></tr></thead>
+      <tbody>
+      <tr><td class="nm">Satrix MSCI World <span class="sub">STXWDM</span></td>
+        <td class="num">+12.31%</td><td class="num">+13.40%</td>
+        <td class="num">+16.41%</td><td class="num strong">+12.46%</td></tr>
+      <tr><td class="nm">Satrix S&P 500 <span class="sub">STX500</span></td>
+        <td class="num">+12.96%</td><td class="num">+12.80%</td>
+        <td class="num">+16.90%</td><td class="num strong">+13.54%</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Annualised, to 31 October 2026. No tenant, no levy, no precinct — and sellable on any
+    Tuesday.</p>
+    <p style="margin-top:16px">The lever is the tax wrapper. A TFSA takes
+    <b>R46 000 a year</b> and <b>R500 000 lifetime</b> from
+    1 March 2026, and taxes nothing inside it. The bond's 9.00% becomes
+    5.31% in your hand; a REIT's 7.09% stays
+    7.09%.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="snum">07</span><h2>What I would do</h2></div>
+    <p><b>If you want one brick, make it Brackenfell.</b> 7.20% net, 426
+    violent crimes per 100,000, +1.89% over the bank after tax. It is the only deal on the
+    list that clears both tests with room on both sides.</p>
+    <p><b>If you want the yield without the worry, buy the listed version.</b> Fill the TFSA first —
+    R46 000 a year, tax-free — then the REIT sector at
+    7.09%. No precinct, no tenant, no 2am phone call.</p>
+    <p><b>If you want commercial, the entry ticket is R1 850 000.</b> The cheapest credible unit in
+    the two nodes is <a href="https://www.property24.com/for-sale/woodstock/cape-town/western-cape/10164/117701557">100 m² at R18 500/m² in Woodstock</a>.
+    Below that size the stock is a parking bay with a storeroom attached.</p>
+    <p><b>What I would not do:</b> pay Sea Point prices for a 3.68% net yield in a precinct that is
+    safe but not free, or take Fisantekraal's 9.90% on a suburb whose crime cannot even be separated
+    from its precinct's. Unmeasurable is a reason to look harder, not a reason to assume the best.</p>
+    <p class="note" style="margin-top:18px">Nothing here is advice on your money. The bank rate is the only
+    number on this page that is guaranteed — everything else is a risk you carry for a price, and the
+    prices move.</p>
+  </section>
+
+  <section>
+    <div class="shead"><span class="snum">08</span><h2>Sources</h2></div>
+    <ul class="src">
+      <li><a href="https://www.property24.com/commercial-property-for-sale/cape-town/western-cape/432">Property24 — Cape Town commercial listings</a></li>
+      <li><a href="https://www.property24.com/for-sale/cape-town/western-cape/432">Property24 — Cape Town residential listings</a></li>
+      <li><a href="https://propertywheel.co.za/2026/09/sa-reits-retreat-in-august-2026-despite-resilient-income-gr">SA REIT Association monthly chart book, via PropertyWheel</a></li>
+      <li><a href="https://sareit.co.za/">SA REIT Association</a></li>
+      <li><a href="https://finance.yahoo.com/quote/STXWDM.JO/performance/">Yahoo Finance — STXWDM performance</a></li>
+      <li><a href="https://finance.yahoo.com/quote/STX500.JO/performance/">Yahoo Finance — STX500 performance</a></li>
+      <li><a href="https://satrix.co.za/fund/mdd/STXWDM">Satrix MSCI World minimum disclosure document</a></li>
+      <li><a href="https://absa.co.za/content/dam/south-africa/absa/pdf/2026/tax-free-savings-account.pdf">Absa tax-free savings account terms, 2026</a></li>
+      <li><a href="https://markets.ft.com/data/indices/tearsheet/summary?s=JSAPY:JNB">FT — FTSE/JSE SA Listed Property Index</a></li>
+      <li><a href="https://www.sars.gov.za/tax-rates/transfer-duty/">SARS transfer duty</a></li>
+      <li><a href="https://www.resbank.co.za/en/home/what-we-do/statistics/key-statistics/selected-historical-rates">SARB selected historical rates</a></li>
+      <li><a href="https://satrix.co.za/fund/mdd/STXPRO">Satrix Property (STXPRO) minimum disclosure document, 30 September 2026</a></li>
+      <li><a href="https://safetybrief.co.za/safest/cape-town">SAPS crime statistics, 2025 — precinct table, violent crime rate per 100,000</a></li>
+      <li><a href="https://www.saps.gov.za/services/crimestats.php">SAPS quarterly crime statistics (source release)</a></li>
+      <li><a href="https://safesuburb.co.za/western-cape/city-of-cape-town/parow/">SafeSuburb — Parow precinct offences and year-on-year change</a></li>
+      <li><a href="https://capetowndata.com/en/reports/crime/blouberg">Cape Town Data — serious violence per 100,000, Table View precinct</a></li>
+    </ul>
+    <div class="foot">
+      Built 15 November 2026 from model_v3.json — a live Property24 scrape of 14 areas plus 17 desirable nodes,
+      the SAPS 2025 precinct release, SARS transfer duty, SARB rates, the SA REIT Association chart book,
+      and fund fact sheets. Every figure on this page is generated from that file by a script; nothing is
+      typed by hand. Listings are asking prices and asking rents and will have moved by the time you read
+      this.
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
