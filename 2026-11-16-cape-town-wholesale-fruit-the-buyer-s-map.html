@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cape Town Wholesale Fruit — the buyer's map</title>
+<style>
+:root{
+  --paper:#fbf8f2; --panel:#f4efe4; --ink:#1b1a17; --muted:#6c655a; --line:#ded5c5;
+  --accent:#a31621; --accent-ink:#fff; --leaf:#1f6f4a; --gold:#8a6212;
+  --th-bg:#1b1a17; --th-ink:#fbf8f2; --zebra:rgba(27,26,23,.05); --cell-line:#e4dccd;
+  --shadow:0 1px 0 rgba(27,26,23,.06), 0 12px 30px -18px rgba(27,26,23,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#131210; --panel:#1b1a17; --ink:#f3ede1; --muted:#a9a094; --line:#332f28;
+    --accent:#ff6f61; --accent-ink:#1a0f0d; --leaf:#79c99e; --gold:#e0b062;
+    --th-bg:#f3ede1; --th-ink:#131210; --zebra:rgba(243,237,225,.06); --cell-line:#332f28;
+    --shadow:0 1px 0 rgba(0,0,0,.5), 0 18px 40px -24px rgba(0,0,0,.8);
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:64px}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:16px/1.62 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;line-height:1.12;margin:0}
+h1{font-size:clamp(2.1rem,5.2vw,3.6rem);letter-spacing:-.02em}
+h2{font-size:clamp(1.45rem,3vw,2.05rem);letter-spacing:-.015em;margin-bottom:.35rem}
+h3{font-size:1.12rem;letter-spacing:-.01em}
+p{margin:.55rem 0 0}
+a{color:var(--accent);text-underline-offset:2px;text-decoration-thickness:1px}
+a:hover{text-decoration-thickness:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+.kicker{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;gap:18px;overflow-x:auto;padding:11px 22px;scrollbar-width:none}
+nav a{font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em;color:var(--muted);text-decoration:none;white-space:nowrap}
+nav a:hover{color:var(--ink)}
+header.hero{padding:64px 0 34px;border-bottom:1px solid var(--line)}
+.hero-grid{display:grid;grid-template-columns:1.55fr .95fr;gap:40px;align-items:end}
+.deck{font-size:1.09rem;color:var(--muted);max-width:44ch;margin-top:14px}
+.stamp{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel);box-shadow:var(--shadow)}
+.stamp .k{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.stamp .v{font:700 15px/1.35 "Iowan Old Style",Georgia,serif;margin-top:6px}
+.stamp .s{font-size:12.5px;color:var(--muted);margin-top:8px}
+.stats{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:34px 0 0;padding:0}
+.stats li{border-top:2px solid var(--ink);padding-top:12px}
+.stats .n{display:block;font:700 clamp(1.55rem,3.4vw,2.15rem)/1 "Iowan Old Style",Georgia,serif;letter-spacing:-.02em}
+.stats .l{display:block;font-size:12.5px;color:var(--muted);margin-top:7px;line-height:1.4}
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+.lede{max-width:66ch;color:var(--muted)}
+.callout{border-left:3px solid var(--accent);background:var(--panel);padding:16px 18px;border-radius:0 12px 12px 0;margin-top:20px}
+.callout b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:26px}
+.card{border:1px solid var(--line);border-radius:14px;padding:20px;background:var(--panel);box-shadow:var(--shadow)}
+.card h3{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.card .price{font:700 1.35rem/1 "Iowan Old Style",Georgia,serif;color:var(--accent);white-space:nowrap}
+.card .sub{font:600 10.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.card p{font-size:14.5px;color:var(--muted)}
+.card p b{color:var(--ink)}
+.tag{display:inline-block;font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:12px 6px 0 0;color:var(--muted)}
+.tag.hot{border-color:var(--accent);color:var(--accent)}
+.tablewrap{overflow-x:auto;margin-top:24px;border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14.5px}
+thead th{background:var(--th-bg);color:var(--th-ink);text-align:left;font:600 10.5px/1 ui-monospace,Menlo,monospace;
+  letter-spacing:.1em;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid var(--line)}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--cell-line);vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td.f{font-weight:650}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td.strong{color:var(--accent)}
+td.muted{color:var(--muted);font-size:13.5px}
+.figure{margin:26px 0 0;border:1px solid var(--line);border-radius:14px;padding:18px 18px 10px;background:var(--panel)}
+.figure figcaption{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:26px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:16px 26px}
+.steps li{counter-increment:s;position:relative;padding-left:40px;font-size:14.8px;color:var(--muted)}
+.steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:26px;height:26px;border-radius:50%;
+  background:var(--ink);color:var(--paper);font:600 12px/26px ui-monospace,Menlo,monospace;text-align:center}
+.steps b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.doors{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+.door{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--panel)}
+.door h3{font-size:1.05rem}
+.door .meta{font:600 11px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.03em;color:var(--muted);margin-top:8px}
+.door p{font-size:14px;color:var(--muted)}
+.door .go{display:inline-block;margin-top:10px;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:2px}
+.check{list-style:none;padding:0;margin:22px 0 0}
+.check li{border-top:1px solid var(--cell-line);padding:12px 0;display:flex;gap:14px;align-items:baseline;font-size:15px}
+.check li:last-child{border-bottom:1px solid var(--cell-line)}
+.check .who{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--accent);min-width:120px}
+.small{font-size:13px;color:var(--muted)}
+.evidence{font-size:13px;color:var(--muted);margin-top:18px}
+.evidence code{font:600 11.5px/1.5 ui-monospace,Menlo,monospace;background:var(--zebra);padding:2px 5px;border-radius:4px}
+footer{padding:34px 0 54px;color:var(--muted);font-size:12.5px}
+@media (max-width:860px){
+  .hero-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .grid2,.grid3,.doors,.steps{grid-template-columns:1fr}
+}
+@media print{
+  nav{display:none} body{background:#fff;color:#000}
+  section{break-inside:avoid;border-color:#ccc}
+  a{color:#000;text-decoration:underline}
+  .card,.door,.figure,.tablewrap,.stamp{box-shadow:none;background:#fff}
+}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a href="#verdict">Verdict</a> <a href="#three">Cherries · Lychees · Mangoes</a> <a href="#oranges">Oranges</a>
+  <a href="#table">Buy today</a> <a href="#ten">Ten more</a> <a href="#calendar">Calendar</a>
+  <a href="#how">How to buy</a> <a href="#doors">Other doors</a> <a href="#calls">This week</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="hero-grid">
+    <div>
+      <div class="kicker">Cape Town · buyer's map · 16 November 2026</div>
+      <h1>The wholesale<br>fruit map</h1>
+      <p class="deck">Cherries, lychees and mangoes at their best price — then oranges, then ten more fruits you can buy in Cape Town this week. Every price below is the actual floor price from the Cape Town Market's own price sheet, run at 11:24 today.</p>
+    </div>
+    <div class="stamp">
+      <div class="k">Today's floor</div>
+      <div class="v">Cape Town Market, Epping</div>
+      <div class="s">110 Gunners Circle, Epping 1 · 021 531 2191<br>Mon–Thu + Fri 05:00–10:00 · Sat 05:00–08:00 · closed Sunday<br>731 priced lines on the sheet today</div>
+    </div>
+  </div>
+  <ul class="stats">
+    <li><span class="n">R67/kg</span> <span class="l">Cherries, Royal Tioga 2 kg tray — retail is R210/kg</span></li>
+    <li><span class="n">R51/kg</span> <span class="l">Mauritius lychees, 2 kg carton — retail R100/kg</span></li>
+    <li><span class="n">R4.37/kg</span> <span class="l">Valencia oranges, 7 kg bag — retail R7.50/kg</span></li>
+    <li><span class="n">R3–9/kg</span> <span class="l">Stone fruit jumble packs: peaches, nectarines, plums, apricots</span></li>
+  </ul>
+</div></header>
+
+<section id="verdict"><div class="wrap">
+  <div class="kicker">The answer</div>
+  <h2>Buy at the market floor, early, with a buyer card</h2>
+  <p class="lede">One place beats every other door in Cape Town for wholesale fruit: the <a href="https://www.ctmarket.co.za/" target="_blank" rel="noopener">Cape Town Market in Epping</a>. It is the only statutory, price-forming fresh produce market in the Western Cape — 5,500 producers deliver there, 8,000 buyers shop there, and the five agencies on the floor set the price the rest of the city follows. A buyer card is free, takes ten minutes and needs only your ID and a photo.</p>
+  <div class="callout">
+    <b>Why it wins on price, not just on choice.</b> The market is a commission floor: you pay the producer's price plus a regulated 12.5% commission that is already in the number you see. Nothing else in the chain adds a retail margin. Today that gap is 2× to 10× on the same fruit — Woolworths charges R210/kg for cherries the floor sells at R67/kg, and R300/kg for blueberries the floor sells at R28/kg.
+  </div>
+  <p class="small" style="margin-top:14px">The plan for this week: register the card, be on the floor at 05:00, buy cherries and lychees at the subtropical agent, take oranges by the 15 kg carton, and take the ten local fruits mostly as jumble packs.</p>
+</div></section>
+
+<section id="three"><div class="wrap">
+  <div class="kicker">What you asked for first</div>
+  <h2>Cherries, lychees, mangoes</h2>
+  <p class="lede">Two of the three are on the floor today at prices no retailer can match. The third — ripe mangoes — has not landed in Cape Town yet, and the honest answer is to wait a fortnight rather than pay an import premium.</p>
+
+  <div class="grid3">
+    <div class="card">
+      <h3>Cherries <span class="price">R67/kg</span></h3>
+      <div class="sub">Royal Tioga · 2 kg tray · today</div>
+      <p><b>Best buy:</b> Royal Tioga trays at R100–R220 a 2 kg tray, average R134.24 — that is R67.12/kg. The premium line, Royal Hazel, is R200 a tray (R100/kg). The value lane is “Cherries Other”: R30–R220 a tray, average R80, or <b>R40/kg</b>.</p>
+      <p><b>Ask for:</b> “Royal Tioga, single-layer, 2 kg, grade 1M.” If you want volume for juice, jam or a buffet, ask what jumble they have.</p>
+      <p><b>When:</b> now to late December. This year's crop is early but thin late-season — Cherry Time reports limited stock by December after a hot, windy spring.</p><p><b>Since 20 October:</b> the same Royal Tioga tray averaged R280.89 then (R140.45/kg). Today it is R134.24 (R67.12/kg). The season opening halved the price — this is the week the waiting paid off.</p>
+      <span class="tag hot">3.1× cheaper than retail</span><span class="tag">peak now</span>
+    </div>
+
+    <div class="card">
+      <h3>Lychees <span class="price">R51/kg</span></h3>
+      <div class="sub">Mauritius · 2 kg carton · today</div>
+      <p><b>Best buy:</b> Mauritius lychees at R100–R120 for a 2 kg carton, average R101.90 — <b>R50.95/kg</b>. The 3.5 kg prepack boxes run R250–R300 (R76.19/kg); the loose carton is the better buy.</p>
+      <p><b>Ask for:</b> “Litchi Mauritius, 2 kg carton, this morning's arrival.” Open one: shells should be pink-red, not brown at the shoulder, and the stem end should still be green.</p>
+      <p><b>When:</b> the season runs October to February and peaks in December. Today's price is early-season; expect the best volume and price in the next three to four weeks.</p>
+      <span class="tag hot">2× cheaper than retail</span><span class="tag">peak December</span>
+    </div>
+
+    <div class="card">
+      <h3>Mangoes <span class="price">wait 2 weeks</span></h3>
+      <div class="sub">no ripe mango line on the floor today</div>
+      <p><b>Today's truth:</b> the only mango on the sheet is green mango for atchar — 3 kg bag at R59.87, or R19.96/kg. Ripe mangoes have not arrived at Epping yet. The Durban floor traded Tommy Atkins at R70–R75 a 2 kg carton on 13 November (R36.56/kg), so that is the price to expect within a fortnight.</p>
+      <p><b>Do this:</b> call Subtropico / Spes Bona on <b>021 532 2213</b> and ask when their first Tommy Atkins lands. Buy 2 kg cartons at R30 or less per kg; drop to Heidi and Kent as the season rolls to February–April.</p>
+      <p><b>Do not</b> buy imported ripe-and-ready mangoes at R33–R50/kg retail — you will pay roughly double for older fruit.</p>
+      <span class="tag">not in season yet</span><span class="tag">first fruit late Nov</span>
+    </div>
+  </div>
+</div></section>
+
+<section id="oranges"><div class="wrap">
+  <div class="kicker">Add oranges</div>
+  <h2>The quiet bargain: oranges under R5/kg</h2>
+  <p class="lede">Eighteen orange lines traded today. Valencias are at the tail of their season and the floor is clearing them. This is the cheapest fruit on the whole sheet per kilogram of food value.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>Valencia <span class="price">R4.37/kg</span></h3>
+      <div class="sub">7 kg bag · today · 8 lines traded</div>
+      <p>Most bags traded between <b>R15 and R42</b>, averaging R30.58 — R4.37/kg. A 15 kg carton is the wholesale play: typical cartons went at R100–R110 (R6.81/kg), and one lot cleared at R50 (R3.33/kg).</p>
+      <p><b>Ask for:</b> “Valencia, 15 kg carton, grade 1M — what's the juice percentage and how old?” Late-season Valencias are best for juice; eat them within ten days.</p>
+    </div>
+    <div class="card">
+      <h3>Navels and Midnights <span class="price">R2.57–5.44/kg</span></h3>
+      <div class="sub">7 kg bags · today</div>
+      <p>Navels are finishing and trading at R26–R40 a 7 kg bag ( <b>R3.93–R5.44/kg</b>). Midnights, the late variety, are R18–R35 a bag (R2.57–R5.00/kg) and one 15 kg carton cleared at R80 (R5.33/kg).</p>
+      <p>Navel is the eating orange, Midnight is the keeper, Valencia is the juicer. At these prices buy all three and stop buying retail oranges for the season.</p>
+      <p class="small">Retail check: Checkers sells 6 kg of oranges for R44.99 — R7.50/kg.</p>
+    </div>
+  </div>
+</div></section>
+
+<section id="table"><div class="wrap">
+  <div class="kicker">Buy today</div>
+  <h2>Fourteen fruits, today's floor price</h2>
+  <p class="lede">Every figure is the average price of that line on the Cape Town Market sheet for 16 November 2026, converted to rand per kilogram by the container mass on the sheet. Retail benchmarks are current shelf prices, used only to show the gap.</p>
+<div class="tablewrap"><table><thead><tr><th>Fruit</th><th>Best line today</th><th>R / kg</th><th>Retail benchmark</th><th>Local source</th></tr></thead><tbody>
+<tr><td class='f'>Cherries</td><td>Royal Tioga, 2 kg tray</td><td class='num strong'>R67.12</td><td class='muted'>R209.98/kg (Woolworths 500 g at R104.99)</td><td class='muted'>Koue Bokkeveld / Ceres</td></tr>
+<tr><td class='f'>Lychees</td><td>Mauritius, 2 kg carton</td><td class='num strong'>R50.95</td><td class='muted'>R99.99/kg (Checkers 1 kg carton)</td><td class='muted'>Tzaneen / Letsitele, Limpopo</td></tr>
+<tr><td class='f'>Oranges</td><td>Valencia, 7 kg bag</td><td class='num strong'>R4.37</td><td class='muted'>R7.50/kg (Checkers 6 kg at R44.99)</td><td class='muted'>Citrusdal / Patensie</td></tr>
+<tr><td class='f'>Mangoes</td><td>no ripe line today (green atchar R19.96)</td><td class='num strong'>—</td><td class='muted'>R35-50/kg loose</td><td class='muted'>Limpopo - lands late Nov</td></tr>
+<tr><td class='f'>Table grapes</td><td>Prime Seedless, 10 x 500 g</td><td class='num strong'>R38.28</td><td class='muted'>R59.99/500 g (Checkers)</td><td class='muted'>Hex River Valley</td></tr>
+<tr><td class='f'>Strawberries</td><td>16 x 250 g box</td><td class='num strong'>R35.78</td><td class='muted'>R162-184/kg (Woolworths)</td><td class='muted'>Polkadraai / Stellenbosch</td></tr>
+<tr><td class='f'>Blueberries</td><td>3 kg single layer</td><td class='num strong'>R16.67</td><td class='muted'>R299.95/kg (Woolworths 200 g)</td><td class='muted'>Ceres / Wolseley</td></tr>
+<tr><td class='f'>Peaches</td><td>7 kg jumble pack</td><td class='num strong'>R4.85</td><td class='muted'>R45-65/kg loose</td><td class='muted'>Ceres / Tulbagh</td></tr>
+<tr><td class='f'>Nectarines</td><td>9 kg jumble pack</td><td class='num strong'>R5.56</td><td class='muted'>R45-70/kg loose</td><td class='muted'>Ceres</td></tr>
+<tr><td class='f'>Plums</td><td>7 kg jumble pack</td><td class='num strong'>R3.92</td><td class='muted'>R40-60/kg loose</td><td class='muted'>Tulbagh / Wolseley</td></tr>
+<tr><td class='f'>Apricots</td><td>9 kg jumble pack</td><td class='num strong'>R3.08</td><td class='muted'>R40-55/kg loose</td><td class='muted'>Klein Karoo / Ceres</td></tr>
+<tr><td class='f'>Avocados</td><td>Hass, 15 kg bag</td><td class='num strong'>R6.67</td><td class='muted'>R55-75/kg (bagged hass retail)</td><td class='muted'>Limpopo / Mpumalanga</td></tr>
+<tr><td class='f'>Pineapples</td><td>Queen Victoria, 20 kg box</td><td class='num strong'>R5.50</td><td class='muted'>R25-35 each</td><td class='muted'>KZN south coast</td></tr>
+<tr><td class='f'>Watermelon</td><td>500 kg bin</td><td class='num strong'>R1.60</td><td class='muted'>R10-15/kg cut or whole</td><td class='muted'>Northern Cape / Free State</td></tr>
+</tbody></table></div>
+  <p class="small" style="margin-top:14px">Read the columns like a trader: the container tells you the volume, the R/kg tells you the value. A 500 kg watermelon bin at R1.60/kg is a party; a 4 kg avocado carton at R35/kg is a restaurant.</p>
+</div></section>
+
+<section id="ten"><div class="wrap">
+  <div class="kicker">Ten more, chosen for Cape Town</div>
+  <h2>What else to put on the bakkie</h2>
+  <p class="lede">Ten fruits that are in season now, grown within a few hours of the city or landed fresh at Epping, and priced so that a household or a kitchen can buy by the box rather than the punnet.</p>
+
+  <div class="grid3">
+    <div class="card"><h3>Table grapes <span class="price">R38/kg</span></h3><div class="sub">Hex River Valley · 10 x 500 g</div>
+      <p>Prime Seedless punnets at R200–R280 a 5 kg box — R38.28/kg. Early Sweet R46/kg, Starlight R60/kg, Red Globe R64/kg. The Hex River season has just opened; sweetness climbs through December.</p></div>
+    <div class="card"><h3>Strawberries <span class="price">R36/kg</span></h3><div class="sub">Polkadraai, Stellenbosch · 16 x 250 g</div>
+      <p>A 4 kg box averages R143 — R35.78/kg, against R162–R184/kg at retail. Picking your own at Polkadraai runs about R28–R44/kg depending on container, and you eat them the same day.</p></div>
+    <div class="card"><h3>Blueberries <span class="price">R17/kg</span></h3><div class="sub">Ceres / Wolseley · 3 kg single layer</div>
+      <p>The single best value line on the sheet today: 3 kg single layer at R50, or R16.67/kg. Prepacked punnets are R85 for 3 kg (R28.37/kg) — still a tenth of the R300/kg retail shelf.</p></div>
+    <div class="card"><h3>Peaches <span class="price">R4.85/kg</span></h3><div class="sub">Ceres / Tulbagh · 7 kg jumble</div>
+      <p>Bonnigold jumble packs at R20–R60 for 7 kg. Trays and punnets of the same fruit cost R16–R27/kg. Jumble means size and colour vary, not that the fruit is bad.</p></div>
+    <div class="card"><h3>Nectarines <span class="price">R5.56/kg</span></h3><div class="sub">Ceres · 9 kg jumble</div>
+      <p>Thirty-nine nectarine lines today — the deepest stone-fruit category on the floor. Yellow-flesh jumble at R50 a 9 kg box; premium punnets R16–R32/kg.</p></div>
+    <div class="card"><h3>Plums <span class="price">R3.92/kg</span></h3><div class="sub">Tulbagh / Wolseley · 7 kg jumble</div>
+      <p>Plum jumble at R20–R50 a 7 kg box. African Rose punnets, the pick of the early plums, are R150 for 8 kg — R18.75/kg and worth it for eating fresh.</p></div>
+    <div class="card"><h3>Apricots <span class="price">R3.08/kg</span></h3><div class="sub">Klein Karoo / Ceres · 9 kg jumble</div>
+      <p>The cheapest stone fruit on the floor. Bulida jumble at R20–R60 for 9 kg; punnet-grade at R60–R70 for 8 kg (R8.12/kg). Buy the jumble for jam, drying and breakfast.</p></div>
+    <div class="card"><h3>Avocados <span class="price">R6.67/kg</span></h3><div class="sub">Limpopo / Mpumalanga · 15 kg bag</div>
+      <p>Hass in 15 kg bags at R100 — R6.67/kg. Fuerte 17 kg bags at R350 (R20.59/kg) and 4 kg cartons at R22.50–R37.50/kg. Late-season fruit: buy firm, ripen at room temperature.</p></div>
+    <div class="card"><h3>Pineapples <span class="price">R5.50/kg</span></h3><div class="sub">KZN south coast · 20 kg box</div>
+      <p>Queen Victoria 20 kg boxes at R110–R160, so R5.50–R8.00/kg for 8–10 pineapples. Retail is R25–R35 each. Ask for “colour 2–3” if you need them to hold a week.</p></div>
+    <div class="card"><h3>Watermelon <span class="price">R1.60/kg</span></h3><div class="sub">Northern Cape / Free State · 500 kg bin</div>
+      <p>Bins traded from R800 to R3,000 today — R1.60 to R6.00/kg. Individual 8 kg melons were R40–R100 each. Split a bin with two neighbours and you have watermelon at potato prices.</p></div>
+  </div>
+
+  <div class="callout" style="margin-top:22px">
+    <b>Two honourable mentions.</b> Lemons are the best-kept secret on the sheet: 15 kg cartons at R30–R70, <b>R2.51/kg</b>, and 7 kg bags at R2.87–R3.71/kg. And spanspek / musk melon boxes traded at R4.55–R12.71/kg — cheaper per kilogram than most vegetables.
+  </div>
+</div></section>
+
+<section id="calendar"><div class="wrap">
+  <div class="kicker">Timing</div>
+  <h2>When each one is worth buying</h2>
+  <p class="lede">Buy the fruit that is in its season and the price falls by itself. The dot is the peak month; November is shaded because that is today.</p>
+  <figure class="figure">
+    <figcaption>Typical South African season by fruit. Where the fruit is already trading at Epping today, the season is confirmed by the floor.</figcaption>
+<svg viewBox="0 0 890 428" width="100%" role="img" aria-labelledby="seasonTitle seasonDesc" xmlns="http://www.w3.org/2000/svg">
+<title id="seasonTitle">South African fruit season calendar</title>
+<desc id="seasonDesc">Fourteen fruits across twelve months. The November column marks today; a dot marks the peak month.</desc>
+<rect x="752" y="40" width="62" height="358" fill="currentColor" opacity="0.10"/>
+<line x1="0" y1="0" x2="0" y2="0" stroke="none"/>
+<text x="163.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">J</text>
+<text x="225.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">F</text>
+<text x="287.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">M</text>
+<text x="349.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">A</text>
+<text x="411.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">M</text>
+<text x="473.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">J</text>
+<text x="535.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">J</text>
+<text x="597.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">A</text>
+<text x="659.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">S</text>
+<text x="721.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">O</text>
+<text x="783.0" y="34" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" opacity="0.95">N</text>
+<text x="845.0" y="34" text-anchor="middle" font-size="11"  fill="currentColor" opacity="0.5">D</text>
+<rect x="0" y="48" width="890" height="25" fill="currentColor" opacity="0.032"/>
+<text x="0" y="62" font-size="12.5" fill="currentColor">Cherries</text>
+<rect x="759" y="52" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="783.0" cy="57" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="87" font-size="12.5" fill="currentColor">Lychees</text>
+<rect x="697" y="77" width="172" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="77" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="845.0" cy="82" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<rect x="0" y="98" width="890" height="25" fill="currentColor" opacity="0.032"/>
+<text x="0" y="112" font-size="12.5" fill="currentColor">Mangoes</text>
+<rect x="759" y="102" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="102" width="234" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="163.0" cy="107" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="137" font-size="12.5" fill="currentColor">Oranges</text>
+<rect x="449" y="127" width="358" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="597.0" cy="132" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<rect x="0" y="148" width="890" height="25" fill="currentColor" opacity="0.032"/>
+<text x="0" y="162" font-size="12.5" fill="currentColor">Table grapes</text>
+<rect x="759" y="152" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="152" width="234" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="163.0" cy="157" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="187" font-size="12.5" fill="currentColor">Strawberries</text>
+<rect x="635" y="177" width="234" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="177" width="48" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="783.0" cy="182" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<rect x="0" y="198" width="890" height="25" fill="currentColor" opacity="0.032"/>
+<text x="0" y="212" font-size="12.5" fill="currentColor">Blueberries</text>
+<rect x="635" y="202" width="234" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="202" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="783.0" cy="207" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="237" font-size="12.5" fill="currentColor">Peaches</text>
+<rect x="759" y="227" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="227" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="845.0" cy="232" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<rect x="0" y="248" width="890" height="25" fill="currentColor" opacity="0.032"/>
+<text x="0" y="262" font-size="12.5" fill="currentColor">Nectarines</text>
+<rect x="759" y="252" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="252" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="845.0" cy="257" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="287" font-size="12.5" fill="currentColor">Plums</text>
+<rect x="759" y="277" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="277" width="172" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="163.0" cy="282" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<rect x="0" y="298" width="890" height="25" fill="currentColor" opacity="0.032"/>
+<text x="0" y="312" font-size="12.5" fill="currentColor">Apricots</text>
+<rect x="759" y="302" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="302" width="48" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="845.0" cy="307" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="337" font-size="12.5" fill="currentColor">Avocados</text>
+<rect x="263" y="327" width="544" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="473.0" cy="332" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<rect x="0" y="348" width="890" height="25" fill="currentColor" opacity="0.032"/>
+<text x="0" y="362" font-size="12.5" fill="currentColor">Pineapples</text>
+<rect x="139" y="352" width="730" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="845.0" cy="357" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="387" font-size="12.5" fill="currentColor">Watermelon</text>
+<rect x="759" y="377" width="110" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<rect x="139" y="377" width="172" height="10" rx="5" fill="#b3261e" opacity="0.85"/>
+<circle cx="163.0" cy="382" r="3.1" fill="#f6efe3" stroke="#7a1a14" stroke-width="1"/>
+<text x="0" y="422" font-size="9.5" fill="currentColor" opacity="0.45">Typical South African season · dot = peak month · shaded column = November</text>
+</svg>
+  </figure>
+  <p class="small" style="margin-top:16px">Practical reading: cherries and lychees are a six-to-ten-week window — buy hard now, freeze or preserve the tail. Stone fruit is entering its peak and will get cheaper into January. Oranges are on the way out; the last good Valencia cartons are on the floor in the next three weeks. Mangoes are the one thing to wait for.</p>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="kicker">Mechanics</div>
+  <h2>How to buy on the floor</h2>
+  <p class="lede">The market rewards the prepared. Ten minutes of admin, then the whole city's produce is open to you at producer prices.</p>
+  <ol class="steps">
+    <li><b>Get the buyer card</b> at the Buyer Information Centre on the trading floor — Mon–Fri 05:00–10:00, Sat 05:00–08:00. Bring your ID, passport or driver's licence. A photo is taken on the spot. First card is free; a replacement is R20.</li>
+    <li><b>Choose your payment lane</b> before you buy: cash at the market banks, a prepaid EFT account, or in-house credit through Epping Finance. Cash is simplest for a first visit.</li>
+    <li><b>Walk the floor, then buy</b>. Produce is displayed per agency. Salesmen answer on source, quality, price and age — ask all four. You may buy from any agency, and you should compare across them before committing.</li>
+    <li><b>Pay, take the docket, load</b>. The salesman books the sale on your card, you pay at the bank, you get a removal docket and a receipt, then you collect from the agency and load at the platform. Porters are independent — agree the fee first.</li>
+    <li><b>Learn two words: single layer and jumble.</b> Single layer and punnet lines are premium, graded and priced accordingly. Jumble packs are the same fruit with cosmetic variation — R3–R9/kg against R16–R32/kg. Buy jumble for juice, jam, drying, buffets and family eating.</li>
+    <li><b>Grade codes matter.</b> 1L, 1M and 1S are size grades within class 1. Ask for 1M for all-round eating, 1L for display and gifting, 1S for lunchboxes and processing.</li>
+    <li><b>Time it.</b> Be there at 05:00 for the best selection; the floor thins by 08:00. Late sales run 10:30–15:00 (to 14:00 on Friday) and clear leftovers cheaper — good for bulk jam fruit, risky for premium cherries.</li>
+    <li><b>Bring the kit.</b> Crates or boxes, a bakkie or a boot with a blanket, cash, and a cooler box for berries and cherries. Nothing on the floor is packed for a hatchback.</li>
+    <li><b>Phone ahead for volume.</b> For a pallet, a bin or a specific grade, call the agency the day before and ask them to hold it. The floor moves fast and the best lots are gone by 06:30.</li>
+    <li><b>Check before you pay.</b> Cherries: green stems, firm skin, no weeping. Lychees: pink-red shells, green stem end, no ferment smell. Mangoes: floral smell at the nose, slight give. Oranges: heavy for their size. Berries: dry, no mould at the bottom of the punnet.</li>
+  </ol>
+  <div class="callout" style="margin-top:24px">
+    <b>The commission, in plain terms.</b> The market is regulated at 12.5% on all produce except potatoes. That commission is charged to the producer, not added to your price — the number you negotiate is the number you pay. Cold rooms hold 800 pallets and the banana rooms ripen 55,000 cartons at a time, so you can buy green and ripen to your own schedule.
+  </div>
+</div></section>
+
+<section id="doors"><div class="wrap">
+  <div class="kicker">If you cannot do 05:00</div>
+  <h2>The other doors, and what each is for</h2>
+  <p class="lede">Five real alternatives, each with a different job. None of them beats the floor on price, but each beats it on hours, convenience or a specific fruit.</p>
+  <div class="doors">
+    <div class="door">
+      <h3>Bellville Market</h3>
+      <div class="meta">Cnr Mark &amp; Landdros St, Bellville 7530 · 021 945 4992<br>Mon–Fri 07:00–19:00 · Sat 07:00–18:00 · public holidays 08:00–15:00</div>
+      <p>The wholesale fruit and vegetable supplier with civilised hours. Bulk ordering lists on the site, delivery available. Use it when you need a box on a Saturday afternoon and the floor is closed.</p>
+      <a class="go" href="https://bellvillemarket.co.za/" target="_blank" rel="noopener">bellvillemarket.co.za ↗</a>
+    </div>
+    <div class="door">
+      <h3>Raw Nutrition</h3>
+      <div class="meta">Unit 5, Grosso Park, 4 BP Road, Montague Gardens · 021 551 9705 · 084 520 1700<br>Delivery R35, five days a week</div>
+      <p>Online wholesale with next-day delivery across the Atlantic Seaboard, CBD, Hout Bay and the northern and southern suburbs. Restaurant supplier since 2010; the practical option for a standing weekly order.</p>
+      <a class="go" href="https://rawnutrition.co.za/" target="_blank" rel="noopener">rawnutrition.co.za ↗</a>
+    </div>
+    <div class="door">
+      <h3>Southern Fruit Growers</h3>
+      <div class="meta">32 Lourensford Road, Somerset West 7130 · 021 852 4012 · info@southernfruit.co.za</div>
+      <p>An APAC-registered fresh produce agent and exotic-fruit wholesaler on the Somerset West side. The door to call for lychees, mangoes and specialty lines when Epping is thin or you are buying on the eastern flank of the city.</p>
+      <a class="go" href="https://southernfruit.co.za/" target="_blank" rel="noopener">southernfruit.co.za ↗</a>
+    </div>
+    <div class="door">
+      <h3>Klondyke Cherry Farm</h3>
+      <div class="meta">R46 Bo-Swaarmoed Road, Ceres · 087 550 0232 · info@klondyke.co.za<br>Picking 08:30–16:15, in season</div>
+      <p>Direct from the Koue Bokkeveld: pick your own at a published R95/kg plus R40 entry. Not cheaper than the floor's R67/kg average, but it is the freshest cherry you can buy in the province, and the farm sells boxes in season.</p>
+      <a class="go" href="https://cherryfarm.co.za/" target="_blank" rel="noopener">cherryfarm.co.za ↗</a>
+    </div>
+    <div class="door">
+      <h3>Polkadraai Farm</h3>
+      <div class="meta">Polkadraai Road, Stellenbosch Arterial · 021 881 3303<br>Daily 09:00–16:00, September to January</div>
+      <p>Strawberry picking on the Cape Flats edge. Containers include the fruit and work out around R28–R44/kg depending on size — cheaper than the market's R36/kg box and picked by you that morning.</p>
+      <a class="go" href="https://polkadraaifarm.co.za/" target="_blank" rel="noopener">polkadraaifarm.co.za ↗</a>
+    </div>
+    <div class="door">
+      <h3>Philippi Agri Hub</h3>
+      <div class="meta">Stock Road, Philippi · run by PEDI</div>
+      <p>The smallholder market on the Flats: the cheapest odd lots in the city, sold by growers who farm within a few kilometres. Quality varies by stall — go early, look at everything, and buy what looks good rather than what is on the list.</p>
+      <a class="go" href="https://pedi.org.za/" target="_blank" rel="noopener">pedi.org.za ↗</a>
+    </div>
+  </div>
+</div></section>
+
+<section id="calls"><div class="wrap">
+  <div class="kicker">This week</div>
+  <h2>Four calls and one early morning</h2>
+  <p class="lede">The whole plan reduces to this. Make the calls today, be on the floor before six.</p>
+  <ul class="check">
+    <li><span class="who">Subtropico</span> <span>021 532 2213 — “When does your first Tommy Atkins land, and what will a 2 kg carton cost?” Also ask for Mauritius litchi cartons and current avocado grades.</span></li>
+    <li><span class="who">RSA Agency</span> <span>021 531 8472 — the volume house. Ask for cherry trays, 15 kg Valencia cartons and the best stone-fruit jumble on the floor.</span></li>
+    <li><span class="who">Fine Bros</span> <span>021 531 6431 — restaurant-grade quality. Ask for single-layer cherries and punnet-grade berries, and what they can hold for you overnight.</span></li>
+    <li><span class="who">Cape Town Market</span> <span>021 531 2191 or info@ctmarket.co.za — confirm Saturday hours and where the buyer card centre sits on the floor before your first visit.</span></li>
+    <li><span class="who">05:00, Monday</span> <span>Card in hand, crates in the boot, cash for the first buy. Cherries and lychees first — they move fastest — then oranges by the carton, then stone fruit by the jumble box, then a watermelon bin to split.</span></li>
+  </ul>
+
+  <div class="callout" style="margin-top:24px">
+    <b>What to expect to spend.</b> A serious first run — 10 kg cherries, 10 kg lychees, 30 kg oranges, 20 kg stone fruit, 10 kg grapes, 5 kg berries and an 8 kg watermelon — comes to about <b>R2,100</b> at today's carton and jumble prices. The same basket at shelf prices is roughly <b>R6,500</b>.
+  </div>
+</div></section>
+
+<section id="sources" style="border-bottom:0"><div class="wrap">
+  <div class="kicker">Evidence</div>
+  <h2>Where the numbers come from</h2>
+  <p class="lede">Prices are not estimates. They are the Cape Town Market's daily statistical prices for 16 November 2026, generated at 11:24:39, all 731 lines read from the published sheet and converted to rand per kilogram by the container mass on that sheet. Retail benchmarks are current published shelf prices, used only to show the spread.</p>
+  <ul class="small" style="margin-top:14px;padding-left:18px">
+    <li>Cape Town Market daily prices, 16/11/2026 — <a href="https://www.ctmarket.co.za/daily-prices/" target="_blank" rel="noopener">ctmarket.co.za/daily-prices</a></li>
+    <li>Buyer card, payment and agency details — <a href="https://www.ctmarket.co.za/im-a-buyer/" target="_blank" rel="noopener">I'm a Buyer</a> and <a href="https://www.ctmarket.co.za/meet-the-agents/" target="_blank" rel="noopener">Meet the Agents</a></li>
+    <li>Cross-market comparison, incl. Durban Tommy Atkins at R36.56/kg on 13 November — <a href="https://www.freshproducemarket.co.za/" target="_blank" rel="noopener">freshproducemarket.co.za</a></li>
+    <li>Cherry season and limited late supply — Cherry Time via <a href="https://bolo.co.za/2026/11/cherry-season-arrives-early-in-the-western-cape-but-supplies-will-be-limited" target="_blank" rel="noopener">bolo.co.za</a></li>
+    <li>Lychee season, Tzaneen / Letsitele and December peak — <a href="https://southafrica.co.za/litchis.html" target="_blank" rel="noopener">southafrica.co.za</a>; retail lychees R99.99/kg at Checkers per <a href="https://www.freshplaza.com/north-america/article/9690961/tight-litchi-supply-heats-up-prices-on-south-african-market/" target="_blank" rel="noopener">FreshPlaza</a></li>
+    <li>Previous edition: <i>Cherries &amp; Strawberries — Cape Town, week of 20 October 2026</i> (this vault, 4.Research) recorded the Royal Tioga tray at R280.89 and the 5 kg strawberry tray at R251.43. Today the same lines are R134.24 and R143.11 — the season has opened and both have fallen.</li>
+    <li>Retail benchmarks — Woolworths berries and cherries shelf prices; Checkers oranges 6 kg at R44.99 and grapes at R59.99/500 g</li>
+    <li>Klondyke rates, Polkadraai hours and prices, Bellville and Raw Nutrition contacts — the operators' own pages, linked above</li>
+  </ul>
+  <p class="evidence">Floor prices move daily and jumble lots are single consignments: treat today's number as the level, and confirm the line with the salesman before you commit to a pallet. Compiled 16 November 2026.</p>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="kicker">Adrianna A · 16 November 2026</div>
+  <p style="margin-top:8px">Prices: Cape Town Market daily statistical prices, 16/11/2026. One document, one source of truth — the sheet is linked above so every figure can be checked.</p>
+</div></footer>
+
+</body>
+</html>
