@@ -48,9 +48,9 @@ font-family:Georgia,serif;font-size:.98rem}
 weekly report, monthly report and quarterly report — filterable by fiscal quarter, with every meeting
 point actionable and every video reviewable by the person who owns it.</p>
 <div class="chips">
-<span class="chip t">7 folders</span> <span class="chip t">65 lists</span>
-<span class="chip">48 fields</span> <span class="chip">8 working views</span>
-<span class="chip c">58 rows seeded for this period</span> <span class="chip">13 units + INF</span></div>
+<span class="chip t">7 folders</span> <span class="chip t">67 lists</span>
+<span class="chip">53 fields</span> <span class="chip">9 working views</span>
+<span class="chip c">126 rows, Nov + Sep + Oct</span> <span class="chip">13 units + INF</span></div>
 <h2>1 · What this had to become</h2>
 <p>Ricardo's brief, 16 November 2026 — four sentences that set the whole build:</p>
 <div class="q">"each department needs to be able to do there standups, weekly reports and monthlies …
@@ -132,7 +132,7 @@ quarters when someone edits a date.</p>
 <tr><td>Month</td><td>dropdown</td><td>January–December, for the monthly roll-up</td></tr>
 <tr><td>Week No</td><td>dropdown 1–52</td><td>the standup column, as the source table has it</td></tr>
 <tr><td>Period Type</td><td>dropdown</td><td>Weekly Standup · Weekly Report · Monthly Report · Quarterly Report · Meeting</td></tr>
-<tr><td>REP Unit</td><td>dropdown</td><td>FIN … NVP — so one view can group all 65 lists by unit without caring which list a row sits in</td></tr></table>
+<tr><td>REP Unit</td><td>dropdown</td><td>FIN … NVP — so one view can group all 67 lists by unit without caring which list a row sits in</td></tr></table>
 <h3>The eight views, live now</h3>
 <p>All eight were created through the API and each was verified by counting the tasks it returns.</p>
 <table><tr><th>View</th><th>Type</th><th>What it does</th><th>Rows</th></tr>
@@ -187,16 +187,45 @@ ride on the <code>Submitted By</code> and <code>Reviewed By</code> fields instea
 <h2>8 · Evidence — what was actually written, read back</h2>
 <table><tr><th>Object</th><th>Before</th><th>After</th><th>How it was verified</th></tr>
 <tr><td>Folders in REP</td><td class="n">6</td><td class="n">7</td><td>+ <code>05 Quarterly Reporting</code>, and <code>05 Knowledge</code> moved to <code>06</code></td></tr>
-<tr><td>Lists in REP</td><td class="n">51</td><td class="n">65</td><td>+ 14 quarterly lists (13 units + INF)</td></tr>
-<tr><td>Field definitions</td><td class="n">10</td><td class="n">48</td><td>38 created, counted by <code>GET /space/…/field</code></td></tr>
-<tr><td>Views</td><td class="n">11</td><td class="n">19</td><td>8 created, each read back by <code>GET /view/{id}/task</code></td></tr>
-<tr><td>Rows seeded</td><td class="n">30</td><td class="n">88</td><td>58 rows: 13 standups, 13 weekly, 14 monthly, 14 quarterly, 4 meeting series</td></tr>
-<tr><td>Field values on a row</td><td class="n">—</td><td class="n">7</td><td>read back on <code>FIN Weekly Report | 2026-11-16</code>: Month, Period Date, Period Type, Quarter, REP Unit, Week No, Year</td></tr>
+<tr><td>Lists in REP</td><td class="n">51</td><td class="n">67</td><td>65 built, then <code>INF Weekly Standup</code> and <code>INF Weekly Report</code> added for the group roll-up</td></tr>
+<tr><td>Field definitions</td><td class="n">10</td><td class="n">53</td><td>counted by <code>GET /space/…/field</code>; last in were <code>Fiscal Year</code>, <code>Source Task</code>, <code>Replay Time</code></td></tr>
+<tr><td>Views</td><td class="n">11</td><td class="n">20</td><td>9 built by API, each proved by the rows it returns</td></tr>
+<tr><td>Rows seeded</td><td class="n">30</td><td class="n">126</td><td>58 for November, 28 backfilled for September and October, 2 INF weekly rows, 7 template carriers, 2 worked examples</td></tr>
+<tr><td>Fiscal year coverage</td><td class="n">0</td><td class="n">88 of 88</td><td>every dated row re-derived from <code>Period Date</code> and re-read: 88 ok, 0 wrong</td></tr>
 </table>
 <p>API calls for the build: <b>586</b> for the first pass, <b>439</b> for the value repair, and every
 non-200 is in <code>rep-apply-log.json</code> and <code>rep-fix-log.json</code>. The one genuine failure was
 <code>PUT /task/{id}/field/{id}</code> → <b>405</b> — ClickUp sets custom field values with
-<code>POST</code>, not <code>PUT</code>, and the 58 rows were repaired in a second pass.</p>
+<code>POST</code>, not <code>PUT</code>, and the seeded rows were repaired in a second pass.</p>
+<h2>10 · The review, and what changed because of it</h2>
+<p>Ten reviewers went over this build, blind to each other: a Codex cross-reference before anything was
+written, four seats before the build, four seats after it, and one adversarial seat that compared the ship
+against the Codex spec line by line. Two of the four read a snapshot taken before the build, so their
+verdicts describe the old REP — those are marked as such. What follows is only what changed the build.</p>
+<table><tr><th>Finding</th><th>Seat</th><th>What changed</th></tr>
+<tr><td><b>The reply was a text field.</b> A text value cannot be authored by the owner, cannot notify, and holds one blob with no history.</td><td>C, D</td><td>Both worked examples now carry <b>real comment threads</b> — a chair's feedback and the owner's reply, each an authored object with a timestamp. <code>Owner Reply</code> stays only as an optional summary.</td></tr>
+<tr><td><b>Provenance was free text</b> — editable by anyone, so an action could be pointed anywhere.</td><td>C, D</td><td><code>Source Task</code> created as a true ClickUp relationship (type <code>tasks</code>) and linked: the action now reads back <code>FIN Weekly Standup | 2026-11-16</code> as an object, not a sentence.</td></tr>
+<tr><td><b>Accountability sat in a custom user field</b> rather than the native assignee, which is what notifies.</td><td>C, D</td><td>Both examples carry <b>Ricardo as native assignee with a native due date</b>. <code>Action Owner</code> survives as a reporting column only.</td></tr>
+<tr><td><b>The fiscal year was doing two jobs.</b> QTR 4 straddles December and January, so a single <code>Year</code> field cannot both sort rows and name the fiscal year.</td><td>B</td><td><code>Fiscal Year</code> added as its own number field, derived from <code>Period Date</code> — never from the <code>Year</code> dropdown. 88 rows corrected and re-read; the new view <code>REP · This Financial Year</code> filters on it.</td></tr>
+<tr><td><b>INF had no weekly roll-up.</b> Thirteen units met, and nothing rolled the group up.</td><td>A</td><td><code>INF Weekly Standup</code> and <code>INF Weekly Report</code> lists created with this week's rows. Standups and weekly reports now return 14 each, not 13.</td></tr>
+<tr><td><b>The template folder was empty.</b> Nothing carried the content contract, so "what a monthly report contains" lived in this document and nowhere else.</td><td>A</td><td>Seven template carriers written into <code>06 Knowledge → REP Report Templates</code> — standup, weekly report, weekly contribution, monthly, quarterly, meeting action, video feedback.</td></tr>
+<tr><td><b>The quarter pack was incomplete.</b> Only November existed, so QTR 3 could not be read as a quarter.</td><td>B</td><td>September and October backfilled: 28 rows across 13 units plus INF.</td></tr>
+<tr><td><b>Views must prove themselves.</b></td><td>A, B</td><td>Nine views, nine counts, including <code>REP · Awaiting Feedback</code> = 1 — the queue proves itself with a live item, not a description.</td></tr>
+<tr><td><b>The status spine cannot be written by the API.</b></td><td>A, D</td><td>Unchanged and admitted: six clicks in Space settings. Until then <code>Feedback State</code> carries the handshake.</td></tr>
+</table>
+<div class="card"><h4>The two-sided handshake — the one decision left open</h4>
+<p>An item now moves <code>Awaiting Reply</code> → <code>Replied</code> → <code>Resolved</code>. The owner sets
+<code>Replied</code>; the reviewer sets <code>Resolved</code>. That costs the reviewer one click per item and buys
+provable closure — an owner can never close their own obligation. The cheaper alternative is that
+<code>Replied</code> closes it, which is one click and an assumption.</p>
+<p><b>Yes</b> = two-sided handshake, nothing closes without the reviewer. <b>No</b> = the owner's reply closes it.</p></div>
+<div class="card"><h4>What is still manual, in full</h4>
+<ol>
+<li><b>Six statuses</b> in Space settings — <code>Not started · In Progress · Submitted · Reviewed · Concluded · Cancelled</code>.</li>
+<li><b>Three probe fields to delete</b> — <code>_probe_field</code>, <code>_probe_num</code>, <code>_probe_rel</code>. The API creates fields but refuses to delete or rename them (<code>404</code>), so they are litter until someone clicks.</li>
+<li><b>The inherited ClickUp default views</b> — Overview, Work, This Week, Everything, Calendar, Waiting On, Ticket Age, Board, Due date, Blocked &amp; waiting. They filter on the old statuses.</li>
+<li><b>Chasing overdue replies</b> — no native reminder exists; it is either a ClickUp Automation or a person opening <code>REP · Awaiting Feedback</code> every Monday.</li>
+</ol></div>
 <h2>9 · How this was checked</h2>
 <p>Three checks ran over the same facts, deliberately blind to each other:</p>
 <ol>
