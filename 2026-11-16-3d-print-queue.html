@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What prints next — the 3D queue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#fdfaf3; --card:#fff; --ink:#12203a; --ink2:#41506b; --line:#e4dccb;
+    --coral:#c2543c; --gold:#a87b2a; --teal:#1f6b63;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink);
+    font:16px/1.6 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-text-size-adjust:100%; padding-bottom:130px; }
+  .wrap { max-width:900px; margin:0 auto; padding:28px 18px 40px; }
+  .kicker { font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--coral); font-weight:600; margin:0 0 10px; }
+  h1 { font-family:"Source Serif 4", Georgia, serif; font-size:clamp(30px,7vw,44px); line-height:1.1; margin:0 0 12px; letter-spacing:-.01em; }
+  .lede { font-size:17px; color:var(--ink2); margin:0 0 6px; }
+  .rule { height:2px; background:var(--ink); opacity:.85; margin:22px 0 0; }
+  .sub { font-size:13px; color:var(--ink2); margin:10px 0 26px; }
+  h2 { font-family:"Source Serif 4", Georgia, serif; font-size:26px; margin:0 0 4px; }
+  h3 { font-family:"Source Serif 4", Georgia, serif; font-size:18px; margin:0 0 8px; }
+  .person { margin:0 0 34px; }
+  .phead { border-top:1px solid var(--line); padding-top:18px; margin-bottom:14px; }
+  .phead p { margin:0; color:var(--ink2); font-size:14px; }
+  .psum { display:inline-block; color:var(--ink); font-weight:600; }
+  .plate { background:var(--card); border:2px solid var(--line); border-radius:12px; padding:16px 16px 10px; margin:0 0 14px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
+  .badge { font-size:12px; font-weight:600; padding:4px 9px; border-radius:999px; background:#f6f1e4; color:var(--ink); border:1px solid var(--line); }
+  .badge.q { background:#eef4f2; color:var(--teal); border-color:#cfe0db; }
+  .models { list-style:none; margin:0; padding:0; }
+  .model { border-top:1px solid var(--line); }
+  .model:first-child { border-top:0; }
+  .model label { display:grid; grid-template-columns:24px 1fr auto; gap:4px 10px; align-items:center; padding:11px 0; cursor:pointer; }
+  .model input { width:20px; height:20px; accent-color:var(--teal); margin:0; grid-row:1 / span 2; align-self:center; }
+  .mname { font-weight:600; font-size:15px; line-height:1.3; grid-column:2; grid-row:1; }
+  .mname a { color:var(--ink); text-decoration:none; border-bottom:1px solid #c9bfa9; }
+  .msize { font-size:12px; color:var(--ink2); grid-column:2; grid-row:2; }
+  .mnums { grid-column:3; grid-row:1 / span 2; display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+  .mg { font-size:13px; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .mt { font-size:14px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .model input:not(:checked) ~ .mname { opacity:.4; text-decoration:line-through; }
+  .model input:not(:checked) ~ .msize, .model input:not(:checked) ~ .mnums { opacity:.35; }
+  .platefoot { font-size:12px; color:var(--ink2); margin:10px 0 6px; border-top:1px solid var(--line); padding-top:8px; }
+  .joblist { list-style:none; margin:6px 0 20px; padding:0; }
+  .joblist li { display:grid; grid-template-columns:1fr auto 22px; gap:2px 12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+  .jname { font-weight:600; font-size:15px; grid-column:1; }
+  .jmeta { grid-column:1; font-size:12px; color:var(--ink2); }
+  .jtime { grid-column:2; grid-row:1 / span 2; font-size:14px; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink); font-weight:600; }
+  .jok { grid-column:3; grid-row:1 / span 2; color:var(--teal); font-weight:700; text-align:right; }
+  .cancel { background:#fbf3ef; border-left:3px solid var(--coral); padding:10px 12px; font-size:13px; color:var(--ink2); border-radius:0 8px 8px 0; margin:0 0 24px; }
+  .lever { background:var(--card); border:2px solid var(--line); border-radius:12px; padding:14px 16px; margin:0 0 12px; }
+  .lever h3 { margin:0 0 4px; font-size:17px; }
+  .lever p { margin:0; font-size:14px; color:var(--ink2); }
+  .lever .save { color:var(--coral); font-weight:600; }
+  footer { margin-top:34px; border-top:2px solid var(--ink); padding-top:14px; font-size:13px; color:var(--ink2); }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:rgba(253,250,243,.98); border-top:2px solid var(--ink); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); backdrop-filter:blur(6px); }
+  .barin { max-width:900px; margin:0 auto; display:flex; gap:12px; align-items:center; }
+  .tot { flex:1 1 auto; min-width:0; font-size:13px; line-height:1.35; color:var(--ink2); }
+  .tot b { font-family:"Source Serif 4", Georgia, serif; font-size:20px; color:var(--ink); }
+  .btns { display:flex; gap:8px; flex:0 0 auto; }
+  button { font:inherit; font-size:13px; font-weight:600; padding:10px 13px; border-radius:9px; border:2px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer; white-space:nowrap; }
+  button.ghost { background:transparent; color:var(--ink); }
+  @media (max-width:560px) {
+    .barin { flex-direction:column; align-items:stretch; gap:8px; }
+    .tot { text-align:center; }
+    .btns { justify-content:center; }
+    button { flex:1; }
+    body { padding-bottom:150px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">Creality Hi · 260 × 260 × 300 · PLA</p>
+  <h1>What prints next</h1>
+  <p class="lede">Six jobs are behind us. Seven beds are left — 14 models, 54.3 hours of machine time, 926 grams of filament.</p>
+  <div class="rule"></div>
+  <p class="sub">Every plate number below is the real slice off the Hi's own profile. Per-model grams and minutes are that plate's real totals split by each mesh's measured volume — close enough to choose with, not a separate slice.</p>
+
+  <h2 style="margin-top:26px">Already printed</h2>
+  <ul class="joblist">
+      <li><span class="jname">Benchy v2 — quality profile gate</span><span class="jmeta">Nov 12 · black PLA</span><span class="jtime">1 h 13 m</span><span class="jok">✓</span></li>
+      <li><span class="jname">Acc 1 — scraper + tool holders</span><span class="jmeta">Nov 13 · black PLA</span><span class="jtime">2 h 47 m</span><span class="jok">✓</span></li>
+      <li><span class="jname">Gianna 3 — star fidget (handle)</span><span class="jmeta">Nov 14 · gold silk</span><span class="jtime">2 h 13 m</span><span class="jok">✓</span></li>
+      <li><span class="jname">D13 1 — armour + 6 hands</span><span class="jmeta">Nov 14 · sapphire silk</span><span class="jtime">2 h 57 m</span><span class="jok">✓</span></li>
+      <li><span class="jname">D13 2 — frame</span><span class="jmeta">Nov 15 · black PLA</span><span class="jtime">2 h 18 m</span><span class="jok">✓</span></li>
+      <li><span class="jname">Acc 2 — litter tray</span><span class="jmeta">Nov 15 · black PLA</span><span class="jtime">6 h 59 m</span><span class="jok">✓</span></li>
+  </ul>
+  <p class="cancel"><b>The one that got away:</b> the Donnie bed was started on Nov 12 and stopped at 8 h 13 m — the longest job of the pack, killed rather than watched. It has not been retried.</p>
+
+<section class="person">
+  <div class="phead">
+    <h2>Donatello</h2>
+    <p>His whole list is one bed. <span class="psum">1 bed · 7 h 31 m · 110 g</span></p>
+  </div>
+  <article class="plate" data-plate="plates-1-donnie">
+    <header>
+      <h3>Donnie — dragon, creeper, cube, llama</h3>
+      <div class="badges">
+        <span class="badge">110 g</span>
+        <span class="badge">7 h 31 m</span>
+        <span class="badge q">41% of the bed</span>
+      </div>
+    </header>
+    <ul class="models">
+      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-1-donnie::01-glorious-baby-dragon"
+                 data-g="18.9" data-s="4673" data-p="donnie">
+          <span class="mname"><a href="https://www.printables.com/model/757123" target="_blank" rel="noopener">Glorious Baby Dragon - Articulated - Print in Place - No Supports - Flexible - Fantasy</a></span>
+          <span class="msize">99 × 155 × 26 mm</span>
+          <span class="mnums"><span class="mg">19 g</span><span class="mt">1 h 18 m</span></span>
+        </label>
+      </li>      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-1-donnie::02-articulated-creeper"
+                 data-g="38.5" data-s="9519" data-p="donnie">
+          <span class="mname"><a href="https://www.printables.com/model/339304" target="_blank" rel="noopener">Articulated Minecraft Creeper: Print-In-Place</a></span>
+          <span class="msize">46 × 98 × 30 mm</span>
+          <span class="mnums"><span class="mg">38 g</span><span class="mt">2 h 39 m</span></span>
+        </label>
+      </li>      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-1-donnie::04-infinity-cube"
+                 data-g="32.4" data-s="8014" data-p="donnie">
+          <span class="mname"><a href="https://www.printables.com/model/928" target="_blank" rel="noopener">Yet Another Fidget Infinity Cube v2</a></span>
+          <span class="msize">81 × 40 × 20 mm</span>
+          <span class="mnums"><span class="mg">32 g</span><span class="mt">2 h 14 m</span></span>
+        </label>
+      </li>      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-1-donnie::05-fortnite-llama"
+                 data-g="19.7" data-s="4869" data-p="donnie">
+          <span class="mname"><a href="https://www.printables.com/model/353" target="_blank" rel="noopener">Fortnite Llama</a></span>
+          <span class="msize">64 × 34 × 90 mm</span>
+          <span class="mnums"><span class="mg">20 g</span><span class="mt">1 h 21 m</span></span>
+        </label>
+      </li>
+    </ul>
+    <p class="platefoot">Tallest part 90 mm · 4 models · one job on the machine</p>
+  </article>
+</section>
+<section class="person">
+  <div class="phead">
+    <h2>Gianna</h2>
+    <p>Two beds — the piggy bank takes one nearly on its own. <span class="psum">2 beds · 13 h 26 m · 288 g</span></p>
+  </div>
+  <article class="plate" data-plate="plates-3-gianna">
+    <header>
+      <h3>Gianna — piggy bank, bracelet, tooth box</h3>
+      <div class="badges">
+        <span class="badge">178 g</span>
+        <span class="badge">8 h 22 m</span>
+        <span class="badge q">34% of the bed</span>
+      </div>
+    </header>
+    <ul class="models">
+      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-3-gianna::04-unicorn-bracelet"
+                 data-g="11.8" data-s="1990" data-p="gianna">
+          <span class="mname"><a href="https://www.printables.com/model/709011" target="_blank" rel="noopener">Lucky Charm Flexi Unicorn Bracelet</a></span>
+          <span class="msize">16 × 199 × 13 mm</span>
+          <span class="mnums"><span class="mg">12 g</span><span class="mt">33 m</span></span>
+        </label>
+      </li>      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-3-gianna::02-unicorn-piggy-bank"
+                 data-g="146.4" data-s="24682" data-p="gianna">
+          <span class="mname"><a href="https://www.printables.com/model/531602" target="_blank" rel="noopener">Unicorn Piggy Bank</a></span>
+          <span class="msize">95 × 135 × 180 mm</span>
+          <span class="mnums"><span class="mg">146 g</span><span class="mt">6 h 51 m</span></span>
+        </label>
+      </li>      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-3-gianna::05-tooth-fairy-box"
+                 data-g="20.3" data-s="3416" data-p="gianna">
+          <span class="mname"><a href="https://www.printables.com/model/952699" target="_blank" rel="noopener">Tooth Fairy Box (Stash Box)</a></span>
+          <span class="msize">110 × 42 × 26 mm</span>
+          <span class="mnums"><span class="mg">20 g</span><span class="mt">57 m</span></span>
+        </label>
+      </li>
+    </ul>
+    <p class="platefoot">Tallest part 180 mm · 3 models · one job on the machine</p>
+  </article>
+  <article class="plate" data-plate="plates-8-gianna-flexi">
+    <header>
+      <h3>Gianna — axolotl + flexi unicorn</h3>
+      <div class="badges">
+        <span class="badge">110 g</span>
+        <span class="badge">5 h 05 m</span>
+        <span class="badge q">48% of the bed</span>
+      </div>
+    </header>
+    <ul class="models">
+      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-8-gianna-flexi::03-flexi-axolotl"
+                 data-g="92.8" data-s="15415" data-p="gianna">
+          <span class="mname"><a href="https://www.printables.com/model/106438" target="_blank" rel="noopener">Flexi Axolotl Minecraft</a></span>
+          <span class="msize">110 × 193 × 70 mm</span>
+          <span class="mnums"><span class="mg">93 g</span><span class="mt">4 h 17 m</span></span>
+        </label>
+      </li>      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-8-gianna-flexi::01-flexi-unicorn"
+                 data-g="17.2" data-s="2857" data-p="gianna">
+          <span class="mname"><a href="https://www.printables.com/model/235226" target="_blank" rel="noopener">Flexi Unicorn</a></span>
+          <span class="msize">106 × 80 × 13 mm</span>
+          <span class="mnums"><span class="mg">17 g</span><span class="mt">48 m</span></span>
+        </label>
+      </li>
+    </ul>
+    <p class="platefoot">Tallest part 70 mm · 2 models · one job on the machine</p>
+  </article>
+</section>
+<section class="person">
+  <div class="phead">
+    <h2>Julie</h2>
+    <p>Four beds, and one of them is the monster. <span class="psum">4 beds · 33 h 18 m · 528 g</span></p>
+  </div>
+  <article class="plate" data-plate="plates-4-julie">
+    <header>
+      <h3>Julie — the 240 mm vase + figurines</h3>
+      <div class="badges">
+        <span class="badge">404 g</span>
+        <span class="badge">26 h 14 m</span>
+        <span class="badge q">28% of the bed</span>
+      </div>
+    </header>
+    <ul class="models">
+      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-4-julie::02-modern-vase"
+                 data-g="363.8" data-s="85030" data-p="julie">
+          <span class="mname"><a href="https://www.printables.com/model/319737" target="_blank" rel="noopener">Modern Vase</a></span>
+          <span class="msize">182 × 82 × 240 mm</span>
+          <span class="mnums"><span class="mg">364 g</span><span class="mt">23 h 37 m</span></span>
+        </label>
+      </li>      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-4-julie::05-cycladic-figurines"
+                 data-g="40.3" data-s="9414" data-p="julie">
+          <span class="mname"><a href="https://www.printables.com/model/31542" target="_blank" rel="noopener">Cycladic Figurines</a></span>
+          <span class="msize">44 × 53 × 80 mm</span>
+          <span class="mnums"><span class="mg">40 g</span><span class="mt">2 h 37 m</span></span>
+        </label>
+      </li>
+    </ul>
+    <p class="platefoot">Tallest part 240 mm · 2 models · one job on the machine</p>
+  </article>
+  <article class="plate" data-plate="plates-5-julie-rose">
+    <header>
+      <h3>Julie — spiral rose vase</h3>
+      <div class="badges">
+        <span class="badge">38 g</span>
+        <span class="badge">1 h 43 m</span>
+        <span class="badge q">15% of the bed</span>
+      </div>
+    </header>
+    <ul class="models">
+      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-5-julie-rose::01-spiral-vase-rose"
+                 data-g="37.6" data-s="6182" data-p="julie">
+          <span class="mname"><a href="https://www.printables.com/model/131488" target="_blank" rel="noopener">Spiral Vase Rose</a></span>
+          <span class="msize">94 × 96 × 84 mm</span>
+          <span class="mnums"><span class="mg">38 g</span><span class="mt">1 h 43 m</span></span>
+        </label>
+      </li>
+    </ul>
+    <p class="platefoot">Tallest part 84 mm · 1 model · one job on the machine</p>
+  </article>
+  <article class="plate" data-plate="plates-6-julie-pen-cup">
+    <header>
+      <h3>Julie — tactile pen cup</h3>
+      <div class="badges">
+        <span class="badge">54 g</span>
+        <span class="badge">3 h 29 m</span>
+        <span class="badge q">16% of the bed</span>
+      </div>
+    </header>
+    <ul class="models">
+      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-6-julie-pen-cup::03-tactile-pen-cup"
+                 data-g="53.8" data-s="12563" data-p="julie">
+          <span class="mname"><a href="https://www.printables.com/model/198024" target="_blank" rel="noopener">Tactile Spiral Vase Pen Cup</a></span>
+          <span class="msize">99 × 99 × 100 mm</span>
+          <span class="mnums"><span class="mg">54 g</span><span class="mt">3 h 29 m</span></span>
+        </label>
+      </li>
+    </ul>
+    <p class="platefoot">Tallest part 100 mm · 1 model · one job on the machine</p>
+  </article>
+  <article class="plate" data-plate="plates-7-julie-column">
+    <header>
+      <h3>Julie — Greek column planter</h3>
+      <div class="badges">
+        <span class="badge">32 g</span>
+        <span class="badge">1 h 52 m</span>
+        <span class="badge q">26% of the bed</span>
+      </div>
+    </header>
+    <ul class="models">
+      <li class="model">
+        <label>
+          <input type="checkbox" class="pick" checked data-id="plates-7-julie-column::04-greek-column-planter"
+                 data-g="32.3" data-s="6695" data-p="julie">
+          <span class="mname"><a href="https://www.printables.com/model/396957" target="_blank" rel="noopener">Greek column Pot and Planter - Ancient design - Vase mode</a></span>
+          <span class="msize">126 × 126 × 109 mm</span>
+          <span class="mnums"><span class="mg">32 g</span><span class="mt">1 h 52 m</span></span>
+        </label>
+      </li>
+    </ul>
+    <p class="platefoot">Tallest part 109 mm · 1 model · one job on the machine</p>
+  </article>
+</section>
+
+  <h2>The levers</h2>
+  <p class="sub" style="margin-bottom:14px">Where the hours actually go, if you want to cut this down.</p>
+  <div class="lever">
+    <h3>Julie's 240 mm vase is the whole ballgame</h3>
+    <p>One model: <b>23 h 37 m, 364 g</b>, and its bed totals <b>26 h 14 m / 404 g</b> once the Cycladic figurines ride along. Drop it and the other thirteen models come to about <b>30 h 38 m</b>.</p>
+  </div>
+  <div class="lever">
+    <h3>Gianna's piggy bank is the second bite</h3>
+    <p><b>6 h 51 m and 146 g</b> of that 8 h 24 m bed. The bracelet and the tooth-fairy box share the same layers almost free.</p>
+  </div>
+  <div class="lever">
+    <h3>Julie's three small beds are cheap, but they are still three jobs</h3>
+    <p>Rose vase, pen cup and column planter — <b>7 h 04 m, 124 g</b> across three beds at 15–26% bed use. Worth printing; not worth queueing ahead of the toys.</p>
+  </div>
+
+  <footer>
+    <p><b>How to change it:</b> untick anything you don't want and the totals at the bottom follow you. Hit <b>Copy the new queue</b> and paste it to me — I re-pack and re-slice the beds you touched, then start the first one.</p>
+    <p style="margin-top:10px">Full pack: <a href="https://targetpraks.github.io/2026-11-10-3d-print-pack-donatello-gianna-julie.html">the print guide</a> · <a href="https://targetpraks.github.io/2026-11-15-dummy-13-build-guide.html">Dummy 13 build</a> · <a href="https://targetpraks.github.io/2026-11-13-creality-hi-accessories.html">the Hi add-ons</a></p>
+  </footer>
+</div>
+
+<div class="bar">
+  <div class="barin">
+    <div class="tot" id="tot">—</div>
+    <div class="btns">
+      <button class="ghost" id="all">All</button>
+      <button id="copy">Copy my picks</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const boxes = [...document.querySelectorAll('.pick')];
+const KEY = 'hi-queue-2026-11-16';
+const totalG = 925.6, totalS = 195325;
+
+function fmt(s) {
+  const m = Math.round(s/60), h = Math.floor(m/60), mm = m%60;
+  return h ? h + ' h ' + String(mm).padStart(2,'0') + ' m' : mm + ' m';
+}
+function plates() {
+  const set = new Set(boxes.filter(b => b.checked).map(b => b.dataset.id.split('::')[0]));
+  return [...set];
+}
+function render() {
+  const on = boxes.filter(b => b.checked);
+  const g = on.reduce((a,b) => a + +b.dataset.g, 0);
+  const s = on.reduce((a,b) => a + +b.dataset.s, 0);
+  const pg = new Set(on.map(b => b.dataset.id.split('::')[0]));
+  const partial = [...pg].filter(p => boxes.some(b => !b.checked && b.dataset.id.startsWith(p + '::'))).length;
+  document.getElementById('tot').innerHTML =
+    '<b>' + fmt(s) + '</b> · ' + Math.round(g) + ' g · ' + on.length + ' models<br>' +
+    pg.size + ' bed' + (pg.size === 1 ? '' : 's') +
+    (partial ? ' · ' + partial + ' to re-slice' : '') +
+    (s < totalS ? ' · saves <b>' + fmt(totalS - s) + '</b>' : '');
+}
+function save() {
+  const off = boxes.filter(b => !b.checked).map(b => b.dataset.id);
+  try { localStorage.setItem(KEY, JSON.stringify(off)); } catch (e) {}
+}
+function load() {
+  try {
+    const off = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+    boxes.forEach(b => { if (off.has(b.dataset.id)) b.checked = false; });
+  } catch (e) {}
+}
+boxes.forEach(b => b.addEventListener('change', () => { save(); render(); }));
+document.getElementById('all').addEventListener('click', () => {
+  const anyOff = boxes.some(b => !b.checked);
+  boxes.forEach(b => b.checked = anyOff);
+  save(); render();
+});
+document.getElementById('copy').addEventListener('click', async () => {
+  const lines = ['3D queue — my picks', ''];
+  let g = 0, s = 0;
+  plates().forEach(p => {
+    const on = boxes.filter(b => b.checked && b.dataset.id.startsWith(p + '::'));
+    if (!on.length) return;
+    const pg = on.reduce((a,b) => a + +b.dataset.g, 0);
+    const ps = on.reduce((a,b) => a + +b.dataset.s, 0);
+    g += pg; s += ps;
+    lines.push(p + '  (' + fmt(ps) + ', ' + Math.round(pg) + ' g)');
+    on.forEach(b => lines.push('   - ' + b.closest('label').querySelector('.mname').innerText));
+  });
+  const off = boxes.filter(b => !b.checked);
+  if (off.length) {
+    lines.push('', 'Dropped:');
+    off.forEach(b => lines.push('   - ' + b.closest('label').querySelector('.mname').innerText));
+  }
+  lines.push('', 'Total: ' + fmt(s) + ' · ' + Math.round(g) + ' g · ' + plates().length + ' beds');
+  const txt = lines.join('\n');
+  try { await navigator.clipboard.writeText(txt); document.getElementById('copy').innerText = 'Copied'; }
+  catch (e) { document.getElementById('copy').innerText = 'Copy failed'; }
+  setTimeout(() => document.getElementById('copy').innerText = 'Copy my picks', 1800);
+});
+load(); render();
+</script>
+</body>
+</html>
