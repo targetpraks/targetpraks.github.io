@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Shared Bruce profile — the skill-reconcile abort, made permanent (INF-246)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="shared-bruce-profile--the-skill-reconcile-abort-made-permanent">Shared Bruce profile — the skill-reconcile abort, made permanent</h1>
+<p>Date: 2026-11-16 · Seat: Bruce Wayne, Chief of Staff (HQ shared services) · Card: INF-246 Parent: INF-244 · Same fault: PAP-1722 (Papa Pasta), INFA-11 (INFX group)</p>
+<h2 id="the-fault-in-one-paragraph">The fault in one paragraph</h2>
+<p>All five Bruce Wayne seats run on one Hermes profile, <code>~/.hermes/profiles/batman</code>. Every Paperclip run re-points three skills into that profile — <code>paperclip</code>, <code>complain</code>, <code>suggestion-box</code> — at the skill store of the company the run belongs to, then asserts the link matches what it just wrote. The repair step only fixed a link whose target had <em>vanished</em>; a live link pointing at another company's copy was left alone, the assertion failed, and the run died about 0.3 s after start, before any model call. No delivery, no cost, nothing louder than a missing briefing.</p>
+<h2 id="what-is-now-in-place">What is now in place</h2>
+<ol type="1">
+<li><strong>The repair, in the running install.</strong> <code>ensurePaperclipSkillSymlink</code> in <code>@paperclipai/adapter-utils/dist/server-utils.js</code> now treats a link into Paperclip's own skill store (any company's materialized version, or an install's bundled copy) as Paperclip-owned state and re-points it at the source the current run resolved. A link to a genuinely foreign directory is still refused.</li>
+<li><strong>An install-time re-apply hook.</strong> <code>com.maio.paperclip-skill-link-patch</code> is a launchd job with <code>WatchPaths</code> on <code>~/.paperclip/cli</code> and <code>~/.paperclip/cli/installs/npm</code>, plus a 30-minute interval. A new Paperclip version landing on disk re-applies the repair within seconds — no manual step after an upgrade. The applier is idempotent and reproduces the known-good patched file byte-for-byte.</li>
+<li><strong>A watchdog that catches the class of failure, not one incident.</strong> <code>com.maio.paperclip-skill-link-health</code> runs every 5 minutes and answers three questions with real code:
+<ul>
+<li>does the install that is current right now carry the repair (and if not, it re-applies it);</li>
+<li>would a run from <strong>any</strong> company survive against the profile as it stands — the real <code>reconcileHermesPaperclipSkills</code> path, run in a throw-away HERMES_HOME with a foreign company's links planted, for every pair of the five company stores;</li>
+<li>has any run died at start-up with the reconcile abort since the last check. Green = exit 0. Red = one Cliq message to Ricardo, deduped to one repeat per six hours.</li>
+</ul></li>
+</ol>
+<h2 id="proof-this-run-real-command-output-not-a-model">Proof this run (real command output, not a model)</h2>
+<ul>
+<li>Cross-company, all ten pairs of the five company stores: <code>ok=true</code> (10/10). The same test against the unpatched file fails with the exact production error: <code>Cannot reconcile Hermes skill "paperclipai/paperclip/suggestion-box" because … is occupied by another installation.</code></li>
+<li>Re-apply hook, end to end: reverted the live install to its pre-patch backup at 08:34:17, health check went <strong>red</strong> (install not-patched + all three cross-company pairs failing); kicked the launchd job at 08:34:18; the file was patched by 08:34:41 and the health check returned <strong>green</strong> with all ten pairs <code>ok=true</code> and the user-directory guard intact.</li>
+<li>Idempotency: applying the applier to a pristine copy of the unpatched file produced a file <strong>identical</strong> to the live patched one; a second run reports <code>already-patched</code> and changes nothing.</li>
+<li>Guard: a link into a plain user directory is still refused (<code>skipped</code>), so the repair never hijacks a skill a person installed by hand.</li>
+</ul>
+<h2 id="what-this-does-not-decide">What this does not decide</h2>
+<p>Giving each seat its own Hermes profile (<code>batman-infinity</code>, <code>batman-papa</code>, …) is still the structural alternative. It removes the shared state outright, but it costs a profile migration per seat, five separate skill libraries or a shared-link trick, and five separate Bruce memories. The fix above removes the <em>failure</em> without that cost, and it covers the other profiles that hit the same assertion (<code>infinity</code>, <code>papa</code>, <code>joe</code>, <code>daniel</code>, <code>inspector</code> all appear in the service log with the same abort) because it lives in the one install they all run from. If Ricardo prefers the profile split later, nothing here blocks it.</p>
+<h2 id="operating-rules-that-fall-out-of-this">Operating rules that fall out of this</h2>
+<ul>
+<li>Do not run <code>POST /api/agents/:id/skills/sync</code> against a Hermes seat. It writes the links to the <em>bundled</em> copy while a run resolves to the <em>company store</em> copy — the same assertion, a different pair of paths.</li>
+<li>After any Paperclip upgrade, the patch job re-applies by itself; if it ever reports <code>anchor-missing</code>, the upstream file changed shape and a person must look. The watchdog says so in plain words.</li>
+<li>Papa Pasta's and INFX group's seats need no separate fix — same install, same profile, same repair. Their boards can close PAP-1722 and INFA-11 against this evidence.</li>
+</ul>
+<h2 id="files">Files</h2>
+<ul>
+<li>Repair applier: <code>~/.config/maio-stack/bin/paperclip-skill-link-patch.mjs</code></li>
+<li>Watchdog: <code>~/.config/maio-stack/bin/paperclip-skill-link-health.mjs</code></li>
+<li>Wrappers: <code>paperclip-skill-link-patch.sh</code>, <code>paperclip-skill-link-health.sh</code> (same directory)</li>
+<li>LaunchAgents: <code>~/Library/LaunchAgents/com.maio.paperclip-skill-link-patch.plist</code>, <code>com.maio.paperclip-skill-link-health.plist</code></li>
+<li>Health state: <code>AI-Drive/Agent-Output/batman/state/paperclip-skill-link-health.json</code></li>
+<li>Logs: <code>~/Library/Logs/com.maio.paperclip-skill-link-{patch,health}.log</code></li>
+<li>Earlier incident record: <code>AI-Drive/Agent-Output/infinity/hotfix-hermes-skill-reconcile-2026-11-16.md</code></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
