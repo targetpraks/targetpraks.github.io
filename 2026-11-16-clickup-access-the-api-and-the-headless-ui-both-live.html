@@ -1,0 +1,200 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClickUp access — Infinity Brands Workspace</title>
+<style>
+ :root{--paper:#fdfaf3;--ink:#12203a;--rule:#e2d9c8;--coral:#c8553d;--muted:#6b6a63}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 -apple-system,Segoe UI,Roboto,sans-serif}
+ .wrap{max-width:900px;margin:0 auto;padding:48px 24px 72px}
+ h1{font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+ h2{font-family:Georgia,serif;font-size:22px;margin:40px 0 4px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+ h3{font-size:16px;margin:22px 0 6px;letter-spacing:.02em;text-transform:uppercase;color:var(--coral)}
+ .sub{color:var(--muted);font-size:14px;margin-bottom:26px}
+ .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 8px}
+ .card{background:#fff;border:2px solid var(--rule);border-radius:10px;padding:12px 14px}
+ .card b{display:block;font-family:Georgia,serif;font-size:26px;line-height:1.1}
+ .card span{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+ table{width:100%;border-collapse:collapse;margin:10px 0 6px;background:#fff;border:2px solid var(--rule)}
+ th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+     padding:9px 10px;border-bottom:2px solid var(--rule)}
+ td{padding:9px 10px;border-bottom:1px solid #f0e9dc;vertical-align:top;font-size:14px}
+ tr:last-child td{border-bottom:none}
+ .n{text-align:right;font-variant-numeric:tabular-nums;font-family:Georgia,serif;font-size:17px}
+ .sm{font-size:13px;color:#3b4a63}
+ .id{font:11px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;color:#9a9384}
+ code{font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#fff;border:1px solid var(--rule);
+       border-radius:5px;padding:1px 5px}
+ pre{background:#fff;border:2px solid var(--rule);border-radius:10px;padding:14px 16px;overflow-x:auto;
+      font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+ .ok{color:#1f6b4a;font-weight:600} .no{color:#a3312a;font-weight:600}
+ a{color:#1c4f8f}
+ footer{margin-top:40px;border-top:2px solid var(--ink);padding-top:12px;color:var(--muted);font-size:13px}
+</style></head><body><div class="wrap">
+
+<h1>ClickUp access — two lanes, both live</h1>
+<div class="sub">Infinity Brands Workspace · Business plan · verified 2026-11-16 16:19 SAST</div>
+
+<div class="cards">
+  <div class="card"><b>15</b> <span>spaces</span></div>
+  <div class="card"><b>126</b> <span>folders</span></div>
+  <div class="card"><b>441</b> <span>lists</span></div>
+  <div class="card"><b>16</b> <span>fields on a standard list</span></div>
+</div>
+
+<h2>What was proven, not assumed</h2>
+<table>
+ <tr><th>Capability</th><th>Lane</th><th>Result</th></tr>
+ <tr><td>Read the whole tree — spaces, folders, lists, statuses</td><td>API</td><td class="ok">verified (441 lists)</td></tr>
+ <tr><td>Create a task, read it back, update name + status</td><td>API</td><td class="ok">verified</td></tr>
+ <tr><td>Write custom fields (dropdown option ids)</td><td>API</td><td class="ok">verified</td></tr>
+ <tr><td>Comment on a task</td><td>API</td><td class="ok">verified</td></tr>
+ <tr><td>Read docs, views (incl. dashboards), goals, fields</td><td>API</td><td class="ok">verified</td></tr>
+ <tr><td>Drive the signed-in UI: navigate, read, click, screenshot</td><td>Headless Chrome</td><td class="ok">verified (list view rendered)</td></tr>
+ <tr><td>Create or edit task statuses</td><td>UI only</td><td class="no">no API route (404)</td></tr>
+ <tr><td>Create / rename / delete custom fields, edit dropdown options</td><td>UI only</td><td class="no">no API route (401/405)</td></tr>
+ <tr><td>Dashboards, automations, sharing a space with a team</td><td>UI only</td><td class="no">no API route (404)</td></tr>
+</table>
+<p class="sm">Nothing was written and left behind: every probe task was created in an empty template list and deleted in the same run — the list reads back empty.</p>
+
+<h2>Lane 1 — the API: <code>clickup</code></h2>
+<p>One command on the PATH, token read from the profile secret (never printed, never in a report).</p>
+<pre>clickup me                         # who + workspace + plan
+clickup tree --lists               # every space, folder and list with ids
+clickup lists "BU 1 FIN"           # lists in one space, ids included
+clickup tasks &lt;list_id&gt; --all      # tasks, paging through 100 at a time
+clickup fields &lt;list_id&gt;           # custom fields + dropdown option ids
+clickup create-task &lt;list_id&gt; --name "…" --status "Open" --desc "…"
+clickup update-task &lt;task_id&gt; --status "in review"
+clickup set-field &lt;task_id&gt; &lt;field_id&gt; &lt;option_id&gt;
+clickup comment &lt;task_id&gt; "text"
+clickup raw GET space/901211093186   # anything not wrapped yet</pre>
+<p class="sm">Reference for the calls above: <a href="https://developer.clickup.com/reference/createtask">create a task</a> ·
+<a href="https://developer.clickup.com/reference/gettask">get a task</a> ·
+<a href="https://developer.clickup.com/reference/setcustomfieldvalue">set a custom field value</a> ·
+<a href="https://developer.clickup.com/reference/createtaskcomment">comment on a task</a> ·
+<a href="https://developer.clickup.com/reference/getspace">get a space (statuses live here)</a> ·
+<a href="https://developer.clickup.com/reference/getspaceviews">get space views</a> ·
+<a href="https://developer.clickup.com/reference/createlist">create a list</a> ·
+<a href="https://developer.clickup.com/reference/createfolder">create a folder</a>.</p>
+
+<h3>Where the API bites</h3>
+<p class="sm">Every one of these was hit while proving this lane today, not copied from a blog.</p>
+<ul>
+ <li>Statuses are <b>per Space</b>, not per list — read <code>GET /space/&lt;id&gt;</code> → <code>statuses[]</code> before sending a status, or ClickUp answers <code>Status does not exist</code>.</li>
+ <li>A dropdown field takes the <b>option id</b> on write and returns the option's <b>order index</b> on read. Resolve labels off <code>type_config.options[]</code>.</li>
+ <li>Field writes are <code>POST /task/&lt;id&gt;/field/&lt;field_id&gt;</code>. <code>PUT</code> answers 405.</li>
+ <li>429 is normal on bulk runs: pace ~0.4 s and back off 6 + 3i seconds, ~8 attempts.</li>
+ <li>Space creation via API lands <b>shared</b> unless you <code>PUT</code> <code>{"private": true}</code> and re-read it.</li>
+</ul>
+
+<h2>Lane 2 — the UI, headless: <code>cu-ui</code></h2>
+<p>The statuses, fields, dashboards and sharing that the API refuses are all reachable: a Chrome runs against a
+copy of Ricardo's own ClickUp session — cookies and local storage copied out of his Chrome profile — so no
+password is typed and his real browser is untouched.</p>
+<pre>cu-ui ensure            # start headless Chrome with the signed-in profile
+cu-ui open &lt;url&gt;        # open a tab and wait for it to load
+cu-ui eval "document.body.innerText"   # read the page
+cu-ui click "&lt;selector&gt;"
+cu-ui shot /tmp/x.png    # screenshot for the record
+cu-ui stop</pre>
+<p class="sm">Session profile: <code>~/.config/maio-stack/clickup-chrome</code> · debug port 9333 · driver: node + CDP, no dependencies.</p>
+
+<h2>The workspace, as read today</h2>
+<table>
+ <tr><th>Space</th><th class="n">Folders</th><th class="n">Lists</th><th>Statuses</th></tr>
+ <tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211092559"><b>REP - Reporting &amp; Notes</b></a><div class="id">901211092559</div></td>
+        <td class="n">7</td><td class="n">67</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211092557"><b>BU 1 FIN - Finance</b></a><div class="id">901211092557</div></td>
+        <td class="n">14</td><td class="n">42</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093181"><b>BU 2 HRM - Human Resources</b></a><div class="id">901211093181</div></td>
+        <td class="n">16</td><td class="n">52</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093182"><b>BU 3 ADM - Administration</b></a><div class="id">901211093182</div></td>
+        <td class="n">13</td><td class="n">32</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093186"><b>BU 4 ITC - Information Technology</b></a><div class="id">901211093186</div></td>
+        <td class="n">16</td><td class="n">47</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093187"><b>BU 5 MKT - Marketing</b></a><div class="id">901211093187</div></td>
+        <td class="n">15</td><td class="n">44</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093191"><b>BU 6 SAL - Sales</b></a><div class="id">901211093191</div></td>
+        <td class="n">10</td><td class="n">35</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211092560"><b>BU 7 Brand EXP</b></a><div class="id">901211092560</div></td>
+        <td class="n">12</td><td class="n">48</td>
+        <td class="sm">Open · blocked · waiting · in review · in progress · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211092555"><b>BU 8 Brand TLF</b></a><div class="id">901211092555</div></td>
+        <td class="n">11</td><td class="n">37</td>
+        <td class="sm">Open · blocked · waiting · in review · in progress · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/1501000000000696"><b>BU 9 Brand PPP</b></a><div class="id">1501000000000696</div></td>
+        <td class="n">4</td><td class="n">15</td>
+        <td class="sm">to do · complete</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093195"><b>FXS - INFX Solutions</b></a><div class="id">901211093195</div></td>
+        <td class="n">3</td><td class="n">4</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093196"><b>FXL - INFX Labs</b></a><div class="id">901211093196</div></td>
+        <td class="n">3</td><td class="n">8</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/1501000000000694"><b>NVP - Nova Property</b></a><div class="id">1501000000000694</div></td>
+        <td class="n">2</td><td class="n">6</td>
+        <td class="sm">to do · complete</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093531"><b>MANCO</b></a><div class="id">901211093531</div></td>
+        <td class="n">0</td><td class="n">2</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+<tr><td><a href="https://app.clickup.com/4627083/v/o/s/901211093532"><b>EXCO</b></a><div class="id">901211093532</div></td>
+        <td class="n">0</td><td class="n">2</td>
+        <td class="sm">Open · in progress · in review · waiting · blocked · completed</td></tr>
+</table>
+
+<h2>The brief fields, with ids</h2>
+<p class="sm">Live custom fields inherited by a standard BU list (list <code>901223607980</code>). These are the ids the API and the automation need.</p>
+<table>
+ <tr><th>Field</th><th>Type</th><th>Options</th></tr>
+ <tr><td><b>Function</b><div class="id">092fa01f-4fba-4e5b-a881-e83a74f8c95c</div></td><td class="sm">drop_down</td>
+        <td class="sm">Operations, Finance, People, Marketing, Sales, Technology, Brand, Client Service, Reporting …</td></tr>
+<tr><td><b>Brand</b><div class="id">26141310-8c2f-463b-8185-3d076463c40f</div></td><td class="sm">drop_down</td>
+        <td class="sm">EXP, TLF, PPP, DID, FXS, FXL, ALL</td></tr>
+<tr><td><b>First Response At</b><div class="id">2c10ccc9-1671-487c-b74f-c81df7f536c8</div></td><td class="sm">date</td>
+        <td class="sm"></td></tr>
+<tr><td><b>Store / Client Code</b><div class="id">34a9b743-3f02-4428-b759-d7353375900a</div></td><td class="sm">drop_down</td>
+        <td class="sm">EXP, TLF, PPP, DID</td></tr>
+<tr><td><b>Business Unit</b><div class="id">5f03c736-0fb8-4595-b85b-dee099bcb1a0</div></td><td class="sm">drop_down</td>
+        <td class="sm">FIN, HRM, ADM, ITC, MKT, SAL, BND1, BND2, FXS …</td></tr>
+<tr><td><b>Requested By</b><div class="id">7ee96901-a64b-4c09-9e1f-696289f7d8d0</div></td><td class="sm">users</td>
+        <td class="sm"></td></tr>
+<tr><td><b>Breach Reason</b><div class="id">839bfc91-4589-4c84-8ddd-ee449c00e0c8</div></td><td class="sm">drop_down</td>
+        <td class="sm">No response, Late response, Customer delay, Scope change, Escalated</td></tr>
+<tr><td><b>SLA Class</b><div class="id">86fc83f4-75a9-4b9b-af38-bb68785f83f5</div></td><td class="sm">drop_down</td>
+        <td class="sm">Gold, Black, Silver</td></tr>
+<tr><td><b>Engagement Tier</b><div class="id">96d2c9a1-c4ba-4bf4-945c-b00c4f28293e</div></td><td class="sm">drop_down</td>
+        <td class="sm">HOF, ZOR, COR, ZEE</td></tr>
+<tr><td><b>Priority</b><div class="id">acbb08e0-fd57-4899-9c16-85a39b47e0f8</div></td><td class="sm">drop_down</td>
+        <td class="sm">High, Medium, Low</td></tr>
+<tr><td><b>Department</b><div class="id">b667ff9c-9361-4582-b4c3-87790750207f</div></td><td class="sm">drop_down</td>
+        <td class="sm">FIN, HRM, ADM, ITC, MKT, SAL, BND1, BND2, FXS …</td></tr>
+<tr><td><b>Resolved At</b><div class="id">c8163730-dfc6-4b87-b092-f00dcfaeab0a</div></td><td class="sm">date</td>
+        <td class="sm"></td></tr>
+<tr><td><b>First Response Due</b><div class="id">d32cca03-e622-4a11-b520-d8381f7fd8c7</div></td><td class="sm">date</td>
+        <td class="sm"></td></tr>
+<tr><td><b>Escalation Owner</b><div class="id">df5f7f5a-6109-439f-a447-bd875c1f6bb0</div></td><td class="sm">users</td>
+        <td class="sm"></td></tr>
+<tr><td><b>Work Format</b><div class="id">ee7ef83e-3500-4c6f-b8f7-acd7c31aeeac</div></td><td class="sm">drop_down</td>
+        <td class="sm">Briefed-In, Daily, Recurring, Reporting, Projects / Ad-hoc, Meeting Action</td></tr>
+<tr><td><b>Service Tier</b><div class="id">ff2063a3-fa28-41b2-b71a-0f9b5b75e433</div></td><td class="sm">drop_down</td>
+        <td class="sm">Gold, Black, Silver</td></tr>
+</table>
+
+<h2>What this buys</h2>
+<ul>
+ <li>Any task, field or comment change in the workspace is now a command — no clicking.</li>
+ <li>Bulk work (a whole list, a whole space) is a script, with a read-back proving the result.</li>
+ <li>The handful of things ClickUp keeps in the UI — statuses, field definitions, dashboards, sharing — are
+ still doable, by the agent, in the signed-in headless browser.</li>
+</ul>
+
+<footer>Built from live API reads on 2026-11-16 16:19 SAST. Owner: Ricardo Maio · ricardom@infinitybrands.co.za,
+sole member of Infinity Brands Workspace (<span class="id">4627083</span>) · plan Business.</footer>
+</div></body></html>
