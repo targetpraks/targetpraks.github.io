@@ -1,0 +1,1424 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>NVP — Making ClickUp the home of the Novas Prop property record</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="nvp--making-clickup-the-home-of-the-novas-prop-property-record">NVP — Making ClickUp the home of the Novas Prop property record</h1>
+<p><strong>Status: PROPOSED — for Ricardo's approval.</strong> Prepared 19 November 2026 by Adrianna A. Nothing has been created, changed or moved in the ClickUp space; this document is the plan and the evidence behind it.</p>
+<h2 id="at-a-glance">At a glance</h2>
+<ul>
+<li>The Novas Prop document is a <strong>status register</strong>, not a document store. It tracks 68 statutory lines across 6 owned properties plus one tenancy page, but holds <strong>22 documents that are actually in hand</strong> and links the rest out to WorkDrive.</li>
+<li>It is <strong>stale</strong>: last edited 21 September 2026, and the property pages were last touched between December 2025 and September 2026, while every sale card in ClickUp carries a November or December 2026 deadline.</li>
+<li>The ClickUp space holds <strong>27 cards and no documents at all</strong> — no Doc, no register, no property record, and only two statuses (<code>to do</code>, <code>complete</code>).</li>
+<li><strong>None of the 27 cards can be closed from the document.</strong> Fourteen are informed by it, seven expose a line the document never tracks, four have history only, two are process work. The certificate itself is never in the document.</li>
+<li>What I recommend: <strong>six register lists, six documents and two templates</strong> in ClickUp, fed by a one-off migration of 223 rows, with one hard closing rule — no certificate file, no closure.</li>
+</ul>
+<p>[TOC]</p>
+<h2 id="1-what-i-read">1. What I read</h2>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>What it holds</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ClickUp space <strong>NVP - Nova Property</strong> (<code>1501000000000694</code>)</td>
+<td>6 lists, 27 tasks, 0 documents</td>
+<td>read through the ClickUp v2 API</td>
+</tr>
+<tr>
+<td>Superhuman Docs <strong>Novas Prop</strong> (<code>FcrBMP9M31</code>, owner Jaques Mulder)</td>
+<td>22 pages, 20 data tables, 6 properties + Bloom tenancy</td>
+<td>34 209 characters of content + tables</td>
+</tr>
+<tr>
+<td>WorkDrive</td>
+<td>the certificate PDFs themselves</td>
+<td>referenced by link only; not opened by this review</td>
+</tr>
+</tbody>
+</table>
+<p>The document was read page by page and table by table over the Superhuman Docs MCP (server v38.0.3), not by eye from the browser: <code>content_read</code> on 22 pages, then <code>table_rows_read</code> on all 20 grids. The ClickUp side was read with <code>/space/</code>, <code>/space/{id}/list</code>, <code>/list/{id}/task?include_closed=true</code>, <code>/task/{id}</code> and <code>/task/{id}/comment</code>, plus <code>/api/v3/workspaces/4627083/docs</code> for a document count.</p>
+<h2 id="2-the-document-measured">2. The document, measured</h2>
+<p>68 statutory rows, 73 maintenance entries, 72 monthly utility rows and 4 lease rows. The structure is consistent and it is genuinely useful — it is the closest thing to a property record the business has.</p>
+<table>
+<thead>
+<tr>
+<th>Register</th>
+<th>Rows</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Statutory documentation (6 property pages)</td>
+<td>68</td>
+<td>title deed, COCs, occupational certificate, insurance, lease, inspections</td>
+</tr>
+<tr>
+<td>Repairs and maintenance (7 pages)</td>
+<td>73</td>
+<td>date, description, cost, supplier, before/after photos</td>
+</tr>
+<tr>
+<td>Monthly utility bills (6 pages)</td>
+<td>72</td>
+<td>bill, amount, paid date, proof of payment, COE balance</td>
+</tr>
+<tr>
+<td>Lease register (Active Rental Properties)</td>
+<td>4</td>
+<td>property, start, end, rent, escalation</td>
+</tr>
+</tbody>
+</table>
+<p>Money recorded: <strong>R528,206.58</strong> of repairs, maintenance and fit-out spend (R110,804.74 of it in 2026, and including R74 222.13 of Bloom paediatric fit-out quotes and payments) and <strong>R372,686.33</strong> of municipal bills for 2026, with 41 of 72 rows carrying a paid date and a proof of payment.</p>
+<h3 id="21-the-statutory-register-line-by-line">2.1 The statutory register, line by line</h3>
+<p>Every property page has the same shape, which is why this migrates cleanly. The colours are the doc's own status language, normalised into six values.</p>
+<p style="font-size:12px;color:#334155;margin:8px 0"><span style="background:#dcfce7;color:#14532d;padding:2px 7px;border-radius:3px">held</span> <span style="background:#fef3c7;color:#78350f;padding:2px 7px;border-radius:3px">held but defective</span> <span style="background:#fed7aa;color:#7c2d12;padding:2px 7px;border-radius:3px">link broken</span> <span style="background:#dbeafe;color:#1e3a8a;padding:2px 7px;border-radius:3px">in progress</span> <span style="background:#fecaca;color:#7f1d1d;padding:2px 7px;border-radius:3px">missing</span> <span style="background:#f1f5f9;color:#334155;padding:2px 7px;border-radius:3px">not applicable</span></p>
+
+<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0">
+<thead><tr style="background:#1f2a37;color:#f8fafc">
+<th style="text-align:left;padding:7px 8px">Document line</th>
+<th style="padding:7px 6px;text-align:center;font-weight:600">Frances</th>
+<th style="padding:7px 6px;text-align:center;font-weight:600">Bushwillow</th>
+<th style="padding:7px 6px;text-align:center;font-weight:600">Samuel</th>
+<th style="padding:7px 6px;text-align:center;font-weight:600">Batavia</th>
+<th style="padding:7px 6px;text-align:center;font-weight:600">Riley</th>
+<th style="padding:7px 6px;text-align:center;font-weight:600">Trichardt</th>
+</tr></thead><tbody>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Title deed</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Bond / bond cancellation</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Electrical COC</td>
+<td style="padding:5px 6px;text-align:center;background:#fed7aa;color:#7c2d12;border-bottom:1px solid #e2e8f0;font-size:11.5px">link broken</td>
+<td style="padding:5px 6px;text-align:center;background:#dbeafe;color:#1e3a8a;border-bottom:1px solid #e2e8f0;font-size:11.5px">in progress</td>
+<td style="padding:5px 6px;text-align:center;background:#dbeafe;color:#1e3a8a;border-bottom:1px solid #e2e8f0;font-size:11.5px">in progress</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fed7aa;color:#7c2d12;border-bottom:1px solid #e2e8f0;font-size:11.5px">link broken</td>
+<td style="padding:5px 6px;text-align:center;background:#fef3c7;color:#78350f;border-bottom:1px solid #e2e8f0;font-size:11.5px">defective</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Gas COC</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Solar PV COC</td>
+<td style="padding:5px 6px;text-align:center;background:#fef3c7;color:#78350f;border-bottom:1px solid #e2e8f0;font-size:11.5px">defective</td>
+<td style="padding:5px 6px;text-align:center;background:#dbeafe;color:#1e3a8a;border-bottom:1px solid #e2e8f0;font-size:11.5px">in progress</td>
+<td style="padding:5px 6px;text-align:center;background:#dbeafe;color:#1e3a8a;border-bottom:1px solid #e2e8f0;font-size:11.5px">in progress</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Occupational certificate</td>
+<td style="padding:5px 6px;text-align:center;background:#dbeafe;color:#1e3a8a;border-bottom:1px solid #e2e8f0;font-size:11.5px">in progress</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;background:#dbeafe;color:#1e3a8a;border-bottom:1px solid #e2e8f0;font-size:11.5px">in progress</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Current lease</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Future lease</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Incoming inspection</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Outgoing inspection</td>
+<td style="padding:5px 6px;text-align:center;background:#dbeafe;color:#1e3a8a;border-bottom:1px solid #e2e8f0;font-size:11.5px">in progress</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#fed7aa;color:#7c2d12;border-bottom:1px solid #e2e8f0;font-size:11.5px">link broken</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+<td style="padding:5px 6px;text-align:center;background:#f1f5f9;color:#334155;border-bottom:1px solid #e2e8f0;font-size:11.5px">not applicable</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Insurance schedule</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Beetle certificate</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Water / plumbing certificate</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;background:#fecaca;color:#7f1d1d;border-bottom:1px solid #e2e8f0;font-size:11.5px">missing</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Fire equipment COC</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;background:#dcfce7;color:#14532d;border-bottom:1px solid #e2e8f0;font-size:11.5px">held</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+</tr>
+<tr>
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Compliance certificate (unspecified)</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+<td style="padding:5px 6px;text-align:center;background:#fef3c7;color:#78350f;border-bottom:1px solid #e2e8f0;font-size:11.5px">defective</td>
+<td style="padding:5px 6px;text-align:center;color:#94a3b8;border-bottom:1px solid #e2e8f0">—</td>
+</tr>
+<tr style="background:#0f172a1a">
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-style:italic">Electric fence COC</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+</tr>
+<tr style="background:#0f172a1a">
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-style:italic">Approved building plans</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+</tr>
+<tr style="background:#0f172a1a">
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-style:italic">Rates clearance certificate</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+</tr>
+<tr style="background:#0f172a1a">
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-style:italic">HOA compliance certificate</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+</tr>
+<tr style="background:#0f172a1a">
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-style:italic">Levy clearance</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+</tr>
+<tr style="background:#0f172a1a">
+<td style="padding:5px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-style:italic">FICA / OTP / conveyancer pack</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+<td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
+</tr>
+</tbody></table>
+
+<p><strong>22 of 68</strong> lines are held and clean. <strong>17 are missing</strong>, <strong>7 are in progress</strong>, <strong>3 are held but defective</strong> (an unsigned solar COC, an expired compliance certificate, a fake COC) and <strong>3 point at a dead link</strong>. 16 do not apply.</p>
+<p>Bloom Peadiatric has a page but no statutory table: it is a tenancy inside 11B Riley Road, not a separate erf, so it belongs in the lease and fit-out registers rather than the document register.</p>
+<h3 id="22-six-sale-pack-lines-the-document-never-tracks">2.2 Six sale-pack lines the document never tracks</h3>
+<p>This is the gap that matters for the three sales. There is no column, row or note for any of these, on any property page:</p>
+<table>
+<thead>
+<tr>
+<th>Line the conveyancer will ask for</th>
+<th>In the document?</th>
+<th>What that costs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Electric fence COC</td>
+<td>no line, anywhere</td>
+<td>the Samuel maintenance log proves a fence exists (energizer replaced 2025-11-28, R4 110)</td>
+</tr>
+<tr>
+<td>Approved building plans</td>
+<td>no line, anywhere</td>
+<td>two cards exist and one is chasing a wrong-erf drawing</td>
+</tr>
+<tr>
+<td>Rates clearance certificate</td>
+<td>no line; only the monthly bills</td>
+<td>the bills prove payments, never the certificate</td>
+</tr>
+<tr>
+<td>HOA compliance certificate</td>
+<td>no line, anywhere</td>
+<td>Bushwillow only; the card is flying blind</td>
+</tr>
+<tr>
+<td>Levy clearance</td>
+<td>no line, anywhere</td>
+<td>Bushwillow only</td>
+</tr>
+<tr>
+<td>FICA, OTP and the conveyancer pack itself</td>
+<td>no line, anywhere</td>
+<td>nothing records what has been handed over</td>
+</tr>
+</tbody>
+</table>
+<h3 id="23-where-the-document-contradicts-itself">2.3 Where the document contradicts itself</h3>
+<p>Three lease rows say the tenant is still in place when the notes say they have gone. A register that disagrees with its own notes cannot be trusted as the source of an answer:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Lease end in the register</th>
+<th>What the note says actually happened</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bushwillow</td>
+<td>31 March 2027</td>
+<td>vacated 12 July 2026 by agreement; exit inspection 13 July</td>
+</tr>
+<tr>
+<td>17 Frances Street</td>
+<td>30 September 2026</td>
+<td>notice not to renew given; outgoing inspection due 1 October</td>
+</tr>
+<tr>
+<td>11 Samuel Street</td>
+<td>30 November 2026</td>
+<td>termination notice received 5 August for end of August 2026</td>
+</tr>
+</tbody>
+</table>
+<p>The rent roll is also short. Five leases are documented (Frances, Bushwillow, Samuel, Batavia, Bloom) but the portfolio table carries four rows — Batavia and Bloom appear only on their own pages — and one of those four, <em>INF Office Space</em> at R20 815, matches no documented lease at all. Bloom's lease is R14 650 a month. That row needs a name against it before anyone quotes a rent roll to a buyer.</p>
+<h2 id="3-the-clickup-space-measured">3. The ClickUp space, measured</h2>
+<table>
+<tbody>
+<tr>
+<td>Lists</td>
+<td>6, all folderless: HOF Briefed-In (18 cards), Maintenance Projects (6), HOF Projects (2), HOF Recurring (1), Property Projects (0), Capex Projects (0)</td>
+</tr>
+<tr>
+<td>Tasks</td>
+<td>27, every one of them <code>to do</code>; 0 complete</td>
+</tr>
+<tr>
+<td>Due dates</td>
+<td>27 cards dated, 0 already overdue, 4 due within seven days</td>
+</tr>
+<tr>
+<td>Documents</td>
+<td><strong>0</strong> — the workspace holds 78 ClickUp Docs and not one belongs to this space</td>
+</tr>
+<tr>
+<td>Statuses</td>
+<td>2 (<code>to do</code>, <code>complete</code>) — no way to say <em>requested</em>, <em>received</em> or <em>verified</em></td>
+</tr>
+<tr>
+<td>Members</td>
+<td>6: Ricardo Maio, Pamela Fourie, Thembi Butler, Ntombifuthi Nkambule, Sindiso Sibanda, Superman</td>
+</tr>
+</tbody>
+</table>
+<p>Two people are named as accountable on the cards and <strong>have no seat in the space</strong>, so the card says so instead of assigning them: <strong>Chiseke Phiri-Massiye</strong> (rates clearance, conveyancer packs, the document register) and <strong>Jaques Mulder</strong> (solar, electrical, electric fence, garage, electricity supply). Both exist in the workspace — IDs 105744006 and 105744011 — they are simply not members of this private space. That is a ten-second fix, and 16 cards name one of them in their notes while being unable to assign them.</p>
+<p>The two-status space is the deeper problem. A compliance document moves through <em>asked for → received → checked → filed</em>, and the document's free-text notes are exactly where those four states ended up. Moving the notes into ClickUp without splitting them into statuses just moves the fog.</p>
+<h2 id="4-the-finding-no-card-can-be-closed-from-the-document">4. The finding: no card can be closed from the document</h2>
+<table>
+<thead>
+<tr>
+<th>Verdict</th>
+<th>Cards</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔵 Doc informs</td>
+<td>14</td>
+<td>the doc gives the status, the link or the defect; the certificate still has to be obtained</td>
+</tr>
+<tr>
+<td>🟠 Doc gap</td>
+<td>7</td>
+<td>the document has no line for this at all — the card is chasing something nobody is tracking</td>
+</tr>
+<tr>
+<td>⚪ History only</td>
+<td>4</td>
+<td>the doc holds an older maintenance entry, nothing about the current state</td>
+</tr>
+<tr>
+<td>🟣 Process</td>
+<td>2</td>
+<td>not a document task; the doc is the input, not the answer</td>
+</tr>
+<tr>
+<td><strong>Closeable today</strong></td>
+<td><strong>0</strong></td>
+<td>nothing in the document is a certificate a conveyancer would accept</td>
+</tr>
+</tbody>
+</table>
+<p>That last line is the point of this PRD. The document answers <em>where are we</em> very well — better than any of the cards — but it stores <strong>links and sentences</strong>, and a sale needs <strong>files</strong>. Every card on the board is right to stay open. What is wrong is that the answer to each one lives in a different place from the card.</p>
+<h2 id="5-card-by-card">5. Card by card</h2>
+<p>All 27 cards, grouped by what the document does for them. Owner and due date are the card's own.</p>
+<h3 id="large_blue_circle-doc-informs--14-cards">🔵 Doc informs — 14 cards</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<thead><tr style="background:#1f2a37;color:#f8fafc">
+<th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Bushwillow - electrical Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc links an existing electrical COC and notes &#x27;New COC currently in Process&#x27;. It confirms no valid certificate is held, matching B11-T2722 (R14 980, in progress).</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The signed certificate from COC Specialists. The doc&#x27;s file is the superseded one.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Bushwillow - rates and utilities clearance plus conveyancer pack</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-14</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Card says &#x27;Ekurhuleni account for Erf 128&#x27;. The doc&#x27;s Bushwillow utility ledger is City of Johannesburg account 557860344, paid Jan-Aug 2026 with POPs on file. Card municipality is wrong; the payment history is real evidence.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Rates clearance certificate at transfer; the pack itself. Correct the municipality on the card.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Bushwillow - solar PV Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc: &#x27;COC - Solar | Find out who did it to get a copy | New COC currently in Process&#x27;. No installer named, no certificate, no quote.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Installer name and quote, then the certificate. Nothing in the doc shortens this.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - electrical Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc&#x27;s link cell is the word &#x27;Link&#x27; with no URL and no notes - a dead placeholder. It confirms nothing usable is filed, which is why no live instruction exists.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Fresh instruction to COC Specialists; quote approved before work starts.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - occupational certificate concluded</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc: &#x27;In Process - followed up again with Nomusa on 25 Aug. Awaiting feedback.&#x27; The card&#x27;s current position is copied from this exact line, so the doc is the source and adds nothing newer.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">A written outcome from the council (certificate or confirmation none is required). Three months of no answer is the finding.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - rates and utilities clearance plus conveyancer pack</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-14</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc: Ekurhuleni account, Jan-Aug 2026 bills paid (R45 399 billed in the period), POPs filed. Nothing shows a clearance certificate.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Rates clearance certificate and the assembled conveyancer pack.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - solar PV Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc holds the solar COC file and states the defect in one line: &#x27;There are no signatures on this certificate&#x27;. That is the whole reason the card is open.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">A signed certificate from the installer. The doc already names the exact fault to fix.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - electric fence Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The maintenance log proves an electric fence exists: 2025-11-28 &#x27;Replacement of Electric Fence Energizer&#x27; R4 110 (CMS). So the answer is not &#x27;no fence&#x27; - a COC is required.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Electric fence COC from an accredited installer.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - electrical Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc: electrical COC linked but &#x27;In process of being updated&#x27;, matching B11-T2723 (R11 720, in progress).</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Signed certificate. Payment proof is not compliance.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - rates and utilities clearance plus conveyancer pack</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-14</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc: Ekurhuleni account, Jan-Aug 2026 paid (R55 042 billed), July-August payments recent. No clearance certificate, no municipal valuation recorded.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Rates clearance, municipal valuation, and the pack.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - re-run deeds search and record the registered owner</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-11-26</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc: &#x27;Title Deed | None | Unable to find any records on the drives&#x27;. That says the copy is missing, not who owns the erf - it cannot answer the question.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Deeds office / Windeed printout naming the registered owner, deed number and date.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - restore the electricity supply</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-11-24</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc shows the municipal account is live and paid to August 2026 - so this is not a billing disconnect, it is on-site supply. The doc has no field for supply status.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Add &#x27;Power supply: on/off&#x27; to the property register; contractor repair and paid invoice.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - solar PV Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Doc: &#x27;COC - Solar | None | In process of being updated&#x27;. No installer, no serial numbers, no certificate.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Certificate with panel/inverter/battery serials, or a certifying quote. The 3 Nov battery condition note is not in the doc.</td>
+</tr>
+<tr style="border-left:4px solid #2563eb">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Nova Property - one document register per house with a fixed sale-readiness checklist</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The doc IS a per-house register - 6 property pages with an 11-13 line statutory table each (68 rows). But 6 of the 13 sale-pack lines do not exist in it at all.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Migrate it into ClickUp with the missing lines added; this is the card the PRD retires.</td>
+</tr>
+</tbody></table>
+### 🟠 Doc gap — 7 cards
+
+<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<thead><tr style="background:#1f2a37;color:#f8fafc">
+<th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
+<tr style="border-left:4px solid #d97706">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Bushwillow - HOA compliance certificate and levy clearance</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Pamela Fourie, Thembi Butler<br><span style="color:#64748b">2026-12-09</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">No HOA or levy line exists anywhere in the doc - not for Bushwillow or any of the seven properties.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Add HOA compliance + levy clearance as register lines; request both from Bushwillow Park HOA.</td>
+</tr>
+<tr style="border-left:4px solid #d97706">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Bushwillow - electric fence Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The doc has no electric fence line for any property, so it cannot say whether a fence exists at Erf 128.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Physical check first: fence present or not. Then COC or dated photos.</td>
+</tr>
+<tr style="border-left:4px solid #d97706">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Bushwillow - obtain the approved building plans for Erf 128</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-11-27</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">No plans line in the doc. The card&#x27;s own note (a wrong-erf drawing was filed) is the only record of the attempt.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Add &#x27;Approved building plans&#x27; as a register line; buy the HOA copy at R150 or lodge a council request.</td>
+</tr>
+<tr style="border-left:4px solid #d97706">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - electric fence Certificate of Compliance issued and filed</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">No electric fence line in the doc and no fence work in the maintenance log.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Physical check, then COC or dated photos.</td>
+</tr>
+<tr style="border-left:4px solid #d97706">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - verify and file the recovered registered plan set</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-11-27</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">No plans line in the doc. The recovered set (signed 11 Dec 2025) is not recorded anywhere in the property page.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Add &#x27;Approved building plans&#x27; line; verify stamp, drawing numbers, OM-043/OM-046, then file.</td>
+</tr>
+<tr style="border-left:4px solid #d97706">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">NOVA: 17 Frances Snag</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-11-19</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">No snag list, no Harcourt reference and no agent detail anywhere in the doc.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Snag capture with the Harcourt agent; add &#x27;Snag list&#x27; and &#x27;Agent&#x27; to the register.</td>
+</tr>
+<tr style="border-left:4px solid #d97706">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - obtain the approved building plans for Erf 306</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-12-04</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">No plans line in the doc; the 15 Oct plans hunt is recorded only on the card.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Add the plans line; council request or retrospective approval path.</td>
+</tr>
+</tbody></table>
+### ⚪ History only — 4 cards
+
+<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<thead><tr style="background:#1f2a37;color:#f8fafc">
+<th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
+<tr style="border-left:4px solid #64748b">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Bushwillow - pool cleaned, shocked and the deck decision taken</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Pamela Fourie, Thembi Butler<br><span style="color:#64748b">2026-12-09</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Maintenance log: 2025-11-10 &#x27;New Pool Pump Inlet Cover&#x27; R2 050 with pump-running videos. History only - no current water condition, no deck decision.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Before/after photos, water test, and Ricardo&#x27;s deck decision in writing.</td>
+</tr>
+<tr style="border-left:4px solid #64748b">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - garage fully operational with video proof</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Thembi Butler<br><span style="color:#64748b">2026-11-28</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Maintenance log 2025-05-09: &#x27;Garage Key Release System&#x27; R1 100, with the note that there is no side door and you enter through the roof when power trips. Explains the fault, does not fix it.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Repair and a video of one full open/close cycle.</td>
+</tr>
+<tr style="border-left:4px solid #64748b">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">17 Frances Street - pool cleaned, shocked and the deck decision taken</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Pamela Fourie, Thembi Butler<br><span style="color:#64748b">2026-12-09</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Maintenance log: garden and pool service R1 900/month to October 2025, last entry 2025-09-30. Nothing since the tenant left.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Current clean and water test; deck decision.</td>
+</tr>
+<tr style="border-left:4px solid #64748b">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">11 Samuel Street - pool cleaned, shocked and the deck decision taken</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Pamela Fourie, Thembi Butler<br><span style="color:#64748b">2026-12-09</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Maintenance log: 2025-10-10 &#x27;Garden Cleanup &amp; Pool Cleanup&#x27; R2 500. No deck quotes, no current condition.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Current clean and water test; the deck decision (quotes were only obtained 9 Nov).</td>
+</tr>
+</tbody></table>
+### 🟣 Process — 2 cards
+
+<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<thead><tr style="background:#1f2a37;color:#f8fafc">
+<th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
+<tr style="border-left:4px solid #7c3aed">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Nova Property - stop closing compliance cards without the certificate attached</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Pamela Fourie, Thembi Butler<br><span style="color:#64748b">2026-11-30</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The doc itself carries three proofs of the pattern: Riley&#x27;s compliance certificate marked &#x27;Expired&#x27;, Trichardt&#x27;s electrical COC marked &#x27;The attached COC is fake&#x27;, Frances&#x27; solar COC &#x27;no signatures&#x27;.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">A 90-day audit of closed cards with evidence, then the closing rule enforced by a required field.</td>
+</tr>
+<tr style="border-left:4px solid #7c3aed">
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a;font-weight:600">Nova Property - weekly sale-readiness stand-up</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#334155;font-size:11.5px">Pamela Fourie, Thembi Butler<br><span style="color:#64748b">2026-11-23</span></td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Not a document task. The doc is the input to the stand-up: each of the 7 property pages carries the status called out in the note. Once the register lives in ClickUp, the note is a saved view, not a manual read of Coda.</td>
+<td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The four consecutive weekly notes in #EXCO NOVA PROP.</td>
+</tr>
+</tbody></table>
+### What the assessment changes on the board
+
+<p>Three corrections and one addition, all small:</p>
+<ol type="1">
+<li><strong>Bushwillow is City of Johannesburg, not Ekurhuleni.</strong> The card says 'the Ekurhuleni account for Erf 128'; the doc's own proof-of-payment files are <code>CITY OF JOBURG 557860344</code>. Chase the wrong municipality and the clearance certificate never arrives.</li>
+<li><strong>Samuel has an electric fence.</strong> The card offers 'dated photos showing no electric fence' as an acceptable close. The maintenance log records an energizer replacement on 28 November 2025, R4 110. A COC is required, not a photo.</li>
+<li><strong>Frances' solar COC is not missing, it is unsigned.</strong> That is a five-minute conversation with the installer, not a new inspection.</li>
+<li><strong>Add one card that does not exist</strong>: <code>Bushwillow / Frances / Samuel — assemble and deliver the conveyancer pack</code>. The three 'rates and utilities clearance plus conveyancer pack' cards each hide two jobs: clear the municipal account, then deliver a pack. They are different owners and different evidence.</li>
+</ol>
+<h2 id="6-the-three-sales-what-the-conveyancer-needs">6. The three sales: what the conveyancer needs</h2>
+<p>For each sale house, the line a transferring attorney will ask for, what exists today and where it is. Status comes from the document as classified in §2.1.</p>
+<h3 id="17-frances-street-dunvegan">17 Frances Street, Dunvegan</h3>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Status in the doc</th>
+<th>Where it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title Deed</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Attached</td>
+</tr>
+<tr>
+<td>Bond Agreement</td>
+<td><span style="background:#f1f5f9;color:#334155;padding:1px 6px;border-radius:3px;font-size:11.5px">not applicable</span></td>
+<td>Not bonded</td>
+</tr>
+<tr>
+<td>COC - Electrical</td>
+<td><span style="background:#fed7aa;color:#7c2d12;padding:1px 6px;border-radius:3px;font-size:11.5px">link broken</span></td>
+<td>—</td>
+</tr>
+<tr>
+<td>COC - Gas</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Attached</td>
+</tr>
+<tr>
+<td>COC - Solar</td>
+<td><span style="background:#fef3c7;color:#78350f;padding:1px 6px;border-radius:3px;font-size:11.5px">held, defective</span></td>
+<td>There are no signatures on this certificate</td>
+</tr>
+<tr>
+<td>Occupational Certificate</td>
+<td><span style="background:#dbeafe;color:#1e3a8a;padding:1px 6px;border-radius:3px;font-size:11.5px">in progress</span></td>
+<td>Followed up again with Nomusa on 25 Aug. Awaiting feedback.</td>
+</tr>
+<tr>
+<td>Lease Agreement (01 Oct 25 to 30 Sep 2026)</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Active LA until 30 September 2026. Notice not to renew given</td>
+</tr>
+<tr>
+<td>Future Lease Agreement</td>
+<td><span style="background:#f1f5f9;color:#334155;padding:1px 6px;border-radius:3px;font-size:11.5px">not applicable</span></td>
+<td>Will not be leased again after tenant moves out. To be sold.</td>
+</tr>
+<tr>
+<td>Incoming Inspection</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Thoroughly Done</td>
+</tr>
+<tr>
+<td>Outgoing inspection</td>
+<td><span style="background:#dbeafe;color:#1e3a8a;padding:1px 6px;border-radius:3px;font-size:11.5px">in progress</span></td>
+<td>Scheduled for 01 October</td>
+</tr>
+<tr>
+<td>Insurance Schedule</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Pin 728</td>
+</tr>
+<tr>
+<td>Electric fence COC</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Approved building plans</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Rates clearance certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>HOA compliance certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Levy clearance</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+</tbody>
+</table>
+<h3 id="128-wild-amandel-bushwillow-park">128 Wild Amandel, Bushwillow Park</h3>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Status in the doc</th>
+<th>Where it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title Deed</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Attached</td>
+</tr>
+<tr>
+<td>Bond Agreement</td>
+<td><span style="background:#f1f5f9;color:#334155;padding:1px 6px;border-radius:3px;font-size:11.5px">not applicable</span></td>
+<td>Not Bonded</td>
+</tr>
+<tr>
+<td>COC - Electrical</td>
+<td><span style="background:#dbeafe;color:#1e3a8a;padding:1px 6px;border-radius:3px;font-size:11.5px">in progress</span></td>
+<td>New COC currently in Process</td>
+</tr>
+<tr>
+<td>COC - Gas</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">missing</span></td>
+<td>Gas company to issue gas COC. We will use the same one who did Frances</td>
+</tr>
+<tr>
+<td>COC - Solar</td>
+<td><span style="background:#dbeafe;color:#1e3a8a;padding:1px 6px;border-radius:3px;font-size:11.5px">in progress</span></td>
+<td>New COC currently in Process</td>
+</tr>
+<tr>
+<td>Occupational Certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">missing</span></td>
+<td>We cannot find any record or copy of this anywhere. We will approach the council for a copy.</td>
+</tr>
+<tr>
+<td>Insurance Schedule</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Pin 728</td>
+</tr>
+<tr>
+<td>Lease Agreement (01 Apr 25 to 31 Mar 27)</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Ricardo and the tenant came to an agreement for them to vacate the property on 12 July. Exit Inspection done o</td>
+</tr>
+<tr>
+<td>Future Lease Agreement</td>
+<td><span style="background:#f1f5f9;color:#334155;padding:1px 6px;border-radius:3px;font-size:11.5px">not applicable</span></td>
+<td>Not to be leased. Property is in the market to be sold.</td>
+</tr>
+<tr>
+<td>Incoming Inspection</td>
+<td><span style="background:#f1f5f9;color:#334155;padding:1px 6px;border-radius:3px;font-size:11.5px">not applicable</span></td>
+<td>No Incoming Inspection was done with previous tenant.</td>
+</tr>
+<tr>
+<td>Outgoing inspection</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Inspection done on 13 July. See report on drive with photos</td>
+</tr>
+<tr>
+<td>Electric fence COC</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Approved building plans</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Rates clearance certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>HOA compliance certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Levy clearance</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-samuel-street-dunvegan">11 Samuel Street, Dunvegan</h3>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Status in the doc</th>
+<th>Where it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title Deed</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">missing</span></td>
+<td>Unable to find any records on the drives</td>
+</tr>
+<tr>
+<td>Bond Agreement</td>
+<td><span style="background:#f1f5f9;color:#334155;padding:1px 6px;border-radius:3px;font-size:11.5px">not applicable</span></td>
+<td>Not Bonded</td>
+</tr>
+<tr>
+<td>COC - Electrical</td>
+<td><span style="background:#dbeafe;color:#1e3a8a;padding:1px 6px;border-radius:3px;font-size:11.5px">in progress</span></td>
+<td>In process of being updated</td>
+</tr>
+<tr>
+<td>COC - Gas</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">missing</span></td>
+<td>Get gas company to issue one</td>
+</tr>
+<tr>
+<td>COC - Solar</td>
+<td><span style="background:#dbeafe;color:#1e3a8a;padding:1px 6px;border-radius:3px;font-size:11.5px">in progress</span></td>
+<td>In process of being updated</td>
+</tr>
+<tr>
+<td>Occupational Certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">missing</span></td>
+<td>Get a copy from the council</td>
+</tr>
+<tr>
+<td>Insurance Schedule</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">missing</span></td>
+<td>Requested - shedule in the name of Mario &amp; Guida</td>
+</tr>
+<tr>
+<td>Lease Agreement (01 Dec 25 to 30 Nov 26)</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Property is currently Vacant Received Termination of Lease Notice on 05 Aug for end of Aug 2026</td>
+</tr>
+<tr>
+<td>Incoming Inspection</td>
+<td><span style="background:#dcfce7;color:#14532d;padding:1px 6px;border-radius:3px;font-size:11.5px">held</span></td>
+<td>Thoroughly Done</td>
+</tr>
+<tr>
+<td>Outgoing inspection</td>
+<td><span style="background:#fed7aa;color:#7c2d12;padding:1px 6px;border-radius:3px;font-size:11.5px">link broken</span></td>
+<td>Exit Inspection done on 01 Sep 2026</td>
+</tr>
+<tr>
+<td>Future Lease Agreement</td>
+<td><span style="background:#f1f5f9;color:#334155;padding:1px 6px;border-radius:3px;font-size:11.5px">not applicable</span></td>
+<td>Will not be leased again. In the market to be sold.</td>
+</tr>
+<tr>
+<td>Electric fence COC</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Approved building plans</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Rates clearance certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>HOA compliance certificate</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+<tr>
+<td>Levy clearance</td>
+<td><span style="background:#fecaca;color:#7f1d1d;padding:1px 6px;border-radius:3px;font-size:11.5px">not tracked</span></td>
+<td>no row exists</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Read together:</strong> Frances is the most complete (title deed, gas COC, inspections, insurance all held) and is one signed solar COC and one occupational certificate away from a pack. Bushwillow is the most exposed — no gas COC, no occupational certificate, no plans, and the HOA certificate and levy clearance its card asks for appear nowhere in the document. Samuel is missing its title deed in the records, which is the only line that cannot be fixed by asking a supplier: it needs a deeds search.</p>
+<p>The document also shows its own drift. Frances' lease ended 30 September 2026 and its outgoing inspection was 'Scheduled for 01 October'. Both dates are seven weeks past and neither is recorded as done. That is the argument for the register being a system rather than a page: nobody was wrong, the page simply stopped being read.</p>
+<h2 id="7-what-to-build-in-clickup">7. What to build in ClickUp</h2>
+<figure style="margin:26px 0">
+<svg viewBox="0 0 940 330" role="img" aria-label="Novas Prop document migrating into the ClickUp NVP space" style="width:100%;height:auto">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+  </defs>
+  <rect x="8" y="40" width="262" height="150" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+  <text x="24" y="66" fill="currentColor" font-size="13" font-weight="700">Today: the Superhuman doc</text>
+  <text x="24" y="90" fill="currentColor" font-size="12">6 properties + 1 tenancy, 20 tables, 217 rows</text>
+  <text x="24" y="110" fill="currentColor" font-size="12">Status lives in free-text notes</text>
+  <text x="24" y="130" fill="currentColor" font-size="12">Files live in WorkDrive, linked</text>
+  <text x="24" y="150" fill="currentColor" font-size="12">Last edited 21 Sep 2026</text>
+  <text x="24" y="176" fill="currentColor" font-size="11.5" font-style="italic">A register you read, not a system</text>
+
+  <line x1="278" y1="115" x2="336" y2="115" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="344" y="40" width="252" height="150" rx="10" fill="#e0e7ff" stroke="#4338ca" stroke-width="1.5"/>
+  <text x="360" y="66" fill="currentColor" font-size="13" font-weight="700">One migration, no invention</text>
+  <text x="360" y="90" fill="currentColor" font-size="12">223 rows migrate from Coda</text>
+  <text x="360" y="110" fill="currentColor" font-size="12">24 missing lines added</text>
+  <text x="360" y="130" fill="currentColor" font-size="12">Every row keeps its source</text>
+  <text x="360" y="150" fill="currentColor" font-size="12">Nothing deleted from Coda</text>
+  <text x="360" y="176" fill="currentColor" font-size="11.5" font-style="italic">Coda stays read-only history</text>
+
+  <line x1="604" y1="115" x2="662" y2="115" stroke="currentColor" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="670" y="40" width="262" height="150" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+  <text x="686" y="66" fill="currentColor" font-size="13" font-weight="700">ClickUp: the system of record</text>
+  <text x="686" y="90" fill="currentColor" font-size="12">7 lists, 6 docs, 2 templates</text>
+  <text x="686" y="110" fill="currentColor" font-size="12">Certificate PDFs on the card</text>
+  <text x="686" y="130" fill="currentColor" font-size="12">Formulas warn before expiry</text>
+  <text x="686" y="150" fill="currentColor" font-size="12">One view per question</text>
+  <text x="686" y="176" fill="currentColor" font-size="11.5" font-style="italic">A system that refuses to guess</text>
+
+  <rect x="344" y="228" width="588" height="72" rx="10" fill="#0f172a" stroke="#0f172a"/>
+  <text x="362" y="254" fill="#f8fafc" font-size="12.5" font-weight="700">The one rule that stops the old failure</text>
+  <text x="362" y="276" fill="#e2e8f0" font-size="12">A compliance card cannot close unless the certificate file and its number are on the card.</text>
+  <text x="362" y="292" fill="#cbd5e1" font-size="11.5">The doc itself files three certificates as held that are expired, unsigned or fake.</text>
+
+<p><text x="8" y="24" fill="currentColor" font-size="12" font-weight="600">Novas Prop: from a document people read to a system that holds the evidence</text> </svg></p>
+<figcaption style="font-size:12px;color:#64748b;margin-top:6px">Figure 1 — What moves, and what the move buys.</figcaption>
+</figure>
+
+<h3 id="71-the-rule-that-decides-list-or-document">7.1 The rule that decides list or document</h3>
+<ul>
+<li><strong>One row per fact → a List.</strong> Documents, leases, bills, maintenance entries: these are tables, and ClickUp lists give you filters, formulas, dashboards and bulk edits for free.</li>
+<li><strong>One reader at a time → a Doc.</strong> A property dossier, a handover index, the space guide: long-form writing that a person reads once.</li>
+<li><strong>A certificate → a file attached to the row.</strong> Never a link to WorkDrive, never a sentence saying it exists. The document's worst habit is that <em>'Attached'</em> usually means <em>'a URL is in the cell'</em>.</li>
+</ul>
+<h3 id="72-the-six-lists">7.2 The six lists</h3>
+<table>
+<thead>
+<tr>
+<th>List</th>
+<th>Rows</th>
+<th>Fields that matter</th>
+<th>Why it exists</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Property Register</strong></td>
+<td>6</td>
+<td>Erf, municipality, account no., title deed ref, occupancy, sale status, agent, asking price, power on/off</td>
+<td>one row per property; every other list points at it</td>
+</tr>
+<tr>
+<td><strong>Document Register</strong></td>
+<td>~71</td>
+<td>Property, document type, status, certificate no., issue date, expiry, days to expiry (formula), file, verified by/on</td>
+<td>the statutory tables, flattened across all six properties</td>
+</tr>
+<tr>
+<td><strong>Leases &amp; Inspections</strong></td>
+<td>~26</td>
+<td>Property, tenant, start, end, vacated date, rent, escalation, deposit, notice given, outgoing inspection</td>
+<td>fixes the contradiction in §2.3 — 'lease end' and 'vacated' become two fields</td>
+</tr>
+<tr>
+<td><strong>Utility Ledger</strong></td>
+<td>72 now, ~84/yr</td>
+<td>Property, account, billing month, amount, paid date, POP file</td>
+<td>the six monthly-bill tables, one list, one filter per property</td>
+</tr>
+<tr>
+<td><strong>Maintenance Log</strong></td>
+<td>73</td>
+<td>Property, date, description, cost, supplier, invoice, before/after photos, category</td>
+<td>the seven maintenance tables</td>
+</tr>
+<tr>
+<td><strong>Quotes &amp; Approvals</strong></td>
+<td>13</td>
+<td>Property, item, quote, approved by, paid, status</td>
+<td>Bloom's quotes and payments, plus every open quote on the three houses</td>
+</tr>
+</tbody>
+</table>
+<p>The Document Register is deliberately <strong>one list, not seven</strong>. Seven copies of the same 15-line matrix is how the document drifted: each property page was edited on a different day by a different person. One list, filtered by property, means the <em>'what is missing across the portfolio'</em> question is a saved view instead of an afternoon.</p>
+<h3 id="73-the-six-documents">7.3 The six documents</h3>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+<th>Audience</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NVP Space Guide</strong></td>
+<td>how the space works, where everything lives, the closing rule</td>
+<td>anyone new, including Jaques and Chiseke</td>
+</tr>
+<tr>
+<td><strong>Property Dossier — Bushwillow</strong></td>
+<td>the full record for one house, with live views of its documents, maintenance and bills</td>
+<td>the agent, the conveyancer, Ricardo</td>
+</tr>
+<tr>
+<td><strong>Property Dossier — 17 Frances Street</strong></td>
+<td>same</td>
+<td>same</td>
+</tr>
+<tr>
+<td><strong>Property Dossier — 11 Samuel Street</strong></td>
+<td>same</td>
+<td>same</td>
+</tr>
+<tr>
+<td><strong>Sale Pack Index</strong></td>
+<td>one section per house: what was delivered to the conveyancer, on what date, acknowledged by whom</td>
+<td>the transferring attorney and Ricardo</td>
+</tr>
+<tr>
+<td><strong>Weekly Stand-up Log</strong></td>
+<td>one section per Monday: what closed, what is blocked, what needs Ricardo</td>
+<td>the EXCO NOVA PROP note</td>
+</tr>
+</tbody>
+</table>
+<p>The dossier is the thing you hand over. It is also the answer to <em>'where is everything for this house'</em> — one page that embeds the live views, so it can never be stale the way the Coda page is.</p>
+<h3 id="74-statuses-fields-and-views">7.4 Statuses, fields and views</h3>
+<p><strong>Add five statuses</strong> to the space's existing two:</p>
+<p><code>to do</code> → <code>requested</code> → <code>received</code> → <code>verified</code> → <code>complete</code>, plus <code>not applicable</code> and <code>cancelled</code>.</p>
+<p><em>Requested</em> means we have asked a supplier or a council. <em>Received</em> means a file is on the card. <em>Verified</em> means Jaques or Pamela has checked that the certificate number, property address and issue date are correct. Those three states are exactly what the document's free-text notes are doing badly today.</p>
+<p><strong>Fields on the Document Register</strong> — the eight that carry the information the doc currently buries in prose: certificate number, issue date, expiry date, days to expiry (formula), issuing supplier, file, verified by, verified on. Plus two required to close: <strong>file</strong> and <strong>certificate number</strong>.</p>
+<p><strong>Five saved views</strong> do the work nobody is doing now:</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Filter</th>
+<th>The question it answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Missing across the portfolio</td>
+<td>status = missing, grouped by property</td>
+<td>what do we not have, everywhere</td>
+</tr>
+<tr>
+<td>Sale blockers</td>
+<td>property in the 3 sale houses, status ≠ verified</td>
+<td>what stands between us and a transfer</td>
+</tr>
+<tr>
+<td>Expiring in 60 days</td>
+<td>days to expiry ≤ 60</td>
+<td>what lapses before the sale completes</td>
+</tr>
+<tr>
+<td>This week's stand-up</td>
+<td>updated in the last 7 days, grouped by property</td>
+<td>the Monday note, generated</td>
+</tr>
+<tr>
+<td>Dead links</td>
+<td>file is empty, link is not</td>
+<td>the three rows the doc admits are broken</td>
+</tr>
+</tbody>
+</table>
+<h3 id="75-the-closing-rule">7.5 The closing rule</h3>
+<p>The card <em>'Nova Property - stop closing compliance cards without the certificate attached'</em> asks for exactly this, and it is the only thing that stops the document's failure mode coming back:</p>
+<blockquote>
+<p><strong>A compliance card cannot move to <code>complete</code> unless a certificate file is attached and the certificate number is filled in.</strong></p>
+</blockquote>
+<p>ClickUp enforces it with a required custom field on the closing status (Business plan), or an automation that reverts the status. The document's own record shows why: a Riley compliance certificate marked <em>Expired</em>, a Trichardt electrical COC marked <em>'the attached COC is fake'</em>, and a Frances solar COC with <em>'no signatures'</em> were all sitting in a table that reads as if they were held.</p>
+<h2 id="8-the-migration-row-by-row">8. The migration, row by row</h2>
+<table>
+<thead>
+<tr>
+<th>From the document</th>
+<th>Rows</th>
+<th>Lands in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6 statutory tables</td>
+<td>47</td>
+<td>Document Register</td>
+</tr>
+<tr>
+<td>Lease, future lease and inspection rows</td>
+<td>21</td>
+<td>Leases &amp; Inspections</td>
+</tr>
+<tr>
+<td>7 maintenance tables</td>
+<td>73</td>
+<td>Maintenance Log (60) and Quotes &amp; Approvals (13, Bloom)</td>
+</tr>
+<tr>
+<td>6 monthly-bill tables</td>
+<td>72</td>
+<td>Utility Ledger</td>
+</tr>
+<tr>
+<td>Lease register</td>
+<td>4</td>
+<td>Leases &amp; Inspections (reconciled to 5–6 real leases first)</td>
+</tr>
+<tr>
+<td>Property pages themselves</td>
+<td>6</td>
+<td>Property Register (Bloom is a tenancy, not an erf)</td>
+</tr>
+<tr>
+<td><strong>New lines that do not exist today</strong></td>
+<td><strong>24</strong></td>
+<td>Document Register: 6 sale-pack lines × 3 sale houses (18), plus approved plans and rates clearance on the three remaining properties (6)</td>
+</tr>
+<tr>
+<td><strong>Total rows carried</strong></td>
+<td><strong>247</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Every migrated row keeps its source. The Document Register gets a <code>Source</code> field reading <code>Novas Prop doc · &lt;page&gt; · &lt;date read&gt;</code>, so any figure can be traced back to the Coda page it came from. Nothing is deleted from Coda: it becomes the read-only history, and the space guide says so.</p>
+<p>Two rows need a human decision before they migrate, and I will not guess them:</p>
+<ul>
+<li><strong>INF Office Space, R20 815</strong> — which lease is this? (Bloom is R14 650; the row may be the building rather than the tenant.)</li>
+<li><strong>Batavia bond</strong> — the doc says <em>'No record found, requested from Pam 09/09'</em> on the bond line while the title deed line says the same. If Batavia is bonded, the bond cancellation is a sale-critical document and it is simply absent.</li>
+</ul>
+<h2 id="9-how-it-gets-built">9. How it gets built</h2>
+<p>Four phases. Each one ends with something you can look at, and phase 2 is the only one that needs a go-ahead on a live-system change.</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Work</th>
+<th>Delivered</th>
+<th>Needs from you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Access and truth</td>
+<td>add Chiseke and Jaques to the space; confirm the two open questions in §8</td>
+<td>27 cards with a real owner</td>
+<td>one approval to change space membership</td>
+</tr>
+<tr>
+<td>2. Structure</td>
+<td>create the 6 lists, fields, statuses and views; no data yet</td>
+<td>an empty, correct frame</td>
+<td>go / no-go on adding five statuses</td>
+</tr>
+<tr>
+<td>3. Migration</td>
+<td>223 rows from Coda, plus 24 new lines; each row sourced</td>
+<td>the register, populated</td>
+<td>nothing — this is data entry with a receipt</td>
+</tr>
+<tr>
+<td>4. Documents and rules</td>
+<td>the 6 docs, 2 templates, the closing rule and the five views</td>
+<td>the working space, and the three dossiers</td>
+<td>a read of one dossier to confirm the shape</td>
+</tr>
+</tbody>
+</table>
+<p>The card <em>'Nova Property - one document register per house with a fixed sale-readiness checklist'</em> is retired by this work: phase 3 is that card, done once, across all six properties instead of three folders.</p>
+<h2 id="10-decisions">10. Decisions</h2>
+<p>Each with the default I recommend. <strong>Reply 'go' and I take every recommended option.</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Recommended</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>One Document Register for all six properties, or one per house?</td>
+<td><strong>one list</strong></td>
+<td>the per-house split is what let the doc drift; a filter is cheaper than six copies</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add five statuses to the space?</td>
+<td><strong>yes</strong></td>
+<td>'requested / received / verified' is the whole point; today the space can only say done or not done</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Make file + certificate number required to close?</td>
+<td><strong>yes</strong></td>
+<td>this is card 20, and it is the only rule that survives staff changes</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Keep Coda as read-only history, or shut it down?</td>
+<td><strong>keep, read-only</strong></td>
+<td>it is the audit trail for work done before today; nobody should edit it again</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Add Chiseke and Jaques to the space?</td>
+<td><strong>yes</strong></td>
+<td>seven cards name them and cannot assign them</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Sale Pack Index as one doc with three sections, or three docs?</td>
+<td><strong>one doc</strong></td>
+<td>the reader is the same person, and the comparison across houses is the useful part</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Build the three property dossiers now, or after phase 3?</td>
+<td><strong>after phase 3</strong></td>
+<td>a dossier of empty views reads as done when it is not</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-how-we-will-know-it-worked">11. How we will know it worked</h2>
+<p>Checkable, in order, once each phase lands:</p>
+<ol type="1">
+<li>The Document Register holds 71 rows across 6 properties, and every row names its Coda source.</li>
+<li>Every property has exactly one row in the Property Register, and no lease row has a vacated date earlier than its end date.</li>
+<li><code>Missing across the portfolio</code> returns fewer than 17 rows (today's missing count) after the first fortnight of chasing.</li>
+<li>No card in the space is <code>complete</code> without a file and a certificate number — spot-audit five at random.</li>
+<li>The Monday stand-up note is generated from <code>This week's stand-up</code>, not written by hand from Coda.</li>
+<li>A conveyancer can be handed one link per house and name nothing that is missing.</li>
+</ol>
+<h2 id="appendix--evidence-ledger">Appendix — evidence ledger</h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>How it was established</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The space has 6 lists and 27 tasks</td>
+<td><code>GET /api/v2/space/1501000000000694/list</code>, then <code>/list/{id}/task?include_closed=true&amp;subtasks=true</code> per list</td>
+</tr>
+<tr>
+<td>The space has no documents</td>
+<td><code>GET /api/v3/workspaces/4627083/docs</code> (78 docs in the workspace, none parented to <code>1501000000000694</code>)</td>
+</tr>
+<tr>
+<td>Two accountable people have no seat</td>
+<td><code>/api/v2/space/{id}</code> members list vs <code>/api/v2/team</code> (Chiseke 105744006, Jaques 105744011 present in the workspace, absent from the space)</td>
+</tr>
+<tr>
+<td>68 statutory rows, classified</td>
+<td><code>content_read</code> on 22 pages → 20 grid ids → <code>table_rows_read</code> (rowLimit ≤ 100) → normalised in <code>analyse.py</code></td>
+</tr>
+<tr>
+<td>R528,206.58 of maintenance</td>
+<td>summed from the 7 maintenance tables; matches the doc's own formulas on Bushwillow (R173 035.91) and Samuel (R107 299.81) to the cent</td>
+</tr>
+<tr>
+<td>R372,686.33 of 2026 utility bills</td>
+<td>summed from the 6 monthly-bill tables, six rows with no amount excluded</td>
+</tr>
+<tr>
+<td>The doc is stale</td>
+<td><code>document_outline</code> updatedAt: doc 2026-09-21; property pages 2025-12-03 to 2026-09-10</td>
+</tr>
+<tr>
+<td>The workspace is on ClickUp Business</td>
+<td><code>GET /api/v2/team/4627083/plan</code> → <code>plan_name: Business</code> (Docs, dashboards, formulas, dependencies all in scope)</td>
+</tr>
+</tbody>
+</table>
+<p>Supporting files, all under <code>AI Hub/tmp/nvp/</code>: <code>nvp_doc_clean.md</code> (the whole document as readable markdown), <code>nvp_statutory_classified.csv</code> (68 rows with status), <code>nvp_card_assessment.csv</code> (27 cards with verdicts), <code>nvp_normalised.json</code>, <code>nvp_tables.json</code>.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
