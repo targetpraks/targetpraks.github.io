@@ -143,7 +143,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Every departmental bot files and reads work in ClickUp, with a tool list it was explicitly given.</li>
 <li>Writes stay human-approved: <code>approval: writes</code> holds every mutating call for a person.</li>
 <li>No bot in this rollout gets a ClickUp delete, merge or opaque-operator tool. (Other capabilities — the platform toolset Batman and Superman already hold — are outside this PRD's scope.)</li>
-<li>These limits bound <strong>capability</strong>, not <strong>data</strong> — any bot that may read ClickUp can read the whole workspace the connection reaches. Stated as a decision, not a hidden assumption.</li>
+<li>These limits bound <strong>capability</strong>, and a server-side mapping bounds <strong>data</strong> — a bot reaches only the lists and tasks its business unit owns, checked before dispatch (decision D1 = B, v1.3).</li>
 <li>Batman and Superman are not touched here; their narrowing is a separate, separately approved change.</li>
 </ol>
 <h2 id="current-state--evidence-org-scoped">Current state — evidence, org-scoped</h2>
@@ -204,29 +204,41 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Not enforced</strong> — which ClickUp records a permitted tool reaches. <code>create_task</code> takes a <code>list_id</code> string, <code>get_task</code> takes a <code>task_id</code>, neither checked against a business unit. Any bot allowed to read ClickUp reads the whole workspace the OAuth connection sees. Connection grants control who may <em>discover or bind</em> the credential; they do not constrain resource ids at run time.</p>
 <p><strong>Not enforced either</strong> — who a run acts for. A published private agent that a builder can run lends them its credential, and <code>agents:run</code> is ALL for builders (E6).</p>
 <p>That is the provider's shape, not a defect this PRD introduces. The PRD's job is to say so out loud.</p>
-<h3 id="d1--the-data-scope-decision-release-blocker">D1 — the data-scope decision (release blocker)</h3>
+<h3 id="d1--the-data-scope-decision-b-decided-in-v13">D1 — the data-scope decision: <strong>B, decided in v1.3</strong></h3>
+<p><strong>Decided: Option B — enforce a BU → list/task mapping, fail-closed, before provider dispatch.</strong> Basis: the LLM council (four seats, unanimous ranking) against the local decision model. The council's argument, paraphrased honestly: A is not a control, it is a documented acceptance of exposure, and it compounds — workflows, summaries, logs and embeddings form around workspace-wide visibility and become impossible to narrow later; C is the seductive trap because restricting writes while leaving reads open does nothing for confidentiality; B can be widened cheaply, while A and C cannot be narrowed retroactively.</p>
 <table>
 <thead>
 <tr>
 <th>Option</th>
-<th>Meaning</th>
-<th>Cost</th>
+<th>Ruling</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>A. Authorize workspace-wide access</strong> (recommended for phase 1)</td>
-<td>The OAuth connection is the boundary. Bot tool lists limit capability; a bot that can read ClickUp can read the workspace. Recorded as accepted policy, in writing.</td>
-<td>None. Ships now.</td>
+<td><strong>A. Workspace-wide access</strong></td>
+<td><strong>Rejected.</strong> Cheap but structural and back-loaded; the first time a Finance bot summarises HR the platform loses its credibility.</td>
 </tr>
 <tr>
-<td><strong>B. Enforce BU → list/task mapping</strong></td>
-<td>A server-side map from bot → permitted workspace/folder/list ids, checked <strong>before provider dispatch</strong> on <code>list_id</code>, <code>task_id</code> and comment ancestry, with cross-BU negative tests.</td>
-<td>A platform change: a new policy seam. Separate PRD.</td>
+<td><strong>B. Enforced BU → list/task mapping</strong></td>
+<td><strong>Chosen</strong>, with the seven commitments below.</td>
+</tr>
+<tr>
+<td><strong>C. Hybrid (wide reads, mapped writes)</strong></td>
+<td><strong>Rejected.</strong> Fails the confidentiality test while creating a misleading "restricted" paper trail.</td>
 </tr>
 </tbody>
 </table>
-<p>Phase 1 cannot start until Ricardo picks one. Option A is honest and immediate; Option B is the real department boundary and is worth its own build once BU membership exists. <strong>Do not</strong> attempt this with bot instructions — an instruction is a suggestion to a model, not a control.</p>
+<p>B is only a boundary if it is built as one:</p>
+<ol type="1">
+<li><strong>One enforcement chokepoint</strong> before provider dispatch, deny-by-default, fail-closed. Per-bot middleware is a convention, not a boundary.</li>
+<li><strong>Server-established bot identity</strong> bound to the request before authorisation.</li>
+<li><strong>Mapping derived from ClickUp structure where possible</strong> (space/folder/list ownership per BU), synced, with alerts for unmapped lists and explicit handling for cross-BU projects. Never a hand-curated file that silently drifts.</li>
+<li><strong>Deny unknown, moved or unmapped objects</strong>; disable broad endpoints that cannot be mediated reliably.</li>
+<li><strong>Tests beyond cross-BU denial</strong>: reads, writes, search, enumeration, subtasks, comments, attachments, caller-supplied ids and indirect references, plus positive authorisation tests.</li>
+<li><strong>Provision the BU groups before production</strong> — joiner/mover/leaver and list migration are the long pole, not the middleware.</li>
+<li><strong>Explicit extra grants</strong> — thirteen bots across twelve BUs; not every bot maps to exactly one BU.</li>
+</ol>
+<p><strong>Interim rule:</strong> no bot runs against the real workspace before its mapping exists. Pilots run on an isolated workspace, and bots are enabled one at a time as their mapping is populated.</p>
 <h2 id="the-binding">The binding</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;account&quot;</span><span class="fu">:</span> <span class="st">&quot;organization&quot;</span><span class="fu">,</span></span>
@@ -314,7 +326,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>AC8</td>
-<td>If D1 = B: a run using another BU's <code>list_id</code> / <code>task_id</code> is refused before provider dispatch, one negative test per business unit. If D1 = A: a signed policy note records workspace-wide read/write as accepted.</td>
+<td>D1 = B, so this is required: a run using another BU's <code>list_id</code> / <code>task_id</code> is refused <strong>before provider dispatch</strong>, one negative test per business unit, plus the indirect cases — subtask of a foreign parent, comment on a foreign task, attachment on a foreign task, search returning a foreign hit, and a caller-supplied id that exists but is unmapped. Also a positive test per BU: the bot's own list succeeds.</td>
 </tr>
 <tr>
 <td>AC9</td>
@@ -385,59 +397,70 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <h2 id="build-order">Build order</h2>
 <ol type="1">
-<li><strong>D1 answered by Ricardo</strong> — Option A or B. Blocking.</li>
-<li>The 67-tool matrix in Appendix A signed off. Blocking.</li>
-<li>Publish the 13 bots one business unit at a time, running AC3 and AC4 on the first.</li>
-<li>Bind the four report bots (read-only) and DOC Bot per D3.</li>
+<li><strong>Enforcement slice</strong> — the BU → list/task map and its fail-closed chokepoint, with the seven commitments above. Nothing else ships before this seam exists.</li>
+<li>The 67-tool matrix in Appendix A signed off — done in v1.3, pending Ricardo's read.</li>
+<li>BU group membership and the space/folder/list ownership map for the first two BUs.</li>
+<li>Publish those two bots, running AC3, AC4 and the cross-BU denials (AC8) on the first.</li>
+<li>Remaining eleven BUs as their mappings land; then the four report bots (read-only) and DOC Bot per D3.</li>
 <li>Batman/Superman: separate decision, separate change.</li>
 </ol>
 <h2 id="decisions-register">Decisions register</h2>
+<p>Decided in v1.3 by the LLM council plus the local decision model, on long-term benefit to the company and its staff. Ricardo retains veto and owns anything that spends money or creates legal exposure.</p>
 <table>
 <thead>
 <tr>
 <th>#</th>
 <th>Decision</th>
-<th>Needs</th>
+<th>Ruling</th>
+<th>Basis</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>D1</td>
-<td>Workspace-wide access (A) or enforced BU→list mapping (B)</td>
-<td><strong>Ricardo — blocks phase 1</strong></td>
+<td>Data scope</td>
+<td><strong>B — enforced BU→list/task mapping, fail-closed</strong></td>
+<td>Council unanimous against A and C; see §D1</td>
 </tr>
 <tr>
 <td>D2</td>
-<td>Is <code>clickup_update_task</code> write tier or excluded? Default until answered: <strong>excluded</strong></td>
-<td>Ricardo</td>
+<td><code>clickup_update_task</code></td>
+<td><strong>Write tier, approval-held</strong> (p≈0.83)</td>
+<td>Bots that cannot move a task's status cannot run a unit's work</td>
 </tr>
 <tr>
 <td>D3</td>
-<td>DOC Bot document-page creation — one named exception, or none? Default: <strong>none</strong></td>
-<td>Ricardo</td>
+<td>DOC Bot document pages</td>
+<td><strong>One named exception</strong> — <code>create_document</code>, <code>create_document_page</code>, approval-held (p≈0.76)</td>
+<td>The never-list stays absolute for every other bot</td>
 </tr>
 <tr>
 <td>D4</td>
-<td>Do the report bots get comments? Default: <strong>no writes at all</strong></td>
-<td>Ricardo</td>
+<td>Report bots write</td>
+<td><strong>Read-only, no writes at all</strong> (p≈0.83)</td>
+<td>A reporting bot that can annotate is a reporting bot that can be argued with</td>
 </tr>
 <tr>
 <td>D5</td>
-<td>The connection-level ceiling and its effect on Batman/Superman — its own change, with a before/after effective-tool diff</td>
-<td>Ricardo</td>
+<td>Connection ceiling / admin pair</td>
+<td><strong>Its own change</strong>, with a before/after effective-tool diff and a rollback that does not silently restore a removed tool</td>
+<td>Changing Batman and Superman is not a configuration detail</td>
 </tr>
 <tr>
 <td>D6</td>
-<td>Unattended approvals: fail the step or queue? Default: <strong>fail the step</strong></td>
-<td>Ricardo</td>
+<td>Unattended approvals</td>
+<td><strong>Fail the step</strong> with <code>needs_approval</code>; the run continues (p≈0.88)</td>
+<td>A queue nobody empties is a silent backlog of authorised-looking work</td>
 </tr>
 <tr>
 <td>D7</td>
-<td>Rollback owner and health-alert recipient</td>
-<td>Ricardo</td>
+<td>Rollback owner and health alert</td>
+<td><strong>Adrianna A</strong> owns the health alert; <strong>Ricardo</strong> approves any rollback of a published bot</td>
+<td>Same owner as the rest of the AgenticOS stack</td>
 </tr>
 </tbody>
 </table>
+<p>What remains for Ricardo is not a decision but a signature: D1's build is inside his platform, and the first two BUs go live with his go.</p>
 <h2 id="appendix-a--all-67-clickup-tools-classified">Appendix A — all 67 ClickUp tools, classified</h2>
 <p>Wire names all carry the <code>clickup_</code> prefix; the prefix is omitted below for legibility.</p>
 <p><strong>Read — 29.</strong> <code>get_list</code>, <code>get_list_location</code>, <code>get_folder</code>, <code>get_task</code>, <code>get_task_comments</code>, <code>get_threaded_comments</code>, <code>get_custom_fields</code>, <code>get_workspace_members</code>, <code>get_workspace_hierarchy</code>, <code>get_user</code>, <code>get_schema</code>, <code>get_operators</code>, <code>find_member_by_name</code>, <code>resolve_assignees</code>, <code>filter_tasks</code>, <code>search</code>, <code>search_reminders</code>, <code>get_bulk_tasks_time_in_status</code>, <code>get_task_time_in_status</code>, <code>get_time_entries</code>, <code>get_current_time_entry</code>, <code>list_document_pages</code>, <code>get_document_pages</code>, <code>list_document_page_attachments</code>, <code>download_task_attachment</code>, <code>download_document_page_attachment</code>, <code>get_chat_channels</code>, <code>get_chat_channel_messages</code>, <code>get_chat_message_replies</code>.</p>
