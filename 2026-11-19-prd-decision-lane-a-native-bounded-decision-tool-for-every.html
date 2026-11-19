@@ -321,7 +321,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 </tbody>
 </table>
-<p>Recommendation: <strong>spike C, fall back to A.</strong> C keeps decision traffic on company hardware; A is the shortest path to a working lane and is swappable because the profile indirection exists.</p>
+<p><strong>Decided in v1.3: Route A (TypeSafe Jev) as the production lane, behind a provider-neutral seam, with Route C only as a time-boxed, evidence-gated spike.</strong></p>
+<p>The council's reasoning, kept because it is checkable: C's "zero vendor cost" is not zero cost — it carries an operator, a deputy, TLS, patching, monitoring, backup and recovery, load-shedding resilience, hardware refresh and single-site risk. Office hardware removes an acquisition cost only if it genuinely has spare capacity. C can win at high sustained volume, but only after a spike proves quality, latency, capacity, security and ownership. A is the vendor the lane was designed around, so the typed contract, retry semantics and validation behaviour are already reconciled — which for bounded classification matters more than raw model quality.</p>
+<p>Non-negotiable controls that come with A: a thin internal <code>DecisionPort</code> so B or C is an adapter and not a rewrite; per-bot budgets, rate limits, idempotent retries and a common regression suite; semantic accuracy tested per decision type, not just schema validity; a <strong>manual queue</strong> for low-confidence output rather than a silent default; and a contract covering price cap, key custody, portability, residency, subprocessors and no-training terms. POPIA transfer basis must be checked before production — "no training" is not residency.</p>
+<p><strong>The missing number:</strong> the A-vs-C pivot is expected call volume times the Jev per-call quote. If the plausible three-year hosted bill is smaller than the cost of the spike plus hardening, skip the spike entirely.</p>
+<p><strong>Spending the key is Ricardo's signature, not this document's.</strong> The recommendation above prepares the choice; it does not authorise the spend.</p>
 <h2 id="build-plan--the-shared-service-first">Build plan — the shared service first</h2>
 <p>This is the finding that changes the shape of the work. The engine is workflow-coupled:</p>
 <ul>
@@ -374,7 +378,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td><code>organization_id</code>, <code>key</code></td>
-<td>unique per org; <code>money_legal</code>, <code>memory</code>, <code>escalation</code>, <code>routing</code>, <code>triage</code></td>
+<td>unique per org. <strong>Company set (D2):</strong> <code>routing</code>, <code>triage</code>, <code>escalation</code>, <code>data_sensitivity</code>, <code>spend</code> — the doctrine's <code>memory</code> gate is replaced because retaining facts is a platform concern here, not a bot decision</td>
 </tr>
 <tr>
 <td><code>title</code>, <code>question</code></td>
@@ -556,69 +560,82 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <h2 id="build-order">Build order</h2>
 <ol type="1">
-<li><strong>Route C spike</strong> — verified or dropped. <em>Gate: Ricardo if it fails.</em></li>
-<li><strong>Credential</strong> for the surviving route. <em>Gate: Ricardo — money/legal.</em></li>
+<li><strong><code>DecisionPort</code> seam</strong> — a provider-neutral interface in front of the lane. No vendor, no spend, and it is the same work whichever route wins.</li>
+<li><strong>Volume × quote</strong> — measure expected decision volume from the two pilot bots, obtain a Jev quote with a price cap, and compare against the fully-loaded cost of self-hosting. This number decides whether step 3 is funded at all.</li>
+<li><strong>Route A credential</strong> — TypeSafe Jev key, rate limits and budget line. <em>Gate: Ricardo — money/legal.</em></li>
 <li><strong>Slice 1 — shared service extraction</strong>, workflow nodes converted to adapters, regression tests proving unchanged workflow routing, errors and cost.</li>
 <li><strong>Slice 2 — redaction</strong> component + canary tests across every store.</li>
-<li><strong>Slice 3 — <code>decision_gates</code></strong> migration, revisions, admin CRUD, org default profile.</li>
+<li><strong>Slice 3 — <code>decision_gates</code></strong> migration, revisions, admin CRUD, org default profile, the five company gates.</li>
 <li><strong>Slice 4 — <code>decide</code> tool</strong> on top of the service, platform binding, rate limits, public denial.</li>
 <li><strong>Slice 5 — <code>decision_log</code> + <code>decision_attempts</code></strong> + <code>Monitoring → Decisions</code>.</li>
 <li><strong>Pilot:</strong> <code>routing</code> and <code>triage</code> on FIN and SAL for two weeks before any other gate.</li>
+<li><strong>Route C spike</strong> — only if step 2 says the hosted bill dwarfs the spike plus hardening. Time-boxed, with quality, p95 latency, TLS/auth, patch, backup/restore, load-shedding survival, named operator and deputy as exit gates. A demo on idle office hardware is not production evidence.</li>
 </ol>
 <h2 id="decisions-register">Decisions register</h2>
+<p>Decided in v1.3 by the LLM council plus the local decision model, on long-term benefit to the company and its users. Ricardo retains veto; the vendor spend is his signature alone.</p>
 <table>
 <thead>
 <tr>
 <th>#</th>
 <th>Decision</th>
-<th>Needs</th>
+<th>Ruling</th>
+<th>Basis</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>D1</td>
-<td>Route A, B or C; if A/B, which vendor and which budget line</td>
-<td>Ricardo (money/legal)</td>
+<td>Model route</td>
+<td><strong>A — TypeSafe Jev in production, behind a <code>DecisionPort</code>; C only as a gated spike; B documented fallback</strong></td>
+<td>Council; money remains Ricardo's signature</td>
 </tr>
 <tr>
 <td>D2</td>
-<td>Are these the same five gates as §8, or does Infinity Brands sign off its own questions, labels and unsure actions?</td>
-<td>Ricardo</td>
+<td>Gate set</td>
+<td><strong>Company set:</strong> <code>routing</code>, <code>triage</code>, <code>escalation</code>, <code>data_sensitivity</code>, <code>spend</code> (p≈0.90)</td>
+<td>The doctrine's <code>memory</code> gate is not a bot's decision to make here</td>
 </tr>
 <tr>
 <td>D3</td>
-<td>Thresholds per gate — starting value and tuning cadence</td>
-<td>Ricardo</td>
+<td>Thresholds</td>
+<td><strong>Uniform 0.75 at launch</strong>, tuned per gate with recorded data (p≈0.85)</td>
+<td>One number is tunable; five guessed numbers are not</td>
 </tr>
 <tr>
 <td>D4</td>
-<td>Is a paid label call approval-held (<code>writes</code>), or free-running within rate limits? Note: if the platform's write-approval floor is unconditional, free-running needs either a documented exception in the platform or the call must not be annotated <code>writes</code>. Decide which.</td>
-<td>Ricardo</td>
+<td>Approval of paid calls</td>
+<td><strong>Free-running</strong> within per-bot and per-org limits, annotated non-writing (p≈0.96)</td>
+<td>A one-second label that needs a click is a lane nobody uses. If the platform's write floor is unconditional, the call must not carry <code>writes</code> — that is an implementation requirement, not a policy choice</td>
 </tr>
 <tr>
 <td>D5</td>
-<td>Who authors gates — owner/admin only, or builders?</td>
-<td>Ricardo</td>
+<td>Gate authorship</td>
+<td><strong>Builders may author gates for their own agents; admin reviews and publishes</strong> (p≈0.78)</td>
+<td>Central-only authoring makes the lane a bottleneck; unreviewed authoring makes it a liability</td>
 </tr>
 <tr>
 <td>D6</td>
-<td>On <code>unsure</code> with <code>escalate</code>: notify a person in-platform, or advise the bot only?</td>
-<td>Ricardo</td>
+<td>Unsure notification</td>
+<td><strong>Advise the bot only in v1</strong>; in-platform notification of the <code>escalate_to</code> entity ships with the Monitoring page</td>
+<td>Advice is honest immediately; a notification nobody is assigned to read is theatre</td>
 </tr>
 <tr>
 <td>D7</td>
-<td>Budget semantics — reservation (hard cap) or accepted overshoot?</td>
-<td>Ricardo</td>
+<td>Budget semantics</td>
+<td><strong>Reservation</strong> — upper-bound price held before dispatch (p≈0.87)</td>
+<td>A hard cap that occasionally refuses beats an overshoot that surprises finance</td>
 </tr>
 <tr>
 <td>D8</td>
-<td>Log retention period and who may read it</td>
-<td>Ricardo</td>
+<td>Log retention</td>
+<td><strong>12 months</strong>, owner and admin read (p≈0.76)</td>
+<td>Long enough for an annual audit cycle, short enough to be defensible</td>
 </tr>
 <tr>
 <td>D9</td>
-<td>Behaviour for external MCP callers and public-origin workflows with a principal</td>
-<td>Ricardo</td>
+<td>External callers</td>
+<td><strong>Deny by default in v1.</strong> Allow only under an explicit, tested rule once a concrete external caller exists</td>
+<td>The model leaned to "allow with a rule" at only p≈0.64; with no caller today, the reversible choice is the closed door</td>
 </tr>
 </tbody>
 </table>
