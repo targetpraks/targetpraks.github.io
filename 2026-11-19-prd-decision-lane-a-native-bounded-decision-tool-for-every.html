@@ -125,9 +125,66 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <body><main>
 
 <h1 id="decision-lane--a-native-bounded-decision-tool-for-every-agenticos-bot">Decision lane — a native bounded-decision tool for every AgenticOS bot</h1>
+<h2 id="what-v11-changes">What v1.1 changes</h2>
+<p>The external review returned v1.0 as <strong>not-ready</strong> with seven blocking findings. v1.0's central mistake was saying "reuse the engine, don't fork it" without checking whether the engine could run outside a workflow. It cannot, today. Every blocker is answered below:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>v1.0 said</th>
+<th>What is true</th>
+<th>Where fixed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Reuse <code>_decide.py</code> as the tool implementation</td>
+<td><code>decide()</code> calls <code>context.current()</code> before its try block; outside a workflow dispatch it raises <code>RuntimeError: No workflow dispatch context is active</code></td>
+<td>§Build plan — a shared-service extraction, with workflow nodes kept as adapters</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Redaction "reuses <code>app/core/sanitize.py</code>"</td>
+<td><code>sanitize.py</code> is URL/SSRF validation only. Raw tool arguments and transcripts persist elsewhere</td>
+<td>§Redaction — built, at two boundaries, proven with canaries</td>
+</tr>
+<tr>
+<td>3</td>
+<td>"Budget guard and spend ledger already wired"</td>
+<td>Costs are reported out-of-band and settled by the workflow dispatcher; a no-op outside it. No per-call reservation</td>
+<td>§Cost — exactly-once booking, logical call vs attempt, explicit overshoot contract</td>
+</tr>
+<tr>
+<td>4</td>
+<td>"Swap the profile in one field"</td>
+<td>The gate registry had no profile column or org default; caller options could replace approved labels</td>
+<td>§Gate registry — profile FK, versioning, label rules, reserved <code>unsure</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Output has <code>decision</code>, <code>confidence</code>, <code>reason</code></td>
+<td>The nodes emit <strong>no reason</strong>, <code>Answered</code> carries answer/confidence/probabilities, and below-threshold routing lives in the handlers, not the engine</td>
+<td>§Response contract — reason removed from v1; explicit mapping defined</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Absence from <code>PLATFORM_UNGATED_TOOLS</code> gates access</td>
+<td>That set is an approval exception, not an access gate. Public-origin behaviour is untested</td>
+<td>§Provisioning and access</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>decision_log</code> with one row per call</td>
+<td>No status vocabulary, no idempotency key, no attempt model, no retention sweep, no access policy</td>
+<td>§Decision log and §Rollout</td>
+</tr>
+</tbody>
+</table>
+<p>Also corrected: 22 knowledge bases of which <strong>15 hold documents (142 in total)</strong> — not 22 populated ones; <strong>four</strong> org model profiles of five database-wide; and the central constraint is stated accurately — the <em>current</em> company chat endpoint is unsupported, which is not the same claim as "configuration can never change that".</p>
 <h2 id="why-this-prd">Why this PRD</h2>
-<p>Ricardo's §8 gates run on his own Mac, at <code>127.0.0.1:8792</code>, for his own agents. That is personal infrastructure and it stays personal. What Infinity Brands needs is the same capability <strong>inside the work platform</strong>, available to all thirteen departmental bots and the four report bots — a cheap, typed answer to a bounded question ("is this inbound message a work request or a personal one?", "does this invoice need to go to Finance or to EXCO?") without burning a conversational model turn on it.</p>
-<p>The platform already has most of it and nobody knows. There is a <strong>native decision lane</strong> in <code>app/workflows/nodes/</code>:</p>
+<p>Ricardo's §8 gates run on his own Mac, at <code>127.0.0.1:8792</code>, for his own agents. That stays personal. What Infinity Brands needs is the same capability <strong>inside the work platform</strong> — a cheap, typed answer to a bounded question ("is this a work request or a personal one?", "does this credit note go to Finance or EXCO?") without spending a conversational turn on it.</p>
+<p>The platform already has most of it:</p>
 <table>
 <thead>
 <tr>
@@ -140,7 +197,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td><code>_decide.py</code></td>
 <td>326</td>
-<td>Shared engine: profile resolution, typed question, confidence floor, unsure path, budget guard</td>
+<td>Engine: profile resolution, typed question, provider call, confidence, budget hooks</td>
 </tr>
 <tr>
 <td><code>decide_yes_no/_handler.py</code></td>
@@ -150,7 +207,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td><code>decide_choose/_handler.py</code></td>
 <td>94</td>
-<td>One of a short list</td>
+<td>One of 2–255 values</td>
 </tr>
 <tr>
 <td><code>decide_score/_handler.py</code></td>
@@ -159,15 +216,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 </tbody>
 </table>
-<p>Its own docstring: <em>"Typed decision steps using a native decision model profile … Below <code>min_confidence</code> the step follows its unsure port rather than treating uncertainty as a provider failure."</em></p>
-<p>So the capability exists — but <strong>only inside a workflow</strong>. A bot cannot call it mid-conversation, there is no org-level definition of what a gate <em>is</em>, and nothing is logged in a place an operator can read. This PRD closes those three gaps.</p>
+<p>The capability exists — <strong>only inside a workflow</strong>. A bot cannot call it mid-conversation, there is no org-level definition of what a gate is, and nothing is logged where an operator can read it.</p>
 <h2 id="product-in-five-lines">Product in five lines</h2>
 <ol type="1">
-<li>One native tool — <code>decide</code> — that any published bot can call inside a turn.</li>
-<li>Five gates defined once for the organization, with thresholds and an escalation target.</li>
-<li>The answer is a label plus a confidence plus a one-line reason, in about a second.</li>
+<li>One native tool — <code>decide</code> — that any provisioned bot can call inside a turn.</li>
+<li>Five gates defined once per organization, versioned, with thresholds and an unsure action.</li>
+<li>The answer is a label and a confidence, in about a second.</li>
 <li>Below the threshold the answer is <code>unsure</code> and the caller escalates — never a guess dressed as a decision.</li>
-<li>Every decision is logged (gate, bot, label, latency, spend) so the lane can be measured and tuned.</li>
+<li>Every call is logged once, with cost settled, so the lane can be measured and tuned.</li>
 </ol>
 <h2 id="what-already-exists--evidence">What already exists — evidence</h2>
 <table>
@@ -179,11 +235,23 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>Decision workflow nodes ship in the platform</td>
+<td>Three typed decision workflow nodes plus a shared engine</td>
 <td>E1</td>
 </tr>
 <tr>
-<td>Confidence floor + explicit <code>unsure</code> port already designed</td>
+<td><code>DecisionConfig</code>: question 1–2,000 chars, <code>min_confidence</code> 0–1 default 0.6, exactly one of profile / legacy secret</td>
+<td>E2</td>
+</tr>
+<tr>
+<td><code>MAX_TEXT = 100_000</code> — one decision judges up to 100k chars</td>
+<td>E2</td>
+</tr>
+<tr>
+<td>Below-threshold routing is applied <strong>in each handler</strong>, not in the engine</td>
+<td>E2</td>
+</tr>
+<tr>
+<td><code>Answered</code> = answer / confidence / probabilities; <strong>no reason field</strong></td>
 <td>E2</td>
 </tr>
 <tr>
@@ -191,107 +259,154 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>E3</td>
 </tr>
 <tr>
-<td>Decision transports built: TypeSafe, OpenAI decisions, Google decisions, SystemOne / OpenRouter base_url</td>
+<td>Transports built: TypeSafe, OpenAI decisions, Google decisions, SystemOne / OpenRouter base_url</td>
 <td>E4</td>
 </tr>
 <tr>
-<td>Provider catalogue offers: <code>jev-latest</code>, <code>jev-1.14.0</code>, <code>jev-1.13.0</code>, <code>gpt-6-luna</code>, <code>gemini-decision-1</code>, 2 OpenRouter ids</td>
+<td>Catalogue: <code>jev-latest</code>, <code>jev-1.14.0</code>, <code>jev-1.13.0</code>, <code>gpt-6-luna</code>, <code>gemini-decision-1</code>, 2 OpenRouter ids</td>
 <td>E5</td>
 </tr>
 <tr>
-<td>One decision judges up to <strong>100,000 characters</strong> in a single request (<code>MAX_TEXT</code>)</td>
-<td>E2</td>
-</tr>
-<tr>
-<td>Budget guard, spend ledger and guardrails are already wired into the decision engine</td>
-<td>E2</td>
-</tr>
-<tr>
-<td>Org model profiles are <strong>conversational Ollama only</strong> — <code>deepseek-v4.1-flash</code> default, <code>mimo-v2.6-flash</code>, two marked NOT PERMITTED. <strong>No decision profile exists.</strong></td>
+<td>Org model profiles: <strong>4</strong>, all <code>ollama</code>, two marked NOT PERMITTED. <strong>No decision profile.</strong></td>
 <td>E6</td>
 </tr>
 <tr>
-<td>No agent-callable decision tool exists — the capability is workflow-only</td>
+<td>No agent-callable decision tool exists</td>
 <td>E7</td>
 </tr>
 <tr>
-<td>22 agents; 17 have no tools at all</td>
+<td>22 agents; <strong>17 with zero MCP bindings</strong> (they do hold native capabilities)</td>
 <td>E8</td>
 </tr>
 <tr>
-<td>Knowledge/recall is a separate, already-populated concern: 22 knowledge bases with embedding config</td>
+<td>Knowledge: 22 bases, <strong>15 holding 142 documents</strong> — retrieval is separate from classification</td>
 <td>E9</td>
+</tr>
+<tr>
+<td><code>sanitize.py</code> is URL/SSRF validation; it does <strong>not</strong> redact free text</td>
+<td>E10</td>
+</tr>
+<tr>
+<td>Tool-call arguments are persisted and replayed</td>
+<td>E11</td>
 </tr>
 </tbody>
 </table>
-<h2 id="the-one-hard-constraint-a-decision-model-is-not-a-chat-model">The one hard constraint: a decision model is not a chat model</h2>
-<p><code>is_decision_api</code> (<code>app/agents/model_resolver.py:627</code>) refuses a conversational endpoint for decision work, and the model-profile resolver does the same (<code>_decide.py:172</code> — <em>"Select a native decision API profile"</em>). Ollama is a chat provider. <strong>The company Ollama key cannot serve this lane</strong>, and no amount of configuration changes that.</p>
-<p>Three routes, and this is the money decision in this PRD:</p>
+<h2 id="the-constraint-stated-accurately">The constraint, stated accurately</h2>
+<p><code>is_decision_api</code> (<code>app/agents/model_resolver.py:627</code>) is permissive metadata classification, not protocol probing, and the model-profile path requires a decision-capable provider before execution (<code>_decide.py:172</code>). <code>_build_decision_model</code> has <strong>no Ollama branch</strong>.</p>
+<p>Therefore: <strong>the current company chat endpoint cannot serve this lane.</strong> That is a statement about today's configuration and the installed transports — not a proof that no configuration could ever change.</p>
 <table>
 <thead>
 <tr>
 <th>Route</th>
-<th>What it costs</th>
+<th>Cost</th>
 <th>State today</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>A. TypeSafe Jev</strong> — the vendor this platform's lane was built around</td>
-<td>per-call vendor spend; a key we do not hold</td>
+<td><strong>A. TypeSafe Jev</strong> — the vendor the lane was built around</td>
+<td>per-call vendor spend; key not held</td>
 <td>catalogue-ready, no credential</td>
 </tr>
 <tr>
-<td><strong>B. OpenAI <code>gpt-6-luna</code> decisions / Google <code>gemini-decision-1</code></strong></td>
-<td>per-call vendor spend on a vendor account</td>
-<td>catalogue-ready, no credential. Google is a poor fit — we do not use Google for work</td>
+<td><strong>B. OpenAI <code>gpt-6-luna</code> decisions</strong></td>
+<td>per-call vendor spend</td>
+<td>catalogue-ready, no credential. Google <code>gemini-decision-1</code> is a poor fit — we do not use Google</td>
 </tr>
 <tr>
 <td><strong>C. Self-hosted SystemOne-compatible endpoint</strong> on office hardware</td>
-<td>hardware we already own; no vendor</td>
-<td><strong>unverified</strong> — the resolver accepts provider <code>system-one</code> with a <code>base_url</code>, but the catalog does not list it. Needs a one-day spike before it can be promised</td>
+<td>hardware we own</td>
+<td><strong>unverified.</strong> A <code>base_url</code> constructor is not a serving implementation: it needs capacity, auth/TLS, network path, an operator and a benchmark. The spike may return "not demonstrated"</td>
 </tr>
 </tbody>
 </table>
-<p>Recommendation: <strong>spike C first, fall back to A.</strong> C keeps the company's decision traffic on company hardware and matches the "no new vendor" instinct; A is the shortest path to a working lane and can be swapped out later because the profile indirection already exists.</p>
-<h2 id="design">Design</h2>
-<h3 id="1-gate-registry--a-table-not-code-per-bot">1. Gate registry — a table, not code per bot</h3>
-<p>New table <code>decision_gates</code>, org-scoped:</p>
+<p>Recommendation: <strong>spike C, fall back to A.</strong> C keeps decision traffic on company hardware; A is the shortest path to a working lane and is swappable because the profile indirection exists.</p>
+<h2 id="build-plan--the-shared-service-first">Build plan — the shared service first</h2>
+<p>This is the finding that changes the shape of the work. The engine is workflow-coupled:</p>
+<ul>
+<li><code>decide(config, text, answer)</code> calls <code>context.current()</code> <strong>before</strong> its try block (D3 in the review proved this by executing the accessor alone: <code>RuntimeError: No workflow dispatch context is active</code>).</li>
+<li><code>DispatchContext</code> structurally requires workflow run, node run, node instance and attempt ids, plus an auth context and a dispatcher that settles the cost outbox.</li>
+<li>A conversation has agent run, org, user and conversation ids — not workflow ids.</li>
+</ul>
+<p><strong>Slice 1 — extract a service, keep the nodes as adapters.</strong></p>
+<pre><code>DecisionService.decide(
+    *, org_id, auth, agent_id | None, run_id | None,
+    gate: GateRevision, text: str, answer: dict,
+    profile: ResolvedProfile, limits: DecisionLimits,
+    spend: CostSink, on_unsure: str
+) -&gt; DecisionResult</code></pre>
+<ul>
+<li>Workflow nodes become thin adapters that build the same inputs from <code>DispatchContext</code> and receive the same result. Their routing, error types and cost reporting are <strong>regression-tested unchanged</strong>. Legacy node configs keep working: an adapter that receives a boolean/255-option/ten-level node with no <code>gate_revision</code> synthesizes an ephemeral, non-persisted gate revision from the node's own question and options, and the log records <code>gate_key = 'workflow:&lt;node_type&gt;'</code> so history stays readable without inventing a registry row.</li>
+<li>Guardrail checks and error types are made independent of <code>Failed</code> / <code>WorkflowError</code> at this seam.</li>
+<li>A conversational adapter supplies attribution and settles cost through the host ledger, not the dispatcher.</li>
+<li>Do not copy the engine, and do not fabricate workflow ids to satisfy a ContextVar.</li>
+</ul>
+<p><strong>Slice 2 — redaction. Slice 3 — gates. Slice 4 — the tool. Slice 5 — log and Monitoring.</strong> (See §Build order.)</p>
+<h2 id="redaction--a-built-component-at-two-boundaries">Redaction — a built component, at two boundaries</h2>
+<p>v1.0 pointed at a URL validator and called it redaction. Corrected:</p>
+<ul>
+<li>A <strong>versioned detector policy</strong> for credentials, card numbers, ID numbers and health data, applied to <code>state</code>, <code>options</code>, <code>question</code> and <code>context_label</code> <strong>before provider dispatch</strong>.</li>
+<li>The same policy applied <strong>before persistence</strong> at every surface that stores or replays text: tool-call arguments, approval payloads, conversation transcripts, replay records and traces. A redactor only inside the new tool would be too late — the host runner stores arguments before the tool is called (E11).</li>
+<li>A request that still looks like a credential after redaction is <strong>refused</strong>, not sent, and the refusal is logged with no excerpt. There is no "send the sanitized version anyway" path: a detector hit either redacts a whole field to a placeholder (and the call proceeds) or refuses the call. Which of the two applies is fixed per detector in the policy, and the acceptance criteria test exactly that.</li>
+<li><strong>Hashing:</strong> the log stores a <strong>keyed digest</strong> of the normalized, approved representation, not a plain hash — a plain digest of low-entropy input (a name, an amount) is reversible by enumeration.</li>
+<li><strong>Honesty clause:</strong> if the caller's own conversation already contained the source text, this lane cannot remove it. The PRD says so; it does not promise erasure it cannot deliver.</li>
+<li>Proven with <strong>synthetic canaries</strong> across every retention surface, not by inspection.</li>
+</ul>
+<h2 id="cost--a-real-booking-contract">Cost — a real booking contract</h2>
+<ul>
+<li>One <strong>logical call</strong> row per invocation; one or more <strong>attempt</strong> rows beneath it. Logical call ≠ attempt.</li>
+<li>Fees booked <strong>exactly once</strong> to an identity the existing monthly aggregation sees: org + agent + run + call. Decision-log cost and host-ledger cost must reconcile to the same number — no double counting. <strong>Owner of the booking is the new service, not the workflow dispatcher</strong>: the service writes the ledger entry in the same transaction that closes the attempt, and the dispatcher's own report is suppressed for decisions so a workflow run cannot book the same fee twice.</li>
+<li>Failed, cancelled and timed-out attempts are included, with <code>cost_state</code> in <code>{settled, partial, unknown}</code>.</li>
+<li>Unknown price is recorded as a floor and flagged, never silently zero.</li>
+<li>Concurrency: either a <strong>reservation</strong> (known upper-bound price held before dispatch) or an explicitly accepted overshoot contract. Choose one and write it down; v1.0 implied neither.</li>
+<li>When the org cannot afford the call: zero dispatch, a structured error, and a <strong>deterministic handoff</strong> that does not require another paid chat turn. "Run continues and asks a human" was not a mechanism.</li>
+</ul>
+<h2 id="gate-registry">Gate registry</h2>
+<p>New table <code>decision_gates</code> (org-scoped, versioned):</p>
 <table>
 <thead>
 <tr>
 <th>Column</th>
-<th>Purpose</th>
+<th>Rule</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>organization_id</code>, <code>key</code></td>
-<td>unique per org — <code>money_legal</code>, <code>memory</code>, <code>escalation</code>, <code>routing</code>, <code>triage</code></td>
+<td>unique per org; <code>money_legal</code>, <code>memory</code>, <code>escalation</code>, <code>routing</code>, <code>triage</code></td>
 </tr>
 <tr>
 <td><code>title</code>, <code>question</code></td>
-<td>the question asked of the model, phrased as a person would ask it</td>
+<td>question 1–2,000 chars, phrased as a person would ask it</td>
 </tr>
 <tr>
 <td><code>options</code></td>
-<td>jsonb list, 2–8 labels</td>
+<td>2–8 labels, unique, <strong><code>unsure</code> reserved and rejected as a label</strong></td>
 </tr>
 <tr>
 <td><code>threshold</code></td>
-<td>confidence below which the answer is <code>unsure</code></td>
+<td>finite, 0–1</td>
 </tr>
 <tr>
 <td><code>on_unsure</code></td>
-<td>what the caller must do (<code>escalate</code>, <code>refuse</code>, <code>ask_human</code>)</td>
+<td><code>escalate</code> | <code>refuse</code> | <code>ask_human</code></td>
 </tr>
 <tr>
 <td><code>escalate_to</code></td>
-<td>free text: who receives it when unsure</td>
+<td><strong>a platform entity</strong> (user id or group id), not free text</td>
+</tr>
+<tr>
+<td><code>model_profile_id</code></td>
+<td>FK to <code>model_profiles</code>, with an org-level default — so "swap the profile" is real</td>
 </tr>
 <tr>
 <td><code>max_state_chars</code></td>
-<td>per-gate cap, default 8,000</td>
+<td>per-gate, 1–100,000, default 8,000</td>
+</tr>
+<tr>
+<td><code>revision</code></td>
+<td>integer; every edit creates a revision, the audit record names the revision used, and uniqueness is <code>(organization_id, key, revision)</code> with exactly one active revision per key — the key itself is not unique</td>
 </tr>
 <tr>
 <td><code>is_enabled</code></td>
@@ -299,51 +414,96 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 </tbody>
 </table>
-<p>Seeded with the five gates as <strong>Infinity Brands' gates</strong>, with thresholds set by this organization. The platform's copy is not a mirror of Ricardo's personal lane; it is the company's own instrument.</p>
-<h3 id="2-the-tool--decide">2. The tool — <code>decide</code></h3>
-<p>Registered in the platform MCP toolset beside the other platform tools, <strong>not</strong> in <code>PLATFORM_UNGATED_TOOLS</code> — it spends money, so it is reachable only by an agent that holds the tool.</p>
-<p><strong>Input</strong></p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gate&quot;</span><span class="fu">:</span> <span class="st">&quot;routing&quot;</span><span class="fu">,</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;state&quot;</span><span class="fu">:</span> <span class="st">&quot;The client says the invoice is wrong and asks for a credit note before month end.&quot;</span><span class="fu">,</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;options&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;finance&quot;</span><span class="ot">,</span> <span class="st">&quot;exco&quot;</span><span class="ot">,</span> <span class="st">&quot;sales&quot;</span><span class="ot">,</span> <span class="st">&quot;none&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;context_label&quot;</span><span class="fu">:</span> <span class="st">&quot;inbound email triage&quot;</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
-<p><strong>Output</strong></p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;decision&quot;</span><span class="fu">:</span> <span class="st">&quot;finance&quot;</span><span class="fu">,</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;confidence&quot;</span><span class="fu">:</span> <span class="fl">0.91</span><span class="fu">,</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;reason&quot;</span><span class="fu">:</span> <span class="st">&quot;Credit note and month-end deadline are Finance&#39;s remit.&quot;</span><span class="fu">,</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gate&quot;</span><span class="fu">:</span> <span class="st">&quot;routing&quot;</span><span class="fu">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;decision_id&quot;</span><span class="fu">:</span> <span class="st">&quot;…&quot;</span><span class="fu">,</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;latency_ms&quot;</span><span class="fu">:</span> <span class="dv">840</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
 <ul>
-<li><code>state</code> is capped per gate (default 8,000 chars, engine maximum 100,000) and is <strong>redacted</strong> before it leaves the platform — secrets, tokens and card numbers are stripped, and a request that still looks like a credential is refused rather than sent.</li>
-<li><code>options</code> is optional; when omitted the gate's own <code>options</code> are used. Maximum eight labels.</li>
-<li>Below <code>threshold</code>: <code>decision: "unsure"</code>, <code>on_unsure</code> returned verbatim, no invented label.</li>
+<li><strong>Disabled or missing gate:</strong> the tool refuses with a typed error and logs it; it never falls back to a default gate.</li>
+<li><strong>Caller overrides:</strong> v1 forbids replacing gate labels. A caller may pass <code>options</code> <strong>only</strong> as a subset of the gate's approved labels, validated server-side.</li>
+<li><strong>Attribution is server-derived:</strong> agent, run, user and org come from the authenticated call, never from model input.</li>
 </ul>
-<h3 id="3-decision-log">3. Decision log</h3>
-<p>New table <code>decision_log</code>: <code>id, organization_id, gate_key, agent_id, run_id, conversation_id, state_hash, state_excerpt (redacted, ≤500 chars), decision, confidence, model_profile_id, latency_ms, cost, created_at</code>. Retention follows the org's <code>retention_defaults</code>. The raw state is never stored — the hash and the excerpt are what an auditor needs and all they get.</p>
-<h3 id="4-operator-surface">4. Operator surface</h3>
-<p>A <strong>Monitoring → Decisions</strong> page: per gate, per bot — volume, unsure rate, p50 latency, spend to date, and the top reasons. This is the page that answers "is the lane deciding well?" without reading logs.</p>
+<h2 id="response-contract">Response contract</h2>
+<ul>
+<li>Engine result → tool result mapping is explicit: <code>Answered.answer</code> → label; <code>confidence</code> validated finite and inside 0–1 (the engine defaults missing metadata to zero); label must be a member of the effective set.</li>
+<li><strong>Below threshold:</strong> the label is suppressed and the tool returns <code>unsure</code> plus the gate's <code>on_unsure</code> action. Equality with the threshold is <strong>accepted</strong> — <code>confidence &gt;= threshold</code> is a decision.</li>
+<li><strong><code>reason</code> is removed from v1.</strong> The native endpoints do not return one; synthesizing one from probabilities would be an invented justification. If Monitoring must show reasons later, that is a separate scoped, priced feature with its own provider capability check.</li>
+<li>Malformed or missing provider metadata → <code>unsure</code> with <code>status = provider_metadata_missing</code>, never a crash.</li>
+</ul>
+<h2 id="provisioning-and-access">Provisioning and access</h2>
+<ul>
+<li><strong>Platform binding:</strong> the <code>decide</code> tool lives in the platform MCP toolset. A bot reaches it only if it holds a <strong>platform binding</strong> — which is independent of the ClickUp work and must be migrated per pilot bot explicitly. Seventeen bots currently have no platform binding at all.</li>
+<li><strong>Not in <code>PLATFORM_UNGATED_TOOLS</code>:</strong> that set is an approval exception, not an access gate. Access is the binding plus <code>agents:run</code>.</li>
+<li><strong>Approval:</strong> a paid label call is annotated <code>writes: true</code> so an org that gates writes parks it. Whether that is wanted for a one-second decision is D4.</li>
+<li><strong>Public / embed / anonymous:</strong> denied server-side and <strong>tested directly</strong> (AC9). A public-origin workflow with a principal is a case to settle, not to assume.</li>
+<li><strong>Rate limits and budget:</strong> per-bot and per-org caps on decisions per run and per hour, enforced before dispatch.</li>
+</ul>
+<h2 id="decision-log">Decision log</h2>
+<p><code>decision_log</code>, with the fields the acceptance criteria actually need:</p>
+<p><code>id, organization_id, gate_key, gate_revision, agent_id, run_id, conversation_id, user_id, caller_kind, workflow_run_id (nullable), workflow_node_run_id (nullable), effective_options (jsonb), attempt_count, idempotency_key (unique), status, decision, confidence, on_unsure, state_digest (keyed), state_excerpt (redacted, ≤500, nullable), model_profile_id (nullable), latency_ms, cost, cost_state, error_code (sanitized), created_at</code>.</p>
+<p><code>decision_attempts</code>: <code>id, decision_id, attempt_no, dispatched_at, status, latency_ms, cost, cost_state, error_code</code>.</p>
+<ul>
+<li><strong>Status vocabulary:</strong> <code>decided</code>, <code>unsure</code>, <code>refused</code>, <code>disabled</code>, <code>missing_gate</code>, <code>budget_refused</code>, <code>provider_error</code>, <code>provider_metadata_missing</code>, <code>timeout</code>, <code>cancelled</code>, <code>outcome_unknown</code>. A status outside this set is a defect, not a new value. Pre-resolution refusals leave profile/confidence/cost null.</li>
+<li><strong>Idempotency:</strong> a replayed call id neither rebills nor creates a second logical row.</li>
+<li><strong>Retention:</strong> follows the org's retention defaults, with a purge job and a floor from the audit settings.</li>
+<li><strong>Access:</strong> gate authors (D5) read/write gates; only owner/admin read the log; bots never read it.</li>
+<li><strong>Migration:</strong> FKs, the unique idempotency index, and a partial index on <code>(organization_id, gate_key, created_at)</code> for the Monitoring queries.</li>
+</ul>
+<h2 id="operator-surface">Operator surface</h2>
+<p><strong>Monitoring → Decisions:</strong> per gate and per bot — volume, unsure rate (with the denominator stated), p50 and p95 latency, spend with partial-cost flags, and status breakdown. No reasons in v1.</p>
 <h2 id="acceptance-criteria">Acceptance criteria</h2>
-<ol type="1">
-<li>A decision model profile exists and passes resolution: creating a workflow decision node with it validates instead of returning <code>DECISION_MODEL_REQUIRED</code>.</li>
-<li>A bot calls <code>decide</code> mid-conversation and gets a label back — no workflow involved. Evidence: the run's tool-call record names the tool and its latency.</li>
-<li>Latency p50 under 2 s for a 2,000-character state on the chosen route.</li>
-<li>A state containing a credential-shaped string is refused, and the refusal is logged as <code>refused</code>, not sent to the provider.</li>
-<li>A decision that would exceed the org budget is refused with the budget error, and the run continues — the bot degrades to asking a human.</li>
-<li>A nonsense question scores below threshold and returns <code>unsure</code> with the gate's <code>on_unsure</code> text.</li>
-<li><code>decision_log</code> has one row per call with a null-free <code>state_hash</code> and no raw state.</li>
-<li>The Monitoring page shows the same counts as a direct SQL query for the same window.</li>
-</ol>
+<p>Every state-changing case runs against an isolated fixture or fake provider. SELECT and source reads inspect the stored evidence; wrappers alone cannot prove external non-dispatch without instrumentation.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AC1</td>
+<td>An authorized native decision profile validates <strong>and</strong> executes a fixture decision through both adapters (workflow node and tool) with typed output. Negative cases retained: a chat profile is refused, an unsupported transport is refused, a missing/unusable credential is refused.</td>
+</tr>
+<tr>
+<td>AC2</td>
+<td>With explicit platform bindings, FIN and SAL: the effective manifest contains <code>decide</code>; a call succeeds with no workflow dispatch context; the result carries source attribution; exactly one logical log row; cost booked exactly once and reconciled against the org total.</td>
+</tr>
+<tr>
+<td>AC3</td>
+<td>Latency benchmarked over ≥100 fixed 2,000-character cases on the named route, warm and cold, with concurrency stated: report p50/p95, timeouts and errors, with an explicit rule for including failed calls. Unverified until measured.</td>
+</tr>
+<tr>
+<td>AC4</td>
+<td>Canary patterns only: zero provider-dispatch events, a structured <code>refused</code> status, and no canary in tool args, results, approval payloads, replay, log, error or trace stores. The excerpt and digest behave as specified.</td>
+</tr>
+<tr>
+<td>AC5</td>
+<td>With a fixture price and headroom: an exhausted budget causes <strong>zero dispatch</strong>; failed/cancelled/timed-out attempts settle attributable fees once; concurrent attempts respect the chosen reservation or overshoot contract; the handoff is deterministic and needs no further paid chat turn; SQL reconciles the ledger.</td>
+</tr>
+<tr>
+<td>AC6</td>
+<td>Inject provider confidences below, equal to and above the threshold, plus missing, non-finite and out-of-range values, and an invalid label. Below → <code>unsure</code> + <code>on_unsure</code> only; equal and above → an allowed label; malformed → <code>provider_metadata_missing</code>.</td>
+</tr>
+<tr>
+<td>AC7</td>
+<td>One logical row for every outcome — decided, unsure, refused, disabled, missing gate, budget, provider error, timeout, cancel — with nullable fields null where resolution never happened. A replayed call id neither rebills nor duplicates. No raw state on any surface.</td>
+</tr>
+<tr>
+<td>AC8</td>
+<td>For a fixed org, gate and agent over a half-open UTC window, Monitoring counts (status-inclusive, unsure denominator stated), p50 and spend match SQL; tenant isolation and the retention purge are verified.</td>
+</tr>
+<tr>
+<td>AC9</td>
+<td>Public, embed and anonymous callers are <strong>denied server-side</strong> with evidence, not inferred from a set name. An external-MCP caller is denied or permitted by an explicit, tested rule.</td>
+</tr>
+<tr>
+<td>AC10</td>
+<td>Kill switch: disabling a gate refuses immediately with <code>disabled</code>; re-enabling restores service without a deploy. Rollback to the previous gate revision is exercised and the audit names the revision used.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="non-goals">Non-goals</h2>
 <ul>
-<li><strong>Not a memory.</strong> The lane retains nothing beyond the log excerpt; the 22 knowledge bases are the memory. No decision is written back as a fact.</li>
-<li><strong>Not a write path.</strong> It returns a label. It never mutates Zoho, ClickUp or the platform.</li>
-<li><strong>Not an approval system.</strong> Human approval for tool writes is a separate, existing mechanism.</li>
-<li><strong>Not connected to Ricardo's personal gate.</strong> The <code>:8792</code> endpoint on his Mac mini is out of scope by design, and this PRD treats reaching it as a defect.</li>
+<li><strong>Not a memory.</strong> Nothing is written back as a fact; the knowledge bases are the memory.</li>
+<li><strong>Does not execute business actions and does not replace approvals.</strong> It creates and updates its own gate and log rows and charges spend — so "not a write path" would be false; this is the accurate claim.</li>
+<li><strong>Not connected to Ricardo's personal gate.</strong> Reaching <code>:8792</code>, or any personal fleet endpoint, is a defect.</li>
 </ul>
 <h2 id="failure-modes">Failure modes</h2>
 <table>
@@ -356,48 +516,54 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>Decision endpoint down</td>
-<td>tool error, provider non-200</td>
-<td>bot falls back to <code>on_unsure</code>; no retry storm (single attempt, logged)</td>
+<td>Provider down or timing out</td>
+<td>attempt status, error rate</td>
+<td>single bounded attempt, then <code>provider_error</code>; no retry storm</td>
 </tr>
 <tr>
-<td>Vendor key expires</td>
-<td>401 on every call</td>
-<td>alert on the gate's error rate; profile swap is one field</td>
+<td>Credential rejected</td>
+<td>401 on attempts</td>
+<td>alert on the gate's error rate; the profile swap is one FK</td>
 </tr>
 <tr>
-<td>Confidence drift — everything comes back <code>unsure</code></td>
-<td>unsure rate on the Monitoring page</td>
-<td>re-tune threshold or question; the page exists for this</td>
+<td>Everything returns <code>unsure</code></td>
+<td>unsure rate on Monitoring</td>
+<td>re-tune threshold or question — the page exists for it</td>
 </tr>
 <tr>
-<td>A bot sends health or identity data in <code>state</code></td>
-<td>redaction refuses, logged</td>
-<td>that is the guard working; review the bot's instructions</td>
+<td>Cost overruns</td>
+<td>reconciliation mismatch between ledger and log</td>
+<td>block the gate, reconcile before re-enabling</td>
 </tr>
 <tr>
-<td>Self-hosted route C performs worse than the vendor</td>
-<td>side-by-side on the same gate for a week</td>
-<td>keep both profiles, switch the gate, no code change</td>
+<td>A bot sends sensitive text</td>
+<td>refusal + canary inspection</td>
+<td>the guard working; review that bot's instructions</td>
+</tr>
+<tr>
+<td>Self-hosted route C underperforms</td>
+<td>side-by-side on one gate for a week</td>
+<td>keep both profiles, switch by FK, no code change</td>
 </tr>
 </tbody>
 </table>
 <h2 id="security-permissions-audit">Security, permissions, audit</h2>
 <ul>
-<li>Gated on <code>agents:run</code>; the tool is not ungated and cannot be reached by a public embed.</li>
-<li>Inputs are redacted before leaving the platform; secrets never enter the state (<code>app/core/sanitize.py</code>).</li>
-<li>The decision log records who asked, which gate and what label — never the raw text.</li>
-<li>Spend is charged through the existing <code>SpendLedger</code> / <code>BudgetGuard</code>, so a decision lane cannot hide vendor cost from the org's budget.</li>
+<li>Server-derived attribution only; no identity accepted from model input.</li>
+<li>Redaction before dispatch <strong>and</strong> before persistence; keyed digests, not plain hashes.</li>
+<li>The log records who asked (org/agent/run/user), the gate <strong>revision</strong>, the label and the cost — never the raw text, and no reasons in v1.</li>
+<li>Spend settles through the existing aggregation so the lane cannot hide vendor cost.</li>
 </ul>
 <h2 id="build-order">Build order</h2>
 <ol type="1">
-<li><strong>Spike route C</strong> (self-hosted SystemOne-compatible endpoint) — one day, on office hardware, no vendor. Outcome: verified or dropped. <em>Gate: Ricardo, if it fails.</em></li>
-<li><strong>Credential</strong> — whichever route survives step 1. <em>Gate: Ricardo — money/legal.</em></li>
-<li><strong>Gate registry</strong> table, migration, the five gates seeded, admin CRUD.</li>
-<li><strong><code>decide</code> platform tool</strong> on top of <code>_decide.py</code> — reuse the engine, do not fork it.</li>
-<li><strong><code>decision_log</code></strong> + redaction + budget charge.</li>
-<li><strong>Monitoring → Decisions</strong> page.</li>
-<li>Pilot: <code>routing</code> and <code>triage</code> on the FIN and SAL bots for two weeks before any other gate.</li>
+<li><strong>Route C spike</strong> — verified or dropped. <em>Gate: Ricardo if it fails.</em></li>
+<li><strong>Credential</strong> for the surviving route. <em>Gate: Ricardo — money/legal.</em></li>
+<li><strong>Slice 1 — shared service extraction</strong>, workflow nodes converted to adapters, regression tests proving unchanged workflow routing, errors and cost.</li>
+<li><strong>Slice 2 — redaction</strong> component + canary tests across every store.</li>
+<li><strong>Slice 3 — <code>decision_gates</code></strong> migration, revisions, admin CRUD, org default profile.</li>
+<li><strong>Slice 4 — <code>decide</code> tool</strong> on top of the service, platform binding, rate limits, public denial.</li>
+<li><strong>Slice 5 — <code>decision_log</code> + <code>decision_attempts</code></strong> + <code>Monitoring → Decisions</code>.</li>
+<li><strong>Pilot:</strong> <code>routing</code> and <code>triage</code> on FIN and SAL for two weeks before any other gate.</li>
 </ol>
 <h2 id="decisions-register">Decisions register</h2>
 <table>
@@ -411,27 +577,47 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>D1</td>
-<td>Route A, B or C — and if A/B, which vendor and which budget line</td>
+<td>Route A, B or C; if A/B, which vendor and which budget line</td>
 <td>Ricardo (money/legal)</td>
 </tr>
 <tr>
 <td>D2</td>
-<td>Are the five gates the same five as §8, or does Infinity Brands define its own set?</td>
+<td>Are these the same five gates as §8, or does Infinity Brands sign off its own questions, labels and unsure actions?</td>
 <td>Ricardo</td>
 </tr>
 <tr>
 <td>D3</td>
-<td>Default threshold — start at 0.75 and tune, or per gate from day one?</td>
+<td>Thresholds per gate — starting value and tuning cadence</td>
 <td>Ricardo</td>
 </tr>
 <tr>
 <td>D4</td>
-<td>Who may author or edit a gate definition — owner/admin only, or builders too?</td>
+<td>Is a paid label call approval-held (<code>writes</code>), or free-running within rate limits? Note: if the platform's write-approval floor is unconditional, free-running needs either a documented exception in the platform or the call must not be annotated <code>writes</code>. Decide which.</td>
 <td>Ricardo</td>
 </tr>
 <tr>
 <td>D5</td>
-<td>Does an <code>unsure</code> on the escalation gate notify a person in the platform, or only tell the bot?</td>
+<td>Who authors gates — owner/admin only, or builders?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>On <code>unsure</code> with <code>escalate</code>: notify a person in-platform, or advise the bot only?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>Budget semantics — reservation (hard cap) or accepted overshoot?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>Log retention period and who may read it</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D9</td>
+<td>Behaviour for external MCP callers and public-origin workflows with a principal</td>
 <td>Ricardo</td>
 </tr>
 </tbody>
@@ -439,14 +625,17 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h2 id="evidence-appendix">Evidence appendix</h2>
 <ul>
 <li><strong>E1</strong> <code>ls /app/app/workflows/nodes/</code> → <code>decide_yes_no</code>, <code>decide_choose</code>, <code>decide_score</code>, <code>_decide.py</code> (326 lines).</li>
-<li><strong>E2</strong> <code>sed -n 1,60p /app/app/workflows/nodes/_decide.py</code> — docstring, <code>UNSURE_PORT</code>, <code>MAX_TEXT = 100_000</code>, budget/guardrail imports.</li>
-<li><strong>E3</strong> <code>app/agents/model_resolver.py:627</code> <code>is_decision_api(provider, api)</code>.</li>
-<li><strong>E4</strong> <code>app/agents/model_resolver.py:632</code> <code>_build_decision_model</code> — TypeSafe, OpenAI decisions, Google decisions, SystemOne/OpenRouter.</li>
-<li><strong>E5</strong> <code>cat /app/app/core/catalog/decision_provider_models.json</code> → typesafe / openai / google / openrouter entries.</li>
-<li><strong>E6</strong> <code>select label, provider, model from model_profiles</code> → 5 rows, all <code>ollama</code>; two labelled NOT PERMITTED.</li>
-<li><strong>E7</strong> <code>grep -rl "decision" /app/app --include=*.py</code> → workflow nodes and authoring only; no platform tool.</li>
-<li><strong>E8</strong> <code>select count(*) from agents</code> where org = infinity-brands → 22; 17 with zero bindings.</li>
-<li><strong>E9</strong> <code>select count(*) from knowledge_bases</code> → 22, with <code>embedding_model</code>, <code>embedding_dim</code>, <code>embedding_provider</code>.</li>
+<li><strong>E2</strong> <code>sed -n 1,60p</code> and <code>grep -n 'min_confidence'</code> on <code>_decide.py</code> / handlers → <code>MAX_TEXT = 100_000</code>; threshold compared in each handler (lines 52, 68, 92); <code>Answered</code> has no reason field.</li>
+<li><strong>E3</strong> <code>app/agents/model_resolver.py:627</code> <code>is_decision_api</code>.</li>
+<li><strong>E4</strong> <code>app/agents/model_resolver.py:632</code> <code>_build_decision_model</code> — TypeSafe, OpenAI, Google, SystemOne/OpenRouter.</li>
+<li><strong>E5</strong> <code>cat /app/app/core/catalog/decision_provider_models.json</code>.</li>
+<li><strong>E6</strong> <code>select label, provider, model from model_profiles</code> → 5 rows database-wide, 4 in this org, all <code>ollama</code>; two NOT PERMITTED.</li>
+<li><strong>E7</strong> <code>grep -rl "decision" /app/app --include=*.py</code> → workflow nodes and authoring only.</li>
+<li><strong>E8</strong> <code>select count(*) from agents where organization_id = &lt;org&gt;</code> → 22; 17 with zero MCP bindings.</li>
+<li><strong>E9</strong> <code>select count(*) from knowledge_bases</code> → 22; <code>select count(*), count(distinct knowledge_base_id) from rag_documents</code> → 142 documents in 15 bases.</li>
+<li><strong>E10</strong> <code>sed -n 1,25p /app/app/core/sanitize.py</code> → URL/SSRF validation only.</li>
+<li><strong>E11</strong> <code>grep -n 'args' /app/app/agents/*.py</code> → tool-call arguments are persisted and replayed.</li>
+<li><strong>E12</strong> <code>_decide.py:193</code> <code>context.current()</code> — raises outside a workflow dispatch (review D3/D18, executed).</li>
 </ul>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
