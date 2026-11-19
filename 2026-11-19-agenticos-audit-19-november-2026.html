@@ -136,7 +136,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">subgraph</span> <span class="dt">FREE</span>[<span class="st">&quot;Free, still off — decision&quot;</span>]</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B1</span>[<span class="st">&quot;Browser automation</span><span class="sc">&lt;br/&gt;</span><span class="st">(needs custom image)&quot;</span>]</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B2</span>[<span class="st">&quot;Artifact renderer</span><span class="sc">&lt;br/&gt;</span><span class="st">(same image)&quot;</span>]</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B3</span>[<span class="st">&quot;pg_stat_statements</span><span class="sc">&lt;br/&gt;</span><span class="st">(DB restart)&quot;</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B3</span>[<span class="st">&quot;query statistics — now ON&quot;</span>]</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B4</span>[<span class="st">&quot;Proactive watches&quot;</span>]</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">end</span></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">subgraph</span> <span class="dt">PAID</span>[<span class="st">&quot;Excluded — costs money&quot;</span>]</span>
@@ -249,9 +249,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Same image; <code>--profile artifact-render</code>, 768m cap</td>
 </tr>
 <tr>
-<td><code>pg_stat_statements</code></td>
-<td>Slow-query statistics</td>
-<td>A <code>postgresql.conf</code> change and a database restart (a minute of downtime)</td>
+<td><del><code>pg_stat_statements</code></del></td>
+<td><strong>ON since 19 Nov 13:33.</strong> <code>doctor</code>: <code>[ok] query statistics: pg_stat_statements is recording</code> (49 statements after the first minute)</td>
+<td>Preloaded through the instance overlay's <code>db.command</code>; extension created once</td>
 </tr>
 <tr>
 <td>Proactive watches</td>
@@ -285,10 +285,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h2 id="4-the-remaining----doctor-lines-explained">4. The remaining <code>[--]</code> doctor lines, explained</h2>
 <ol type="1">
 <li><code>postgres: tls=off</code> and 2. <code>redis: tls=off</code> — both services are unpublished and only reachable on the internal network; TLS buys nothing here.</li>
-<li><code>pg_stat_statements unavailable</code> — free, needs a Postgres config change and a restart; diagnostics only.</li>
 <li><code>file storage: backend=local</code> — files live on the VM's own volume; S3/MinIO would be another moving part.</li>
 <li><code>tracing: LOGFIRE_TOKEN unset</code> — paid, excluded.</li>
 </ol>
+<p>Query statistics moved off this list at 13:33 on 19 November: <code>shared_preload_libraries=pg_stat_statements</code> is now set in the instance overlay's <code>db.command</code>, the extension is created, and the line reads <code>[ok] query statistics: pg_stat_statements is recording</code>.</p>
 <h2 id="4a-the-1330-change-and-the-two-minutes-it-cost">4a. The 13:30 change, and the two minutes it cost</h2>
 <p>Enabling the browser lane stopped the stack once: <code>browser-egress</code> bind-mounts <code>./docker/browser-egress/squid.conf</code>, Docker created that path as a root-owned directory on the first attempt (we have no sudo), the mount failed, and the dependent <code>migrate</code>/<code>app</code>/<code>worker</code> never started. Service was restored within about two minutes by pointing the overlay at <code>nginx/squid.conf</code>. The correct lesson: a profile service that bind-mounts a file must have that file before the profile is ever enabled.</p>
 <h2 id="5-change-in-flight-observed-at-1311-today">5. Change in flight, observed at 13:11 today</h2>
