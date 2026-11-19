@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD — Systems Maintenance &amp; Knowledge Refresh Programme</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd--systems-maintenance--knowledge-refresh-programme">PRD — Systems Maintenance &amp; Knowledge Refresh Programme</h1>
+<p><strong>Product:</strong> Maio OS / fleet maintenance control plane + AgenticOS lifecycle + Infinity Brands estate upkeep <strong>Owner:</strong> Adrianna A (AI stack) · accountable bot: <strong>Courage</strong> (systems), <strong>Batman</strong> (business surfaces), <strong>Reviewer</strong> (independent audit) <strong>Status:</strong> Draft for Ricardo's approval <strong>Version:</strong> 1.0 · 2026-11-19 <strong>Scope:</strong> 4 workstreams — (1) our systems &amp; devices, (2) AgenticOS, (3) the Infinity Brands estate as a whole, (4) Infinity Brands ClickUp + the knowledge base that feeds it. <strong>Requested by:</strong> Ricardo, 2026-11-19</p>
+<hr />
+<h2 id="0-the-short-answer--which-bot-does-what">0. The short answer — which bot does what</h2>
+<p>One accountable bot per surface, no shared custody, one independent auditor:</p>
+<table>
+<thead>
+<tr>
+<th>Bot</th>
+<th>Owns</th>
+<th>Why this bot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Courage</strong></td>
+<td>All <strong>machine and platform maintenance</strong>: the Mac mini + MacBook Air, office hosts, AgenticOS upgrades, scheduled-job integrity, disk/RAM, certs, DNS, the maintenance ledger and the daily/weekly digest</td>
+<td>It already runs the weekly software sweep (<code>dc3a02759447</code>), the cron dead-man switch, disk headroom, the AgenticOS public-door watchdog and the AgenticOS embed gate. Maintenance is the job it already has; this PRD gives it a complete, evidenced remit instead of a partial one.</td>
+</tr>
+<tr>
+<td><strong>Reviewer</strong></td>
+<td><strong>Independent audit</strong> of every maintenance claim: did the update actually land, did the backup actually restore, does the digest match the ledger</td>
+<td>Separation of duty. The bot that changes the box must not be the bot that certifies it. Reviewer already runs the daily cron-fleet self-audit, vault-backup integrity and the completed-work claim verifier.</td>
+</tr>
+<tr>
+<td><strong>Dexter</strong></td>
+<td><strong>Telemetry, cost, capacity, backup drill</strong></td>
+<td>Existing jobs: fleet telemetry digest, fleet economics, backup restore drill, backup coverage map, capacity forecast, token anomaly guard.</td>
+</tr>
+<tr>
+<td><strong>Batman</strong></td>
+<td><strong>Business surface governance</strong> — ClickUp workspace, Zoho Projects/CRM filing discipline, BU brief standards</td>
+<td>Work belongs to the work seat. The <em>checks</em> are scripted (zero model spend); Batman approves the writes and owns the business rules.</td>
+</tr>
+<tr>
+<td><strong>Scribe → Beast</strong></td>
+<td><strong>Knowledge documents</strong>: Scribe drafts and formats the reference docs; Beast is the only writer into the vault (OpenKnowledge)</td>
+<td>Standing rule already in force.</td>
+</tr>
+<tr>
+<td><strong>Adrianna A (me)</strong></td>
+<td>Architecture, runbook authoring, escalation, stack decisions</td>
+<td>I set the standard and answer for the stack on Ricardo's bot.</td>
+</tr>
+</tbody>
+</table>
+<p>Non-negotiables that already constrain this design: no payments, no e-signatures, no bulk changes, no live-business-system writes, no key material in git, no secret to the decision gate, vault read-only except Beast.</p>
+<hr />
+<h2 id="1-problem">1. Problem</h2>
+<p>The estate is large, live and mostly unmonitored at the <em>change</em> layer:</p>
+<table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Evidence (19 Nov 2026)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>106 scheduled jobs across 12 Hermes profiles</td>
+<td><code>jobs.json</code> counts: default 11, courage 27, batman 19, researcher 8, splinter 8, dexter 8, builder 7, reviewer 5, beast 4, april 4, alfred 3, infinity 2 = 106</td>
+</tr>
+<tr>
+<td>The platform is two releases behind upstream</td>
+<td>AgenticOS reports <strong>1.82.2</strong> (<code>agenticos, version 1.82.2</code>, <code>.env AGENTICOS_VERSION=1.82.2</code>); GitHub latest is <strong>v1.84.0</strong>, published 2026-11-18T22:00Z</td>
+</tr>
+<tr>
+<td>Platform is healthy <em>today</em> but nothing watches for releases</td>
+<td>11 containers healthy, <code>agenticos-gateway</code> up, public door <code>302 → Cloudflare Access</code>, tailnet admin <code>200</code>. Existing crons: public-door watchdog every 10 min, embed gate — <strong>no release-watch, no upgrade runner</strong></td>
+</tr>
+<tr>
+<td>The KB holds 142 documents against a 1.27M-file, 13.38 TB WorkDrive corpus</td>
+<td>DB: <code>rag_docs 142</code>, <code>knowledge_bases 22</code>; <code>wd-sync</code> README scale table totals 1,274,298 files / 13.38 TB; nightly budget is 15 uploads × 16 departments</td>
+</tr>
+<tr>
+<td>The nightly sync is the only ingestion path and it is capped</td>
+<td>host crontab: <code>5 3 * * * … PER_DEPT_UPLOADS=15 PER_DEPT_FOLDERS=60 ./run-all.sh</code></td>
+</tr>
+<tr>
+<td>ClickUp exists but carries no work yet</td>
+<td>16 spaces (BUs 1–12 + NVP + MANCO + EXCO + REP) on the Business plan; <code>MANCO Briefed-In</code> and <code>MANCO Projects</code> both report <strong>0 tasks</strong></td>
+</tr>
+<tr>
+<td>macOS updates are check-only</td>
+<td><code>fleet-update.sh</code> phase 10: <code>softwareupdate --list</code> / <code>mas outdated</code>, "needs admin; reported"</td>
+</tr>
+<tr>
+<td>No single inventory of assets</td>
+<td>Hosts, containers, devices, tokens and windows are described in <code>ACCESS.md</code>, skills and memory separately; the sweep documentation already drifts (skill says Mondays 05:00, the job store says <code>0 3 * * 1</code>)</td>
+</tr>
+<tr>
+<td>One daily self-audit, no change ledger</td>
+<td>Reviewer's <code>Cron fleet self-audit</code> runs 08:00 daily; nothing records <em>what changed</em> on which host, by which run, with what rollback</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consequence:</strong> upkeep is event-driven — it happens when Ricardo asks, or when something breaks. There is no drift detection, no maintenance window, no verified rollback, no owner of "is everything still current", and no loop that turns the 13.38 TB of company documents into retrievable knowledge.</p>
+<hr />
+<h2 id="2-goals--non-goals">2. Goals / non-goals</h2>
+<h3 id="goals">Goals</h3>
+<ol type="1">
+<li><strong>One inventory, one ledger.</strong> Every host, device, container, service, account, token and scheduled job is declared in one machine-readable inventory, and every maintenance action is recorded in one append-only ledger with evidence.</li>
+<li><strong>Drift is detected daily, fixed weekly.</strong> Version, patch, certificate, token and configuration drift is measured every day and closed inside a fixed window — autonomously where risk is low, with Ricardo's go where it touches production.</li>
+<li><strong>AgenticOS tracks upstream within one minor release</strong>, upgraded through staging with a health gate and an automatic rollback.</li>
+<li><strong>Knowledge is fresh and cited.</strong> The top business documents are in the KB with provenance, staleness is scored, retired documents are retired, and skills/context/tables are reviewed on a cadence.</li>
+<li><strong>ClickUp becomes the single work surface</strong> with enforced fields, live Briefed-In lists and a weekly hygiene pass.</li>
+<li><strong>Every claim verified by a second bot.</strong> Reviewer independently re-checks a sample and signs the weekly report.</li>
+</ol>
+<h3 id="non-goals-v1">Non-goals (v1)</h3>
+<ul>
+<li>No migration off Zoho, ClickUp, Cloudflare or the current hosting model.</li>
+<li>No new model or MCP server beyond what the roster already carries.</li>
+<li>No auto-merge of code, no autonomous production <em>application</em> deploys (AgenticOS version upgrades are the only production change in scope, and they are gated).</li>
+<li>No handling of money, contracts or personal data outside existing policy.</li>
+<li>No full-corpus re-index of 13.38 TB — coverage is targeted (see W4).</li>
+</ul>
+<hr />
+<h2 id="3-users-and-jobs-to-be-done">3. Users and jobs to be done</h2>
+<table>
+<thead>
+<tr>
+<th>User</th>
+<th>Job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ricardo</strong></td>
+<td>"Tell me once a day that everything is current, and tell me only when it isn't. Never surprise me with a production change."</td>
+</tr>
+<tr>
+<td><strong>Staff (4 platform users, 40 ClickUp seats)</strong></td>
+<td>"The platform and my knowledge assistant are up, current and answer from the latest documents."</td>
+</tr>
+<tr>
+<td><strong>Me / the fleet</strong></td>
+<td>"I can see what version everything is, what changed last night, and how to undo it."</td>
+</tr>
+<tr>
+<td><strong>Auditor (Reviewer)</strong></td>
+<td>"I can prove a claim without trusting the bot that made it."</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-success-metrics">4. Success metrics</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Metric</th>
+<th>Target</th>
+<th>Measured by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td>Inventory coverage</td>
+<td>100% of hosts, containers, devices, tokens, scheduled jobs declared</td>
+<td><code>inventory.yaml</code> vs live scan diff = 0</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>AgenticOS version lag</td>
+<td>≤ 1 minor release behind upstream, ≤ 14 days</td>
+<td>daily release check in ledger</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>Critical patch latency (macOS, host OS, CVE in a shipped component)</td>
+<td>≤ 7 days to install or to an explicit Ricardo decision</td>
+<td>ledger timestamps</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>Mac app/tool freshness</td>
+<td>≤ 14 days; <code>brew outdated</code> = 0 on both Macs</td>
+<td>weekly sweep output</td>
+</tr>
+<tr>
+<td>M5</td>
+<td>Backup restore proof</td>
+<td>monthly restore drill, 100% of critical stores</td>
+<td>Dexter drill + Reviewer sign-off</td>
+</tr>
+<tr>
+<td>M6</td>
+<td>KB freshness</td>
+<td>100% of the "top 200" business docs present and &lt; 90 days old; 0 orphaned KB docs</td>
+<td>W4 freshness report</td>
+</tr>
+<tr>
+<td>M7</td>
+<td>ClickUp field completeness</td>
+<td>0 tasks missing Client/Function/Tier/Priority/Due; Briefed-In non-empty for every BU with open work</td>
+<td>W5 audit</td>
+</tr>
+<tr>
+<td>M8</td>
+<td>Digest reliability</td>
+<td>daily digest delivered by 07:00 SAST, 100% of days; 0 unverified claims</td>
+<td>Reviewer</td>
+</tr>
+<tr>
+<td>M9</td>
+<td>Change failure rate</td>
+<td>&lt; 5% of maintenance changes need rollback; 100% of rollbacks rehearsed</td>
+<td>ledger</td>
+</tr>
+<tr>
+<td>M10</td>
+<td>Maintenance cost</td>
+<td>≤ 1 agent-turn budget per exception; no-agent scripts for all routine checks</td>
+<td>Dexter economics</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-ownership-model-raci">5. Ownership model (RACI)</h2>
+<table>
+<thead>
+<tr>
+<th>Workflow</th>
+<th>Responsible (does it)</th>
+<th>Accountable (owns outcome)</th>
+<th>Consulted</th>
+<th>Informed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W1 Mac &amp; device upkeep</td>
+<td>Courage (scripts)</td>
+<td>Courage</td>
+<td>Ricardo (admin actions)</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>W2 AgenticOS lifecycle</td>
+<td>Courage</td>
+<td>Courage</td>
+<td>Adrianna A (stack), Ricardo (prod window)</td>
+<td>Staff</td>
+</tr>
+<tr>
+<td>W3 Host/edge/secret upkeep</td>
+<td>Courage</td>
+<td>Courage</td>
+<td>Ricardo (DNS, scopes, spend)</td>
+<td>Batman</td>
+</tr>
+<tr>
+<td>W4 Knowledge refresh</td>
+<td>Courage (pipeline) + Scribe (drafting)</td>
+<td>Adrianna A</td>
+<td>Batman (business priority), Beast (filing)</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>W5 ClickUp governance</td>
+<td>Courage (checks)</td>
+<td><strong>Batman</strong></td>
+<td>BU owners</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>W6 Ledger &amp; digest</td>
+<td>Courage</td>
+<td>Courage</td>
+<td>Reviewer</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>W7 Independent audit</td>
+<td>Reviewer</td>
+<td>Reviewer</td>
+<td>—</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>W8 Capacity/cost/licences</td>
+<td>Dexter</td>
+<td>Dexter</td>
+<td>Ricardo (purchases)</td>
+<td>Courage</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Standing rule:</strong> the bot that executes a change never certifies it. Courage writes the ledger row; Reviewer verifies a sample and can fail the week.</p>
+<hr />
+<h2 id="6-architecture--the-maintenance-control-plane">6. Architecture — the maintenance control plane</h2>
+<pre><code>                 ┌──────────────────────────────────────────────┐
+                 │  ops-control-plane  (DevMini, git)           │
+                 │  inventory.yaml · runbooks/ · ledger/ ·       │
+                 │  reports/ · policies/                        │
+                 └───────────────┬──────────────────────────────┘
+                                 │ read at run time
+   ┌─────────────┬───────────────┼────────────────┬──────────────┐
+   │             │               │                │              │
+┌──▼───┐    ┌────▼────┐    ┌─────▼─────┐    ┌─────▼─────┐  ┌─────▼─────┐
+│W1 Mac│    │W2 Agent-│    │W3 Hosts &amp; │    │W4 Know-   │  │W5 ClickUp │
+│fleet │    │icOS     │    │edge       │    │ledge      │  │governance │
+└──┬───┘    └────┬────┘    └─────┬─────┘    └─────┬─────┘  └─────┬─────┘
+   └─────────────┴───────────────┴────────────────┴──────────────┘
+                                 │ every run appends one row
+                        ┌────────▼─────────┐
+                        │   health ledger  │  ledger/YYYY-MM.jsonl
+                        └────────┬─────────┘
+                    ┌────────────┼─────────────┐
+             ┌──────▼─────┐ ┌────▼──────┐ ┌────▼─────────┐
+             │ 07:00 digest│ │ Maio OS   │ │ Reviewer     │
+             │ (one msg)   │ │ System→   │ │ sample audit │
+             │             │ │ Maintenance│ │ (independent)│
+             └─────────────┘ └───────────┘ └──────────────┘</code></pre>
+<p><strong>Three artefacts carry the whole design:</strong></p>
+<ol type="1">
+<li><strong><code>inventory.yaml</code></strong> — the single declaration of what exists (schema in §11.1). Everything else is a diff against it.</li>
+<li><strong>Health ledger</strong> — append-only JSONL, one row per check or action (§11.2). It is the only accepted evidence in reports.</li>
+<li><strong>Runbooks</strong> — one file per workflow with front-matter (<code>owner</code>, <code>cadence</code>, <code>risk</code>, <code>gate</code>, <code>rollback</code>, <code>last_verified</code>) and numbered steps that map 1:1 to ledger checks.</li>
+</ol>
+<p>Location: <code>/Volumes/Hiksemi 1TB/DevMini/ops-control-plane</code> (code + inventory), reports under <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/&lt;bot&gt;/</code>, digests to Discord <code>#1-2-ai-crons</code> (machine) and Telegram (Ricardo, one message).</p>
+<hr />
+<h2 id="7-workflow-specifications">7. Workflow specifications</h2>
+<p>Each workflow is specified as: trigger → inputs → steps → checks → outputs → gates → rollback → acceptance.</p>
+<hr />
+<h3 id="w1--mac--connected-device-upkeep">W1 — Mac &amp; connected-device upkeep</h3>
+<p><strong>Owner:</strong> Courage · <strong>Risk:</strong> low · <strong>Window:</strong> daily checks anytime; mutation Mondays 03:00 SAST</p>
+<p><strong>Trigger:</strong> daily 02:30 drift scan; weekly Monday 03:00 update sweep (<code>dc3a02759447</code>, already live).</p>
+<p><strong>Scope:</strong> Mac mini (this host), MacBook Air (<code>rmmacbook@192.168.0.123</code> / tailnet <code>100.86.69.126</code>), office Mac mini (<code>infmini</code>, user <code>infmac</code>), CuaDriver/Lume/Ollama/Docker daemons, and the iOS device posture that depends on them (no device management — only "is the companion app reachable and current").</p>
+<p><strong>Steps</strong></p>
+<ol type="1">
+<li><strong>Scan (daily, read-only).</strong> <code>brew outdated</code>, <code>mas outdated</code>, <code>softwareupdate -l</code>, <code>hermes --version</code>, <code>npm -g outdated</code>, <code>uv tool list</code>, docker image digests, Ollama version, CuaDriver version, Lume version, free disk, RAM pressure, launchd job state for the <code>com.maio.*</code> fleet, and per-machine reachability (<code>ssh -o BatchMode=yes ... 'sw_vers'</code>).</li>
+<li><strong>Diff against inventory.</strong> Any version or expected-daemon mismatch becomes a ledger row <code>status=drift</code>.</li>
+<li><strong>Classify.</strong> <code>auto</code> (brew formula, npm global, uv tool, skills, Cua, Lume) / <code>report</code> (macOS point update, MAS apps, Ollama app) / <code>blocked</code> (needs admin password).</li>
+<li><strong>Apply (weekly).</strong> Existing <code>fleet-update.sh</code> phases 1–11, Mac mini first, then the Air over SSH with the detached-<code>nohup</code> pattern (never one foreground ssh). Skip any phase whose service is mid-run (Paperclip runs, kanban workers).</li>
+<li><strong>Verify per machine.</strong> <code>sw_vers</code>, <code>brew outdated</code> (expect empty), <code>hermes --version</code>, daemon health, and one end-to-end agent turn per machine.</li>
+<li><strong>Record + report.</strong> Append rows; post one Discord message only if something changed, failed or needs Ricardo.</li>
+</ol>
+<p><strong>Checks (acceptance):</strong> every phase has a pass/fail row with the command's real output fragment; <code>brew outdated</code> empty on both Macs; no running GUI app quit; gateway restarted only via the detached recycle and verified listening afterwards.</p>
+<p><strong>Gates:</strong> OS installs and <code>mas upgrade</code> need Ricardo's admin password → never typed by a bot; the run reports the exact command for him. Any change that would restart the agent gateway outside the window is deferred.</p>
+<p><strong>Rollback:</strong> brew keeps old cellar versions; docker phases already re-pin the previous digest on a failed health gate; Hermes core update keeps the previous <code>~/.hermes</code> checkout — the runbook names the exact revert command per phase.</p>
+<p><strong>Known gaps this closes:</strong> no daily drift signal today; documentation says 05:00 while the job runs 03:00 (fixed by making <code>inventory.yaml</code> the schedule source of truth and generating the skill's table from it).</p>
+<hr />
+<h3 id="w2--agenticos-lifecycle-build-release-upgrade-recover">W2 — AgenticOS lifecycle (build, release, upgrade, recover)</h3>
+<p><strong>Owner:</strong> Courage · <strong>Risk:</strong> high (production) · <strong>Window:</strong> Mondays 04:30 staging, Thursdays 03:00 production after approval</p>
+<p><strong>Current state:</strong> 11 containers on <code>macserver</code> (<code>macmini-inf</code>, Linux aarch64) behind a gateway; app/frontend <code>1.82.2</code>; upstream <code>1.84.0</code>. Backups: <code>backup-db.sh</code> at 02:15 daily. Health today: all containers up, DB healthy, public door 302 → Cloudflare Access, tailnet admin 200.</p>
+<p><strong>Steps</strong></p>
+<ol type="1">
+<li><strong>Release watch (daily 04:00, read-only).</strong> Query the upstream releases API and the changelog; compare against <code>AGENTICOS_VERSION</code>; classify <code>patch / minor / major / security</code>. Ledger row.</li>
+<li><strong>Pre-flight (per upgrade).</strong> Fresh <code>backup-db.sh</code> inside 6 h; disk headroom ≥ 20%; staging host reachable; current image digests recorded; rollback compose saved as <code>docker-compose.yml.bak-preupgrade-&lt;version&gt;</code>.</li>
+<li><strong>Staging first.</strong> Upgrade <code>macserver</code> compose stack to the target tag; wait for healthy; run the smoke suite (below); 24 h soak with the embed worker and one agent run per unit.</li>
+<li><strong>Smoke suite (must be scripted, deterministic):</strong> gateway <code>/health</code>; login through Cloudflare Access; one agent turn that calls one MCP tool; one document upload → embed → retrieval hit; one scheduled job dispatch; KB count unchanged or explained; <code>sandboxd</code> healthy; artifact render returns an image.</li>
+<li><strong>Production promotion.</strong> Only if staging is green <strong>and</strong> the changelog shows no breaking migration <strong>and</strong> Ricardo has said go for that version. Promotion is the same compose swap + smoke suite on the production host, inside the window.</li>
+<li><strong>Post-checks (24 h).</strong> Error-rate and latency comparison against the 7-day baseline; embed queue depth; agent-run success rate; no orphaned volumes.</li>
+<li><strong>Rollback.</strong> Re-pin previous digests, restore the compose backup, verify smoke suite, restore DB only if a migration ran (documented, gated).</li>
+</ol>
+<p><strong>Checks (acceptance):</strong> version in the UI and in <code>.env</code> both equal the target; DB <code>alembic_version</code> consistent; smoke suite 8/8; 24 h error rate within +10% of baseline; rollback package on disk and verified by a dry <code>docker compose config</code> against it.</p>
+<p><strong>Gates:</strong> staging upgrade is autonomous. Production is <strong>never</strong> autonomous — it needs a green staging report, a fresh backup, and an explicit yes from Ricardo (recorded in the ledger with the message id). Major versions are proposal-only.</p>
+<p><strong>Capacity adjunct:</strong> monthly review of DB size, rag doc count, embed queue, container memory; the Mac mini RAM guard (≥85% → unload models) already exists and stays in force.</p>
+<hr />
+<h3 id="w3--infinity-brands-host-edge-and-credential-upkeep">W3 — Infinity Brands host, edge and credential upkeep</h3>
+<p><strong>Owner:</strong> Courage · <strong>Risk:</strong> medium · <strong>Window:</strong> Tue/Thu 04:00</p>
+<p><strong>Scope:</strong> <code>bastion</code> (<code>jumpnut</code>, Debian 12), <code>macserver</code> (<code>macmini-inf</code>), <code>infmini</code> (office Mac mini, <code>infmac</code>), the Cloudflare tunnel + Access app, DNS records, TLS certificates, and the Zoho/company credentials the platform depends on.</p>
+<p><strong>Steps</strong></p>
+<ol type="1">
+<li><strong>Host sweep (weekly, read-only first).</strong> OS patch level, reboot-required flag, disk, swap, NTP, sshd config drift, unattended-upgrades status, listening ports, container list vs inventory.</li>
+<li><strong>Patch application.</strong> Debian/Ubuntu hosts: <code>apt-get -s upgrade</code> first, then unattended security upgrades inside the window; reboot only with a maintenance flag and a health check on the way back. Never patch during a platform upgrade week.</li>
+<li><strong>Edge checks (daily).</strong> Public door status + Access redirect; certificate expiry (≥ 21 days); DNS for every host in inventory (existing DNS health check job extends to cover all); tunnel connector count; WAF/rate-limit config hash vs repository.</li>
+<li><strong>Credential expiry board (weekly).</strong> Zoho refresh tokens (system user and the <code>ZOHO_ALL_REFRESH_TOKEN</code> used by WorkDrive sync), Ollama company key, Cloudflare token, ClickUp <code>pk_…</code> token, SMTP auth, GitHub/DevMini access. Each row: last verified, expiry/rotation date, owner, runbook. <strong>Values never enter the ledger — only "verified / expires / rotate-by".</strong></li>
+<li><strong>Scope drift check (monthly).</strong> Re-probe the granted Zoho scopes and report refusals. Known today: CRM and Cliq 200; Projects and Mail listing <code>401 INVALID_OAUTHSCOPE</code>; WorkDrive absent from the system user grant (<code>F7007</code>) and served instead by <code>ZOHO_ALL_REFRESH_TOKEN</code>. This is a standing finding, not a surprise.</li>
+<li><strong>Recovery drill (monthly).</strong> Restore the AgenticOS DB backup to a scratch container, run migrations and a smoke read; record time-to-restore.</li>
+</ol>
+<p><strong>Checks:</strong> reboot-required = 0 on all hosts; certificate ≥ 21 days; DNS 100% resolve; tunnel up; every credential has a verified date &lt; 30 days; restore drill RTO recorded.</p>
+<p><strong>Gates:</strong> DNS changes, Cloudflare config changes, and any scope re-consent are Ricardo's — the bot prepares the exact change and waits. No secret is read into a report; only names and statuses.</p>
+<hr />
+<h3 id="w4--knowledge-refresh-workdrive--kb--tables--skills--context--documents">W4 — Knowledge refresh: WorkDrive → KB → tables → skills → context → documents</h3>
+<p><strong>Owner:</strong> Adrianna A (design) · <strong>Executed by:</strong> Courage (pipeline) + Scribe (drafting) + Beast (vault filing) · <strong>Risk:</strong> medium (content quality) · <strong>Window:</strong> nightly 03:05 (exists) plus weekly review</p>
+<p><strong>Current state:</strong> nightly <code>wd-sync</code> uploads ≤ 15 docs per department per night into 22 KBs; <code>rag_docs</code> = 142; WorkDrive corpus = 1,274,298 files / 13.38 TB. Embed regeneration runs every 5 minutes on the host. Net effect: the assistant answers from a rounding error of the company's documents, and nothing tracks whether a document is stale, duplicated or superseded.</p>
+<p><strong>The pipeline (five stages, each with its own ledger rows):</strong></p>
+<ol type="1">
+<li><strong>Select.</strong> Maintain a <strong>priority corpus</strong> in the inventory: for each BU, the folder paths and document classes that matter (policies, price lists, SOPs, contracts templates, product catalogues, brand kits, org charts, current-year plans). Target 200–500 documents, not 1.2M. Ranking inputs: folder criticality, last-modified, filename class, and what staff actually ask the assistant.</li>
+<li><strong>Sync.</strong> Keep <code>wd-sync</code> for the long tail; add a <em>priority lane</em> that re-syncs the priority corpus on any change (WorkDrive <code>modifiedTime</code>), not on the nightly budget. Dedupe by content hash, not filename.</li>
+<li><strong>Normalise + enrich.</strong> For each ingested doc: extract title/owner/date/unit, detect duplicates and superseded versions, attach provenance (WorkDrive file id + path + modified time) and a freshness date. A document without provenance is not admitted.</li>
+<li><strong>Index + verify.</strong> Embed, then run a <strong>retrieval proof</strong>: 20 gold questions per unit with expected source documents; pass rate ≥ 90%. A failing unit is reported, not silently shipped.</li>
+<li><strong>Retire + curate.</strong> Documents older than their class TTL (policy 2 years, price list 90 days, org chart 180 days) are flagged; superseded versions are archived (never hard-deleted without Ricardo). Monthly, produce a <strong>coverage map</strong>: unit → KB → doc count → freshness → gaps.</li>
+</ol>
+<p><strong>Beyond documents — the reference layer:</strong></p>
+<ul>
+<li><strong>Tables/registries:</strong> the canonical field lists (Function 143 types, Client/Brand 14, tiers, priorities) are re-read monthly from the live portals (Zoho Projects picklists, ClickUp custom fields) and diffed against the local taxonomy; drift opens a ticket.</li>
+<li><strong>Skills:</strong> weekly drift check already exists for design skills; extend to all skill stores for stale commands (a job ID or path that no longer exists). Broken commands are the most common skill rot.</li>
+<li><strong>Context files:</strong> <code>AGENTS.md</code>/<code>CLAUDE.md</code>/profile context are diffed against <code>inventory.yaml</code> monthly (paths, ports, job IDs, versions). The Monday 03:00 vs 05:00 discrepancy is the worked example.</li>
+<li><strong>Documents:</strong> Scribe maintains a small set of living reference documents (estate map, credentials-expiry board, runbook index, BU contact sheet); Beast files them; the digest links them.</li>
+</ul>
+<p><strong>Checks:</strong> priority corpus 100% present; gold-question pass ≥ 90% per unit; 0 docs without provenance; 0 duplicate hashes across KBs; every taxonomy value matched or ticketed; every skill command resolves.</p>
+<p><strong>Gates:</strong> ingesting a department's documents is allowed (read-only copy of company data the platform already serves). Publishing a <em>new</em> knowledge document to the vault goes through Beast. Any deletion is Ricardo's.</p>
+<hr />
+<h3 id="w5--infinity-brands-clickup-governance">W5 — Infinity Brands ClickUp governance</h3>
+<p><strong>Owner:</strong> Batman (business rules) · <strong>Checks run by:</strong> Courage (no-agent script) · <strong>Risk:</strong> medium · <strong>Window:</strong> audit Tuesdays 03:30, hygiene Thursdays 04:00</p>
+<p><strong>Current state:</strong> workspace <code>4627083</code>, Business plan, 40 seats, 16 spaces: 12 BU spaces (FIN, HRM, ADM, ITC, MKT, SAL, EXP, TLF, PPP, DID, FXS, FXL), plus NVP, MANCO, EXCO, REP. <code>MANCO Briefed-In</code> and <code>MANCO Projects</code> are empty. The Brief standard (eight machine-written lines, <code>&lt;BU&gt; Briefed-In</code>) is defined but not enforced anywhere.</p>
+<p><strong>Steps</strong></p>
+<ol type="1">
+<li><strong>Schema audit (weekly, read-only).</strong> For each space: folders, lists, statuses, custom fields, views, automations. Diff against the canonical blueprint: every BU has <code>Briefed-In</code>, <code>Daily</code>, <code>Recurring</code>, <code>Reporting</code>, <code>Projects/Ad-hoc</code>, <code>Meeting Action</code>; required fields = Client/Brand, Engagement Tier, Service Tier, Priority, Frequency, Function, Due Date, Requested by.</li>
+<li><strong>Task hygiene (weekly).</strong> Missing required fields, past-due without update, duplicates (same title + same client within 7 days), tasks with no assignee, lists with &gt; 90-day-stale open items, orphaned subtasks, tasks closed without a comment.</li>
+<li><strong>Brief compliance.</strong> Sample 20 tasks and verify the eight lines and the wording of the task name. Report the pass rate.</li>
+<li><strong>Access review (monthly).</strong> Seats used vs 40, guests, inactive members &gt; 60 days, API tokens and their last use, integrations.</li>
+<li><strong>Usage telemetry (monthly).</strong> Tasks created/closed per BU, Briefed-In inflow, time-to-first-comment, time-to-close. This is the number that tells Ricardo whether ClickUp is actually being used.</li>
+<li><strong>Apply (gated).</strong> Creating missing lists, adding missing custom fields and fixing field options is a <em>structural</em> change → Batman proposes, Ricardo says go. Filling fields on existing tasks is Batman's within the brief standard, but bulk edits need Ricardo.</li>
+</ol>
+<p><strong>Checks:</strong> 0 tasks missing required fields; every BU Briefed-In exists; duplicate rate &lt; 2%; access review signed; token last-used &lt; 90 days or rotated.</p>
+<p><strong>Rollback:</strong> ClickUp has no transactional undo — so structural changes are staged as a documented diff, applied in one batch after a workspace JSON export, with the previous field/list definitions saved to the control plane.</p>
+<hr />
+<h3 id="w6--ledger-digest-and-slo-reporting">W6 — Ledger, digest and SLO reporting</h3>
+<p><strong>Owner:</strong> Courage · <strong>Risk:</strong> low · <strong>Cadence:</strong> daily 05:00 rollup, 07:00 digest; weekly Monday 07:30 summary</p>
+<p><strong>Steps</strong></p>
+<ol type="1">
+<li>Roll up yesterday's ledger rows per workflow and asset: <code>ok / drift / fixed / failed / blocked / needs-approval</code>.</li>
+<li>Compose <strong>one</strong> message ≤ 12 lines for Ricardo (Telegram): what changed, what is broken, what needs him — each line backed by a ledger row. Never a green-washing summary: if a check did not run, the line says "not run".</li>
+<li>Discord <code>#1-2-ai-crons</code> gets the machine detail (counts, failed run ids).</li>
+<li>Weekly: SLO table (M1–M10), top-5 recurring failures, mean time to repair, the week's changes with rollback status.</li>
+<li>Maio OS gets a <strong>System → Maintenance</strong> section reading the ledger read-only: current versions, last run per workflow, open exceptions, next windows.</li>
+</ol>
+<p><strong>Acceptance:</strong> digest delivered by 07:00; every claim traces to a ledger row id; a missing run is reported as missing.</p>
+<hr />
+<h3 id="w7--independent-verification-reviewer">W7 — Independent verification (Reviewer)</h3>
+<p><strong>Owner:</strong> Reviewer · <strong>Risk:</strong> none (read-only) · <strong>Cadence:</strong> daily 08:00 sample; weekly formal sign-off</p>
+<p><strong>Steps</strong></p>
+<ol type="1">
+<li>Re-run a random 10% of yesterday's checks independently (fresh commands, not cached output).</li>
+<li>Verify change claims: version strings, file mtimes, container digests, job schedules, restored-row counts.</li>
+<li>Detect "phantom maintenance": a ledger row marked fixed whose evidence does not reproduce.</li>
+<li>Weekly: sign or fail the week; a failed week reopens the workflow and notifies Ricardo with the exact discrepancy.</li>
+</ol>
+<p><strong>Acceptance:</strong> sample coverage ≥ 10%; 0 unverified claims in the weekly report; every failure has a named owner and a re-check date.</p>
+<hr />
+<h3 id="w8--capacity-cost-licence-and-dr-dexter">W8 — Capacity, cost, licence and DR (Dexter)</h3>
+<p><strong>Owner:</strong> Dexter · <strong>Cadence:</strong> monthly 1st, 05:00</p>
+<p>Already-running jobs cover telemetry, economics, backup coverage, restore drill, capacity forecast and token anomalies. This PRD only adds the <strong>join</strong>: capacity and cost findings feed W2's upgrade windows and W3's credential board; restore drills become the acceptance test for W3's backups. Purchases and plan changes (ClickUp seats, Ollama spend, hosting) are proposals to Ricardo, never actions.</p>
+<hr />
+<h2 id="8-schedule-sast">8. Schedule (SAST)</h2>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Workflow</th>
+<th>Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>02:15 daily</td>
+<td>AgenticOS DB backup (host cron, exists)</td>
+<td>script</td>
+</tr>
+<tr>
+<td>02:30 daily</td>
+<td>W1 drift scan (both Macs + devices)</td>
+<td>script</td>
+</tr>
+<tr>
+<td>03:00 Mon</td>
+<td>W1 apply sweep (exists)</td>
+<td>script</td>
+</tr>
+<tr>
+<td>03:05 daily</td>
+<td>W4 WorkDrive sync (exists)</td>
+<td>script</td>
+</tr>
+<tr>
+<td>03:30 Tue</td>
+<td>W5 ClickUp audit</td>
+<td>script</td>
+</tr>
+<tr>
+<td>04:00 daily</td>
+<td>W2 release watch + W3 edge/DNS/TLS</td>
+<td>script</td>
+</tr>
+<tr>
+<td>04:30 Mon</td>
+<td>W2 staging upgrade (auto)</td>
+<td>script + smoke</td>
+</tr>
+<tr>
+<td>04:00 Thu</td>
+<td>W3 host patching / W5 hygiene apply</td>
+<td>gated</td>
+</tr>
+<tr>
+<td>03:00 Thu</td>
+<td>W2 production promotion</td>
+<td><strong>gated on Ricardo</strong></td>
+</tr>
+<tr>
+<td>05:00 daily</td>
+<td>W6 rollup</td>
+<td>script</td>
+</tr>
+<tr>
+<td>07:00 daily</td>
+<td>W6 digest (Courage brief exists)</td>
+<td>one message</td>
+</tr>
+<tr>
+<td>07:30 Mon</td>
+<td>W6 weekly SLO summary</td>
+<td>one message</td>
+</tr>
+<tr>
+<td>08:00 daily</td>
+<td>W7 Reviewer sample audit</td>
+<td>independent</td>
+</tr>
+<tr>
+<td>Monthly 1st</td>
+<td>W8 capacity/cost/licences, W3 restore drill, W4 coverage map, W5 access review</td>
+<td>report</td>
+</tr>
+</tbody>
+</table>
+<p>Conflicts to respect: never patch hosts during an AgenticOS upgrade week; never restart the gateway while Paperclip or kanban workers hold runs; keep the RAM guard and model unload behaviour.</p>
+<hr />
+<h2 id="9-phasing-and-effort">9. Phasing and effort</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Deliverable</th>
+<th>Effort</th>
+<th>Depends on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P0 (week 1)</strong></td>
+<td><code>ops-control-plane</code> repo: <code>inventory.yaml</code> generated from live scans; ledger writer + schema; W6 daily rollup wired to Courage's existing 07:00 brief; W2 release watch (read-only, reports 1.82.2 → 1.84.0)</td>
+<td>2–3 days</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>P1 (weeks 2–3)</strong></td>
+<td>W1 daily drift + W3 read-only host/edge/credential board; Reviewer sample audit; Maio OS Maintenance section</td>
+<td>4–5 days</td>
+<td>P0</td>
+</tr>
+<tr>
+<td><strong>P2 (weeks 4–6)</strong></td>
+<td>W2 staging upgrade of 1.84.x + smoke suite + rollback proof; W4 priority corpus + gold questions + freshness; W5 ClickUp audit scripts</td>
+<td>6–8 days</td>
+<td>P1</td>
+</tr>
+<tr>
+<td><strong>P3 (weeks 7–8)</strong></td>
+<td>Gated apply lanes: production promotion runbook, ClickUp structural sync, host patching; monthly reports automatic</td>
+<td>4–5 days</td>
+<td>P2 approval</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing in P0/P1 changes a production system: it observes, records and reports. P2 is the first phase that upgrades the platform, and it does so on staging first.</p>
+<hr />
+<h2 id="10-risks-and-mitigations">10. Risks and mitigations</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Automated upgrade breaks the platform during business hours</td>
+<td>Medium</td>
+<td>High</td>
+<td>Staging first + fixed window + automatic digest rollback + 24 h soak</td>
+</tr>
+<tr>
+<td>Backup exists but cannot restore</td>
+<td>Medium</td>
+<td>High</td>
+<td>Monthly restore drill into a scratch container; RTO recorded (W3)</td>
+</tr>
+<tr>
+<td>KB floods with irrelevant documents, answers degrade</td>
+<td>High</td>
+<td>Medium</td>
+<td>Priority corpus + gold-question gate + provenance + TTL retirement</td>
+</tr>
+<tr>
+<td>ClickUp structural change destroys fields/views</td>
+<td>Low</td>
+<td>High</td>
+<td>Export first, save definitions, one batch, Ricardo's go</td>
+</tr>
+<tr>
+<td>Secrets leak through the ledger or digest</td>
+<td>Low</td>
+<td>Critical</td>
+<td>Ledger stores names/status only; keys never in reports, git or the gate</td>
+</tr>
+<tr>
+<td>Two bots disagree about machine state</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Single inventory + single ledger; Reviewer only reads</td>
+</tr>
+<tr>
+<td>Job sprawl (106 today) makes ownership unclear</td>
+<td>High</td>
+<td>Medium</td>
+<td>Inventory is the schedule source of truth; skills generated from it</td>
+</tr>
+<tr>
+<td>Maintenance competes with real work for RAM/CPU</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Windows at night, RAM guard, no heavy run while workers are active</td>
+</tr>
+<tr>
+<td>Cost creep from agent-driven maintenance</td>
+<td>Low</td>
+<td>Medium</td>
+<td>Routine checks are no-agent scripts; agent turns only on exceptions</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-data-model">11. Data model</h2>
+<h3 id="111-inventoryyaml">11.1 <code>inventory.yaml</code></h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">assets</span><span class="kw">:</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">- </span><span class="fu">id</span><span class="kw">:</span><span class="at"> host/macmini-ricardo</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> host            # host | device | container | service | account | token | job | dataset</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">owner</span><span class="kw">:</span><span class="at"> ricardo</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">criticality</span><span class="kw">:</span><span class="at"> critical</span><span class="co"> # critical | high | normal</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">os</span><span class="kw">:</span><span class="at"> macOS 27.2.1</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">access</span><span class="kw">:</span><span class="at"> local         # local | ssh:&lt;alias&gt; | api | manual</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">update_lane</span><span class="kw">:</span><span class="at"> w1-mac</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">window</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Mon 03:00-05:00 SAST&quot;</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">checks</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">reachable</span><span class="kw">,</span><span class="at"> disk</span><span class="kw">,</span><span class="at"> ram</span><span class="kw">,</span><span class="at"> brew_outdated</span><span class="kw">,</span><span class="at"> gateway_listening</span><span class="kw">]</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">rollback</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;brew: previous cellar version; hermes: git checkout previous&quot;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">- </span><span class="fu">id</span><span class="kw">:</span><span class="at"> service/agenticos</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">kind</span><span class="kw">:</span><span class="at"> service</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">owner</span><span class="kw">:</span><span class="at"> ricardo</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">criticality</span><span class="kw">:</span><span class="at"> critical</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">url</span><span class="kw">:</span><span class="at"> https://agenticos.infinitybrands.co.za</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">admin_url</span><span class="kw">:</span><span class="at"> https://ricardos-mac-mini.taile9f837.ts.net:10030</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">host</span><span class="kw">:</span><span class="at"> host/macmini-inf</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">version_source</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;docker exec agenticos-app-1 agenticos --version&quot;</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">update_lane</span><span class="kw">:</span><span class="at"> w2-agenticos</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">window</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Mon 04:30 staging / Thu 03:00 prod (approval)&quot;</span></span></code></pre></div>
+<h3 id="112-ledger-row-jsonl-append-only">11.2 Ledger row (JSONL, append-only)</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;ts&quot;</span><span class="fu">:</span><span class="st">&quot;2026-11-19T04:00:12+02:00&quot;</span><span class="fu">,</span><span class="dt">&quot;wf&quot;</span><span class="fu">:</span><span class="st">&quot;W2&quot;</span><span class="fu">,</span><span class="dt">&quot;asset&quot;</span><span class="fu">:</span><span class="st">&quot;service/agenticos&quot;</span><span class="fu">,</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;check&quot;</span><span class="fu">:</span><span class="st">&quot;release_watch&quot;</span><span class="fu">,</span><span class="dt">&quot;status&quot;</span><span class="fu">:</span><span class="st">&quot;drift&quot;</span><span class="fu">,</span><span class="dt">&quot;observed&quot;</span><span class="fu">:</span><span class="st">&quot;1.82.2&quot;</span><span class="fu">,</span><span class="dt">&quot;expected&quot;</span><span class="fu">:</span><span class="st">&quot;v1.84.0&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;evidence&quot;</span><span class="fu">:</span><span class="st">&quot;agenticos, version 1.82.2 | upstream tag v1.84.0 published 2026-11-18T22:00:50Z&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;run_id&quot;</span><span class="fu">:</span><span class="st">&quot;w2-20261119-0400&quot;</span><span class="fu">,</span><span class="dt">&quot;duration_s&quot;</span><span class="fu">:</span><span class="fl">3.1</span><span class="fu">,</span><span class="dt">&quot;next_action&quot;</span><span class="fu">:</span><span class="st">&quot;open upgrade proposal&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p>Statuses: <code>ok | drift | fixed | failed | blocked | needs-approval | skipped</code>. Every row carries a real command fragment. No row is ever edited; corrections are new rows.</p>
+<hr />
+<h2 id="12-open-decisions-for-ricardo">12. Open decisions for Ricardo</h2>
+<ol type="1">
+<li><strong>Approve the ownership split</strong> in §0 (Courage = systems; Batman = ClickUp rules; Reviewer = audit; Dexter = cost/capacity)?</li>
+<li><strong>AgenticOS production window:</strong> Thursday 03:00 SAST, with Monday staging — yes?</li>
+<li><strong>AgenticOS 1.84.x:</strong> approve staging trial now, production after a green report?</li>
+<li><strong>Priority corpus:</strong> confirm the 200–500 documents to keep fresh (I will propose the list per BU) — or name the folders that matter most?</li>
+<li><strong>ClickUp writes:</strong> may Batman create missing lists/fields after a documented diff, or does every structural change come to you?</li>
+<li><strong>KB retirement:</strong> may superseded/expired documents be archived automatically (never deleted), with a monthly list?</li>
+</ol>
+<hr />
+<h2 id="13-acceptance-criteria-for-this-prd-definition-of-done">13. Acceptance criteria for this PRD (definition of done)</h2>
+<ul>
+<li><code>inventory.yaml</code> covers every asset in §3 of <code>ACCESS.md</code>, every container on <code>macserver</code>, every <code>com.maio.*</code> launchd job, and every scheduled job in all 12 profiles; <code>live-diff</code> = 0.</li>
+<li>The ledger contains at least one verified row for each of W1–W5 from a real run.</li>
+<li>The 07:00 digest is generated from the ledger alone and passes Reviewer's 10% sample with 0 unverified claims.</li>
+<li>The AgenticOS release-watch reports the real gap (1.82.2 vs 1.84.0) and opens a proposal with a rollback package.</li>
+<li>One staging upgrade smoke suite runs end-to-end (8/8) and its rollback is proven by dry-run.</li>
+<li>The ClickUp audit produces a real diff for at least MANCO, EXCO and one BU space.</li>
+<li>The knowledge pipeline proves retrieval on 20 gold questions against the priority corpus.</li>
+</ul>
+<hr />
+<h2 id="appendix-a--evidence-collected-for-this-prd-19-nov-2026">Appendix A — Evidence collected for this PRD (19 Nov 2026)</h2>
+<ul>
+<li><code>ssh macserver 'cd ~/agenticos &amp;&amp; ./agenticos.sh status'</code> → 11 containers, all healthy; gateway up 5 h; public door <code>https://agenticos.infinitybrands.co.za</code> (Cloudflare Access gate), admin lane <code>:10030</code> tailnet.</li>
+<li><code>docker exec agenticos-app-1 agenticos --version</code> → <code>agenticos, version 1.82.2</code>; <code>AGENTICOS_VERSION=1.82.2</code>.</li>
+<li><code>GET api.github.com/repos/vstorm-co/agenticos/releases/latest</code> → <code>v1.84.0</code>, <code>2026-11-18T22:00:50Z</code>.</li>
+<li>DB counts: agents 24 (24 published), knowledge_bases 22, rag_documents 142, groups 57, users 4, invitations 4, org MCP connections 3, sync sources 4; 8 agent runs in the last 24 h.</li>
+<li>Host crontab (<code>macserver</code>): <code>15 2 * * *</code> DB backup; <code>*/5 * * * *</code> embed regen; <code>5 3 * * *</code> <code>wd-sync</code> with <code>PER_DEPT_UPLOADS=15 PER_DEPT_FOLDERS=60</code>.</li>
+<li><code>agenticos-workdrive-sync/README.md</code> scale table → 1,274,298 files / 13.38 TB across 16 team folders.</li>
+<li>ClickUp API (<code>team/4627083</code>): 16 spaces; MANCO <code>Briefed-In</code> and <code>Projects</code> lists both <code>task_count 0</code>.</li>
+<li>Hermes cron stores: 12 profiles, 106 jobs (counts in §1).</li>
+<li><code>fleet-update.sh</code> phase table: brew, npm, uv, skills, core, docker, paperclip, open-knowledge, cua, lume, macOS check-only, Ollama report.</li>
+<li><code>ACCESS.md</code> §6: <code>bastion</code> (<code>jumpnut</code>, Debian 12), <code>macserver</code> (<code>macmini-inf</code>), <code>infmini</code> (<code>infmac</code>); Zoho scopes: CRM 200, Cliq 200, Projects/Mail listing <code>401 INVALID_OAUTHSCOPE</code>, WorkDrive requires <code>ZOHO_ALL_REFRESH_TOKEN</code>.</li>
+</ul>
+<h2 id="appendix-b--canonical-paths">Appendix B — Canonical paths</h2>
+<ul>
+<li>Control plane (code, inventory, ledger): <code>/Volumes/Hiksemi 1TB/DevMini/ops-control-plane</code></li>
+<li>Reports and run artefacts: <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/{courage,reviewer,dexter,batman,adrianna}/</code></li>
+<li>AgenticOS deployment record: <code>/Volumes/Hiksemi 1TB/AI-Drive/Work/Infinity Brands/AgenticOS/DEPLOYMENT-RECORD.md</code></li>
+<li>Vault (Beast only): <code>~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Maio Hub</code></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
