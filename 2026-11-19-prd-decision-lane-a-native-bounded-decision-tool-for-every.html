@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD — Decision lane: a native bounded-decision tool for every AgenticOS bot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="decision-lane--a-native-bounded-decision-tool-for-every-agenticos-bot">Decision lane — a native bounded-decision tool for every AgenticOS bot</h1>
+<h2 id="why-this-prd">Why this PRD</h2>
+<p>Ricardo's §8 gates run on his own Mac, at <code>127.0.0.1:8792</code>, for his own agents. That is personal infrastructure and it stays personal. What Infinity Brands needs is the same capability <strong>inside the work platform</strong>, available to all thirteen departmental bots and the four report bots — a cheap, typed answer to a bounded question ("is this inbound message a work request or a personal one?", "does this invoice need to go to Finance or to EXCO?") without burning a conversational model turn on it.</p>
+<p>The platform already has most of it and nobody knows. There is a <strong>native decision lane</strong> in <code>app/workflows/nodes/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Lines</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_decide.py</code></td>
+<td>326</td>
+<td>Shared engine: profile resolution, typed question, confidence floor, unsure path, budget guard</td>
+</tr>
+<tr>
+<td><code>decide_yes_no/_handler.py</code></td>
+<td>54</td>
+<td>Yes/no with an <code>unsure</code> port</td>
+</tr>
+<tr>
+<td><code>decide_choose/_handler.py</code></td>
+<td>94</td>
+<td>One of a short list</td>
+</tr>
+<tr>
+<td><code>decide_score/_handler.py</code></td>
+<td>70</td>
+<td>A rubric score</td>
+</tr>
+</tbody>
+</table>
+<p>Its own docstring: <em>"Typed decision steps using a native decision model profile … Below <code>min_confidence</code> the step follows its unsure port rather than treating uncertainty as a provider failure."</em></p>
+<p>So the capability exists — but <strong>only inside a workflow</strong>. A bot cannot call it mid-conversation, there is no org-level definition of what a gate <em>is</em>, and nothing is logged in a place an operator can read. This PRD closes those three gaps.</p>
+<h2 id="product-in-five-lines">Product in five lines</h2>
+<ol type="1">
+<li>One native tool — <code>decide</code> — that any published bot can call inside a turn.</li>
+<li>Five gates defined once for the organization, with thresholds and an escalation target.</li>
+<li>The answer is a label plus a confidence plus a one-line reason, in about a second.</li>
+<li>Below the threshold the answer is <code>unsure</code> and the caller escalates — never a guess dressed as a decision.</li>
+<li>Every decision is logged (gate, bot, label, latency, spend) so the lane can be measured and tuned.</li>
+</ol>
+<h2 id="what-already-exists--evidence">What already exists — evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decision workflow nodes ship in the platform</td>
+<td>E1</td>
+</tr>
+<tr>
+<td>Confidence floor + explicit <code>unsure</code> port already designed</td>
+<td>E2</td>
+</tr>
+<tr>
+<td><code>is_decision_api</code> accepts <code>api: "decisions"</code> or provider <code>typesafe</code> / <code>system-one</code></td>
+<td>E3</td>
+</tr>
+<tr>
+<td>Decision transports built: TypeSafe, OpenAI decisions, Google decisions, SystemOne / OpenRouter base_url</td>
+<td>E4</td>
+</tr>
+<tr>
+<td>Provider catalogue offers: <code>jev-latest</code>, <code>jev-1.14.0</code>, <code>jev-1.13.0</code>, <code>gpt-6-luna</code>, <code>gemini-decision-1</code>, 2 OpenRouter ids</td>
+<td>E5</td>
+</tr>
+<tr>
+<td>One decision judges up to <strong>100,000 characters</strong> in a single request (<code>MAX_TEXT</code>)</td>
+<td>E2</td>
+</tr>
+<tr>
+<td>Budget guard, spend ledger and guardrails are already wired into the decision engine</td>
+<td>E2</td>
+</tr>
+<tr>
+<td>Org model profiles are <strong>conversational Ollama only</strong> — <code>deepseek-v4.1-flash</code> default, <code>mimo-v2.6-flash</code>, two marked NOT PERMITTED. <strong>No decision profile exists.</strong></td>
+<td>E6</td>
+</tr>
+<tr>
+<td>No agent-callable decision tool exists — the capability is workflow-only</td>
+<td>E7</td>
+</tr>
+<tr>
+<td>22 agents; 17 have no tools at all</td>
+<td>E8</td>
+</tr>
+<tr>
+<td>Knowledge/recall is a separate, already-populated concern: 22 knowledge bases with embedding config</td>
+<td>E9</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-one-hard-constraint-a-decision-model-is-not-a-chat-model">The one hard constraint: a decision model is not a chat model</h2>
+<p><code>is_decision_api</code> (<code>app/agents/model_resolver.py:627</code>) refuses a conversational endpoint for decision work, and the model-profile resolver does the same (<code>_decide.py:172</code> — <em>"Select a native decision API profile"</em>). Ollama is a chat provider. <strong>The company Ollama key cannot serve this lane</strong>, and no amount of configuration changes that.</p>
+<p>Three routes, and this is the money decision in this PRD:</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>What it costs</th>
+<th>State today</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. TypeSafe Jev</strong> — the vendor this platform's lane was built around</td>
+<td>per-call vendor spend; a key we do not hold</td>
+<td>catalogue-ready, no credential</td>
+</tr>
+<tr>
+<td><strong>B. OpenAI <code>gpt-6-luna</code> decisions / Google <code>gemini-decision-1</code></strong></td>
+<td>per-call vendor spend on a vendor account</td>
+<td>catalogue-ready, no credential. Google is a poor fit — we do not use Google for work</td>
+</tr>
+<tr>
+<td><strong>C. Self-hosted SystemOne-compatible endpoint</strong> on office hardware</td>
+<td>hardware we already own; no vendor</td>
+<td><strong>unverified</strong> — the resolver accepts provider <code>system-one</code> with a <code>base_url</code>, but the catalog does not list it. Needs a one-day spike before it can be promised</td>
+</tr>
+</tbody>
+</table>
+<p>Recommendation: <strong>spike C first, fall back to A.</strong> C keeps the company's decision traffic on company hardware and matches the "no new vendor" instinct; A is the shortest path to a working lane and can be swapped out later because the profile indirection already exists.</p>
+<h2 id="design">Design</h2>
+<h3 id="1-gate-registry--a-table-not-code-per-bot">1. Gate registry — a table, not code per bot</h3>
+<p>New table <code>decision_gates</code>, org-scoped:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>organization_id</code>, <code>key</code></td>
+<td>unique per org — <code>money_legal</code>, <code>memory</code>, <code>escalation</code>, <code>routing</code>, <code>triage</code></td>
+</tr>
+<tr>
+<td><code>title</code>, <code>question</code></td>
+<td>the question asked of the model, phrased as a person would ask it</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td>jsonb list, 2–8 labels</td>
+</tr>
+<tr>
+<td><code>threshold</code></td>
+<td>confidence below which the answer is <code>unsure</code></td>
+</tr>
+<tr>
+<td><code>on_unsure</code></td>
+<td>what the caller must do (<code>escalate</code>, <code>refuse</code>, <code>ask_human</code>)</td>
+</tr>
+<tr>
+<td><code>escalate_to</code></td>
+<td>free text: who receives it when unsure</td>
+</tr>
+<tr>
+<td><code>max_state_chars</code></td>
+<td>per-gate cap, default 8,000</td>
+</tr>
+<tr>
+<td><code>is_enabled</code></td>
+<td>kill switch per gate</td>
+</tr>
+</tbody>
+</table>
+<p>Seeded with the five gates as <strong>Infinity Brands' gates</strong>, with thresholds set by this organization. The platform's copy is not a mirror of Ricardo's personal lane; it is the company's own instrument.</p>
+<h3 id="2-the-tool--decide">2. The tool — <code>decide</code></h3>
+<p>Registered in the platform MCP toolset beside the other platform tools, <strong>not</strong> in <code>PLATFORM_UNGATED_TOOLS</code> — it spends money, so it is reachable only by an agent that holds the tool.</p>
+<p><strong>Input</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gate&quot;</span><span class="fu">:</span> <span class="st">&quot;routing&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;state&quot;</span><span class="fu">:</span> <span class="st">&quot;The client says the invoice is wrong and asks for a credit note before month end.&quot;</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;options&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;finance&quot;</span><span class="ot">,</span> <span class="st">&quot;exco&quot;</span><span class="ot">,</span> <span class="st">&quot;sales&quot;</span><span class="ot">,</span> <span class="st">&quot;none&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;context_label&quot;</span><span class="fu">:</span> <span class="st">&quot;inbound email triage&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Output</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;decision&quot;</span><span class="fu">:</span> <span class="st">&quot;finance&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;confidence&quot;</span><span class="fu">:</span> <span class="fl">0.91</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;reason&quot;</span><span class="fu">:</span> <span class="st">&quot;Credit note and month-end deadline are Finance&#39;s remit.&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;gate&quot;</span><span class="fu">:</span> <span class="st">&quot;routing&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;decision_id&quot;</span><span class="fu">:</span> <span class="st">&quot;…&quot;</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;latency_ms&quot;</span><span class="fu">:</span> <span class="dv">840</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<ul>
+<li><code>state</code> is capped per gate (default 8,000 chars, engine maximum 100,000) and is <strong>redacted</strong> before it leaves the platform — secrets, tokens and card numbers are stripped, and a request that still looks like a credential is refused rather than sent.</li>
+<li><code>options</code> is optional; when omitted the gate's own <code>options</code> are used. Maximum eight labels.</li>
+<li>Below <code>threshold</code>: <code>decision: "unsure"</code>, <code>on_unsure</code> returned verbatim, no invented label.</li>
+</ul>
+<h3 id="3-decision-log">3. Decision log</h3>
+<p>New table <code>decision_log</code>: <code>id, organization_id, gate_key, agent_id, run_id, conversation_id, state_hash, state_excerpt (redacted, ≤500 chars), decision, confidence, model_profile_id, latency_ms, cost, created_at</code>. Retention follows the org's <code>retention_defaults</code>. The raw state is never stored — the hash and the excerpt are what an auditor needs and all they get.</p>
+<h3 id="4-operator-surface">4. Operator surface</h3>
+<p>A <strong>Monitoring → Decisions</strong> page: per gate, per bot — volume, unsure rate, p50 latency, spend to date, and the top reasons. This is the page that answers "is the lane deciding well?" without reading logs.</p>
+<h2 id="acceptance-criteria">Acceptance criteria</h2>
+<ol type="1">
+<li>A decision model profile exists and passes resolution: creating a workflow decision node with it validates instead of returning <code>DECISION_MODEL_REQUIRED</code>.</li>
+<li>A bot calls <code>decide</code> mid-conversation and gets a label back — no workflow involved. Evidence: the run's tool-call record names the tool and its latency.</li>
+<li>Latency p50 under 2 s for a 2,000-character state on the chosen route.</li>
+<li>A state containing a credential-shaped string is refused, and the refusal is logged as <code>refused</code>, not sent to the provider.</li>
+<li>A decision that would exceed the org budget is refused with the budget error, and the run continues — the bot degrades to asking a human.</li>
+<li>A nonsense question scores below threshold and returns <code>unsure</code> with the gate's <code>on_unsure</code> text.</li>
+<li><code>decision_log</code> has one row per call with a null-free <code>state_hash</code> and no raw state.</li>
+<li>The Monitoring page shows the same counts as a direct SQL query for the same window.</li>
+</ol>
+<h2 id="non-goals">Non-goals</h2>
+<ul>
+<li><strong>Not a memory.</strong> The lane retains nothing beyond the log excerpt; the 22 knowledge bases are the memory. No decision is written back as a fact.</li>
+<li><strong>Not a write path.</strong> It returns a label. It never mutates Zoho, ClickUp or the platform.</li>
+<li><strong>Not an approval system.</strong> Human approval for tool writes is a separate, existing mechanism.</li>
+<li><strong>Not connected to Ricardo's personal gate.</strong> The <code>:8792</code> endpoint on his Mac mini is out of scope by design, and this PRD treats reaching it as a defect.</li>
+</ul>
+<h2 id="failure-modes">Failure modes</h2>
+<table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Detection</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Decision endpoint down</td>
+<td>tool error, provider non-200</td>
+<td>bot falls back to <code>on_unsure</code>; no retry storm (single attempt, logged)</td>
+</tr>
+<tr>
+<td>Vendor key expires</td>
+<td>401 on every call</td>
+<td>alert on the gate's error rate; profile swap is one field</td>
+</tr>
+<tr>
+<td>Confidence drift — everything comes back <code>unsure</code></td>
+<td>unsure rate on the Monitoring page</td>
+<td>re-tune threshold or question; the page exists for this</td>
+</tr>
+<tr>
+<td>A bot sends health or identity data in <code>state</code></td>
+<td>redaction refuses, logged</td>
+<td>that is the guard working; review the bot's instructions</td>
+</tr>
+<tr>
+<td>Self-hosted route C performs worse than the vendor</td>
+<td>side-by-side on the same gate for a week</td>
+<td>keep both profiles, switch the gate, no code change</td>
+</tr>
+</tbody>
+</table>
+<h2 id="security-permissions-audit">Security, permissions, audit</h2>
+<ul>
+<li>Gated on <code>agents:run</code>; the tool is not ungated and cannot be reached by a public embed.</li>
+<li>Inputs are redacted before leaving the platform; secrets never enter the state (<code>app/core/sanitize.py</code>).</li>
+<li>The decision log records who asked, which gate and what label — never the raw text.</li>
+<li>Spend is charged through the existing <code>SpendLedger</code> / <code>BudgetGuard</code>, so a decision lane cannot hide vendor cost from the org's budget.</li>
+</ul>
+<h2 id="build-order">Build order</h2>
+<ol type="1">
+<li><strong>Spike route C</strong> (self-hosted SystemOne-compatible endpoint) — one day, on office hardware, no vendor. Outcome: verified or dropped. <em>Gate: Ricardo, if it fails.</em></li>
+<li><strong>Credential</strong> — whichever route survives step 1. <em>Gate: Ricardo — money/legal.</em></li>
+<li><strong>Gate registry</strong> table, migration, the five gates seeded, admin CRUD.</li>
+<li><strong><code>decide</code> platform tool</strong> on top of <code>_decide.py</code> — reuse the engine, do not fork it.</li>
+<li><strong><code>decision_log</code></strong> + redaction + budget charge.</li>
+<li><strong>Monitoring → Decisions</strong> page.</li>
+<li>Pilot: <code>routing</code> and <code>triage</code> on the FIN and SAL bots for two weeks before any other gate.</li>
+</ol>
+<h2 id="decisions-register">Decisions register</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Needs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Route A, B or C — and if A/B, which vendor and which budget line</td>
+<td>Ricardo (money/legal)</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Are the five gates the same five as §8, or does Infinity Brands define its own set?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Default threshold — start at 0.75 and tune, or per gate from day one?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Who may author or edit a gate definition — owner/admin only, or builders too?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Does an <code>unsure</code> on the escalation gate notify a person in the platform, or only tell the bot?</td>
+<td>Ricardo</td>
+</tr>
+</tbody>
+</table>
+<h2 id="evidence-appendix">Evidence appendix</h2>
+<ul>
+<li><strong>E1</strong> <code>ls /app/app/workflows/nodes/</code> → <code>decide_yes_no</code>, <code>decide_choose</code>, <code>decide_score</code>, <code>_decide.py</code> (326 lines).</li>
+<li><strong>E2</strong> <code>sed -n 1,60p /app/app/workflows/nodes/_decide.py</code> — docstring, <code>UNSURE_PORT</code>, <code>MAX_TEXT = 100_000</code>, budget/guardrail imports.</li>
+<li><strong>E3</strong> <code>app/agents/model_resolver.py:627</code> <code>is_decision_api(provider, api)</code>.</li>
+<li><strong>E4</strong> <code>app/agents/model_resolver.py:632</code> <code>_build_decision_model</code> — TypeSafe, OpenAI decisions, Google decisions, SystemOne/OpenRouter.</li>
+<li><strong>E5</strong> <code>cat /app/app/core/catalog/decision_provider_models.json</code> → typesafe / openai / google / openrouter entries.</li>
+<li><strong>E6</strong> <code>select label, provider, model from model_profiles</code> → 5 rows, all <code>ollama</code>; two labelled NOT PERMITTED.</li>
+<li><strong>E7</strong> <code>grep -rl "decision" /app/app --include=*.py</code> → workflow nodes and authoring only; no platform tool.</li>
+<li><strong>E8</strong> <code>select count(*) from agents</code> where org = infinity-brands → 22; 17 with zero bindings.</li>
+<li><strong>E9</strong> <code>select count(*) from knowledge_bases</code> → 22, with <code>embedding_model</code>, <code>embedding_dim</code>, <code>embedding_provider</code>.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
