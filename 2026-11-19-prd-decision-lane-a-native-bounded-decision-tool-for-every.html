@@ -312,18 +312,36 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td><strong>B. OpenAI <code>gpt-6-luna</code> decisions</strong></td>
 <td>per-call vendor spend</td>
-<td>catalogue-ready, no credential. Google <code>gemini-decision-1</code> is a poor fit — we do not use Google</td>
+<td>catalogue-ready, no credential. Google is a poor fit — we do not use Google</td>
 </tr>
 <tr>
-<td><strong>C. Self-hosted SystemOne-compatible endpoint</strong> on office hardware</td>
-<td>hardware we own</td>
-<td><strong>unverified.</strong> A <code>base_url</code> constructor is not a serving implementation: it needs capacity, auth/TLS, network path, an operator and a benchmark. The spike may return "not demonstrated"</td>
+<td><strong>C. Self-host on office hardware</strong></td>
+<td>hardware we own, plus an operator</td>
+<td>unproven; needs capacity, TLS, auth and a benchmark</td>
+</tr>
+<tr>
+<td><strong>D. <code>clef:cloud</code> through Ollama Cloud — already owned</strong></td>
+<td><strong>zero extra vendor</strong>; covered by the company's Ollama subscription</td>
+<td><strong>live and proved, 2026-11-19</strong></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Decided in v1.3: Route A (TypeSafe Jev) as the production lane, behind a provider-neutral seam, with Route C only as a time-boxed, evidence-gated spike.</strong></p>
-<p>The council's reasoning, kept because it is checkable: C's "zero vendor cost" is not zero cost — it carries an operator, a deputy, TLS, patching, monitoring, backup and recovery, load-shedding resilience, hardware refresh and single-site risk. Office hardware removes an acquisition cost only if it genuinely has spare capacity. C can win at high sustained volume, but only after a spike proves quality, latency, capacity, security and ownership. A is the vendor the lane was designed around, so the typed contract, retry semantics and validation behaviour are already reconciled — which for bounded classification matters more than raw model quality.</p>
-<p>Non-negotiable controls that come with A: a thin internal <code>DecisionPort</code> so B or C is an adapter and not a rewrite; per-bot budgets, rate limits, idempotent retries and a common regression suite; semantic accuracy tested per decision type, not just schema validity; a <strong>manual queue</strong> for low-confidence output rather than a silent default; and a contract covering price cap, key custody, portability, residency, subprocessors and no-training terms. POPIA transfer basis must be checked before production — "no training" is not residency.</p>
+<p><strong>Decided in v1.4: Route D — <code>clef:cloud</code> (Clef 27B, native decision capability) over Ollama Cloud, through the platform's own <code>system-one</code> provider. No TypeSafe purchase, no OpenAI key, no self-hosted endpoint.</strong></p>
+<p>Route D was in front of us the whole time and v1.0–v1.3 missed it because this document treated "the company Ollama key" as one thing. It is two: <code>https://ollama.com/v1</code> is a chat API the decision lane refuses, while <code>https://ollama.com/v1/systemone</code> is a <strong>decision API</strong> the lane accepts, serving <code>clef:cloud</code> on the same company key. The platform already ships <code>system-one</code> as a first-class provider (<code>PROVIDERS</code> in <code>app/agents/model_resolver.py:260</code>, <code>keyless</code> and <code>requires_base_url</code>), and <code>SystemOneModel.decide</code> is exactly the shape <code>_decide.py</code> builds.</p>
+<p>Proof, run inside <code>agenticos-app-1</code> with the platform's own classes and the company key:</p>
+<pre><code>SystemOneModel(&quot;clef:cloud&quot;, provider=SystemOneProvider(base_url=&quot;https://ollama.com&quot;, api_key=...))
+  .decide(DecisionRequest(state=..., questions={&quot;route&quot;: ChoiceQuestion(...)}), DecisionModelSettings())
+-&gt; model: clef:cloud
+-&gt; route -&gt; ChoiceAnswer(choice=&#39;finance&#39;, confidence=0.8355,
+                         probabilities={&#39;finance&#39;: 0.9423, &#39;exco&#39;: 0.0104, &#39;sales&#39;: 0.0473})</code></pre>
+<p>Two configuration facts that cost a round trip each and belong in the build:</p>
+<ul>
+<li><strong><code>base_url</code> is <code>https://ollama.com</code>, not <code>https://ollama.com/v1/systemone</code>.</strong> <code>SystemOneProvider</code> appends <code>/v1/systemone</code>; the full path doubles it and the API answers <code>404 path "/v1/systemone/v1/systemone" not found</code>.</li>
+<li><strong><code>api</code> must be <code>decisions</code></strong>, and the provider must be <code>system-one</code>. A profile with provider <code>ollama</code> and <code>api: chat</code> is refused before dispatch — correctly.</li>
+</ul>
+<p>The org profile created to carry this: <code>736b771a-6862-42cf-bcd1-c981b3ff5757</code>, label <em>"Clef 27B — decisions (Ollama Cloud, company key)"</em>, provider <code>system-one</code>, model <code>clef:cloud</code>, api <code>decisions</code>, base_url <code>https://ollama.com</code>, on the existing company Ollama secret.</p>
+<p>Consequences: the money gate in this PRD evaporates — no vendor contract, no price cap negotiation, no POPIA transfer analysis for a new processor. <code>clef:cloud</code> rides a subscription the company already holds, on a provider it already trusts with chat. What remains is volume and latency, which the pilot measures.</p>
+<p>The council's reasoning for A is kept below, not deleted, because it is the reason the fallback exists: if <code>clef</code> degrades, the <code>DecisionPort</code> seam makes A a profile swap rather than a rewrite.</p>
 <p><strong>The missing number:</strong> the A-vs-C pivot is expected call volume times the Jev per-call quote. If the plausible three-year hosted bill is smaller than the cost of the spike plus hardening, skip the spike entirely.</p>
 <p><strong>Spending the key is Ricardo's signature, not this document's.</strong> The recommendation above prepares the choice; it does not authorise the spend.</p>
 <h2 id="build-plan--the-shared-service-first">Build plan — the shared service first</h2>
@@ -562,14 +580,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <ol type="1">
 <li><strong><code>DecisionPort</code> seam</strong> — a provider-neutral interface in front of the lane. No vendor, no spend, and it is the same work whichever route wins.</li>
 <li><strong>Volume × quote</strong> — measure expected decision volume from the two pilot bots, obtain a Jev quote with a price cap, and compare against the fully-loaded cost of self-hosting. This number decides whether step 3 is funded at all.</li>
-<li><strong>Route A credential</strong> — TypeSafe Jev key, rate limits and budget line. <em>Gate: Ricardo — money/legal.</em></li>
+<li><strong>Route D profile</strong> — done: <code>clef:cloud</code> on the existing company key, profile <code>736b771a</code>. Rate limits and a per-bot budget cap are the only remaining configuration.</li>
 <li><strong>Slice 1 — shared service extraction</strong>, workflow nodes converted to adapters, regression tests proving unchanged workflow routing, errors and cost.</li>
 <li><strong>Slice 2 — redaction</strong> component + canary tests across every store.</li>
 <li><strong>Slice 3 — <code>decision_gates</code></strong> migration, revisions, admin CRUD, org default profile, the five company gates.</li>
 <li><strong>Slice 4 — <code>decide</code> tool</strong> on top of the service, platform binding, rate limits, public denial.</li>
 <li><strong>Slice 5 — <code>decision_log</code> + <code>decision_attempts</code></strong> + <code>Monitoring → Decisions</code>.</li>
 <li><strong>Pilot:</strong> <code>routing</code> and <code>triage</code> on FIN and SAL for two weeks before any other gate.</li>
-<li><strong>Route C spike</strong> — only if step 2 says the hosted bill dwarfs the spike plus hardening. Time-boxed, with quality, p95 latency, TLS/auth, patch, backup/restore, load-shedding survival, named operator and deputy as exit gates. A demo on idle office hardware is not production evidence.</li>
+<li><strong>Route C or A, only if <code>clef</code> disappoints</strong> — a <code>DecisionPort</code> adapter swap, not a rebuild. Exit gates for any self-hosted option: quality on a golden set, p95 latency under load, TLS/auth, patch, backup/restore, load-shedding survival, a named operator and deputy, and a security review. A demo on idle office hardware is not production evidence.</li>
 </ol>
 <h2 id="decisions-register">Decisions register</h2>
 <p>Decided in v1.3 by the LLM council plus the local decision model, on long-term benefit to the company and its users. Ricardo retains veto; the vendor spend is his signature alone.</p>
@@ -586,8 +604,8 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td>D1</td>
 <td>Model route</td>
-<td><strong>A — TypeSafe Jev in production, behind a <code>DecisionPort</code>; C only as a gated spike; B documented fallback</strong></td>
-<td>Council; money remains Ricardo's signature</td>
+<td><strong>D — <code>clef:cloud</code> over Ollama Cloud through the <code>system-one</code> provider; zero extra vendor.</strong> A/B remain adapter swaps behind <code>DecisionPort</code></td>
+<td>Proved live in-container 2026-11-19; supersedes the v1.3 TypeSafe ruling</td>
 </tr>
 <tr>
 <td>D2</td>
