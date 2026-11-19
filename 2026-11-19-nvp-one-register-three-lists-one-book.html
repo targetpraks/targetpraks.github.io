@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>NVP — one register, three lists, one book</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="nvp--one-register-three-lists-one-book">NVP — one register, three lists, one book</h1>
+<p><strong>The build, cut down to four objects — audited by the council, corrected after its findings.</strong> Status: PROPOSED. Nothing is created in ClickUp yet.</p>
+<h2 id="at-a-glance">At a glance</h2>
+<ul>
+<li><strong>Four objects, not sixteen.</strong> A <strong>Property Register</strong> that holds the property, three supporting lists (<strong>Leases &amp; Inspections</strong>, <strong>Maintenance Log</strong>, <strong>Utility Ledger</strong>) and <strong>one document</strong>.</li>
+<li><strong>The register is dense on purpose</strong> — six rows, twenty-four columns, every number rolled up from the three lists beside it, and each row opens onto its own document subtasks with a working file link on every one.</li>
+<li><strong>Documents are no longer a separate list.</strong> They are subtasks of the property row: <strong>71 across the six houses</strong> (13 · 13 · 13 · 11 · 10 · 11 — the houses do not carry the same set), and one saved view shows all of them flat when the question is <em>what is missing everywhere</em>.</li>
+<li><strong>Quotes live in the maintenance row</strong> — three quote slots, the awarded supplier, the awarded cost and <strong>who approved it</strong>. The separate Quotes &amp; Approvals list is gone; nothing it held is lost.</li>
+<li><strong>Leasing is its own list with recurring tasks</strong> — a monthly portfolio review and a per-property annual review that regenerate themselves.</li>
+</ul>
+<h2 id="1-what-changed-from-the-last-draft">1. What changed from the last draft</h2>
+<div style="border:1px solid #e8e9eb;border-radius:10px;overflow:hidden;background:#fff;margin:16px 0 22px"><div style="display:grid;grid-template-columns:1.1fr 1fr 1.35fr;border-bottom:1px solid #e8e9eb;background:#fff"><div style="padding:7px 9px;font-size:11px;font-weight:600;color:#7c828d">Object</div><div style="padding:7px 9px;font-size:11px;font-weight:600;color:#7c828d">What I had</div><div style="padding:7px 9px;font-size:11px;font-weight:600;color:#7c828d">What you asked for</div></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1.35fr;border-bottom:1px solid #e8e9eb"><div style="padding:7px 9px;font-size:12px;color:#1f2937;font-weight:600">Property Records folder</div><div style="padding:7px 9px;font-size:11.5px;color:#98a2b3;text-decoration:line-through">3 lists + 8 documents</div><div style="padding:7px 9px;font-size:11.5px;color:#14532d"><b>3 lists, 0 documents</b> — the register carries the documents</div></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1.35fr;border-bottom:1px solid #e8e9eb"><div style="padding:7px 9px;font-size:12px;color:#1f2937;font-weight:600">Document tracking</div><div style="padding:7px 9px;font-size:11.5px;color:#98a2b3;text-decoration:line-through">71-row Document Register</div><div style="padding:7px 9px;font-size:11.5px;color:#14532d">a 13-item checklist on each property row, with the file link on the item</div></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1.35fr;border-bottom:1px solid #e8e9eb"><div style="padding:7px 9px;font-size:12px;color:#1f2937;font-weight:600">Property dossiers</div><div style="padding:7px 9px;font-size:11.5px;color:#98a2b3;text-decoration:line-through">6 dossiers + 1 tenancy dossier</div><div style="padding:7px 9px;font-size:11.5px;color:#14532d">gone — one Property Book document replaces all seven</div></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1.35fr;border-bottom:1px solid #e8e9eb"><div style="padding:7px 9px;font-size:12px;color:#1f2937;font-weight:600">Quotes &amp; Approvals</div><div style="padding:7px 9px;font-size:11.5px;color:#98a2b3;text-decoration:line-through">its own 13-row list</div><div style="padding:7px 9px;font-size:11.5px;color:#14532d">dissolved into Maintenance Log: Q1 / Q2 / Q3 / Awarded</div></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1.35fr;border-bottom:1px solid #e8e9eb"><div style="padding:7px 9px;font-size:12px;color:#1f2937;font-weight:600">Leases &amp; Inspections</div><div style="padding:7px 9px;font-size:11.5px;color:#98a2b3;text-decoration:line-through">25 rows, static</div><div style="padding:7px 9px;font-size:11.5px;color:#14532d">25 rows <b>plus recurring tasks</b> per property</div></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1.35fr;border-bottom:1px solid #e8e9eb"><div style="padding:7px 9px;font-size:12px;color:#1f2937;font-weight:600">Objects to build</div><div style="padding:7px 9px;font-size:11.5px;color:#98a2b3;text-decoration:line-through">6 lists + 10 docs</div><div style="padding:7px 9px;font-size:11.5px;color:#14532d"><b>3 lists + 1 doc + 1 view</b></div></div></div>
+
+<p>You asked for one dense thing rather than many thin ones. That is the right call for six properties: the previous shape had a 71-row document list, seven dossiers and a five-column quotes list — four places to look for one answer. Now a property is a row, and everything about it hangs off that row.</p>
+<h2 id="2-what-gets-built">2. What gets built</h2>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th>Type</th>
+<th>Rows</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Property Register</strong></td>
+<td>list</td>
+<td>6</td>
+<td>identity, state, money, document subtasks, quick links</td>
+</tr>
+<tr>
+<td><strong>Leases &amp; Inspections</strong></td>
+<td>list</td>
+<td>25</td>
+<td>leases, inspections, and the recurring reviews</td>
+</tr>
+<tr>
+<td><strong>Maintenance Log</strong></td>
+<td>list</td>
+<td>73</td>
+<td>every job, three quotes, awarded cost, approval</td>
+</tr>
+<tr>
+<td><strong>Utility Ledger</strong></td>
+<td>list</td>
+<td>42/yr</td>
+<td>one row per property per month, bill and proof of payment</td>
+</tr>
+<tr>
+<td><strong>Nova Property Book</strong></td>
+<td>doc</td>
+<td>1</td>
+<td>the readable record — six property sections and one tenancy section</td>
+</tr>
+</tbody>
+</table>
+<p>Folder: <strong>Property Records</strong>. The six existing lists (Briefed-In, Projects and the rest) are untouched — all 27 cards stay where they are and keep working.</p>
+<h3 id="21-property-register--six-rows-twenty-four-columns">2.1 Property Register — six rows, twenty-four columns</h3>
+<div style="border:1px solid #e8e9eb;border-radius:10px;overflow:hidden;background:#fff;margin:16px 0 22px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #e8e9eb;background:#fbfbfc">
+<div style="font-size:12px;color:#7c828d">Property Records<span style="color:#1f2937;font-weight:600"> / NVP Property Register</span></div>
+<div style="display:flex;gap:7px;align-items:center"><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Filter</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Sort</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Hide</span><span style="font-size:11.5px;color:#fff;background:#7b68ee;border-radius:6px;padding:4px 11px;font-weight:600">+ Add Task</span></div>
+</div>
+<div style="display:flex;gap:18px;align-items:center;padding:8px 13px 0;border-bottom:1px solid #e8e9eb"><span style="font-size:12px;font-weight:600;color:#1f2937;padding:0 0 8px;margin-right:2px;border-bottom:2px solid #7b68ee">List</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">Board</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">Sale readiness</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">+ View</span></div>
+<div style="padding:7px 13px;border-bottom:1px solid #e8e9eb;background:#fff;font-size:11.5px;color:#7c828d">6 tasks &nbsp;·&nbsp; 24 columns &nbsp;·&nbsp; every number below is a rollup from the three lists beside it</div>
+<div style="overflow-x:auto"><div style="display:grid;grid-template-columns:1.35fr 96px 82px 108px 92px 96px 84px 1.15fr;min-width:700px;border-bottom:1px solid #e8e9eb;background:#fff"><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Property</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Occupancy</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Sale</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Documents</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Maint. spend</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Utilities owed</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Lease ends</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Next action</div></div><div style="display:grid;grid-template-columns:1.35fr 96px 82px 108px 92px 96px 84px 1.15fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">17 Frances Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vacant</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Prep</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:40px;height:5px;background:#eceef1;border-radius:3px;overflow:hidden"><span style="display:block;width:38%;height:100%;background:#22a06b"></span></span><span style="font-size:11.5px;color:#3d4451"><b>5</b>/13</span></span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R36 470</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R0</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Sep 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">signed solar COC — installer</div></div><div style="display:grid;grid-template-columns:1.35fr 96px 82px 108px 92px 96px 84px 1.15fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Bushwillow</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vacant</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Prep</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:40px;height:5px;background:#eceef1;border-radius:3px;overflow:hidden"><span style="display:block;width:31%;height:100%;background:#22a06b"></span></span><span style="font-size:11.5px;color:#3d4451"><b>4</b>/13</span></span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R173 036</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R0</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Jul 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">HOA + levy clearance</div></div><div style="display:grid;grid-template-columns:1.35fr 96px 82px 108px 92px 96px 84px 1.15fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">11 Samuel Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Vacant</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Prep</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:40px;height:5px;background:#eceef1;border-radius:3px;overflow:hidden"><span style="display:block;width:15%;height:100%;background:#22a06b"></span></span><span style="font-size:11.5px;color:#3d4451"><b>2</b>/13</span></span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R107 300</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R0</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Aug 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">deeds search — Erf 306</div></div><div style="display:grid;grid-template-columns:1.35fr 96px 82px 108px 92px 96px 84px 1.15fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">3 Batavia Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Let</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:40px;height:5px;background:#eceef1;border-radius:3px;overflow:hidden"><span style="display:block;width:9%;height:100%;background:#22a06b"></span></span><span style="font-size:11.5px;color:#3d4451"><b>1</b>/11</span></span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R9 150</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R6 240</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Jun 27</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">nothing — tenant in place</div></div><div style="display:grid;grid-template-columns:1.35fr 96px 82px 108px 92px 96px 84px 1.15fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">21 Eastwood Park</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Own use</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:40px;height:5px;background:#eceef1;border-radius:3px;overflow:hidden"><span style="display:block;width:40%;height:100%;background:#22a06b"></span></span><span style="font-size:11.5px;color:#3d4451"><b>4</b>/10</span></span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R66 083</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R19 883</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">electrical COC link broken</div></div><div style="display:grid;grid-template-columns:1.35fr 96px 82px 108px 92px 96px 84px 1.15fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">51 Trichardt Road</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Own use</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:40px;height:5px;background:#eceef1;border-radius:3px;overflow:hidden"><span style="display:block;width:27%;height:100%;background:#22a06b"></span></span><span style="font-size:11.5px;color:#3d4451"><b>3</b>/11</span></span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R61 946</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R2 731</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">replacement electrical COC</div></div></div>
+<div style="padding:7px 13px;border-top:1px solid #e8e9eb;background:#fbfbfc;font-size:11.5px;color:#7c828d">Documents counts the property’s subtasks; spend and arrears are rollups off the two lists. <b>Next action</b> is written at the Monday review — no formula guesses it.</div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Column group</th>
+<th>Columns</th>
+<th>Where the number comes from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Identity</td>
+<td>Property · Address · Erf · Municipality · Owner entity · Title deed no. · Municipal account</td>
+<td>typed once</td>
+</tr>
+<tr>
+<td>State</td>
+<td>Occupancy · Sale status · Agent · Asking price · Power</td>
+<td>dropdowns and text</td>
+</tr>
+<tr>
+<td>Documents</td>
+<td><strong>Documents</strong> (<code>5/13</code>) · <strong>Documentation</strong> (folder link) · <strong>Next action</strong></td>
+<td>subtask progress, a link, a written line</td>
+</tr>
+<tr>
+<td>Money</td>
+<td>Maint. spend · Last repair · Utilities owed · Bills 2026</td>
+<td>rollups off Maintenance and Utility</td>
+</tr>
+<tr>
+<td>Lease</td>
+<td>Tenant · Lease ends · Days to lease end</td>
+<td>lookups and a formula off Leases</td>
+</tr>
+<tr>
+<td>Note</td>
+<td>Notes · Source</td>
+<td>typed</td>
+</tr>
+</tbody>
+</table>
+<p>Bloom Paediatric is <strong>not</strong> a seventh row: it is a tenancy inside 11B Riley Road, so it lives in the leases list and in its own section of the book. The register holds the six properties the company owns.</p>
+<h3 id="22-one-row-opened--the-documents-are-subtasks">2.2 One row, opened — the documents are subtasks</h3>
+<div style="border:1px solid #e8e9eb;border-radius:10px;background:#fff;margin:16px 0 22px;overflow:hidden">
+<div style="padding:9px 14px;border-bottom:1px solid #e8e9eb;background:#fbfbfc;font-size:12px;color:#7c828d">One row, opened — <span style="color:#1f2937;font-weight:600">17 Frances Street</span> &nbsp;·&nbsp; 13 document subtasks</div>
+<div style="display:grid;grid-template-columns:1.05fr 1fr;gap:0">
+<div style="padding:12px 14px;border-right:1px solid #e8e9eb">
+<div style="font-size:11px;font-weight:700;color:#7c828d;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Documents &nbsp;<span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:60px;height:5px;background:#eceef1;border-radius:3px;overflow:hidden"><span style="display:block;width:38%;height:100%;background:#22a06b"></span></span><span style="font-size:11.5px;color:#3d4451"><b>5</b>/13</span></span></div>
+<div style="margin-bottom:8px"><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#22a06b;flex:0 0 7px"></span><span style="color:#98a2b3;text-decoration:line-through">Title deed</span><span style="color:#98a2b3;font-size:10.5px">deed 211/2019</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px">🔗</span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#22a06b;flex:0 0 7px"></span><span style="color:#98a2b3;text-decoration:line-through">Insurance schedule</span><span style="color:#98a2b3;font-size:10.5px">pin 728</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px">🔗</span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#22a06b;flex:0 0 7px"></span><span style="color:#98a2b3;text-decoration:line-through">Gas COC</span><span style="color:#98a2b3;font-size:10.5px">GAS-2411</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px">🔗</span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#22a06b;flex:0 0 7px"></span><span style="color:#98a2b3;text-decoration:line-through">Incoming inspection</span><span style="color:#98a2b3;font-size:10.5px">2025-09-28</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px">🔗</span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#22a06b;flex:0 0 7px"></span><span style="color:#98a2b3;text-decoration:line-through">Lease agreement</span><span style="color:#98a2b3;font-size:10.5px">to 30 Sep 2026</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px">🔗</span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#e05252;flex:0 0 7px"></span><span style="color:#1f2937">Electrical COC</span><span style="color:#98a2b3;font-size:10.5px">link broken</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px"></span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#d98b0d;flex:0 0 7px"></span><span style="color:#1f2937">Solar PV COC</span><span style="color:#98a2b3;font-size:10.5px">unsigned</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px">🔗</span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#e05252;flex:0 0 7px"></span><span style="color:#1f2937">Electric fence COC</span><span style="color:#98a2b3;font-size:10.5px">not held</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px"></span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#e05252;flex:0 0 7px"></span><span style="color:#1f2937">Approved building plans</span><span style="color:#98a2b3;font-size:10.5px">not held</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px"></span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#d98b0d;flex:0 0 7px"></span><span style="color:#1f2937">Occupational certificate</span><span style="color:#98a2b3;font-size:10.5px">since 25 Aug</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px"></span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#e05252;flex:0 0 7px"></span><span style="color:#1f2937">Rates clearance</span><span style="color:#98a2b3;font-size:10.5px">not held</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px"></span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#e05252;flex:0 0 7px"></span><span style="color:#1f2937">FICA + OTP</span><span style="color:#98a2b3;font-size:10.5px">not held</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px"></span></div><div style="display:flex;align-items:center;gap:7px;padding:3px 0;font-size:11.5px"><span style="width:7px;height:7px;border-radius:50%;background:#e05252;flex:0 0 7px"></span><span style="color:#1f2937">Conveyancer pack</span><span style="color:#98a2b3;font-size:10.5px">not started</span><span style="margin-left:auto;color:#1a6ee0;font-size:10.5px"></span></div></div>
+<div style="display:flex;gap:8px;align-items:center;padding-top:8px;border-top:1px solid #e8e9eb;font-size:11.5px;color:#3d4451">
+<span style="font-weight:600">Documentation</span> <span style="color:#1a6ee0;text-decoration:underline">Open folder ↗</span>
+<span style="color:#7c828d">(WorkDrive · 17 Frances Street)</span></div>
+</div>
+<div style="padding:12px 14px">
+<div style="font-size:11px;font-weight:700;color:#7c828d;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Connected</div>
+<div style="font-size:11.5px;line-height:1.95;color:#3d4451">
+<b>Lease</b> — Martie van Wyk · ended 30 Sep 2026 · <span style="color:#1a6ee0;text-decoration:underline">open</span><br>
+<b>Spend to date</b> — R36 470 · 14 jobs · <span style="color:#1a6ee0;text-decoration:underline">open</span><br>
+<b>Bills 2026</b> — R45 399 · 8 paid · R0 outstanding<br>
+<b>Sale</b> — Preparing · Harcourt · no asking price yet<br>
+<b>Agent pack</b> — 5 of 13 verified
+</div>
+<div style="margin-top:10px;padding:8px 10px;background:#fff8e6;border-left:3px solid #d98b0d;font-size:11.5px;color:#5c4a12">
+<b>Next action:</b> ask the solar installer to re-issue the COC with signatures. Everything else on this house is either held or with the council.
+</div>
+<div style="margin-top:10px;font-size:11.5px;color:#7c828d">Notes · <span style="color:#1a6ee0;text-decoration:underline">edit</span><br>
+“No side door — when the power trips you enter through the roof.” · “Sprinkler heads damaged by the builders, R2 187.”</div>
+</div>
+</div>
+</div>
+
+<p>This is the part I had as a 71-row list. It is the same information, one level down. Each subtask carries <strong>its own status, its certificate number, its expiry and its own file link</strong> — so the evidence rule survives and nothing has to be opened to see it. The parent row shows the count and a <code>Documentation</code> link to that property's WorkDrive folder.</p>
+<p><strong>The one thing that makes the count mean something.</strong> A document subtask may only be marked complete when its file resolves and its certificate number is filled. That rule is what turns <code>5/13</code> from a task count into an evidence count — without it the number is theatre, and the last document proved exactly that: a Riley compliance certificate marked <em>Expired</em>, a Trichardt COC marked <em>fake</em>, and a Frances solar COC with <em>no signatures</em>, all filed as if they were held.</p>
+<p><strong>The portfolio question still answers in one click.</strong> A second saved view on the same list, in subtask mode, filtered to document subtasks with status not complete — grouped by property. No second list, no scanning six parents. (That view is built in the UI; the API silently drops filters on custom fields.)</p>
+<h3 id="23-leases--inspections--with-recurring-tasks">2.3 Leases &amp; Inspections — with recurring tasks</h3>
+<div style="border:1px solid #e8e9eb;border-radius:10px;overflow:hidden;background:#fff;margin:16px 0 22px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #e8e9eb;background:#fbfbfc">
+<div style="font-size:12px;color:#7c828d">Property Records<span style="color:#1f2937;font-weight:600"> / NVP Leases & Inspections</span></div>
+<div style="display:flex;gap:7px;align-items:center"><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Filter</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Sort</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Hide</span><span style="font-size:11.5px;color:#fff;background:#7b68ee;border-radius:6px;padding:4px 11px;font-weight:600">+ Add Task</span></div>
+</div>
+<div style="display:flex;gap:18px;align-items:center;padding:8px 13px 0;border-bottom:1px solid #e8e9eb"><span style="font-size:12px;font-weight:600;color:#1f2937;padding:0 0 8px;margin-right:2px;border-bottom:2px solid #7b68ee">List</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">Calendar</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">+ View</span></div>
+<div style="padding:7px 13px;border-bottom:1px solid #e8e9eb;background:#fff;font-size:11.5px;color:#7c828d">25 tasks &nbsp;·&nbsp; <b style="color:#3d4451">Repeats</b> is a real recurring task — ClickUp regenerates it each cycle</div>
+<div style="overflow-x:auto"><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;background:#fff"><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Record</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Property</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Tenant</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">End</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Vacated</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rent</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Repeats</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Next</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lease</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">17 Frances Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Martie van Wyk</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-30</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-30</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R35 000</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lease</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Bushwillow</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">S. Nkosi</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2027-03-31</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-07-12</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R30 000</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lease</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">11 Samuel Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">L. Dlamini</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-11-30</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-08-31</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R30 000</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lease</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">3 Batavia Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">K. Adams</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2027-06-30</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R22 500</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↻ annual</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2027-04-01</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lease</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Bloom Paediatric (11B)</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">J. Hawkridge Inc</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2028-01-31</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R14 650</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↻ annual</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2027-11-01</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Inspection — incoming</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">17 Frances Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↻ at each tenancy</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">next move-in</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Inspection — outgoing</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">11 Samuel Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-01</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↻ at each tenancy</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">next move-out</div></div><div style="display:grid;grid-template-columns:1.25fr 1.05fr 1.05fr 86px 86px 76px 86px 86px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Lease review — all six</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">portfolio</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↻ monthly, 1st</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-12-01</div></div></div>
+<div style="padding:7px 13px;border-top:1px solid #e8e9eb;background:#fbfbfc;font-size:11.5px;color:#7c828d">Three leases ended before their recorded end date. Vacated is a separate field, so that can never happen silently again.</div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Recurring task</th>
+<th>Repeats</th>
+<th>Why it exists</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lease review — all six properties</td>
+<td>monthly, on the 1st</td>
+<td>escalation, arrears, anything that changed</td>
+</tr>
+<tr>
+<td>Lease review — one per property</td>
+<td>annually, 60 days before that lease's end</td>
+<td>notice or renew — the document had no such trigger</td>
+</tr>
+<tr>
+<td>Inspection — incoming</td>
+<td>at each tenancy change</td>
+<td>the condition record that protects the deposit</td>
+</tr>
+<tr>
+<td>Inspection — outgoing</td>
+<td>at each tenancy change</td>
+<td>the snag list, created the day it is needed</td>
+</tr>
+</tbody>
+</table>
+<p>The annual review carries a fixed date typed per property, because ClickUp cannot generate a recurrence from a date field. The monthly review is the safety net that catches a date that moved — which is precisely the failure that let three leases read as active after the tenants had left.</p>
+<p>Five leases are documented (Frances, Bushwillow, Samuel, Batavia, Bloom) and the old register carried four rows, one of which <em>— INF Office Space, R20 815 —</em> matches no lease at all. The fifth lease gets a row and the orphan row gets reconciled before migration: six lease rows, not four.</p>
+<h3 id="24-maintenance-log--three-quotes-one-award-one-approval">2.4 Maintenance Log — three quotes, one award, one approval</h3>
+<div style="border:1px solid #e8e9eb;border-radius:10px;overflow:hidden;background:#fff;margin:16px 0 22px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #e8e9eb;background:#fbfbfc">
+<div style="font-size:12px;color:#7c828d">Property Records<span style="color:#1f2937;font-weight:600"> / NVP Maintenance Log</span></div>
+<div style="display:flex;gap:7px;align-items:center"><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Filter</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Sort</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Hide</span><span style="font-size:11.5px;color:#fff;background:#7b68ee;border-radius:6px;padding:4px 11px;font-weight:600">+ Add Task</span></div>
+</div>
+<div style="display:flex;gap:18px;align-items:center;padding:8px 13px 0;border-bottom:1px solid #e8e9eb"><span style="font-size:12px;font-weight:600;color:#1f2937;padding:0 0 8px;margin-right:2px;border-bottom:2px solid #7b68ee">List</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">Board</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">Awaiting approval</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">+ View</span></div>
+<div style="padding:7px 13px;border-bottom:1px solid #e8e9eb;background:#fff;font-size:11.5px;color:#7c828d">73 tasks &nbsp;·&nbsp; three quote slots, the awarded line and the approval on every job — nothing lives in a separate quotes list</div>
+<div style="overflow-x:auto"><div style="display:grid;grid-template-columns:1.35fr 0.95fr 88px 84px 84px 92px 86px 76px 56px;min-width:700px;border-bottom:1px solid #e8e9eb;background:#fff"><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Job</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Property</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Q1</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Q2</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Q3</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Awarded</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Approved</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Paid</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Files</div></div><div style="display:grid;grid-template-columns:1.35fr 0.95fr 88px 84px 84px 92px 86px 76px 56px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Electric fence energizer</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">11 Samuel Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R4 110<br><span style='color:#7c828d;font-size:10px'>CMS</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R4 850<br><span style='color:#7c828d;font-size:10px'>Fence-It</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R4 110<br><span style='color:#7c828d;font-size:10px'>CMS</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R Maio<br><span style='color:#7c828d;font-size:10px'>12 Nov</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R4 110</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 5</div></div><div style="display:grid;grid-template-columns:1.35fr 0.95fr 88px 84px 84px 92px 86px 76px 56px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Electrical COC replacement</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">11 Samuel Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R11 720<br><span style='color:#7c828d;font-size:10px'>COC Specialists</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R14 980<br><span style='color:#7c828d;font-size:10px'>B11</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R11 720<br><span style='color:#7c828d;font-size:10px'>COC Specialists</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R Maio<br><span style='color:#7c828d;font-size:10px'>12 Nov</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">pending</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 1</div></div><div style="display:grid;grid-template-columns:1.35fr 0.95fr 88px 84px 84px 92px 86px 76px 56px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Pool clean &amp; shock</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Bushwillow</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R2 100<br><span style='color:#7c828d;font-size:10px'>Pool Team</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R2 450<br><span style='color:#7c828d;font-size:10px'>Aqua</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R2 900<br><span style='color:#7c828d;font-size:10px'>Blue</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style='color:#a61b1b'>decision needed</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 0</div></div><div style="display:grid;grid-template-columns:1.35fr 0.95fr 88px 84px 84px 92px 86px 76px 56px;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Curtain rails — supply &amp; fit</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">17 Frances Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R6 023<br><span style='color:#7c828d;font-size:10px'>CMS</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R6 023<br><span style='color:#7c828d;font-size:10px'>CMS</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R Maio<br><span style='color:#7c828d;font-size:10px'>28 Sep</span></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R6 023</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 8</div></div></div>
+<div style="padding:7px 13px;border-top:1px solid #e8e9eb;background:#fbfbfc;font-size:11.5px;color:#7c828d">Sum of Paid: <b>R528 206,58</b> &nbsp;·&nbsp; Q1–Q3 link to each supplier’s quote; Awarded links to the invoice; 13 Bloom fit-out lines are in here too.</div>
+</div>
+
+<p>Q1, Q2 and Q3 are three amount fields, three supplier fields and three quote attachments. <strong>Awarded</strong> names the winner and the cost; <strong>Approved</strong> records who signed it and when — the field the old Quotes &amp; Approvals list was really for. The variance against the highest quote is a formula on the row.</p>
+<p>All <strong>73</strong> entries migrate, including the thirteen Bloom paediatric fit-out quotes and payments that belong to the same list. Sum of paid: <strong>R528 206.58</strong>.</p>
+<h3 id="25-utility-ledger">2.5 Utility Ledger</h3>
+<div style="border:1px solid #e8e9eb;border-radius:10px;overflow:hidden;background:#fff;margin:16px 0 22px">
+<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #e8e9eb;background:#fbfbfc">
+<div style="font-size:12px;color:#7c828d">Property Records<span style="color:#1f2937;font-weight:600"> / NVP Utility Ledger</span></div>
+<div style="display:flex;gap:7px;align-items:center"><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Filter</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Sort</span><span style="font-size:11.5px;color:#7c828d;border:1px solid #e8e9eb;border-radius:6px;padding:3px 9px">Hide</span><span style="font-size:11.5px;color:#fff;background:#7b68ee;border-radius:6px;padding:4px 11px;font-weight:600">+ Add Task</span></div>
+</div>
+<div style="display:flex;gap:18px;align-items:center;padding:8px 13px 0;border-bottom:1px solid #e8e9eb"><span style="font-size:12px;font-weight:600;color:#1f2937;padding:0 0 8px;margin-right:2px;border-bottom:2px solid #7b68ee">List</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">Unpaid</span><span style="font-size:12px;color:#7c828d;padding:0 0 8px;margin-right:2px">+ View</span></div>
+<div style="padding:7px 13px;border-bottom:1px solid #e8e9eb;background:#fff;font-size:11.5px;color:#7c828d">42 tasks &nbsp;·&nbsp; one row per property per month &nbsp;·&nbsp; the 30 empty future months were not copied across</div>
+<div style="overflow-x:auto"><div style="display:grid;grid-template-columns:86px 1.1fr 118px 84px 86px 56px 1fr;min-width:700px;border-bottom:1px solid #e8e9eb;background:#fff"><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Period</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Property</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Account</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Amount</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Paid</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">POP</div><div style="font-size:11px;font-weight:600;color:#7c828d;padding:6px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Note</div></div><div style="display:grid;grid-template-columns:86px 1.1fr 118px 84px 86px 56px 1fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Aug 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">17 Frances Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ekurhuleni 3051</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R5 355</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-04</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 1</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div></div><div style="display:grid;grid-template-columns:86px 1.1fr 118px 84px 86px 56px 1fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Aug 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Bushwillow</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Joburg 557860344</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R4 976</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-04</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 1</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div></div><div style="display:grid;grid-template-columns:86px 1.1fr 118px 84px 86px 56px 1fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Aug 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">11 Samuel Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ekurhuleni 3018</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R6 812</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-04</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 1</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div></div><div style="display:grid;grid-template-columns:86px 1.1fr 118px 84px 86px 56px 1fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Aug 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">3 Batavia Street</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Cape Town 6100</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R6 240</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-11</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 1</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div></div><div style="display:grid;grid-template-columns:86px 1.1fr 118px 84px 86px 56px 1fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Aug 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">21 Eastwood Park</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Ekurhuleni 3091</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R19 883</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">2026-09-08</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 1</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div></div><div style="display:grid;grid-template-columns:86px 1.1fr 118px 84px 86px 56px 1fr;min-width:700px;border-bottom:1px solid #e8e9eb;align-items:center"><div style="padding:6px 7px;font-size:11.5px;font-weight:600;color:#1f2937;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Aug 2026</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">51 Trichardt Road</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Cape Town 6112</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">R2 731</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📎 1</div><div style="padding:6px 7px;font-size:11.5px;font-weight:400;color:#3d4451;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span style='color:#a61b1b'>not yet paid</span></div></div></div>
+<div style="padding:7px 13px;border-top:1px solid #e8e9eb;background:#fbfbfc;font-size:11.5px;color:#7c828d">Sum 2026: <b>R372 686,33</b> &nbsp;·&nbsp; <b>Utilities owed</b> on the property register is this list, unpaid only.</div>
+</div>
+
+<p>The source has 72 monthly rows across six accounts; <strong>30 of them are empty future months</strong> and do not migrate as data — the grid is a view. The 42 rows that carry a bill all cross, 41 of them with a proof of payment. <code>Utilities owed</code> on the register is this list filtered to rows where paid date is empty, and it sums <strong>amount due minus amount paid</strong>, not just the billed total.</p>
+<h2 id="3-the-one-document--nova-property-book">3. The one document — Nova Property Book</h2>
+<p>Seven dossiers became one book: six property sections and one tenancy section, each short because the register holds the detail.</p>
+<ol type="1">
+<li><strong>Identity</strong> — erf, deeds, municipality, who owns it.</li>
+<li><strong>Where it stands</strong> — two or three sentences, written for a buyer or an agent.</li>
+<li><strong>Documents</strong> — the live subtask list, embedded, so it cannot go stale.</li>
+<li><strong>Money</strong> — maintenance and bills, embedded views.</li>
+<li><strong>The reasoning</strong> — the notes the document wrote by hand: no side door, roof access, the sprinkler damage. Word for word.</li>
+<li><strong>For the agent</strong> — what may be shared, and what may not.</li>
+</ol>
+<p>A book of prose would go stale in a week, which is exactly what happened to the last one. Sections 3 and 4 are live views; only 1, 2, 5 and 6 are written.</p>
+<h2 id="4-what-the-audit-said-and-what-i-did-about-it">4. What the audit said, and what I did about it</h2>
+<p>I put the design to the council before building it. It came back hard, and three of its findings changed the plan:</p>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>What I changed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>My denominator was invented — I wrote 13 documents for every property; the document doesn't have 13 for every property</td>
+<td>the count is now per property, <strong>13 · 13 · 13 · 11 · 10 · 11 = 71</strong>, which reconciles to the 68 source lines plus the 24 added sale-pack lines</td>
+</tr>
+<tr>
+<td>I claimed <em>Next action</em> was a formula reading the first unfinished subtask. ClickUp cannot do that — formulas cannot walk an ordered child list</td>
+<td><strong>Next action is a written field</strong>, refreshed at the Monday review. No formula pretends to guess it</td>
+</tr>
+<tr>
+<td>Dissolving the Quotes list lost the approval — no approver, no decision date</td>
+<td><strong>Approved by / Approved on / decision</strong> are columns on the maintenance row, plus the quote attachment that was approved</td>
+</tr>
+<tr>
+<td>Thirteen Bloom quotes and 30 empty utility months were quietly unaccounted for</td>
+<td>Bloom's 13 are inside the 73 maintenance rows; the 30 empty months are named in §2.5 rather than dropped</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The finding I did not take.</strong> The council's single most important change was to put the documents back into <strong>one flat register</strong> instead of subtasks, because a flat list answers <em>what is missing everywhere</em> more cheaply. It is technically right, and it is what you told me not to do. I kept the subtasks and answered the objection with a saved view instead — but you should know the trade: <strong>the flat view is a UI-built filter, so it will need a click-through check every month</strong>, and if this portfolio ever grows past a dozen properties the flat register becomes the better shape. At six, density wins.</p>
+<p>The council also flagged that the space's <strong>4-day due-date automation</strong> will stamp a due date on every row and every subtask created. It has to be scoped off these lists before migration, not after.</p>
+<h2 id="5-what-i-gave-up-and-what-guards-it">5. What I gave up, and what guards it</h2>
+<table>
+<thead>
+<tr>
+<th>Dropped</th>
+<th>The trade</th>
+<th>The guard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The 71-row Document Register</td>
+<td>documents are no longer one click away as a flat list</td>
+<td>subtask view filtered to unfinished, plus the <code>Documents</code> count on every row</td>
+</tr>
+<tr>
+<td>Seven property dossiers</td>
+<td>no single per-house page to hand over</td>
+<td>the book's six sections print and share individually</td>
+</tr>
+<tr>
+<td>Quotes &amp; Approvals list</td>
+<td>quotes can't be tracked apart from a job</td>
+<td>every quote is a slot on the job, with the approval beside it</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-what-the-review-of-the-document-still-says">6. What the review of the document still says</h2>
+<p>Nothing in this rebuild changes the finding: <strong>none of the 27 NVP cards can be closed from the Novas Prop document</strong>, because it stores links and sentences, not certificates. 22 of 68 statutory lines are held, 17 are missing, 7 are in progress and 3 are held but defective.</p>
+<p>Six lines the document never tracked are added as subtasks on the three sale houses: electric fence COC, approved plans, rates clearance, HOA compliance, levy clearance, and FICA with the conveyancer pack.</p>
+<p>Three corrections carry into the rows: <strong>Bushwillow is City of Johannesburg</strong>, not Ekurhuleni; <strong>Samuel has an electric fence</strong> (a COC, not a photo); and <strong>Frances' solar COC is unsigned</strong>, not missing.</p>
+<h2 id="7-cutover">7. Cutover</h2>
+<table>
+<thead>
+<tr>
+<th>When</th>
+<th>What</th>
+<th>Gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>21 Nov</td>
+<td>your go, plus the two open questions answered</td>
+<td>—</td>
+</tr>
+<tr>
+<td>24–26 Nov</td>
+<td>the four objects, empty and correct; the due-date automation scoped off</td>
+<td>you look at it</td>
+</tr>
+<tr>
+<td>27 Nov</td>
+<td>the document goes read-only; 217 rows and 71 subtasks are created from it</td>
+<td>reconcile passes</td>
+</tr>
+<tr>
+<td>2 Dec</td>
+<td>the record lives in ClickUp only</td>
+<td>a week with nobody opening the document</td>
+</tr>
+<tr>
+<td>14 Dec</td>
+<td>export, lock and archive the document</td>
+<td>your call on deletion</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Counts to reconcile, both sides equal:</strong> 47 document lines + 21 lease and inspection lines + 73 maintenance + 72 bill rows + 4 lease rows = 217. Out: 71 document subtasks + 25 lease rows + 73 maintenance + 42 bills + 6 properties = 217. Every migrated row carries a <code>Source</code> field naming the page it came from.</p>
+<h2 id="8-what-the-api-builds-and-what-i-click">8. What the API builds, and what I click</h2>
+<p>Folders, the four lists, custom fields, relationships, rollups, the 71 subtasks and all migrated rows are API work. <strong>UI only:</strong> the recurring repeats, the two formulas, the subtask-filtered view, and the dashboard. Twenty minutes of clicking, which I drive and you watch.</p>
+<h2 id="9-decisions">9. Decisions</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Recommended</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Four objects (register + 3 lists + 1 doc) instead of sixteen</td>
+<td><strong>yes</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Documents as subtasks with per-property counts, plus a saved flat view</td>
+<td><strong>yes</strong>, with the trade in §4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Recurring tasks: monthly portfolio review, annual per-property review, inspections at each tenancy change</td>
+<td><strong>yes</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Three quote slots + award + approval on every maintenance job; Quotes list dissolved</td>
+<td><strong>yes</strong></td>
+</tr>
+</tbody>
+</table>
+<h2 id="10-done-when">10. Done when</h2>
+<ol type="1">
+<li>Six property rows, 71 document subtasks, and a working folder link on every row.</li>
+<li>Every completed subtask has a resolving file link and a certificate number.</li>
+<li>The recurring reviews exist and fire on their cadence.</li>
+<li>No job is awarded without a quote in the slot it won, and no job is paid without an approver.</li>
+<li>The document has been read-only for fourteen days and nobody has asked for it.</li>
+</ol>
+<h2 id="appendix--evidence">Appendix — evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>How it was established</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>68 statutory lines, 22 held, 17 missing</td>
+<td><code>content_read</code> on 22 pages, <code>table_rows_read</code> on 20 grids, classified in <code>analyse.py</code></td>
+</tr>
+<tr>
+<td>R528,206.58 maintenance, R372,686.33 bills</td>
+<td>summed from 7 maintenance and 6 utility tables; reproduces the document's own formulas to the cent</td>
+</tr>
+<tr>
+<td>0 of 27 cards closeable</td>
+<td><code>nvp_card_assessment.csv</code>, one verdict per card</td>
+</tr>
+<tr>
+<td>The space has no documents and two statuses</td>
+<td>ClickUp API <code>/space</code>, <code>/api/v3/workspaces/4627083/docs</code></td>
+</tr>
+<tr>
+<td>Council audit</td>
+<td>4 members, one chairman, run 19 Nov 2026; findings applied in §4</td>
+</tr>
+<tr>
+<td>Working files</td>
+<td><code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/adrianna/nvp-2026-11-19/</code></td>
+</tr>
+</tbody>
+</table>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
