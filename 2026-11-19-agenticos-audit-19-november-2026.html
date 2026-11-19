@@ -168,7 +168,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>Self-check</td>
-<td>everything checkable green; five named <code>[--]</code> items, listed in §3</td>
+<td>everything checkable green; <strong>browser and artifact renderer now <code>[ok]</code></strong>; three named <code>[--]</code> items remain, listed in §4</td>
 <td><code>./agenticos.sh doctor</code></td>
 </tr>
 <tr>
@@ -239,14 +239,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>Browser automation</td>
-<td>Agents can open pages, read them, fill forms</td>
-<td>The published backend image does <strong>not</strong> ship the <code>browser</code> extra (<code>browser_use</code>/<code>playwright</code> absent), so this needs a <strong>custom backend image</strong> built from the repo. Free, but it must be rebuilt on every upgrade. ~500 MB RAM</td>
+<td><del>Browser automation</del></td>
+<td><strong>ON since 19 Nov 13:30.</strong> <code>doctor</code>: <code>[ok] browser endpoints: browser (Chrome/156.0.8078.79)</code></td>
+<td>Built <code>agenticos-backend:1.82.2-browser</code> from the release tag with <code>--extra browser</code>; browser + egress proxy running under a 512m/128m cap of the 500 MB RAM this lane needs, against a 1 GB ceiling on the renderer it shares the image with; the renderer itself runs at 768m. Must be rebuilt on each upgrade (README recipe)</td>
 </tr>
 <tr>
-<td>Artifact renderer</td>
-<td>Screenshots and PDF previews of published pages</td>
-<td>Same image dependency; the <code>artifact-render</code> service already exists with a 1 GB cap</td>
+<td><del>Artifact renderer</del></td>
+<td><strong>ON since 19 Nov 13:30.</strong> <code>doctor</code>: <code>[ok] artifact renderer: artifact-render (Chrome/155.0.8059.40)</code></td>
+<td>Same image; <code>--profile artifact-render</code>, 768m cap</td>
 </tr>
 <tr>
 <td><code>pg_stat_statements</code></td>
@@ -282,13 +282,15 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Any paid model provider; the deployment stays on the company Ollama key and local embeddings.</li>
 <li>Personal model keys: no purchase needed, but it is a billing policy, not a switch.</li>
 </ul>
-<h2 id="4-the-five----doctor-lines-explained">4. The five <code>[--]</code> doctor lines, explained</h2>
+<h2 id="4-the-remaining----doctor-lines-explained">4. The remaining <code>[--]</code> doctor lines, explained</h2>
 <ol type="1">
 <li><code>postgres: tls=off</code> and 2. <code>redis: tls=off</code> — both services are unpublished and only reachable on the internal network; TLS buys nothing here.</li>
-<li><code>pg_stat_statements unavailable</code> — see §2.</li>
-<li><code>file storage: backend=local</code> — files live on the VM's encrypted-by-us volume; S3/MinIO would be another moving part.</li>
-<li><code>tracing: LOGFIRE_TOKEN unset</code> — paid, see §3.</li>
+<li><code>pg_stat_statements unavailable</code> — free, needs a Postgres config change and a restart; diagnostics only.</li>
+<li><code>file storage: backend=local</code> — files live on the VM's own volume; S3/MinIO would be another moving part.</li>
+<li><code>tracing: LOGFIRE_TOKEN unset</code> — paid, excluded.</li>
 </ol>
+<h2 id="4a-the-1330-change-and-the-two-minutes-it-cost">4a. The 13:30 change, and the two minutes it cost</h2>
+<p>Enabling the browser lane stopped the stack once: <code>browser-egress</code> bind-mounts <code>./docker/browser-egress/squid.conf</code>, Docker created that path as a root-owned directory on the first attempt (we have no sudo), the mount failed, and the dependent <code>migrate</code>/<code>app</code>/<code>worker</code> never started. Service was restored within about two minutes by pointing the overlay at <code>nginx/squid.conf</code>. The correct lesson: a profile service that bind-mounts a file must have that file before the profile is ever enabled.</p>
 <h2 id="5-change-in-flight-observed-at-1311-today">5. Change in flight, observed at 13:11 today</h2>
 <p>At <strong>11:11 UTC</strong> (13:11 SAST) all 13 <code>* SOP Watch</code> agents were archived and the project <code>BU 8 Brands Ops 2</code> disappeared; unit-bot specs were rewritten minutes earlier (<code>backups/stage-n-*-bot-spec-before.json</code>). The 13 active weekly routines now run on the <strong>unit bots</strong> (<code>Weekly SOP audit — FIN</code> on <code>FIN Bot</code>, etc.).</p>
 <p>That is coherent — one weekly audit per unit, run by the unit's own bot — but it happened while this audit was running and I did not do it. It needs a yes: if it is another agent's Stage N, no action; if not, I will investigate.</p>
