@@ -416,29 +416,21 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Standing rule:</strong> the bot that executes a change never certifies it. Courage writes the ledger row; Reviewer verifies a sample and can fail the week.</p>
 <hr />
 <h2 id="6-architecture--the-maintenance-control-plane">6. Architecture — the maintenance control plane</h2>
-<pre><code>                 ┌──────────────────────────────────────────────┐
-                 │  ops-control-plane  (DevMini, git)           │
-                 │  inventory.yaml · runbooks/ · ledger/ ·       │
-                 │  reports/ · policies/                        │
-                 └───────────────┬──────────────────────────────┘
-                                 │ read at run time
-   ┌─────────────┬───────────────┼────────────────┬──────────────┐
-   │             │               │                │              │
-┌──▼───┐    ┌────▼────┐    ┌─────▼─────┐    ┌─────▼─────┐  ┌─────▼─────┐
-│W1 Mac│    │W2 Agent-│    │W3 Hosts &amp; │    │W4 Know-   │  │W5 ClickUp │
-│fleet │    │icOS     │    │edge       │    │ledge      │  │governance │
-└──┬───┘    └────┬────┘    └─────┬─────┘    └─────┬─────┘  └─────┬─────┘
-   └─────────────┴───────────────┴────────────────┴──────────────┘
-                                 │ every run appends one row
-                        ┌────────▼─────────┐
-                        │   health ledger  │  ledger/YYYY-MM.jsonl
-                        └────────┬─────────┘
-                    ┌────────────┼─────────────┐
-             ┌──────▼─────┐ ┌────▼──────┐ ┌────▼─────────┐
-             │ 07:00 digest│ │ Maio OS   │ │ Reviewer     │
-             │ (one msg)   │ │ System→   │ │ sample audit │
-             │             │ │ Maintenance│ │ (independent)│
-             └─────────────┘ └───────────┘ └──────────────┘</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TB</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CP</span>[<span class="st">&quot;ops-control-plane (DevMini, git)</span><span class="sc">&lt;br/&gt;</span><span class="st">inventory.yaml · runbooks/ · ledger/ · reports/&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CP</span> <span class="pp">--&gt;</span> <span class="dt">W1</span>[<span class="st">&quot;W1 Mac &amp; device upkeep&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CP</span> <span class="pp">--&gt;</span> <span class="dt">W2</span>[<span class="st">&quot;W2 AgenticOS lifecycle&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CP</span> <span class="pp">--&gt;</span> <span class="dt">W3</span>[<span class="st">&quot;W3 Hosts, edge &amp; credentials&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CP</span> <span class="pp">--&gt;</span> <span class="dt">W4</span>[<span class="st">&quot;W4 Knowledge refresh&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CP</span> <span class="pp">--&gt;</span> <span class="dt">W5</span>[<span class="st">&quot;W5 ClickUp governance&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W1</span> <span class="pp">--&gt;</span> <span class="dt">L</span>[(<span class="st">&quot;health ledger</span><span class="sc">&lt;br/&gt;</span><span class="st">ledger/YYYY-MM.jsonl&quot;</span>)]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W2</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W3</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W4</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">W5</span> <span class="pp">--&gt;</span> <span class="dt">L</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">L</span> <span class="pp">--&gt;</span> <span class="dt">DG</span>[<span class="st">&quot;07:00 digest</span><span class="sc">&lt;br/&gt;</span><span class="st">one message to Ricardo&quot;</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">L</span> <span class="pp">--&gt;</span> <span class="dt">MO</span>[<span class="st">&quot;Maio OS → System → Maintenance&quot;</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">L</span> <span class="pp">--&gt;</span> <span class="dt">RV</span>[<span class="st">&quot;Reviewer</span><span class="sc">&lt;br/&gt;</span><span class="st">independent 10% sample audit&quot;</span>]</span></code></pre></div>
 <p><strong>Three artefacts carry the whole design:</strong></p>
 <ol type="1">
 <li><strong><code>inventory.yaml</code></strong> — the single declaration of what exists (schema in §11.1). Everything else is a diff against it.</li>
