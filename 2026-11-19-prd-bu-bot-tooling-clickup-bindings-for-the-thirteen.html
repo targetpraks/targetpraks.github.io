@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD — BU bot tooling: ClickUp bindings for the thirteen departmental bots</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="bu-bot-tooling--clickup-bindings-for-the-thirteen-departmental-bots">BU bot tooling — ClickUp bindings for the thirteen departmental bots</h1>
+<h2 id="why-this-prd">Why this PRD</h2>
+<p>The work platform has thirteen departmental bots and four shared report bots, and <strong>seventeen of the twenty-two published agents cannot call a single tool.</strong> They can talk; they cannot file a task, read a list, or look up a colleague. The only agents with tools are the two admin agents (Batman, Superman) and three platform agents.</p>
+<p>ClickUp is already connected and healthy — the official ClickUp server at <code>https://mcp.clickup.com/mcp</code>, OAuth, last check <code>ok</code>, <strong>67 tools</strong>. It is bound to Batman and Superman with <code>approval: writes</code> and <strong>no tool narrowing at all</strong>.</p>
+<p>So the gap is not a missing integration. It is that nothing is bound, and that where it <em>is</em> bound the whole surface is exposed. This PRD closes both: bind ClickUp to the bot that owns each business unit, and cut each binding down to the tools that unit's work actually needs.</p>
+<h2 id="product-in-five-lines">Product in five lines</h2>
+<ol type="1">
+<li>Every departmental bot files and reads work in ClickUp — in its own list, with its own tools.</li>
+<li>No bot gets a delete tool, a chat-delete tool, or a bulk mutation. Ever.</li>
+<li>Writes stay human-approved: <code>approval: writes</code> holds every mutating call for a person to click.</li>
+<li>The narrowing is expressed twice — an administrator ceiling on the connection, a per-bot allowlist on the binding — and the platform intersects them.</li>
+<li>One shared ClickUp credential today; per-unit narrowing is enforced by allowlists, not by separate credentials, until the BU groups have members.</li>
+</ol>
+<h2 id="current-state--evidence">Current state — evidence</h2>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Value</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Published agents in the org</td>
+<td>22</td>
+<td>E1</td>
+</tr>
+<tr>
+<td>Agents with zero MCP bindings</td>
+<td>17</td>
+<td>E1</td>
+</tr>
+<tr>
+<td>ClickUp org connection</td>
+<td><code>391a67f7-ab74-4a90-8496-1549dd2ef72c</code>, <code>https://mcp.clickup.com/mcp</code>, oauth, <code>ok</code>, 67 tools</td>
+<td>E2</td>
+</tr>
+<tr>
+<td>Visibility of that connection</td>
+<td><code>private</code> — reachable by owner/admin (<code>mcp:manage</code> ALL)</td>
+<td>E2, E3</td>
+</tr>
+<tr>
+<td>Batman / Superman bindings</td>
+<td>platform + github + clickup, <code>approval: writes</code>, <code>allowed_tools: null</code></td>
+<td>E4</td>
+</tr>
+<tr>
+<td>Groups with members</td>
+<td>1 of 57 (<code>SUPER ADMIN</code>, 2 members). Every BU group is empty</td>
+<td>E5</td>
+</tr>
+<tr>
+<td>Tool allowlists in use anywhere</td>
+<td>none — <code>allowed_tools</code> is null on all 4 connections and all 6 bindings</td>
+<td>E2, E4</td>
+</tr>
+</tbody>
+</table>
+<p>The thirteen bots with no tools: <code>FIN, HRM, ADM, ITC, MKT, SAL, EXP, TLF, PPP, DID, FXS, FXL, NVP</code>. The four shared report bots with no tools: <code>DASH, DECK, NUM, SOP</code>. (<code>DOC Bot</code> already has one binding.)</p>
+<h2 id="how-narrowing-actually-works-here">How narrowing actually works here</h2>
+<p>Read from the running code, not assumed:</p>
+<ul>
+<li>A binding carries <code>allowed_tools</code>, a list of <strong>the server's own tool names</strong> — <code>clickup_create_task</code>, not a prefixed name (<code>presented_tool_names</code>, <code>app/services/mcp_connection.py:3509</code>).</li>
+<li>The connection carries its own <code>allowed_tools</code>, and the platform <strong>intersects</strong> the two: the connection's list is an administrator ceiling, the binding's is the agent's own limit. A tool excluded at the connection can never be reached by a binding that still names it (<code>_narrowed_tools</code>, <code>mcp_connection.py:3536</code>).</li>
+<li><code>null</code> on either side means "no narrowing from here". Both null = every tool the server offers.</li>
+<li><code>approval: writes</code> holds every call that changes something for a human approval; read-only tools run automatically under that policy (<code>app/schemas/agent.py:883</code>).</li>
+<li>Publish refuses a binding whose presented tool names collide with the agent's other tools — the run would abort, so the platform stops it at publish (<code>app/services/agent_registry.py:3048-3060</code>).</li>
+</ul>
+<p>That is the whole mechanism. No new code is needed to enforce per-bot limits; only the lists.</p>
+<h2 id="the-binding-design">The binding design</h2>
+<p>Two tiers per bot, plus a hard exclusion list.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Contents</th>
+<th>Approval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Read</strong></td>
+<td>list/folder/task read, comments read, member lookup, custom fields</td>
+<td>runs freely</td>
+</tr>
+<tr>
+<td><strong>Write</strong></td>
+<td>create task, create task comment, create/update reminder</td>
+<td>held for human approval</td>
+</tr>
+<tr>
+<td><strong>Never</strong></td>
+<td>every delete, every chat delete/update, tag removal, folder/space creation, document page mutation</td>
+<td>absent from the allowlist</td>
+</tr>
+</tbody>
+</table>
+<p>Binding shape, one per bot, added to its <code>draft_spec.mcp_servers</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;account&quot;</span><span class="fu">:</span> <span class="st">&quot;organization&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;connection_id&quot;</span><span class="fu">:</span> <span class="st">&quot;391a67f7-ab74-4a90-8496-1549dd2ef72c&quot;</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;approval&quot;</span><span class="fu">:</span> <span class="st">&quot;writes&quot;</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;allowed_tools&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;clickup_get_list&quot;</span><span class="ot">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;clickup_get_task_comments&quot;</span><span class="ot">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;clickup_find_member_by_name&quot;</span><span class="ot">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;clickup_create_task&quot;</span><span class="ot">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;clickup_create_task_comment&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><code>account</code> is free text used as the binding's label; the connection is resolved by <code>connection_id</code>, and the platform only resolves org-scoped rows for a published agent (<code>get_org_scoped_by_ids</code>).</p>
+<h3 id="verified-tool-catalogue-sample-of-the-67-live-tools">Verified tool catalogue (sample of the 67 live tools)</h3>
+<p>Read tools seen in <code>last_tools</code>: <code>clickup_get_list</code>, <code>clickup_get_folder</code>, <code>clickup_get_task_comments</code>, <code>clickup_get_threaded_comments</code>, <code>clickup_get_custom_fields</code>, <code>clickup_get_workspace_members</code>, <code>clickup_find_member_by_name</code>, <code>clickup_resolve_assignees</code>, <code>clickup_search_reminders</code>, <code>clickup_list_document_pages</code>, <code>clickup_get_document_pages</code>, <code>clickup_download_task_attachment</code>.</p>
+<p>Write tools: <code>clickup_create_task</code>, <code>clickup_create_task_comment</code>, <code>clickup_create_comment</code>, <code>clickup_create_reminder</code>, <code>clickup_update_reminder</code>, <code>clickup_create_document</code>, <code>clickup_create_document_page</code>, <code>clickup_attach_task_file</code>.</p>
+<p>Excluded on sight: <code>clickup_delete_comment</code>, <code>clickup_delete_chat_message</code>, <code>clickup_update_chat_message</code>, <code>clickup_update_comment</code>, <code>clickup_remove_tag_from_task</code>, <code>clickup_create_folder</code>, <code>clickup_create_list_in_folder</code>, <code>clickup_create_space_tag</code>, <code>clickup_update_document_page</code>.</p>
+<p><strong>The builder must dump all 67 and classify them before writing any allowlist.</strong> Forty were read during this audit; the remaining twenty-seven are unknown by name and must not be guessed at. Never a wildcard.</p>
+<h2 id="what-each-bot-gets">What each bot gets</h2>
+<table>
+<thead>
+<tr>
+<th>Bot</th>
+<th>Phase</th>
+<th>Allowlist</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIN, HRM, ADM, ITC, MKT, SAL, EXP, TLF, PPP, DID, FXS, FXL, NVP</td>
+<td>1</td>
+<td>Read tier + <code>create_task</code> + <code>create_task_comment</code></td>
+</tr>
+<tr>
+<td>DASH, DECK, NUM, SOP</td>
+<td>2</td>
+<td>Read tier only — they report, they do not file</td>
+</tr>
+<tr>
+<td>DOC Bot</td>
+<td>2</td>
+<td>Read tier + <code>create_document</code>, <code>create_document_page</code></td>
+</tr>
+<tr>
+<td>Batman, Superman</td>
+<td>3</td>
+<td>Read tier + full write tier (they are the admin pair and already hold <code>writes</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Phase 3 is a separate approval: narrowing the two admin agents changes working behaviour and gets its own review, not a ride-along on this change.</p>
+<h2 id="acceptance-criteria">Acceptance criteria</h2>
+<ol type="1">
+<li><code>select name, draft_spec-&gt;'mcp_servers' from agents where name in (...13...)</code> shows a ClickUp binding with a non-null <code>allowed_tools</code> on all thirteen bots.</li>
+<li>A publish of each bot succeeds — no prefix-collision refusal in the platform log (E6).</li>
+<li>Running a departmental bot, ask it to <em>delete</em> a ClickUp comment. It must answer that it cannot: the tool is not in its toolset. Evidence: the run's tool list, not the bot's prose.</li>
+<li>Ask the same bot to file a task. The call must park for approval before anything is written to ClickUp, and only complete after a human approves it.</li>
+<li>ClickUp connection <code>last_tools</code> still reports 67 — binding changes must not alter the connection.</li>
+<li><code>used_by</code> for the ClickUp connection lists the thirteen bots plus the pre-existing two.</li>
+<li>A non-admin member (role <code>builder</code>) cannot see the connection in MCP servers unless a grant is added — the connection stays <code>private</code>.</li>
+</ol>
+<h2 id="failure-modes">Failure modes</h2>
+<table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Detection</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tool name typo in an allowlist</td>
+<td>Publish refuses on prefix/collision check, or the tool silently absent</td>
+<td>Verify against <code>last_tools</code> before publish; acceptance 3 catches it</td>
+</tr>
+<tr>
+<td>A bot cannot file because ClickUp OAuth expires</td>
+<td><code>last_status != ok</code>, <code>last_error</code> set</td>
+<td>Reconnect the org connection; do not add a second credential</td>
+</tr>
+<tr>
+<td>Approval fatigue — every task parks</td>
+<td>Monitoring shows a queue</td>
+<td>That is the policy working; widen <code>approval</code> only with a separate decision</td>
+</tr>
+<tr>
+<td>ClickUp changes a tool name</td>
+<td><code>last_tools</code> diff on the 6-hourly check</td>
+<td>Update allowlists; add a check that allowlist entries are a subset of <code>last_tools</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="security-permissions-audit">Security, permissions, audit</h2>
+<ul>
+<li>The credential stays one org-scoped OAuth connection owned by Ricardo; nobody gains a new secret.</li>
+<li><code>mcp:manage</code> is <code>ALL</code> for owner/admin and <code>SHARED</code> for builder — a builder reaches this connection only if a grant names them or their group (<code>list_for_org</code>, <code>mcp_connection.py:2362</code>).</li>
+<li>Every tool call is recorded against the connection; <code>recent_calls</code> exposes tool name and who ran it, never arguments or results.</li>
+<li>No delete tool is bound, so no delete can be approved by mistake.</li>
+</ul>
+<h2 id="build-order">Build order</h2>
+<ol type="1">
+<li>Dump all 67 ClickUp tools and classify into read / write / never. <strong>Gate: Ricardo reviews the table.</strong></li>
+<li>Set the connection-level ceiling to read + write tier (drops every <code>never</code> tool for all consumers).</li>
+<li>Bind and publish the thirteen bots, one business unit at a time, running acceptance 3 and 4 on the first.</li>
+<li>Bind the four report bots (read-only) and DOC Bot.</li>
+<li>Decide separately on Batman/Superman narrowing.</li>
+</ol>
+<h2 id="decisions-register">Decisions register</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Needs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Does each BU bot file into a fixed list per unit, or does the bot pick from the lists it can see?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Is <code>clickup_update_task</code> (status/assignee changes) in the write tier or the never tier?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Do the shared report bots get <code>create_document_page</code> too, or only task comments?</td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>When BU groups get members, do we add a per-group grant as well, or keep allowlists as the only limit?</td>
+<td>Ricardo, after the first invite</td>
+</tr>
+</tbody>
+</table>
+<h2 id="evidence-appendix">Evidence appendix</h2>
+<ul>
+<li><strong>E1</strong> <code>select name, visibility, jsonb_array_length(coalesce(draft_spec-&gt;'mcp_servers','[]')) from agents ...</code> → 22 agents, 17 at zero.</li>
+<li><strong>E2</strong> <code>select id, name, url, auth_type, last_status, jsonb_array_length(last_tools) from mcp_connections</code> → 4 rows, clickup/org 67 tools, <code>ok</code>.</li>
+<li><strong>E3</strong> <code>app/services/mcp_connection.py:2362</code> <code>list_for_org</code> — org rows kept unless narrowed; <code>_visibility.py</code> disjunction.</li>
+<li><strong>E4</strong> <code>select a.name, x-&gt;&gt;'connection_id', x-&gt;&gt;'approval', x-&gt;&gt;'allowed_tools' from agents a, jsonb_array_elements(...)</code> → Batman/Superman, <code>writes</code>, null.</li>
+<li><strong>E5</strong> <code>select g.name, count(gm.user_id) from groups g ... group by g.name</code> → 57 rows, only <code>SUPER ADMIN</code> at 2.</li>
+<li><strong>E6</strong> <code>app/services/agent_registry.py:3048-3060</code> prefix-collision and tool-name refusal at publish.</li>
+<li><strong>E7</strong> <code>app/services/mcp_connection.py:3509-3545</code> <code>presented_tool_names</code> / <code>_narrowed_tools</code>.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
