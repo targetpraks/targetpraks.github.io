@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>BU bot routines — 13 units, 106 routines, 3 blocked</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="bu-bot-routines--what-runs-when-and-what-is-still-blocked">BU bot routines — what runs, when, and what is still blocked</h1>
+<p>Built 2026-11-19 by Adrianna A. Everything below is verified against the live platform and the live ClickUp workspace, not planned on paper.</p>
+<h2 id="what-is-live-now">What is live now</h2>
+<p>Thirteen business-unit bots each run a set of nightly and weekly routines inside AgenticOS. The routines sit on the bot, read a read-only snapshot of that unit's own ClickUp space, and report to the unit executive. <strong>No routine writes to ClickUp, Zoho or the knowledge base.</strong> They propose; a person acts.</p>
+<table>
+<thead>
+<tr>
+<th>Unit</th>
+<th>Bot</th>
+<th>Active</th>
+<th>Paused</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Finance</td>
+<td>FIN Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Human Resources</td>
+<td>HRM Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Administration</td>
+<td>ADM Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Information Technology</td>
+<td>ITC Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Marketing</td>
+<td>MKT Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Sales</td>
+<td>SAL Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>ACDC Express</td>
+<td>EXP Bot</td>
+<td>7</td>
+<td>3</td>
+<td>10</td>
+</tr>
+<tr>
+<td>The Local Farmer</td>
+<td>TLF Bot</td>
+<td>7</td>
+<td>3</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Papa Pasta</td>
+<td>PPP Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Divorced Dads</td>
+<td>DID Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>INFX Solutions</td>
+<td>FXS Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>INFX Labs</td>
+<td>FXL Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Nova Property</td>
+<td>NVP Bot</td>
+<td>6</td>
+<td>3</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<p>106 routines created, plus the 13 "Weekly SOP audit" routines that were already there — 119 in the platform. EXP and TLF carry one extra each (table reconciliation) because they are the only two with a table bound.</p>
+<h2 id="the-routine-set">The routine set</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Routine</th>
+<th>When (SAST)</th>
+<th>Reads</th>
+<th>Writes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R4</td>
+<td>ClickUp overdue chase</td>
+<td>Mon–Fri 20:03–20:39</td>
+<td>unit feed</td>
+<td>none — nudges drafted</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>Unassigned work triage</td>
+<td>Mon–Fri 21:00–21:24</td>
+<td>unit feed</td>
+<td>none — owner proposed</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>Knowledge base upkeep</td>
+<td>Wed 20:00–20:36</td>
+<td>unit feed + own KB</td>
+<td>none — gaps named</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Context base drift</td>
+<td>Wed 21:00–21:36</td>
+<td>unit feed + own context</td>
+<td>none — drift quoted</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>Tables reconciliation</td>
+<td>Thu 20:00–20:24</td>
+<td>unit feed + bound table</td>
+<td>none — rows proposed</td>
+</tr>
+<tr>
+<td>R11</td>
+<td>Stale and duplicate watch</td>
+<td>Thu 21:00–21:24</td>
+<td>unit feed</td>
+<td>none — pairs named</td>
+</tr>
+<tr>
+<td>R1</td>
+<td>Team Inbox zero</td>
+<td>Mon–Fri 21:40–21:52</td>
+<td>Zoho TeamInbox</td>
+<td><strong>paused — no scope</strong></td>
+</tr>
+<tr>
+<td>R2</td>
+<td>WorkDrive STS tidy</td>
+<td>Fri 20:30–20:42</td>
+<td>Zoho WorkDrive</td>
+<td><strong>paused — no scope</strong></td>
+</tr>
+<tr>
+<td>R3</td>
+<td>Weekly hours check</td>
+<td>Fri 21:30–21:42</td>
+<td>Zoho People</td>
+<td><strong>paused — no scope</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Minutes are staggered three apart per unit so thirteen bots do not fire on the same second. Everything sits inside the 20:00 window the platform's own administration procedure mandates.</p>
+<h3 id="the-three-additions-i-made">The three additions I made</h3>
+<ol type="1">
+<li><strong>Stale and duplicate watch (R11)</strong> — tasks untouched for 21 days, and pairs that are the same work filed twice. The feed already carries what is needed; this is the routine that stops the board quietly rotting.</li>
+<li><strong>Nightly feed (Courage, 19:30 Mon–Fri)</strong> — refreshes all thirteen snapshots and pushes them into the platform before any routine fires.</li>
+<li><strong>Routine health (Courage, 21:30 Mon–Fri)</strong> — silent unless a routine failed in the last 24 hours or an active routine has not fired when it should. On Monday the window widens to 74 hours so the weekend is not read as a fault.</li>
+</ol>
+<h2 id="how-the-data-reaches-the-bot">How the data reaches the bot</h2>
+<p>The bots have no MCP bindings and no Zoho scope. Rather than give thirteen bots a workspace-wide ClickUp credential — which the tooling PRD cannot make safe with allowlists — each unit gets a <strong>prepared slice</strong>:</p>
+<pre><code>ClickUp (one fleet credential, read-only)
+   → 19:30 feed on the Mac mini, one brief per unit
+   → AgenticOS context document &quot;ROUTINE FEED — &lt;unit&gt;&quot;, mode link
+   → the unit&#39;s own bot reads only its own slice</code></pre>
+<p>Unit isolation is real rather than promised: a bot physically cannot see another unit's tasks, because the other unit's rows were never in its context document.</p>
+<p>The brief carries open tasks, owner, due date, status, priority, list, the space's people, and two derived lists — overdue-with-an-owner and unassigned. Every row carries its ClickUp task id.</p>
+<h2 id="proof-it-works">Proof it works</h2>
+<p>Fired on live data, 2026-11-19:</p>
+<ul>
+<li><strong>ITC overdue chase</strong> — produced 19 overdue tasks across one owner, a separate list of 5 that are 34 days late with the decision each needs, two tasks with no due date and a proposed date each, and a closing count. It also reconciled a discrepancy between the snapshot header (21) and its own list (19 plus two due today) rather than silently rounding.</li>
+<li><strong>ITC unassigned triage</strong> — one unassigned task, proposed owner with the reason and the evidence (same list, same system as that person's other work), flagged that the proposed owner already carries 20 overdue tasks, named the unit's MANCO seat for future group-level items, and confirmed nothing was written.</li>
+</ul>
+<h2 id="what-is-blocked-and-the-exact-ask">What is blocked, and the exact ask</h2>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Evidence</th>
+<th>What unblocks it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Team Inbox</td>
+<td><code>mail.zoho.com/api/accounts</code> → 401 <code>INVALID_OAUTHSCOPE</code></td>
+<td>Zoho TeamInbox scope on the system-user client</td>
+</tr>
+<tr>
+<td>WorkDrive STS</td>
+<td><code>workdrive.zoho.com/api/v1/files</code> → <code>F7007 Invalid OAuth scope</code></td>
+<td>WorkDrive scope on the same client</td>
+</tr>
+<tr>
+<td>Zoho People</td>
+<td><code>people.zoho.com/.../getRecords</code> → <code>7218 Invalid OAuth Scope</code></td>
+<td>People scope on the same client</td>
+</tr>
+<tr>
+<td>ClickUp from inside the bots</td>
+<td>all 13 bots report 0 MCP bindings</td>
+<td><strong>not needed</strong> — the feed design removes this dependency</td>
+</tr>
+</tbody>
+</table>
+<p>The three paused routines are created and ready. When the scopes land, each is one field flip from live. Nothing else has to be rebuilt.</p>
+<h3 id="about-the-sts-folder">About the STS folder</h3>
+<p><code>MANCO/ADMIN/INF Templates/STS</code> exists in the local WorkDrive mirror and is <strong>empty</strong> — 0 files, 0 bytes, last modified 3 September. So the tidy plan has nothing to tidy yet. Worth confirming whether that is the folder you mean, or whether the STS material sits under <code>INF CULTURE/DNU STS</code> (also present in the mirror).</p>
+<h2 id="operating-it">Operating it</h2>
+<ul>
+<li><strong>Change a routine's wording or cadence:</strong> edit <code>routines.json</code>, rebuild the payload, re-run the applier. It is idempotent by routine name and will not duplicate what exists.</li>
+<li><strong>Pause one unit:</strong> set that trigger inactive in the platform; the feed keeps running for it harmlessly.</li>
+<li><strong>Roll back a bot's context binding:</strong> republish an earlier version — versions are linear and every publish is recorded.</li>
+<li><strong>Every run leaves an answer in the bot's own conversation and in the run log.</strong></li>
+</ul>
+<p>Files: <code>AI-Drive/Agent-Output/adrianna/bu-routines/</code> — <code>routines.json</code> (the registry), <code>bu-routine-feed.py</code>, <code>build_payload.py</code>, <code>apply_routines.py</code>, <code>feeds/&lt;unit&gt;/latest.json</code> (the snapshots the bots read).</p>
+<h2 id="decisions-i-need-from-you">Decisions I need from you</h2>
+<ol type="1">
+<li><strong>Zoho scopes</strong> — approve adding Mail/TeamInbox, WorkDrive and People to the system-user client, and I will run the consent flow and switch R1–R3 on.</li>
+<li><strong>STS folder</strong> — is <code>MANCO/ADMIN/INF Templates/STS</code> the folder you meant?</li>
+<li><strong>Assignment authority</strong> — R8 proposes an owner for every unassigned task. Do you want the proposal to become an actual ClickUp assignment on executive approval inside the platform, or stay a draft for someone to apply by hand?</li>
+</ol>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
