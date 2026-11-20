@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Staff, teams and the organogram — what ClickUp actually holds</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="staff-teams-and-the-organogram--what-clickup-actually-holds">Staff, teams and the organogram — what ClickUp actually holds</h1>
+<p><strong>Payload 05a · proposed, nothing written.</strong> Read live on 20 November 2026 from the Infinity Brands workspace (4627083). Companion to <a href="05-staff-and-teams.md">05 — staff and teams</a> and <a href="../split/PRD-okr-v1.1.md">PRD-A v1.1 §3.5</a>.</p>
+<h2 id="the-short-version">The short version</h2>
+<ul>
+<li><p><strong>39 people</strong>, <strong>14 teams</strong>. 38 people sit in at least one team, and all 39 sit in at least one space.</p></li>
+<li><p>The teams are <strong>flat</strong> — each holds members and no parent, so <strong>ClickUp stores no reporting line</strong>. The organogram it draws is the team list, not a tree.</p></li>
+<li><p><strong>31 of 46</strong> real unit-team memberships match the unit in the person's handle (67%). The other 15 are listed below and nothing is corrected silently.</p></li>
+<li><p><strong><code>DAS</code> has no member at all</strong> — 68 Key Results (18.1%) have no unit owner. <strong><code>OPS</code> has one member</strong> (<code>opshofadmin2</code>) and no space or team. <strong><code>PPP</code> has a team and no handle</strong> carrying it.</p></li>
+</ul>
+<h2 id="the-14-teams">The 14 teams</h2>
+<table>
+<thead>
+<tr>
+<th>Team</th>
+<th>Handle</th>
+<th style="text-align: right;">Members</th>
+<th>Matches the handles</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EXCO - Executive Committee</td>
+<td><code>exco</code></td>
+<td style="text-align: right;">10</td>
+<td>0 of 10</td>
+</tr>
+<tr>
+<td>BU 1 FIN - Finance Team</td>
+<td><code>fin</code></td>
+<td style="text-align: right;">7</td>
+<td>3 of 7</td>
+</tr>
+<tr>
+<td>BU 2 HRM - Human Resources Team</td>
+<td><code>hrm</code></td>
+<td style="text-align: right;">5</td>
+<td>4 of 5</td>
+</tr>
+<tr>
+<td>BU 3 ADM - Administration Team</td>
+<td><code>adm</code></td>
+<td style="text-align: right;">4</td>
+<td>2 of 4</td>
+</tr>
+<tr>
+<td>BU 4 ITC - Information Technology Team</td>
+<td><code>itc</code></td>
+<td style="text-align: right;">6</td>
+<td>5 of 6</td>
+</tr>
+<tr>
+<td>BU 5 MKT - Marketing Team</td>
+<td><code>mkt</code></td>
+<td style="text-align: right;">5</td>
+<td>2 of 5</td>
+</tr>
+<tr>
+<td>BU 6 SAL - Sales Team</td>
+<td><code>sal</code></td>
+<td style="text-align: right;">5</td>
+<td>4 of 5</td>
+</tr>
+<tr>
+<td>FXS - INFX Solutions Team</td>
+<td><code>fxs</code></td>
+<td style="text-align: right;">2</td>
+<td>1 of 2</td>
+</tr>
+<tr>
+<td>FXL - INFX Labs Team</td>
+<td><code>fxl</code></td>
+<td style="text-align: right;">3</td>
+<td>0 of 3</td>
+</tr>
+<tr>
+<td>DID - Divorced Dads Team</td>
+<td><code>did</code></td>
+<td style="text-align: right;">4</td>
+<td>0 of 4</td>
+</tr>
+<tr>
+<td>MANCO - Management Committee</td>
+<td><code>manco</code></td>
+<td style="text-align: right;">12</td>
+<td>0 of 12</td>
+</tr>
+<tr>
+<td>BU 7 EXP - ACDC Express Team</td>
+<td><code>exp</code></td>
+<td style="text-align: right;">9</td>
+<td>8 of 9</td>
+</tr>
+<tr>
+<td>BU 8 TLF - The Local Farmer Team</td>
+<td><code>tlf</code></td>
+<td style="text-align: right;">4</td>
+<td>2 of 4</td>
+</tr>
+<tr>
+<td>BU 9 PPP - Papa Pasta Team</td>
+<td><code>ppp</code></td>
+<td style="text-align: right;">4</td>
+<td>0 of 4</td>
+</tr>
+</tbody>
+</table>
+<h2 id="people-by-unit">People, by unit</h2>
+<h3 id="-">-</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Superman</td>
+<td><code>superman</code></td>
+<td>SYSTEM</td>
+<td><code>exco</code>, <code>fin</code>, <code>hrm</code>, <code>adm</code>, <code>itc</code>, <code>mkt</code>, <code>sal</code>, <code>fxs</code>, <code>fxl</code>, <code>did</code>, <code>manco</code>, <code>exp</code>, <code>tlf</code>, <code>ppp</code></td>
+<td>15</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<h3 id="adm">ADM</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jaques Mulder</td>
+<td><code>cao</code></td>
+<td>EXEC</td>
+<td><code>exco</code>, <code>adm</code>, <code>manco</code></td>
+<td>3</td>
+<td>member</td>
+</tr>
+<tr>
+<td>—</td>
+<td><code>admhofadministrator</code></td>
+<td>HOF</td>
+<td><code>adm</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="all">ALL</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Luke Harrison</td>
+<td><code>md</code></td>
+<td>EXEC</td>
+<td><code>exco</code>, <code>manco</code></td>
+<td>2</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td>Ricardo Maio</td>
+<td><code>ricardom</code></td>
+<td>OWNER</td>
+<td><code>exco</code>, <code>fxl</code>, <code>did</code>, <code>tlf</code>, <code>ppp</code></td>
+<td>16</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<h3 id="exp">EXP</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bronwyn van der Berg</td>
+<td><code>expcomp</code></td>
+<td>BRAND</td>
+<td><code>mkt</code>, <code>manco</code>, <code>exp</code>, <code>ppp</code></td>
+<td>3</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Rodney Jonathan</td>
+<td><code>expfsc1</code></td>
+<td>BRAND</td>
+<td><code>exp</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Millicent Aphane</td>
+<td><code>expfsc2</code></td>
+<td>BRAND</td>
+<td><code>exp</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Ryno Pretorius</td>
+<td><code>expfsc3</code></td>
+<td>BRAND</td>
+<td><code>exp</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Strenesen Chetty</td>
+<td><code>expfsc4</code></td>
+<td>BRAND</td>
+<td><code>fin</code>, <code>exp</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Christopher Jacobs</td>
+<td><code>expfsc5</code></td>
+<td>BRAND</td>
+<td><code>exp</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Juan Bedford</td>
+<td><code>expopssupport</code></td>
+<td>BRAND</td>
+<td><code>manco</code>, <code>exp</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Lauren Mc Guinness</td>
+<td><code>expgm</code></td>
+<td>GM</td>
+<td><code>exco</code>, <code>manco</code>, <code>exp</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fin">FIN</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pamela Fourie</td>
+<td><code>cfo</code></td>
+<td>EXEC</td>
+<td><code>exco</code>, <code>manco</code></td>
+<td>4</td>
+<td>NOT in their own team</td>
+</tr>
+<tr>
+<td>Chiseke Phiri-Massiye</td>
+<td><code>finhofmanager</code></td>
+<td>HOF</td>
+<td><code>mkt</code></td>
+<td>2</td>
+<td>NOT in their own team</td>
+</tr>
+<tr>
+<td>Mahlatsi Madikoto</td>
+<td><code>finhofsupport</code></td>
+<td>HOF</td>
+<td><strong>none</strong></td>
+<td>2</td>
+<td>NOT in their own team</td>
+</tr>
+<tr>
+<td>Maxine Peterson</td>
+<td><code>finhofsupport1</code></td>
+<td>HOF</td>
+<td><code>fin</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Sophia Tabagan</td>
+<td><code>finzeesupport3</code></td>
+<td>ZEE</td>
+<td><code>fin</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Maria Modise</td>
+<td><code>finzorsupport2</code></td>
+<td>ZOR</td>
+<td><code>fin</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fxs">FXS</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Luandre Julius</td>
+<td><code>fxspltzoho</code></td>
+<td>PLT</td>
+<td><code>fxs</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="hrm">HRM</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jenna McLaren</td>
+<td><code>cho</code></td>
+<td>EXEC</td>
+<td><code>exco</code>, <code>hrm</code>, <code>manco</code></td>
+<td>3</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Phestinah Neo</td>
+<td><code>hrmhofsupport</code></td>
+<td>HOF</td>
+<td><code>fin</code>, <code>hrm</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Lwazi Mkhwanazi</td>
+<td><code>hrmzeesupport1</code></td>
+<td>ZEE</td>
+<td><code>hrm</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Elmain Ruiters</td>
+<td><code>hrmzorsupport</code></td>
+<td>ZOR</td>
+<td><code>hrm</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="itc">ITC</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tuan Griezel</td>
+<td><code>cto</code></td>
+<td>EXEC</td>
+<td><code>exco</code>, <code>itc</code>, <code>did</code>, <code>manco</code></td>
+<td>4</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Geoffrey Tim</td>
+<td><code>itchofdevelopment</code></td>
+<td>HOF</td>
+<td><code>fxl</code>, <code>did</code>, <code>manco</code></td>
+<td>4</td>
+<td>NOT in their own team</td>
+</tr>
+<tr>
+<td>Mandisi Makwakwa</td>
+<td><code>itchofdevelopment2</code></td>
+<td>HOF</td>
+<td><code>itc</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Marie Claire Mangue</td>
+<td><code>itchofprojects</code></td>
+<td>HOF</td>
+<td><code>itc</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Proffesor Nguluvhe</td>
+<td><code>itczorsupport2</code></td>
+<td>ZOR</td>
+<td><code>itc</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Franco Steenkamp</td>
+<td><code>itczorsupport3</code></td>
+<td>ZOR</td>
+<td><code>itc</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mkt">MKT</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ena Marie O. Dizon</td>
+<td><code>mkthofbrand3</code></td>
+<td>HOF</td>
+<td><code>mkt</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Lea Mercado</td>
+<td><code>mktzorbrand2</code></td>
+<td>ZOR</td>
+<td><code>mkt</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ops">OPS</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ntombifuthi Nkambule</td>
+<td><code>opshofadmin2</code></td>
+<td>HOF</td>
+<td><code>adm</code></td>
+<td>2</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sal">SAL</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Andile Sithole</td>
+<td><code>salcorfss</code></td>
+<td>COR</td>
+<td><code>sal</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Alex Ndhlovu</td>
+<td><code>salcorporate</code></td>
+<td>COR</td>
+<td><code>sal</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Nkuli Nxumalo</td>
+<td><code>cro</code></td>
+<td>EXEC</td>
+<td><code>exco</code>, <code>sal</code>, <code>manco</code></td>
+<td>3</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Olwethu Mtati</td>
+<td><code>salzorfnd</code></td>
+<td>ZOR</td>
+<td><code>sal</code></td>
+<td>1</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tlf">TLF</h3>
+<table>
+<thead>
+<tr>
+<th>Person</th>
+<th>Handle</th>
+<th>Tier</th>
+<th>Teams</th>
+<th>Spaces</th>
+<th>Team agrees with handle?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sindiso Sibanda</td>
+<td><code>tlfops</code></td>
+<td>BRAND</td>
+<td><code>tlf</code></td>
+<td>2</td>
+<td>member</td>
+</tr>
+<tr>
+<td>Thembi Butler</td>
+<td><code>tlfgm</code></td>
+<td>GM</td>
+<td><code>exco</code>, <code>fin</code>, <code>manco</code>, <code>tlf</code>, <code>ppp</code></td>
+<td>5</td>
+<td>member</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-has-to-be-settled">What has to be settled</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>People</th>
+<th>Why it blocks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>In no team at all</td>
+<td><code>finhofsupport</code></td>
+<td>The person cannot be found by team; ownership falls back to the handle</td>
+</tr>
+<tr>
+<td>Unit no team of theirs names</td>
+<td><code>cfo</code> (fin), <code>finhofmanager</code> (fin), <code>finhofsupport</code> (fin), <code>itchofdevelopment</code> (itc)</td>
+<td>The team says one thing, the handle another</td>
+</tr>
+<tr>
+<td>Unit with no member</td>
+<td><code>DAS</code></td>
+<td>68 Key Results, 18.1%, cannot be owned</td>
+</tr>
+<tr>
+<td>Unit with a member and no team</td>
+<td><code>OPS</code> (<code>opshofadmin2</code>)</td>
+<td>Decision 3 decides whether <code>OPS</code> becomes the eighth function</td>
+</tr>
+<tr>
+<td>Brand with a team and no handle</td>
+<td><code>PPP</code></td>
+<td>4 team members, no <code>ppp…</code> handle, so brand rows fall to the EXP/TLF owners</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-rule-this-payload-proposes">The rule this payload proposes</h2>
+<ol type="1">
+<li><p>An Owner is a member of the space the work lives in. The workspace read is the source; a typed name never is.</p></li>
+<li><p>Ownership is taken from the handle, which states unit, tier and role. The team is a second opinion: when it disagrees it is <strong>reported</strong>, never applied over the handle.</p></li>
+<li><p>A person in no team, or in a team that contradicts their handle, is listed. The row they would own stays <strong>Draft</strong>.</p></li>
+<li><p>No reporting line is invented. ClickUp holds none, so none is drawn until the teams carry one.</p></li>
+</ol>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
