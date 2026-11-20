@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Actioning PRD-A — the runbook, with the switch on it</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="actioning-prd-a--the-runbook-with-the-switch-on-it">Actioning PRD-A — the runbook, with the switch on it</h1>
+<p><strong>Nothing has been written to ClickUp.</strong> This page says exactly what would be written, in what order, how long it takes and how it is undone — then the one word that starts it.</p>
+<h2 id="can-i-even-write-yes-verified-without-creating-anything">Can I even write? Yes. Verified, without creating anything.</h2>
+<p>Three probes with deliberately invalid bodies. An invalid body can create nothing; the error tells you whether the door is open.</p>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Result</th>
+<th>Reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /list/{id}/task {}</code></td>
+<td><strong>400</strong> <code>Task name invalid</code> (<code>INPUT_005</code>)</td>
+<td>task creation is authorised</td>
+</tr>
+<tr>
+<td><code>POST /list/{id}/field {}</code></td>
+<td><strong>400</strong> <code>Field type is required</code> (<code>FIELD_002</code>)</td>
+<td>custom-field creation is authorised</td>
+</tr>
+<tr>
+<td><code>POST /folder/{id}/list {}</code></td>
+<td><strong>400</strong> <code>List Name Invalid</code> (<code>SUBCAT_020</code>)</td>
+<td>list creation is authorised</td>
+</tr>
+</tbody>
+</table>
+<p>All three validate before they reject — the token can build. Nothing was created.</p>
+<h2 id="where-each-stage-actually-stands">Where each stage actually stands</h2>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Exit condition</th>
+<th>Measured today</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>S0 Decisions</strong></td>
+<td>all 9 answered on record</td>
+<td><strong>2 answered</strong> (3 and 7), <strong>1 partly</strong> (9: ownership taken from the handle), <strong>6 open</strong></td>
+<td>not closed</td>
+</tr>
+<tr>
+<td><strong>S1 Copy, freeze IDs, prove rollback</strong></td>
+<td>a copy per source; rollback read back; no ID computed from a name; no live write</td>
+<td>version record with 10 sha256 hashes; <strong>327 IDs imported unchanged</strong>; <strong>48</strong> canonicalised; <strong>0 duplicate</strong> source IDs</td>
+<td><strong>open on one read</strong> — the platform version id of the OKR sheet</td>
+</tr>
+<tr>
+<td><strong>S2 Name, number, validate</strong></td>
+<td>one Key Result per BU passes the gate</td>
+<td>owners <strong>373 of 375</strong>; numeric target <strong>265</strong>; source <strong>375</strong>; cadence, weight, baseline, verifier <strong>0</strong>; rows passing = <strong>0</strong></td>
+<td><strong>the who is done, the what is not</strong></td>
+</tr>
+<tr>
+<td><strong>S3 Build the ClickUp spine</strong></td>
+<td>structure matches §10; every object has Brand, BU and a literal ID</td>
+<td><strong>plan built and dry-run: 478 calls, ~6 minutes</strong></td>
+<td><strong>ready to run</strong></td>
+</tr>
+<tr>
+<td><strong>S4 Gate in the live structure</strong></td>
+<td>every Active object passes; weights sum to 1.00</td>
+<td>nothing Active yet</td>
+<td>waits on S3</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-s3-writes--478-calls">What S3 writes — 478 calls</h2>
+<pre><code>MANCO folder 1501000000001617
+├── FY2027 OKRs        (folder)
+│   ├── Objectives       19 fields   + 51 objective tasks + 375 Key Result tasks
+│   ├── Business KPIs    19 fields   + 9 enterprise KPI tasks
+│   └── BU Scorecards    19 fields
+├── Monthly Close      (folder)
+│   ├── Close — YYYY-MM  8 fields
+│   └── Exceptions       7 fields
+└── Performance Framework (folder)
+    └── Rules &amp; Change Log</code></pre>
+<table>
+<thead>
+<tr>
+<th>Object</th>
+<th style="text-align: right;">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Folders</td>
+<td style="text-align: right;"><strong>3</strong></td>
+</tr>
+<tr>
+<td>Lists</td>
+<td style="text-align: right;"><strong>6</strong></td>
+</tr>
+<tr>
+<td>Custom fields</td>
+<td style="text-align: right;"><strong>34</strong> (19 + 8 + 7)</td>
+</tr>
+<tr>
+<td>Business KPI tasks</td>
+<td style="text-align: right;"><strong>9</strong></td>
+</tr>
+<tr>
+<td>Objective tasks</td>
+<td style="text-align: right;"><strong>51</strong></td>
+</tr>
+<tr>
+<td>Key Result tasks</td>
+<td style="text-align: right;"><strong>375</strong></td>
+</tr>
+<tr>
+<td><strong>Total API calls</strong></td>
+<td style="text-align: right;"><strong>478</strong></td>
+</tr>
+<tr>
+<td>Time at the client's 80/min pace</td>
+<td style="text-align: right;"><strong>~6 minutes</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The runnable form is <a href="/Volumes/Hiksemi%201TB/AI-Drive/Agent-Output/batman/okr/action/build_spine.py">build_spine.py</a>: dry-run by default, and it refuses to write without the exact string <code>I-APPROVE-S3</code>. Every object it creates, it records the id of, so the undo is a list of ids.</p>
+<h2 id="two-things-in-the-prd-contradict-each-other-and-one-of-them-must-lose-before-the-first-write">Two things in the PRD contradict each other, and one of them must lose before the first write</h2>
+<p><strong>The <code>Business Unit</code> field.</strong> §1 calls the current field a defect — <em>13 options, mixing brands and functions</em>. §10.5 says keep all 13, because the field mirrors the twelve numbered spaces. Both cannot be true, and it changes the field set.</p>
+<p><strong>My recommendation — two fields, each honest:</strong></p>
+<ul>
+<li><code>Business Unit</code> stays the <strong>workspace register (13)</strong>: it matches the space tree one-for-one, so <strong>0 of 375</strong> rows are stranded.</li>
+<li><code>Function</code> is added as its own <strong>7-option</strong> field: <code>FIN · HRM · ADM · ITC · MKT · SAL · FXS</code>. That is the discipline axis the spine needs, and it stops one field carrying two meanings.</li>
+<li>The Brand field carries the <strong>8 brands</strong>: <code>INF · EXP · TLF · PPP · DID · FXS · FXL · ALL</code>.</li>
+</ul>
+<p>Say <strong>"two fields"</strong> and the build runs as planned. Say <strong>"one field, seven"</strong> and I drop the 6 brand options from <code>Business Unit</code> — which strands nothing either, because the 48 retired-code rows already resolve to a function or to their brand lead.</p>
+<h2 id="what-no-machine-can-supply--s2s-missing-half">What no machine can supply — S2's missing half</h2>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th style="text-align: right;">Rows that have it</th>
+<th>What supplies it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Owner</td>
+<td style="text-align: right;"><strong>373</strong></td>
+<td>done — payload 10</td>
+</tr>
+<tr>
+<td>Metric source</td>
+<td style="text-align: right;"><strong>375</strong></td>
+<td>done</td>
+</tr>
+<tr>
+<td>Numeric target</td>
+<td style="text-align: right;"><strong>265</strong></td>
+<td>the owner writes it, or approves the stated one</td>
+</tr>
+<tr>
+<td>Monthly cadence</td>
+<td style="text-align: right;"><strong>0</strong></td>
+<td>each owner, per row</td>
+</tr>
+<tr>
+<td>Weight</td>
+<td style="text-align: right;"><strong>0</strong></td>
+<td>proposed by ClickUp, validated by the engine (PRD-B §5)</td>
+</tr>
+<tr>
+<td>Baseline</td>
+<td style="text-align: right;"><strong>0</strong></td>
+<td>the engine measures it, never a typed guess</td>
+</tr>
+<tr>
+<td>Verifier</td>
+<td style="text-align: right;"><strong>0</strong></td>
+<td>a named person independent of the owner</td>
+</tr>
+</tbody>
+</table>
+<p>The gate will not open until those four are real. That is not a software task; it is 375 small acts of accountability, and the pilot is the honest way in: pick <strong>one Key Result per function</strong>, complete all seven conditions, and let the engine prove the arithmetic before the other 368 follow.</p>
+<h2 id="how-it-is-undone">How it is undone</h2>
+<p>ClickUp archives, never deletes. Folders and lists created by the plan are archived by their recorded ids; tasks are archived as their list goes. The <strong>75</strong> existing tasks and the five template lists are untouched — archive of those is a separate decision per §10.2, and purge needs your explicit approval after a close.</p>
+<h2 id="the-switch">The switch</h2>
+<table>
+<thead>
+<tr>
+<th>To proceed</th>
+<th>Say</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Build the spine in MANCO</td>
+<td><strong>"build it"</strong> — I run <code>build_spine.py --apply I-APPROVE-S3</code> and report every id created</td>
+</tr>
+<tr>
+<td>Answer the field question first</td>
+<td><strong>"two fields"</strong> or <strong>"one field, seven"</strong></td>
+</tr>
+<tr>
+<td>Pick the pilot instead</td>
+<td><strong>"pilot first"</strong> — I name one Key Result per function and we complete those seven before any bulk import</td>
+</tr>
+</tbody>
+</table>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
