@@ -111,6 +111,12 @@ def main():
         page.goto(SOURCE.as_uri())
         data = check_print(page)
         check_screen(page)
+        # The short public URL must preserve a direct link to a staff sheet.
+        destination = "https://targetpraks.github.io/" + SOURCE.name
+        page.route(destination, lambda route: route.fulfill(content_type="text/html", body=SOURCE.read_text()))
+        page.goto((ROOT / "household.html").as_uri() + "#gardener")
+        page.wait_for_url(destination + "#gardener")
+        page.wait_for_function("document.querySelector('#gardener h2').getBoundingClientRect().top < 150")
         browser.close()
     if args.write_pdf:
         PDF.write_bytes(data)
