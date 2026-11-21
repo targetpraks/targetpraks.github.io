@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Papa Pasta FND carry-over PRD — independent audit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="papa-pasta-carry-over-prd-v3--independent-audit">Papa Pasta carry-over PRD v3 — independent audit</h1>
+<h2 id="1-verdict">1. Verdict</h2>
+<p><strong>Not ready to load.</strong> The biggest risk is filing content pieces from the market views into <code>Campaigns</code>, contrary to the lane law; the blanket load of the audit and collateral catalogues also risks duplicate asset records. The existing nineteen lists can accommodate the framework, but the routing, identity rules, recurrence setup, calendar and load manifest need correction first. Checks <strong>A FAIL, B FAIL, C PASS, D FAIL (partial coverage), E FAIL, F FAIL</strong>. These are audit judgements against <code>BRIEF.md</code>, not authorization to load anything.</p>
+<h2 id="2-findings-table">2. Findings table</h2>
+<p>Evidence keys used throughout this report:</p>
+<ul>
+<li><strong>R</strong>: <code>python3 scripts/recount_audit.py &gt; reviews/recount.json</code>; saved output <a href="recount.json">recount.json</a>. It reads the immutable exports, retains every PRD line containing digits, and calculates the counts below. <code>state/superhuman/pages.json</code> supplies full content/schema/formulas; <code>tables.json</code> supplies the eighty grid instances; <code>rows.json</code> supplies base-table rows; <code>kw2.json</code> supplies all four hundred keyword records; <code>outline.json</code> supplies page identity and ancestry. A helper's <code>blocks</code> field is not the API's <code>raw.totalBlocks</code>.</li>
+<li><strong>S</strong>: <code>scripts/read_doc.sh table_rows_read '{"uri":"superhuman://docs/FkFOpCNCqD/tables/grid-35G1nkZxGu","rowLimit":100,"rowOffset":0}'</code>; output <a href="live-services.json">live-services.json</a>.</li>
+<li><strong>L</strong>: <code>python3 scripts/capture_audit_reads.py</code>; <a href="live-reads.jsonl">live-reads.jsonl</a> records the exact permitted tool, arguments and response for every call. Includes live priorities, collateral, quick links, four keyword batches, campaign instructions, reporting and all twelve reporting comment canvases. No throttled result or tool error occurred in these twenty-four calls.</li>
+<li><strong>C</strong>: <code>scripts/clickup.sh &lt;path&gt;</code> and <code>python3 scripts/capture_clickup_audit_reads.py</code>; <a href="live-clickup.jsonl">live-clickup.jsonl</a> records 39 GET commands and outputs: 19 field schemas +19 list metadata responses +1 space response. Calls were spaced at least three seconds apart and checked for <code>APP_002</code>; none occurred. All nineteen live field ID/name/type sets match <code>state/clickup/ppp-lists-fields.json</code>; common-field option sets and list workflow statuses agree across all nineteen destinations.</li>
+<li><strong>H</strong>: browser reads of the <a href="https://www.gov.za/about-sa/public-holidays">government holiday calendar</a>, <a href="https://www.gov.za/documents/public-holidays-act">Act landing page</a> and <a href="https://www.gov.za/sites/default/files/gcis_document/201409/act36of1994.pdf">Act PDF</a>, especially section 2(1) and Schedule 1; <code>R.calendar_inference</code> computes the Sundays and following Mondays. The calendar page itself omits the December observed Monday; the extra date below is an inference from the Act, explicitly distinguished from that page's printed list.</li>
+<li><strong>P</strong>: <code>cat docs/PRD-v2.md</code> followed by <code>sed -n</code> reads of §§05–09 to avoid output truncation. Section references below refer to this immutable PRD. <code>cat AGENTS.md</code>, <code>cat BRIEF.md</code>, and reads of both destination exports established the audit boundary and lane law.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>F#</th>
+<th>severity</th>
+<th>the claim</th>
+<th>the evidence (command + output)</th>
+<th>the fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>blocker</td>
+<td>§08 sends Brand Views, Always On Views and Targeted Views to Campaigns; §04 also places a paid piece there.</td>
+<td>R / <code>pages.json</code>: these three views and Paid Media / PPC Views reference the same empty seventeen-column Master Content Table. P §§01/04 and BRIEF law 2/5 separate content from campaigns.</td>
+<td>Route pieces by their actual function/channel; preserve campaign code and parent task ID. Keep campaign/ad-set management in Campaigns and creative builds in Creative Projects. Apply the mapping verdicts below.</td>
+</tr>
+<tr>
+<td>F2</td>
+<td>blocker</td>
+<td>§11: “39 audit items carrying their real status, plus the 40 collateral deliverables”; “≈79 creates across 2 lists.”</td>
+<td>R.selected_tables: both source registers contain Brand Manual and Business Cards; audit Presentations/Presentation Decks also need matching to collateral presentations. P §05 calls Asset Library one task per deliverable but §08 files the whole collateral catalogue as builds.</td>
+<td>Resolve one canonical deliverable identity before creating records; attach audit criteria/status to it. Link genuine production work in Creative Projects. Do not blindly sum two overlapping registers. Ricardo decides ownership/state, not whether to duplicate.</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>major</td>
+<td>§08: “Structural pages are marked no list — structural: nothing files from them”.</td>
+<td>R / <code>pages.json</code>: Targeted has four page formulas; Master Table has seventeen columns and two column formulas; Calendar View has two column formulas. Empty rows do not make these objects meaningless.</td>
+<td>Retain Targeted's four roll-ups in campaign reference descriptions and document the master schema/routing and view provenance. Do not create copies of views as records.</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>major</td>
+<td>§11 has a complete carry-over load sequence.</td>
+<td>P §08 maps Quick Links, Contacts and Contacts &amp; Stakeholders to Projects, Social Media to Social, Email Segments to Email and Desk Tracking Status to Briefed-In; §11 has no explicit payload/home for those pages. R confirms 9 quick links, 3 SLA rows, 10 stakeholder/department rows, 8 social rows and 8 email rows.</td>
+<td>Supply a page-to-payload manifest, including prose, formulas, screenshots and reference records; identify which existing parent description carries each item. Revise task counts after deduplication.</td>
+</tr>
+<tr>
+<td>F5</td>
+<td>major</td>
+<td>§11: “Each carries its checklist in the description. Due dates set in a second pass — this space rewrites dates on create.”</td>
+<td>P supplies descriptions/dates, but no recurrence trigger, interval, start date, timezone, closed-task behavior or configuration verification. C GET space/list responses do not contain the automation rule or prove recurrence.</td>
+<td>Distinguish recurring tasks from tasks merely stored in Recurring. Specify actual recurrence configuration, dependencies and first run. Obtain a read-only automation export; its operation is UNVERIFIED. Extend second-pass date verification to events, promotions and all deadlines. No write-based experiment was attempted.</td>
+</tr>
+<tr>
+<td>F6</td>
+<td>major</td>
+<td>§11 separately loads fifteen routines and twelve reporting tasks.</td>
+<td>P: M6 collects M1–M5 into “The month's single reporting task”; steps 8/9 can create a second monthly pack without an identity/relationship rule.</td>
+<td>Define one pack ID per month; make M6 the assembly routine for that pack, with M1–M5 contributions. Explain how recurrence and historical backfill avoid duplicate packs.</td>
+</tr>
+<tr>
+<td>F7</td>
+<td>major</td>
+<td>§11 promises source statuses and §06 uses channel labels as if available.</td>
+<td>C: all nineteen destination lists have statuses Open, in progress, in review, waiting, blocked, completed. Source statuses are Awaiting Sign Off / Not Done. Live Channel options have Twitter, but no X, TikTok, Google Business, Pinterest, Zoho Campaigns, Social or Desk. R: no reporting metric custom fields.</td>
+<td>Publish a value map to existing statuses/labels; retain exact source sign-off in descriptions. Use description text for unsupported channels rather than adding options. Define where all source metrics, links, dates and budgets survive.</td>
+</tr>
+<tr>
+<td>F8</td>
+<td>major</td>
+<td>§06 sends every monthly audit fix into Optimization.</td>
+<td>P M7 includes forms, phone links and rendering; M8 includes social profiles, pinned posts, covers and review replies. R destinations put Optimization under SEO Research &amp; Management, Website/Social under Content Management. BRIEF law 2 makes function the routing criterion.</td>
+<td>Keep SEO improvements in Optimization, website implementation in Website, social account fixes in Social and design work in Creative Projects; link each to the audit routine.</td>
+</tr>
+<tr>
+<td>F9</td>
+<td>major</td>
+<td>§03's complete calendar and §11's thirty-three creates.</td>
+<td>H: section 2(1) applies to both Sunday 21 March and Sunday 26 December 2027. R: both dates are Sundays. The PRD lists 22 March but omits 27 December. Its twelve proposed brand moments are not enumerated as twelve dated records.</td>
+<td>Include the inferred 27 December observed holiday, resolve the government-page omission explicitly, and enumerate/date each brand moment before giving a load count. Recompute affected totals.</td>
+</tr>
+<tr>
+<td>F10</td>
+<td>major</td>
+<td>§11: “≈43 creates across 3 lists”; “151 carried over + 48 new”.</td>
+<td>P/R arithmetic: 6 goals + 12 types + 25 existing keyword strings + 6 page maps = 49, not 43; the cleaned keyword count is undecided. Those six page rows have no names, URLs or keyword assignments.</td>
+<td>Do not load blank page maps as completed mappings. Make keyword volume an explicit variable; recalculate carried/new totals only after cleaning, page identification, calendar correction and asset deduplication.</td>
+</tr>
+<tr>
+<td>F11</td>
+<td>major</td>
+<td>§10: “All four segment tables carry a Priority Level column and it is empty in all 28 rows”.</td>
+<td>R.priority + S + L: services 8 scored (all 90), partners 13 scored, customers 4 scored (90/80/35/70), suppliers 3 blank. Thus 25 filled + 3 blank = 28.</td>
+<td>Preserve the existing twenty-five values, review tied service priorities if desired, and request only the missing supplier scores. Remove the instruction to fill twenty-eight empty cells.</td>
+</tr>
+<tr>
+<td>F12</td>
+<td>minor</td>
+<td>§05: “64 of the 80 cells read [Working File] / [PDF], the other 16 are blank.”</td>
+<td>R.collateral_link_cells and L live table: 40 [Working File] + 24 [PDF] + 14 [Link] + 2 [PDF / Link] = 80 placeholders; zero blanks/URLs.</td>
+<td>Correct the breakdown while retaining the valid finding that there are no actual file URLs.</td>
+</tr>
+<tr>
+<td>F13</td>
+<td>minor</td>
+<td>§13: “Same twelve-field schema on all eight lists checked”; “Asset Library swaps Quality for WorkDrive Link”.</td>
+<td>R.fields: 17×12 + 2×13 = 230 field instances. Creative Projects and Asset Library have all twelve common fields, including Quality, plus WorkDrive Link. C confirms both live. P §04 inconsistently says twenty lists.</td>
+<td>Describe nineteen lists, twelve shared fields, and the extra URL field on two lists. Use the complete nineteen-list field and option-set verification in C, rather than extrapolating from a sample.</td>
+</tr>
+<tr>
+<td>F14</td>
+<td>minor</td>
+<td>§02: “13 partners, four groups”.</td>
+<td>R.partner_groups: Banks / Financing 7 + Franchise Industry &amp; Compliance Partners 4 + Technology 2 = 13 across three groups.</td>
+<td>Change four groups to three. Retain the source's service/group pairings even where their labels seem unusual; business edits need owner review.</td>
+</tr>
+<tr>
+<td>F15</td>
+<td>minor</td>
+<td>§05: “The forty deliverables, in the seven kits they fall into”.</td>
+<td>P table contains eight kits: 5+8+6+9+5+4+2+1=40. R.collateral_clients independently confirms twenty “Clients” audience rows.</td>
+<td>Say eight kits; use a single agreed kit vocabulary in the proposed title convention.</td>
+</tr>
+<tr>
+<td>F16</td>
+<td>minor</td>
+<td>§08: “21 city rows (19 unique areas, 4 provinces)”.</td>
+<td>R.areas: 21 distinct area strings / 5 provinces; the importance ≥7 filter selects 19 / 4. KwaZulu-Natal's two rows score 6.</td>
+<td>Label nineteen/four as the priority subset, not deduplication of twenty-one. Keep the threshold in the carried reference.</td>
+</tr>
+<tr>
+<td>F17</td>
+<td>minor</td>
+<td>§10: “Established reads 15 July 2026 — a date in the future at the time of reading.”</td>
+<td>R.selected_tables Company Snapshot: 7/15/2026. P dates its reading 21 November 2026. July precedes November.</td>
+<td>Remove the impossible/future characterization; ask Ricardo to verify the establishment date as a business fact.</td>
+</tr>
+<tr>
+<td>F18</td>
+<td>minor</td>
+<td>§10: “every one of those months is already past.”</td>
+<td>R Marketing Reporting: January–December 2026. At 21 November, ten complete months have passed, November is current and December is future. L reads all twelve INF Comments canvases as empty.</td>
+<td>Correct the temporal claim. Keep the valid finding that the twelve rows lack reporting results.</td>
+</tr>
+<tr>
+<td>F19</td>
+<td>minor</td>
+<td>§02/10: no product or store experience is described anywhere.</td>
+<td>R Company Snapshot describes fresh pasta, a small menu of perfected dishes/sauces, fast service and affordability. <code>rows.json</code> Brand Persona answers describe eating in, takeaway and delivery.</td>
+<td>State that a specific menu, prices and signature dishes are absent; preserve the existing product/experience positioning.</td>
+</tr>
+<tr>
+<td>F20</td>
+<td>minor</td>
+<td>§02: “This is a B2C buyer of a R100-ish meal.”</td>
+<td>P supplies the price; R Company Snapshot/Brand Persona rows give no meal price.</td>
+<td>Label it an illustrative assumption or remove it; verified pricing must come from Ricardo.</td>
+</tr>
+<tr>
+<td>F21</td>
+<td>minor</td>
+<td>§10: “The document is describing a team that has left.”</td>
+<td>R.members / <code>state/clickup/members.json</code>: neither name occurs among thirty-nine members. This proves absence from this workspace, not departure from the company or loss of responsibility.</td>
+<td>Report the membership result only; Ricardo confirms current roles and assignments. Do not auto-replace the SLA contacts with two marketing seats.</td>
+</tr>
+<tr>
+<td>F22</td>
+<td>minor</td>
+<td>§10: “All six SEO Builder rows use interior-design pages”.</td>
+<td>R.selected_tables SEO Builder: four page-focus values are design-specific, one is /contact + map listing, one is All.</td>
+<td>Say the SEO template contains design examples; do not claim all six rows are design-specific URLs.</td>
+</tr>
+<tr>
+<td>F23</td>
+<td>minor</td>
+<td>§10: “Logic Master Keyword is an empty container.”</td>
+<td>R and L: that page contains Master Keywords, 400 rows and three column formulas.</td>
+<td>Call it a populated but unusable template scaffold; preserve its schema.</td>
+</tr>
+<tr>
+<td>F24</td>
+<td>minor</td>
+<td>§09: “their destination URLs sit in a formula column”.</td>
+<td>R / <code>pages.json</code> Quick Links schema: Link has <code>formula:null</code>, format <code>none</code>, and is writable; L shows all nine Link values empty.</td>
+<td>Describe an empty text column, not a failing formula. Recover addresses before treating the index as working.</td>
+</tr>
+<tr>
+<td>F25</td>
+<td>minor</td>
+<td>§02: “Every blueprint targets network-building audiences: franchise buyers, banks, suppliers.”</td>
+<td>L Brand instructions call it the master hub for all marketing; Always On explicitly covers holidays/events. <code>pages.json</code> Customers instructions include B2B clients and individual consumers. Twelve blueprint data tables are empty.</td>
+<td>Distinguish generic instructions and franchise-focused segment data from actual targeted campaign records. Consumer-specific campaigns are undecided, not structurally prohibited.</td>
+</tr>
+<tr>
+<td>F26</td>
+<td>minor</td>
+<td>§09: “Every campaign formula returns 0 because the blueprint tables are empty”.</td>
+<td>R / <code>pages.json</code> Service /Product has Count Unique of Main Catagory 14 = 8, sourcing services; twenty-one other campaign/summary formulas return zero.</td>
+<td>Qualify the zero claim to the formulas sourcing empty blueprint data; identify the service-count exception.</td>
+</tr>
+<tr>
+<td>F27</td>
+<td>minor</td>
+<td>§10 attributes “NO GAP Y” to Col'Cacchio and says the no-website note appears twice.</td>
+<td>R.selected_tables Competitors &amp; Market Insights: all three competitors carry the full no-website statement, including Pasta Boys.</td>
+<td>Quote the actual source accurately and report three occurrences. Whether a website exists now remains UNVERIFIED pending a current brand URL.</td>
+</tr>
+<tr>
+<td>F28</td>
+<td>minor</td>
+<td>§06 advertises “three quarterly deep audits”.</td>
+<td>P Q1/Q2 are quarterly; Q3 is “Per campaign close”, not quarterly. The stated step counts do sum to eighty-one.</td>
+<td>Describe two quarterly routines plus one campaign-close routine, or obtain an explicit quarterly schedule decision.</td>
+</tr>
+<tr>
+<td>F29</td>
+<td>major</td>
+<td>§09 is a complete formula register suitable for carry-over.</td>
+<td>P's first three page-formula source cells end mid-reference; R / <code>pages.json</code> preserves their complete expressions and the importance filters. No target equivalent is specified for the forty-four page / thirty-three base-column formula instances.</td>
+<td>Preserve complete source expressions and values as reference; specify retained snapshots versus manually maintained equivalents. Do not imply Coda references run in ClickUp descriptions.</td>
+</tr>
+<tr>
+<td>F30</td>
+<td>minor</td>
+<td>§06 M10 assumes search-term harvesting and negative-keyword application in both Google Ads and Meta.</td>
+<td>P M10 is a proposal; neither the exports nor C establish those platform capabilities or account access.</td>
+<td>Mark Meta capability/account access UNVERIFIED; require platform-specific read-only documentation/account evidence before treating this as an executable checklist. Keep the negative list in KW Research/M10 descriptions meanwhile.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c--no-new-structure-test-pass">C — no-new-structure test: PASS</h3>
+<p>Every named destination resolves to <code>state/clickup/ppp-folders.json</code>; no fictitious named list is used. The twenty-list count is an inventory error (F13), not evidence of a required twentieth destination. A Campaign relationship field is optional in §12, with an explicit title/description fallback. The gap register's “none” entries describe missing data or an unresolved register convention, not a demonstrated need for another list. The following are capacity/routing judgements against the fifteen gap rows in P §07:</p>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Existing-list disposition</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brand core/personas</td>
+<td>Marketing Plan, retaining source sections and filters</td>
+<td>Fits</td>
+</tr>
+<tr>
+<td>Services/partners/suppliers</td>
+<td>Marketing Plan</td>
+<td>Fits</td>
+</tr>
+<tr>
+<td>Named clients/franchisees</td>
+<td>A register in a Marketing Plan task; Projects for actual franchisee-related work, if chosen; external CRM may be linked but its contents/access are UNVERIFIED</td>
+<td>Fits; Ricardo must choose authoritative register</td>
+</tr>
+<tr>
+<td>Document repository</td>
+<td>Asset Library canonical register; Creative Projects linked production</td>
+<td>Fits after F2</td>
+</tr>
+<tr>
+<td>Always-on moments</td>
+<td>Event Tracking</td>
+<td>Fits after dates corrected</td>
+</tr>
+<tr>
+<td>Promotions</td>
+<td>Seasonal Promotions</td>
+<td>Fits</td>
+</tr>
+<tr>
+<td>Campaign ideas/families</td>
+<td>Campaigns, explicit family/campaign identity</td>
+<td>Fits</td>
+</tr>
+<tr>
+<td>Content pieces</td>
+<td>Website, Blog, Social, Email by function; parent code and task ID in description</td>
+<td>Fits without new Campaign field</td>
+</tr>
+<tr>
+<td>Creative/approval</td>
+<td>Creative Projects, existing Filestage URL</td>
+<td>Fits; project-specific address and approval owner still needed</td>
+</tr>
+<tr>
+<td>Monthly statistics</td>
+<td>Recurring, one monthly pack with described metrics</td>
+<td>Fits after F5/F6</td>
+</tr>
+<tr>
+<td>Monthly audit/fixes</td>
+<td>Recurring audit; Website/Social/Optimization/Creative Projects follow-ups by function</td>
+<td>Fits after F8</td>
+</tr>
+<tr>
+<td>Positive/negative keywords</td>
+<td>KW Research; label positive/negative in title/description, M10 evidence and platform links</td>
+<td>Fits without new field</td>
+</tr>
+<tr>
+<td>Intake</td>
+<td>Existing Briefed-In only</td>
+<td>Fits</td>
+</tr>
+<tr>
+<td>Meetings</td>
+<td>Existing Meeting Tracker only</td>
+<td>Fits</td>
+</tr>
+<tr>
+<td>OKRs</td>
+<td>Existing OKRs; no invented numeric targets</td>
+<td>Fits, awaiting targets</td>
+</tr>
+</tbody>
+</table>
+<p>The source SEO Builder includes an off-page/backlink workstream (R.selected_tables). An absent backlink inventory does not prevent future outreach work in existing Link Building; §07's claim that <em>any</em> filing there would be fabrication is overstated. Do not manufacture inventory records, but route actual backlink work there when briefed. Work Format remains an existing field, not a destination list.</p>
+<h3 id="e--load-time-risk-fail">E — load-time risk: FAIL</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>PRD mitigation</th>
+<th>Audit result / required mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create-time due-date automation</td>
+<td>Second pass for the fifteen routines (§11.8)</td>
+<td>Partial. Automation itself is UNVERIFIED: C exposes no rule. Require a read-only rule export and extend post-create date checks to events/promotions and other dated work. This audit stopped short of any test creation.</td>
+</tr>
+<tr>
+<td>Recurrence</td>
+<td>Labels “Monthly”, “Quarterly”, “Annual” and prose checklists</td>
+<td>Insufficient. Specify recurrence settings and first run, task reuse/new instance behavior, completion trigger, timezone and backfill. Q3 is event-triggered; A1 October has already passed at the PRD's November date.</td>
+</tr>
+<tr>
+<td>Campaign links</td>
+<td>Code in title and parent task ID in description; optional field decision</td>
+<td>Usable without schema change if codes are unique and both directions can be followed. No uniqueness, rename or duplicate-import rule is supplied. Record parent IDs in a load manifest.</td>
+</tr>
+<tr>
+<td>Nineteen-list schema</td>
+<td>Uses existing fields; reporting checklist in descriptions</td>
+<td>Partial. Correct 12/13 counts, map existing option IDs, map unsupported Channel labels to description text, preserve all source values. No custom reporting metrics or campaign link exist in the nineteen-list export.</td>
+</tr>
+<tr>
+<td>Rate limits</td>
+<td>No loader throttling/backoff rule in P §§11–13</td>
+<td>Insufficient. Space GETs at least three seconds apart, retry APP_002 with backoff, checkpoint reads and reconcile totals. Future loader must checkpoint identities and verify before retrying a create to avoid duplicates. This audit only used GETs.</td>
+</tr>
+<tr>
+<td>Statuses</td>
+<td>“carrying their real status”; no target value map</td>
+<td>Insufficient. All nineteen C list reads show the six workflow statuses above; source audit labels are not those statuses. Retain exact source text and agree an existing-status mapping. No destination status override was found.</td>
+</tr>
+<tr>
+<td>Files/attachments</td>
+<td>WorkDrive Link as files appear, Filestage URL</td>
+<td>Partial. Eighty collateral placeholders are not URLs; audit File/Link to Drive cells are empty. Source Desk manuals contain 12+9 image references (<code>pages.json</code>); preserve screenshot URLs/prose and verify authorized-reader access. No download, upload or link-access test was performed; availability is UNVERIFIED.</td>
+</tr>
+<tr>
+<td>Coda formulas/lookups/buttons/views</td>
+<td>Inventoried; destructive button to be removed by author</td>
+<td>Partial. Store full source definitions and replacement behavior; no native ClickUp formula execution was established. Carry three safe buttons as reference links; never execute/copy DeleteRows behavior. Views must reference canonical records, not become duplicates.</td>
+</tr>
+<tr>
+<td>Completeness/idempotency</td>
+<td>Approximate create totals</td>
+<td>Insufficient. Resolve overlapping registers, missing pages, blank SEO maps and monthly-pack identity before approving a concrete manifest. Re-read target tasks by GET for identity reconciliation before any future load.</td>
+</tr>
+<tr>
+<td>People/approval</td>
+<td>Q7 asks for owners; suggests Ena/Lea</td>
+<td>Correct to defer assignment. Membership is not proof of role or sign-off authority (F21). Confirm owners and approver before configuring routines.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="f--unsupported-claims-fail">F — unsupported claims: FAIL</h3>
+<p>The exact quotations in F11–F28 above identify the contradicted or unsupported factual sentences. The following additional broad sentences require qualification; a proposal is allowed, but must not be presented as measured business state:</p>
+<table>
+<thead>
+<tr>
+<th>Exact quotation from P</th>
+<th>What the evidence supports instead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>“There is also no ClickUp list that holds one”</td>
+<td>The nineteen list <em>names/fields</em> do not establish their task contents. A named-client register anywhere in ClickUp is UNVERIFIED. Read all nineteen lists' tasks with pagination and inspect candidate descriptions before asserting absence. No dedicated client-list name exists; a generic register can still fit.</td>
+</tr>
+<tr>
+<td>“A QSR brand's always-on social, seasonal promos and store-level campaigns have no blueprint at all.”</td>
+<td>L Always On instructions cover yearly activations, holidays and events; Brand is generic. No populated consumer campaign exists, but the schema is not incapable of supporting one.</td>
+</tr>
+<tr>
+<td>“Every approval happens here”</td>
+<td>Filestage is referenced by workflow prose and a specific project embed in <code>pages.json</code>; actual approval policy, access and exclusive usage are UNVERIFIED. Ricardo must confirm authority/policy.</td>
+</tr>
+<tr>
+<td>“The nine labels are real; their destination URLs sit in a formula column that returned empty in every row”</td>
+<td>Nine empty Link cells, no column formula (F24). Other pages contain real booking, Cliq and Filestage embed addresses; blank quick links do not mean every source address is missing.</td>
+</tr>
+<tr>
+<td>“The document names three types of always-on work but contains no calendar — no dates, no holidays, no events.”</td>
+<td>No dated calendar records exist. R Marketing Reporting has twelve dates, Company Snapshot has Established, and campaign instruction/examples mention holidays/events. Qualify this to <em>populated calendar records</em>.</td>
+</tr>
+<tr>
+<td>“What it does not hold is a single file.”</td>
+<td>No final collateral URL or populated audit attachment is exported. The document does contain manual screenshots and a generated palette image; file absence must be scoped to the asset registers.</td>
+</tr>
+<tr>
+<td>“Channel audit across all eight accounts”</td>
+<td><code>rows.json</code> has eight platform rows with empty Profile Link and Handle cells, plus generic console links. Eight live brand accounts are UNVERIFIED; require brand profile URLs and read-only access confirmation.</td>
+</tr>
+<tr>
+<td>“0 folders, 0 lists, 0 fields, 0 statuses created or changed anywhere in this PRD.”</td>
+<td>This is the author's assertion about historical operations; no write/audit log in state proves it. Historical zero writes is UNVERIFIED pending operation logs. This review itself issued only permitted document reads and ClickUp GETs, as captured in S/L/C.</td>
+</tr>
+<tr>
+<td>“Seven layers. Each one has a home among the nineteen existing lists, and each layer only reads from the layer above it — which is what stops the calendar, the campaigns and the reports from becoming three separate truths.”</td>
+<td>P proposes conceptual layers; R/C contain no enforced cross-layer permissions or dependency mechanism. Treat the claimed prevention of divergent truths as UNVERIFIED design intent; a unique manifest and shared pack/asset identities are still required.</td>
+</tr>
+<tr>
+<td>“No campaign idea exists anywhere in 56 pages.”</td>
+<td>Twelve campaign data tables have zero rows, but generic instruction/example ideas exist in prose. Say there are no populated campaign records, rather than asserting absence of any idea.</td>
+</tr>
+<tr>
+<td>“The always-on hooks, the kit grouping and the routine checklists are proposals and are labelled as such — the dates, the inventory and the counts are read from the document or the live workspace.”</td>
+<td>Proposal volumes (25 moments, 8 promotions, 15 routines, 81 steps), incomplete calendar dates and the contradictory numerical claims above are not all measured source facts. Clearly distinguish calculated proposals from source inventory.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-reconciliation-table">3. Reconciliation table</h2>
+<p><strong>A FAIL.</strong> R is reproducible evidence for each exported count; S/L independently settle the disputed cells and the incomplete keyword row export. PASS means the stated number reconciles at the stated scope, not that those records are production-ready. Identifiers (document/list/field IDs), section numbers and version labels are not quantities; R.numeric_claim_lines records their appearances alongside all other digit-bearing PRD lines.</p>
+<table>
+<thead>
+<tr>
+<th>Number/claim</th>
+<th>Arithmetic and evidence</th>
+<th>Pass/fail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>56 pages, 5 top-level + 51 children</td>
+<td>R.pages: 5+51=56; 56 unique page IDs, same outline/content ID set.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>610 blocks, none truncated</td>
+<td>Sum <code>raw.totalBlocks</code> by top-level branch: 125+161+277+31+16=610; all 56 <code>hasMore:false</code>. Helper <code>blocks</code> sums to 543 and is not this API measure. No pagination was silently treated as completion.</td>
+<td>PASS at API block scope</td>
+</tr>
+<tr>
+<td>80 grids, 71 base + 9 views</td>
+<td>R.grids: 71+9=80. Views: 1 target-area view + 8 content views.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>797 rows</td>
+<td>Nonzero page totals: 9+3+12+5+8+8+40+39+10+13+9+31+25+37+17+19+15+13+14+15+15+16+6+12+400+6=797. No view counted twice. All 71 declared counts equal totalRows. <code>rows.json</code> actually contains 497 returned rows; replace its 100 keyword rows with L's 400 unique rows: 497−100+400=797.</td>
+<td>PASS; export pagination explicitly resolved</td>
+</tr>
+<tr>
+<td>Every table's rows</td>
+<td>All eighty PRD grid-register row counts/view markers match <code>tables.json</code>; detailed per-page base-table arithmetic below.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>17 zero-row base tables</td>
+<td>6×2 campaign tables + Signed Content + Meeting &amp; Action + Table 2 + Table 3 + Master Content Table =12+5=17.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>44 page formulas</td>
+<td>R.formulas.page: 3+1+5+5+5+2+2+4+3+3+3+5+3=44.</td>
+<td>PASS count; F29 covers incomplete formula text</td>
+</tr>
+<tr>
+<td>49 column formulas</td>
+<td>33 base-column formula instances + (8 content views×2)=49. Target-area view contributes 0. These are instances, not 49 unique behaviors.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>4 controls, 1 destructive</td>
+<td>Cliq 1 + Submit Request 1 + Approval Status 1 + Brand Manual 1=4; OpenWindow 3 + DeleteRows 1=4. R.controls gives complete actions.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>0 comment threads</td>
+<td>Sum 56 <code>raw.commentThreads</code> lengths =0. Reporting rich-text cells are separate: L reads all 12 INF Comments canvases, each empty with hasMore:false.</td>
+<td>PASS at exported/page-thread scope</td>
+</tr>
+<tr>
+<td>9 quick links</td>
+<td>9 Section labels + 9 empty Link values; 0 Link formulas / 0 working URLs in that column.</td>
+<td>PASS count; FAIL formula explanation</td>
+</tr>
+<tr>
+<td>400 keywords; 25 present; 375 blank; 0 pasta</td>
+<td>R.kw2 + L offsets 0/100/200/300: 100+100+100+100=400 unique row IDs; 25+375=400; 0 keyword strings containing pasta; all 25 are architecture/design examples.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>375 blank keywords still have a type</td>
+<td>R.keywords.blank_with_type=375. All 400 Location values empty; <code>kw2.json</code> modifier/service columns also empty.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>8 service segments / personas</td>
+<td>8 segment rows + 8 persona rows; 8 distinct service names.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>13 partners, “four groups”</td>
+<td>7 banks+4 industry/compliance+2 technology=13; 1+1+1=3 groups, not 4.</td>
+<td>FAIL group count</td>
+</tr>
+<tr>
+<td>47 partner service links</td>
+<td>3+3+3+3+3+3+8+8+8+0+1+1+3=47, over 13 personas.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>3 suppliers, 2 main categories, 2 service links</td>
+<td>Infinity Brands/Legal/Shopfitting=3; category counts 1+2=3 across 2 categories; linked-service counts 0+1+1=2. Shopfitting Description is TBC in segment data.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>4 customer categories / 32 service links</td>
+<td>4 segment+4 persona records; 8+8+8+8=32 linked services. Source persona Segment values are B2B; service personas allow B2B and B2C.</td>
+<td>PASS count; client-type interpretation is qualified</td>
+</tr>
+<tr>
+<td>28 priorities all empty</td>
+<td>8+13+3+4=28 cells; filled 8+13+0+4=25; blank 0+0+3+0=3.</td>
+<td>FAIL</td>
+</tr>
+<tr>
+<td>21 areas / 19 unique / 4 provinces / 1 country</td>
+<td>All rows: Western Cape 7+Gauteng 10+Eastern Cape 1+Mpumalanga 1+KwaZulu-Natal 2=21 distinct areas, 5 provinces. Importance ≥7 excludes two KwaZulu-Natal rows: 21−2=19, 5−1=4; country unique=1. Country formula separately filters score =7.</td>
+<td>FAIL unqualified “unique”; PASS filtered formula values</td>
+</tr>
+<tr>
+<td>161 Client Profile rows</td>
+<td>Stakeholders 4+6=10; Snapshot 1+12=13; Competitors 3+6=9; Brand 4+21+4+2=31; Services 8+8+4+5=25; Partners 13+13+4+7=37; Suppliers 3+3+4+7=17; Customers 4+4+4+7=19; 10+13+9+31+25+37+17+19=161.</td>
+<td>PASS; includes explanations, not 161 clients</td>
+</tr>
+<tr>
+<td>6 campaign families, 12 empty blueprint tables</td>
+<td>Brand+Always On+Service/Product+Partner+Supplier+Customers=6; 6×(Overview+Topics)=12 empty tables. The six parent tasks are proposed containers, not carried populated campaigns.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>“12 empty topic tables” in §04</td>
+<td>Topics 6 + overview 6=12; only 6 are topic tables.</td>
+<td>FAIL label</td>
+</tr>
+<tr>
+<td>Every campaign formula zero</td>
+<td>Campaign/Targeted branches contain 22 formulas: 21×0 plus one service count of 8.</td>
+<td>FAIL</td>
+</tr>
+<tr>
+<td>17 master columns / 0 rows / 8 content views</td>
+<td>R table schema: 17 columns, including Modified by/on; 0 rows. Calendar+3 market+4 channel views=8.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>11 reporting columns / 12 months</td>
+<td>Month 1 + non-month columns 10=11; January–December=12 rows. Plain non-month cells: 12×9=108 empty; 12 rich INF Comments canvases independently empty via L. Ten full months elapsed + current November + future December=12.</td>
+<td>PASS counts; FAIL all-months-past claim</td>
+</tr>
+<tr>
+<td>8 social accounts</td>
+<td>8 platform rows, 0 populated Profile Links and 0 Handles. Account existence is UNVERIFIED.</td>
+<td>PASS rows; FAIL as verified accounts</td>
+</tr>
+<tr>
+<td>8 email segments</td>
+<td>General 3 + design-client 5=8 rows; design-client 1 VIP+4 placeholders=5. This does not prove eight active CRM lists.</td>
+<td>PASS rows</td>
+</tr>
+<tr>
+<td>40 collateral / 80 link cells / 0 URLs</td>
+<td>40 rows×2 columns=80; 40+24=64 [Working File]/[PDF], remaining 14+2=16 other placeholders; blank=0; actual URL=0.</td>
+<td>FAIL 16 blanks; PASS 40/80/0 URLs</td>
+</tr>
+<tr>
+<td>39 audit items; 26 waiting + 13 not done; 0 signed</td>
+<td>26+13+0=39; 39 Link to Drive +39 File=78 empty cells.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>7 kits / 40 names / 20 Clients audiences</td>
+<td>8 kit rows; 5+8+6+9+5+4+2+1=40 names; twenty exact Clients values among forty audiences.</td>
+<td>FAIL kits; PASS names/audiences</td>
+</tr>
+<tr>
+<td>Manual tables “empty”</td>
+<td>Palette 1 + Typography 1 + Logo Pack 3=5 placeholder rows. Palette Visual has a generated spacer image; no completed brand values.</td>
+<td>PASS as placeholder assessment, not zero rows</td>
+</tr>
+<tr>
+<td>6 SEO workstreams / 12 keyword types / 6 page maps</td>
+<td>6+12+6=24 scaffold rows. SEO Page Focus: 4 design references+1 generic contact/map+1 All=6. Landing rows: 5 typed (Mini Link, Homepage, Service, Landing Page, Landing Page)+1 untyped=6; 0 names/URLs/keyword assignments.</td>
+<td>PASS row counts; FAIL six completed maps/design URLs</td>
+</tr>
+<tr>
+<td>19 lists / 7 pillars / lane root</td>
+<td>Per-pillar lists: 2+2+4+2+1+4+4=19; 7 pillars+1 empty lane folder=8 folder records. P §04's twenty is wrong.</td>
+<td>PASS nineteen; FAIL twenty</td>
+</tr>
+<tr>
+<td>Twelve fields / Asset Library replaces Quality</td>
+<td>17×12+2×13=230 instances; 19×12=228 shared instances+2 WorkDrive Link extras. Both creative lists retain Quality. Campaign count across 19 schemas=0.</td>
+<td>FAIL schema description; PASS no Campaign</td>
+</tr>
+<tr>
+<td>19 Function options; 4 tiers</td>
+<td>C verifies identical common-field options across all 19 lists: 19 Function values and HOF/ZOR/COR/ZEE=4 tiers; PPP exists in Brand.</td>
+<td>PASS</td>
+</tr>
+<tr>
+<td>39 members; 2 names absent; 2 marketing seats</td>
+<td>R.members: 39 members, 0 Rhona/Jorica name matches, Lea 105744013 and Ena 105744008 match mkt email seats. Employment/brand ownership not inferred.</td>
+<td>PASS membership only</td>
+</tr>
+<tr>
+<td>13 holidays, twelve + one observed</td>
+<td>P prints 13. H Schedule 1 has 12; Sunday dates are 21 March and 26 December, so 12+2=14 dated holidays by section 2(1), including 22 March and inferred 27 December.</td>
+<td>FAIL completeness</td>
+</tr>
+<tr>
+<td>All thirteen printed holiday weekdays/dates</td>
+<td>Calendar computation agrees with the thirteen printed dates: Fri/Sun/Mon/Fri/Mon/Tue/Sat/Wed/Mon/Fri/Thu/Sat/Sun. The issue is omission of another Monday.</td>
+<td>PASS printed rows</td>
+</tr>
+<tr>
+<td>25 moments / 8 promotions / 33 creates</td>
+<td>P assumes 13 holidays+12 brand moments=25; 4 quarterly+4 loyalty=8; 25+8=33. Corrected holiday baseline would give 14+12+8=34 if twelve distinct dated brand moments are approved. They are not yet enumerated.</td>
+<td>FAIL executable count; proposal arithmetic visible</td>
+</tr>
+<tr>
+<td>15 routines / 81 steps</td>
+<td>Monthly statistics 6 + monthly audit 4 + quarterly 2 + campaign-close 1 + annual 2=15. Steps: 5+5+5+5+4+5+8+6+6+6+5+5+5+6+5=81.</td>
+<td>PASS totals; FAIL three-quarterly classification</td>
+</tr>
+<tr>
+<td>Campaign example volumes</td>
+<td>Parent 1+landing 1+blogs 4+social 16+emails 2+ad set 1=25 non-creative tasks; 4 weeks×4 posts=16. Range proposals 4–6 blogs/12–20 posts/2–3 emails are not source counts. Approximate 23 builds/assets has no explicit grouping arithmetic: page 1+articles 4+individual posts 16+emails 2=23 only if each post counts separately; “post group” is undefined.</td>
+<td>PASS labelled proposals; 23 grouping UNVERIFIED</td>
+</tr>
+<tr>
+<td>8 services ×19 areas and “400 rows must be regenerated”</td>
+<td>8×19=152 service-area pairs, not 400. Keyword-type/customer permutations are unspecified; 400 is current scaffold size, not a proven cleaned target count.</td>
+<td>FAIL implied rebuild volume</td>
+</tr>
+<tr>
+<td>5 plan tasks / 6 campaign parents / 6 references</td>
+<td>P step 4 enumerates 5; step 6 enumerates 6; step 10 lists 4 intake+2 meeting=6. These are proposed groupings, not measured source task counts.</td>
+<td>PASS internal arithmetic; incomplete coverage F4</td>
+</tr>
+<tr>
+<td>≈79 asset creates</td>
+<td>39+40=79 source rows across two registers, not necessarily 79 unique deliverables.</td>
+<td>FAIL as unique-create estimate</td>
+</tr>
+<tr>
+<td>≈43 SEO creates</td>
+<td>With 25 strings carried: 6+12+25+6=49. With approved cleaned keyword count k and page-map count p: 18+k+p.</td>
+<td>FAIL</td>
+</tr>
+<tr>
+<td>≈199 =151 carried+48 new</td>
+<td>Printed lines sum 5+79+6+33+15+12+6+43=199; 151=5+79+6+12+6+43; 48=33+15. Correcting just the six omitted SEO maps yields 205; also adding the missing holiday yields 206, before unresolved deduplication/coverage/keyword decisions. These are conditional arithmetic, not a replacement load budget.</td>
+<td>PASS printed sum; FAIL defended load total</td>
+</tr>
+<tr>
+<td>Up to 12 of19 lists used</td>
+<td>Printed load blocks use Marketing Plan, Asset Library, Creative Projects, Campaigns, Event Tracking, Seasonal Promotions, Recurring, Briefed-In, Meeting Tracker, SEO Goals, KW Research, Optimization=12; 19−12=7 unused. This omits Projects/Social/Email reference payloads from §08.</td>
+<td>PASS printed count; FAIL completeness</td>
+</tr>
+<tr>
+<td>0 creates in document-fix steps; historical zero writes</td>
+<td>P steps 1–3 are author-side changes; no ClickUp task creates are specified there. Whether the PRD author actually made zero historical writes is UNVERIFIED without operation logs.</td>
+<td>PASS proposed count; history UNVERIFIED</td>
+</tr>
+<tr>
+<td>7 decisions /7 layers /15 gap rows</td>
+<td>P enumerates Q1–Q7=7, L1–L7=7, gap register 15 rows; 11 direct covered+2 convention-dependent+2 unresolved=15 is its classification. Client/OKR gaps are not missing containers.</td>
+<td>PASS count; FAIL “nowhere to live” interpretation</td>
+</tr>
+</tbody>
+</table>
+<p>Base-table row arithmetic by source page, including explanation tables (R; zeros are retained in <code>recount.json</code> and <code>tables.json</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Source page</th>
+<th>Base table row counts → subtotal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quick Links / Contacts</td>
+<td>9 / 3</td>
+</tr>
+<tr>
+<td>Reporting &amp; Analytics</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Brand Manual</td>
+<td>1+1+3=5</td>
+</tr>
+<tr>
+<td>Social Media</td>
+<td>8+0+0=8</td>
+</tr>
+<tr>
+<td>Email Segments</td>
+<td>3+5=8</td>
+</tr>
+<tr>
+<td>Marketing Collateral / Brand Audit</td>
+<td>40 / 39</td>
+</tr>
+<tr>
+<td>Contacts &amp; Stakeholders</td>
+<td>4+6=10</td>
+</tr>
+<tr>
+<td>Company Snapshot</td>
+<td>1+12=13</td>
+</tr>
+<tr>
+<td>Competitors &amp; Market Insights</td>
+<td>3+6=9</td>
+</tr>
+<tr>
+<td>Clients: Brand Personas</td>
+<td>4+21+4+2=31; exclude its view</td>
+</tr>
+<tr>
+<td>Clients: Service/ Product Personas</td>
+<td>8+8+4+5=25</td>
+</tr>
+<tr>
+<td>Clients: Partner Personas</td>
+<td>13+13+4+7=37</td>
+</tr>
+<tr>
+<td>Clients: Suppliers Personas</td>
+<td>3+3+4+7=17</td>
+</tr>
+<tr>
+<td>Clients: Customer Personas</td>
+<td>4+4+4+7=19</td>
+</tr>
+<tr>
+<td>Brand</td>
+<td>0+0+9+6=15</td>
+</tr>
+<tr>
+<td>Always On</td>
+<td>0+0+3+7+3=13</td>
+</tr>
+<tr>
+<td>Service /Product</td>
+<td>0+0+10+4=14</td>
+</tr>
+<tr>
+<td>Partner</td>
+<td>0+0+11+4=15</td>
+</tr>
+<tr>
+<td>Supplier</td>
+<td>0+0+11+4=15</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td>0+0+12+4=16</td>
+</tr>
+<tr>
+<td>Signed Client Content / Meetings &amp; Actions / Master Table</td>
+<td>0 / 0 / 0</td>
+</tr>
+<tr>
+<td>SEO Strategy Builder / Keyword Library</td>
+<td>6 / 12</td>
+</tr>
+<tr>
+<td>Logic Master Keyword / Keyword &lt;&gt; Landing Page</td>
+<td>400 / 6</td>
+</tr>
+</tbody>
+</table>
+<p>All other pages contribute zero base rows. The base-table counts by these same groups sum to 71, and the nine views are excluded. Full per-page API block counts are retained in R.blocks.per_page; the branch arithmetic above follows outline parent IDs, not the PRD's visual indentation.</p>
+<h2 id="4-56-row-mapping-verdict-table">4. 56-row mapping verdict table</h2>
+<p><strong>B FAIL.</strong> Judgements use BRIEF law 1–5 and the actual tree in <code>outline.json</code>/<code>pages.json</code>; source views are identified by <code>sourceTableUri</code> in <code>tables.json</code>. Short labels Briefed-In, Recurring and Projects mean the existing prefixed PPP lists, not new lists. “AGREE” for an empty divider means no standalone task is needed, while its children's content still needs a payload. The PRD marks 12 structural +44 destination pages=56; the Targeted summary is not disposable. Master Table's routing/schema must survive even though it has no rows. Reporting &amp; Analytics belongs in Recurring provided it shares the single monthly-pack identity (F6). No view is an independent register.</p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>PRD destination</th>
+<th>Verdict</th>
+<th>Alternative / reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Welcome &amp; Overview</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Quick Links</td>
+<td>Team Operations / Projects 1501000000002313</td>
+<td>AGREE</td>
+<td>Projects reference index fits the existing operations list; recover missing destinations.</td>
+</tr>
+<tr>
+<td>Contacts</td>
+<td>Team Operations / Projects 1501000000002313</td>
+<td>AGREE</td>
+<td>Projects SLA reference fits; confirm current owners rather than infer from membership.</td>
+</tr>
+<tr>
+<td>Cliq Chat</td>
+<td>Team Operations / Briefed-In 1501000000002310</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Book Meetings</td>
+<td>Team Operations / Meeting Tracker 1501000000001582</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Submit Request</td>
+<td>Team Operations / Briefed-In 1501000000002310</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Submission Guidelines</td>
+<td>Team Operations / Briefed-In 1501000000002310</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Desk Submission of Ticket Manual</td>
+<td>Team Operations / Briefed-In 1501000000002310</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Desk Tracking Status</td>
+<td>Team Operations / Briefed-In 1501000000002310</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Approvals &amp; Reviews</td>
+<td>Creative &amp; Design / Creative Projects 1501000000001575</td>
+<td>AGREE</td>
+<td>Creative Projects can retain approval guidance with its children; this empty parent requires no extra shell.</td>
+</tr>
+<tr>
+<td>FileStage Approval Workflow</td>
+<td>Creative &amp; Design / Creative Projects 1501000000001575</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Approval Status</td>
+<td>Creative &amp; Design / Creative Projects 1501000000001575</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Signed Client Content</td>
+<td>Creative &amp; Design / Asset Library 1501000000001576</td>
+<td>AGREE</td>
+<td>Asset Library fits approved-content references; currently no rows to load.</td>
+</tr>
+<tr>
+<td>Meetings &amp; Actions</td>
+<td>Team Operations / Meeting Tracker 1501000000001582</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Reporting &amp; Analytics</td>
+<td>Team Operations / Recurring 1501000000002312</td>
+<td>AGREE</td>
+<td>Recurring is the monthly reporting function; one pack per month, shared with M6 (F6).</td>
+</tr>
+<tr>
+<td>Brand Manual &amp; Assets</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Brand Manual</td>
+<td>Creative &amp; Design / Asset Library 1501000000001576</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Social Media</td>
+<td>Content Management / Social 1501000000001573</td>
+<td>AGREE</td>
+<td>Social owns platform reference records, not proof of eight live accounts.</td>
+</tr>
+<tr>
+<td>Email Segments</td>
+<td>Content Management / Email 1501000000001574</td>
+<td>AGREE</td>
+<td>Email owns segment definitions; keep four placeholder definitions distinguishable.</td>
+</tr>
+<tr>
+<td>Marketing Collateral</td>
+<td>Creative &amp; Design / Creative Projects 1501000000001575</td>
+<td>DISAGREE</td>
+<td>Asset Library catalogue, linked Creative Projects builds when actually briefed. Forty catalogue rows are not forty approved production jobs; law 2, F2.</td>
+</tr>
+<tr>
+<td>Brand Audit</td>
+<td>Creative &amp; Design / Asset Library 1501000000001576</td>
+<td>AGREE</td>
+<td>Asset Library audit reference/status against canonical assets; preserve exact labels and deduplicate collateral (F2/F7).</td>
+</tr>
+<tr>
+<td>Client Profile</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Contacts &amp; Stakeholders</td>
+<td>Team Operations / Projects 1501000000002313</td>
+<td>AGREE</td>
+<td>Projects reference fits the existing operations list; no new register list.</td>
+</tr>
+<tr>
+<td>Company Snapshot</td>
+<td>Strategic Marketing Plan / Marketing Plan 1501000000001568</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Competitors &amp; Market Insights</td>
+<td>Strategic Marketing Plan / Marketing Plan 1501000000001568</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Clients: Brand Personas</td>
+<td>Strategic Marketing Plan / Marketing Plan 1501000000001568</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Clients: Service/ Product Personas</td>
+<td>Strategic Marketing Plan / Marketing Plan 1501000000001568</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Clients: Partner Personas</td>
+<td>Strategic Marketing Plan / Marketing Plan 1501000000001568</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Clients: Suppliers Personas</td>
+<td>Strategic Marketing Plan / Marketing Plan 1501000000001568</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Clients: Customer Personas</td>
+<td>Strategic Marketing Plan / Marketing Plan 1501000000001568</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Strategic Foundation</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Brand</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>AGREE</td>
+<td>Campaigns for campaign overview; actual topic/content pieces route by function (law 5).</td>
+</tr>
+<tr>
+<td>Always On</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>AGREE</td>
+<td>Campaigns for the always-on overview; events/promotions route to their existing lists.</td>
+</tr>
+<tr>
+<td>Targeted</td>
+<td>no list — structural</td>
+<td>DISAGREE</td>
+<td>Campaigns reference descriptions: retain four family/topic roll-ups from its children. It is a summary page with four formulas, not an empty divider; F3.</td>
+</tr>
+<tr>
+<td>Service /Product</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>AGREE</td>
+<td>Campaigns for overview; service-specific pieces route by function.</td>
+</tr>
+<tr>
+<td>Partner</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>AGREE</td>
+<td>Campaigns for overview; partner communication pieces route by function.</td>
+</tr>
+<tr>
+<td>Supplier</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>AGREE</td>
+<td>Campaigns for overview; supplier communication pieces route by function.</td>
+</tr>
+<tr>
+<td>Customers</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>AGREE</td>
+<td>Campaigns for overview; customer communication pieces route by function.</td>
+</tr>
+<tr>
+<td>Content &amp; Channel Planning</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Master Content Calendar</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Calendar View</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>Same master rows; preserve view purpose and recreate no duplicate records.</td>
+</tr>
+<tr>
+<td>Master Table</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>AGREE with no standalone record: retain all seventeen columns, the two formula definitions and per-row routing. Do not discard schema (F3/F7).</td>
+</tr>
+<tr>
+<td>Market Calendar Views</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Brand Views</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>DISAGREE</td>
+<td>Website / Blog / Social / Email by piece function; Creative Projects for production. Brand is a filter, not a campaign record; law 2/5.</td>
+</tr>
+<tr>
+<td>Always On Views</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>DISAGREE</td>
+<td>Website / Blog / Social / Email by piece function; actual dated events in Event Tracking and promotions in Seasonal Promotions. Law 2/5.</td>
+</tr>
+<tr>
+<td>Targeted Views</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>DISAGREE</td>
+<td>Website / Blog / Social / Email by piece function, retaining targeted campaign parent. An audience filter does not change content into campaigns; law 2/5.</td>
+</tr>
+<tr>
+<td>Channel Calendars Views</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>Social Media Views</td>
+<td>Content Management / Social 1501000000001573</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Email Marketing Views</td>
+<td>Content Management / Email 1501000000001574</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Paid Media / PPC Views</td>
+<td>Campaigns &amp; Promotions / Campaigns 1501000000001569</td>
+<td>DISAGREE</td>
+<td>Campaigns only for ad-set management; Creative Projects for ad production, Social for actual social pieces, Website for landers. Blanket placement of a Master Content Table view violates law 2/5.</td>
+</tr>
+<tr>
+<td>PR &amp; Events Views</td>
+<td>Event Marketing / Event Tracking 1501000000001577</td>
+<td>DISAGREE</td>
+<td>Event Tracking for actual events; Social / Blog / Email for communications, Creative Projects for production. This is a content view, not an event register; law 2/5.</td>
+</tr>
+<tr>
+<td>SEO + Keywords</td>
+<td>no list — structural</td>
+<td>AGREE</td>
+<td>No standalone list/task needed; preserve child content in the mapped destinations.</td>
+</tr>
+<tr>
+<td>SEO Strategy Builder</td>
+<td>SEO Research &amp; Management / SEO Goals 1501000000001581</td>
+<td>AGREE</td>
+<td>SEO Goals for workstream goals; route resulting execution by function, including actual backlink work to Link Building.</td>
+</tr>
+<tr>
+<td>Keyword Library</td>
+<td>SEO Research &amp; Management / KW Research 1501000000001578</td>
+<td>AGREE</td>
+<td>Function matches this existing list under law 2; retain source content in the load manifest.</td>
+</tr>
+<tr>
+<td>Logic Master Keyword</td>
+<td>SEO Research &amp; Management / KW Research 1501000000001578</td>
+<td>AGREE</td>
+<td>KW Research owns the four-hundred-row keyword scaffold; quarantine design examples pending rebuild.</td>
+</tr>
+<tr>
+<td>Keyword &lt;&gt; Landing Page</td>
+<td>SEO Research &amp; Management / Optimization 1501000000001579</td>
+<td>AGREE</td>
+<td>Optimization for genuine keyword/page assignments. Six blank placeholder rows are not six finished mappings (F10).</td>
+</tr>
+</tbody>
+</table>
+<p>Mapping arithmetic: 49 AGREE +7 DISAGREE=56 rows. The twelve PRD structural entries are Welcome &amp; Overview, Brand Manual &amp; Assets, Client Profile, Strategic Foundation, Targeted, Content &amp; Channel Planning, Master Content Calendar, Calendar View, Master Table, Market Calendar Views, Channel Calendars Views and SEO + Keywords. Eleven can remain without standalone tasks, with schema/view preservation where relevant; Targeted's four roll-ups need an explicit home. This is a preservation requirement, not another list.</p>
+<h2 id="5-coverage-table">5. Coverage table</h2>
+<p><strong>D FAIL: partly covered, not end to end.</strong> The owner's ten asks below come from BRIEF D; coverage is judged on the PRD's definitions and executable carry-over, not on whether an empty destination exists.</p>
+<table>
+<thead>
+<tr>
+<th>Owner's ask</th>
+<th>Coverage</th>
+<th>Where / remaining gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Direct clients</td>
+<td>Covered as a definition</td>
+<td>P §02 / R customer segments identify franchise buyers; Brand Persona separately describes consumers. Actual signed franchisees are not supplied.</td>
+</tr>
+<tr>
+<td>2. Services</td>
+<td>Covered</td>
+<td>P §02 / eight segment and eight persona rows, Marketing Plan. Preserve twenty-five existing priority scores across services/partners/customers; supplier scores remain missing. Specific menu/prices are a separate decision.</td>
+</tr>
+<tr>
+<td>3. Partners</td>
+<td>Covered</td>
+<td>Thirteen segments/personas and forty-seven links, Marketing Plan; correct three groups, not four.</td>
+</tr>
+<tr>
+<td>4. Suppliers</td>
+<td>Partly</td>
+<td>Three groups/personas, two service links, Marketing Plan. Shopfitting TBC and three priority cells missing; legal supplier names are segment descriptions, not independent rows.</td>
+</tr>
+<tr>
+<td>5. Client list</td>
+<td>Missing as populated data</td>
+<td>P §02/§12 Q6 acknowledge the gap; the source has segments/personas, not a named franchisee/store register. Marketing Plan can hold a register. CRM contents or a register already in ClickUp are UNVERIFIED until read.</td>
+</tr>
+<tr>
+<td>6. Important marketing documents repository</td>
+<td>Partly</td>
+<td>P §05 Asset Library/WorkDrive/Filestage convention is viable; forty catalogue rows and thirty-nine audit rows need identity matching; no asset URLs/sign-offs, nine blank quick links, status mapping and approver unresolved.</td>
+</tr>
+<tr>
+<td>7. Always-on calendar, holidays, brand events</td>
+<td>Partly</td>
+<td>P §03 Event Tracking + Seasonal Promotions + Campaigns; no source calendar records. One observed Monday missing, twelve brand moments not enumerated/dated, proposed events not yet approved.</td>
+</tr>
+<tr>
+<td>8. High-level campaigns → idea → blogs/pieces</td>
+<td>Partly</td>
+<td>P §04 supplies conceptual tree, sample split and name/ID fallback. P §08 contradicts it by filing content views as Campaigns. No populated campaign records; campaign-code uniqueness and bidirectional trace are unspecified.</td>
+</tr>
+<tr>
+<td>9. Recurring social/SEO/ads/website statistics</td>
+<td>Partly</td>
+<td>P M1–M4 cover these, M5 email and M6 assembly; one monthly pack in Recurring. Recurrence behavior, owners, account access, unsupported labels and backfill/duplicate-pack rules remain unresolved.</td>
+</tr>
+<tr>
+<td>10. Full website/channel/SEO/positive/negative audit with optimisation in space</td>
+<td>Partly</td>
+<td>P M7–M10 and Q2 cover intended scope; KW Research/Optimization exist. Website/account reality, Meta capability, recurrence and function-based follow-up routing require correction/verification.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-blocked-on-ricardo">6. Blocked on Ricardo</h2>
+<p>These are business decisions or missing business facts; they are separate from the author's verifiable errors in the findings table. The source for each requested decision is P §§02–06/12 and the blank/placeholder cells identified in R; no system was changed to settle them.</p>
+<ul>
+<li><strong>Website and accounts:</strong> current Papa Pasta URL, website launch state, actual social profiles, analytics/ad/email access and consumer-facing campaign audience. The source's no-website notes do not establish today's external state. These settle Q1 and the assumptions behind M1–M10.</li>
+<li><strong>Offer and identity:</strong> approved specific menu/prices/signature products, legal company name, actual establishment/anniversary date, shopfitter and the three supplier priorities. Existing fresh-pasta positioning is present and should not be discarded. Confirm which products/services/areas belong in the cleaned keyword set (Q2); 400 is not a proven target volume.</li>
+<li><strong>Authoritative named-client register:</strong> choose a Marketing Plan register or an approved external CRM link; use Projects only for work that belongs there (Q6). A CRM's existence or data is not verified by this audit. No dedicated new list is necessary.</li>
+<li><strong>Campaign trace:</strong> retain unique codes plus parent task IDs, or separately authorize a relationship/text field within existing lists (Q3). The no-new-list route is already possible. Do not make an optional schema improvement a prerequisite for this audit.</li>
+<li><strong>Asset ownership and approval:</strong> confirm approver, accountable producer and the meaning of each sign-off state; decide which real builds belong in Creative Projects (Q4). The author must still reconcile duplicate deliverable identities and preserve both source registers' evidence.</li>
+<li><strong>Reporting and cadence:</strong> decide which 2026 months to backfill, first future reporting period, routine/pack owners, annual first run and whether campaign-close reporting is event-triggered (Q5/Q7). Confirm Ena/Lea's actual brand roles rather than infer them from workspace email names. Actual recurrence setup and automation behavior require read-only configuration evidence, followed by a separately authorized implementation.</li>
+<li><strong>Always-on and targets:</strong> approve actual dated brand moments, quarterly offers, loyalty beats and measurable OKRs. The PRD's numerical proposals are not existing source commitments. The missing observed holiday and other arithmetic errors are author corrections, not business decisions.</li>
+</ul>
+<p>UNVERIFIED operational checks are explicit above: current external site/accounts, file-link accessibility, actual automation rules, recurrence configuration, Meta capabilities, existing ClickUp/CRM client data and the author's historical zero-write claim. Read-only exports/GETs or the stated owner facts would settle them. No check was completed by creating or modifying a task, field, status, list, folder, comment or document.</p>
+<h2 id="7-declaration">7. Declaration</h2>
+<p>After my own reading, <strong>nothing in this framework requires a folder or list to be created</strong>; it requires corrected routing and preservation within the nineteen existing lists, real business data, and a reconciled load manifest.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
