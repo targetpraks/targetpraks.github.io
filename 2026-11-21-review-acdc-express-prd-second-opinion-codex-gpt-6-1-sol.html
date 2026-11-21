@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Review — ACDC Express PRD, second opinion (Codex, gpt-6.1-sol)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="verdict-material-gaps">Verdict: material gaps</h1>
+<p>Correct the operating contracts and work placement before treating the load as an executable framework. Resolve the named client register, campaign-to-plan links and recurrence; describe the 106-card load as reported, not independently verified.</p>
+<h2 id="ask-coverage">Ask coverage</h2>
+<table>
+<thead>
+<tr>
+<th>Ricardo's ask</th>
+<th>Coverage</th>
+<th>Section and required correction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Brand, direct clients, services, partners, suppliers, client list and marketing documents</td>
+<td><strong>partly</strong></td>
+<td>§§1, 3–7 cover definitions; §7 leaves the named account register as two optional approaches. Make one executable obligation (C5), correct the service/partner facts (C11–C12), and qualify the supposed asset files (C13).</td>
+</tr>
+<tr>
+<td>2. Always-on calendar, holidays and brand events</td>
+<td><strong>partly</strong></td>
+<td>§8 supplies holiday dates but industry events and activation ideas remain placeholders. Assign the build and distinguish 14 dated days, 12 holiday themes and four specials (C2, C8).</td>
+</tr>
+<tr>
+<td>3. Campaigns linked to the high-level plan and decomposed into content</td>
+<td><strong>partly</strong></td>
+<td>§9 defines decomposition; §§11–13 supply profile-completion cards rather than an approved plan linked to each campaign. Require the plan, traceable links and the actual monthly/weekly theme schedules (C4, C6–C7).</td>
+</tr>
+<tr>
+<td>4. Recurring monthly social, SEO, AdWords and website statistics</td>
+<td><strong>partly</strong></td>
+<td>§10.1 names cards, sources and outputs; §10.4 calls recurrence unverified. Configure schedules and account-level evidence, with one owner (C2–C3, C9, C14).</td>
+</tr>
+<tr>
+<td>5. Recurring full website/channel/SEO/keyword audits and optimisation</td>
+<td><strong>partly</strong></td>
+<td>§§10.2–10.4 define scopes and follow-up routing; native repetition, account coverage and closure remain unverified. Specify the complete checks and keyword decision rules (C2, C9–C10, C14–C15).</td>
+</tr>
+<tr>
+<td>6. Everything in the existing ClickUp framework; fields permitted</td>
+<td><strong>fully covered</strong> for the structure constraint</td>
+<td>§§11, 13–14 use the existing 19 lists; no new folder or list is needed. Correct functional misfiles and contradictory calendar homes within that structure (C4, C16).</td>
+</tr>
+<tr>
+<td>7. Ena owns every created task</td>
+<td><strong>partly</strong></td>
+<td>§13 states Ena's ID correctly, but §10 assigns the team and Ricardo/HOD ownership. Make Ena the sole assignee everywhere (C3); individual assignments cannot be independently verified from the supplied count-only snapshot (C1).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="changes">Changes</h2>
+<h3 id="c1--document--replace-the-conflicting-execution-history-with-a-dated-evidence-ledger">C1 — <code>document</code> — Replace the conflicting execution history with a dated evidence ledger</h3>
+<p><strong>Change →</strong> Correct the cover, §0, §13 and §17 together. <strong>Why →</strong> An operator could reload completed waves or mistake historical cards for new work. <strong>Evidence →</strong> <code>source/lane-after-load.json</code>, read at <code>2026-11-21T20:10+02:00</code>, explicitly says the asset wave was pending. Its counts sum to <strong>75 = 64 new + 11 historical</strong>. Wave 1 is <strong>26+3+8+6+1+2=46</strong>; recurring is <strong>8+3+6+1=18</strong>; the asset proposal is <strong>2+40=42</strong>; all waves total <strong>106</strong>, or <strong>117 including the 11 historical cards</strong> if all were retained. The 64-card load spans seven lists, not the six stated in §13. The snapshot lists <strong>19 field names</strong>, not the implied 16 from “four added” plus “other twelve”. The cover says “No … field is created”, §0 says “no open work”, and §17 says “Unchanged … Every ClickUp call … GET”, contradicting §13's execution account. A permitted read, <code>scripts/cu-get.sh '/folder/1501000000001184/list?archived=false'</code>, returned <code>{"err":"Rate limit reached","ECODE":"APP_002"}</code>; no further live reads were attempted.</p>
+<p><strong>Exact fix →</strong> Write: “Reported execution: 106 new cards, all assigned to Ena (105744008), with the space's four-day due dates. Independently checked snapshot: 20:10 +02:00 on 2026-11-21, 64 new cards across seven lists plus 11 historical cards; the 42-card asset wave was pending then. The later 106-card state, per-card assignments, dates, statuses and field values are UNVERIFIED by this review because ClickUp returned APP_002. Nineteen field names are visible in the snapshot; creation history is UNVERIFIED.” Label §0's empty/open-work statements as <strong>pre-load history</strong>, replace §17's unchanged-state claim with this ledger, and remove the unsupported “other twelve”. To settle the remainder, obtain successful paginated <code>GET /list/{id}/task?include_closed=true&amp;page=N</code> for all 19 list IDs and <code>GET /task/{id}</code> where needed; obtain field creation history from an admin/export rather than inferring it from names. Do not reload any wave from this report.</p>
+<h3 id="c2--clickup--make-the-18-cadence-cards-recur-on-usable-dates">C2 — <code>clickup</code> — Make the 18 cadence cards recur on usable dates</h3>
+<p><strong>Change →</strong> Configure the existing 18 cards in Recurring, rather than treating their names or Cadence fields as recurrence. <strong>Why →</strong> One batch due 2026-11-25 cannot enforce monthly and quarterly operations. <strong>Evidence →</strong> §§10.4 and 13 say the mechanism is unverified, yet §10 later asserts native recurrence; §13 assigns every card the same four-day deadline. §10.2 gives no specific deadline, and the management pack shares a deadline with its inputs.</p>
+<p><strong>Exact fix →</strong> On each existing recurring card record Ena, frequency, first reporting period, next due date and repeat rule. Set monthly inputs 1–7 due by the fourth South African business day after month-end, management pack by the fifth, and the three optimisation passes by the tenth. Set the first five quarterly audits due by the tenth business day after quarter-end and their dependent optimisation plan by the twelfth; update §10's deadline wording accordingly. Use first periods <code>2026-11</code> and <code>2026-Q4</code>. Make the initial 2027 calendar build due by 2026-11-30; future annual builds are due on October's last business day for the following year. Configure native repetition in the app and verify the saved next occurrence after date automation runs. If the UI cannot encode business-day offsets, repeat monthly/quarterly and make Ena adjust the next deadline using the SA holiday calendar before closing the current occurrence. Native recurrence support remains <strong>UNVERIFIED</strong> until an authorised operator/admin checks it in the app; a Cadence value alone is not proof.</p>
+<h3 id="c3--document--separate-enas-accountability-from-contribution-and-approval">C3 — <code>document</code> — Separate Ena's accountability from contribution and approval</h3>
+<p><strong>Change →</strong> Replace the owner paragraph at the end of §10 and apply it to every card-creation rule. <strong>Why →</strong> “Owners: the two-person marketing team … with Ricardo or the HOD named” directly conflicts with ask 7 and the single-assignee rule. <strong>Evidence →</strong> <code>BRIEF.md</code> ask 7; §§10 and 13; neither snapshot establishes Lea's current role or a current HOD approval mandate.</p>
+<p><strong>Exact fix →</strong> Write: “Ena Marie O. Dizon (105744008) is the sole ClickUp assignee for every task created by this framework, including content children, audits and remediation. Contributors and approvers are named separately in the description after their roles are confirmed. Ricardo supplies Owners Comments; Ena requests and files them and never authors them on his behalf. Missing approval authority blocks release, not assignment to Ena.” Remove team membership and current-role assertions that have no verified roster evidence.</p>
+<h3 id="c4--clickup--route-the-40-proposed-briefs-by-function-not-by-missing-file-status">C4 — <code>clickup</code> — Route the 40 proposed briefs by function, not by missing-file status</h3>
+<p><strong>Change →</strong> Replace the blanket “40 … Creative Projects” allocation with the following routing. <strong>Why →</strong> A missing file does not turn strategy, copywriting or calendar setup into design work; the blanket rule violates §11's own “never holds … copywriting tasks”. <strong>Evidence →</strong> <code>source/table-data.json</code>, <code>tables/grid-DRcDYg-lpD</code>, the named collateral rows below; §§7.3, 11 and 13. These are <strong>proposed misfiles</strong>; whether the later asset load placed them this way is <strong>UNVERIFIED</strong> (C1).</p>
+<table>
+<thead>
+<tr>
+<th>Source collateral name</th>
+<th>Correct existing home and operator action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Infinity Brands / ACDC Express | 2026 Integrated Digital Strategy</td>
+<td><strong>Marketing Plan</strong>: route the strategy-authoring card here; C6 specifies its output. Commission any presentation design separately in Creative Projects.</td>
+</tr>
+<tr>
+<td>Campaign Calendar</td>
+<td><strong>Projects</strong> for setup: incorporate this deliverable into the existing “Build the content calendar” work rather than commissioning a second calendar. Subsequent outputs route by channel (C16).</td>
+</tr>
+<tr>
+<td>Landing Page Copy</td>
+<td><strong>Website</strong>: route the copy card here; keep a linked Website Mock-up design job in Creative Projects.</td>
+</tr>
+<tr>
+<td>Social Media Posts</td>
+<td><strong>Social</strong> for captions, scheduling and publication; retain only its linked visual-production job in Creative Projects.</td>
+</tr>
+<tr>
+<td>Email Templates; Internal Newsletter Template</td>
+<td><strong>Email</strong> for copy, HTML/template configuration and send testing; a separate visual-design job may remain in Creative Projects.</td>
+</tr>
+<tr>
+<td>Review Request Template</td>
+<td><strong>Email</strong> as the primary communication template; create a linked Social variant only if that channel is selected.</td>
+</tr>
+<tr>
+<td>Press Release Template</td>
+<td><strong>Campaigns</strong> for undated PR copy and distribution planning, linked to the relevant campaign. Compromise: no dedicated PR list exists among the 19; Creative Projects owns layout only, Event Tracking owns an actual dated event.</td>
+</tr>
+<tr>
+<td>Compliance / Legal Notices</td>
+<td><strong>Marketing Plan</strong> for governing text and legal review; Creative Projects owns layout only. Compromise: this is brand governance reference work, since no legal-document list exists among the 19.</td>
+</tr>
+<tr>
+<td>Brand Manual</td>
+<td>Link the collateral specification to the existing brand-manual reference and its missing deliverables; do not commission a second manual without a documented gap.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exact fix →</strong> Inspect any already-loaded card by these exact titles, correct its primary home/scope in the app, and link rather than duplicate related design work. Keep the remaining layout, print, video, advertising-creative and collateral-design briefs in Creative Projects; “Social Media Ad Sets” is a creative package there, while buying/targeting remains in Campaigns. Reflect the split in §§7.3, 11, 13 and the Marketing Collateral row of Appendix A. Recount after consolidation; 106 is the reported original load, not a required post-correction total. Remove §13's unsupported universal “No moves … no move endpoint” prohibition; this review neither tests nor requires an API move capability.</p>
+<h3 id="c5--clickup--turn-the-named-client-register-into-a-required-deliverable">C5 — <code>clickup</code> — Turn the named client register into a required deliverable</h3>
+<p><strong>Change →</strong> Add acceptance criteria to the existing Marketing Plan customer/profile completion work; stop leaving §7.2's options (a)/(b) undecided. <strong>Why →</strong> Personas and mailing-segment definitions do not satisfy the explicit client-list ask. The supplier/partner tables also describe categories and targets without proving current relationships. <strong>Evidence →</strong> §7.2 explicitly says there are “no company names, no store numbers, no franchisee records”; <code>grid-tJceJc1kcM</code> contains three customer segments, while <code>grid-5Hkw_AxoCr</code> names only franchising/legal supplier categories and <code>grid-jftYy7LXHD</code> contains partner segments.</p>
+<p><strong>Exact fix →</strong> Require: “Ena links a dated, named franchisee/client account view from Zoho CRM in Marketing Plan. It must identify the account, franchise/store or territory, relationship status, account owner and CRM record link. If CRM cannot supply it, Ena records that access/data gap on this card; completion requires the named register, not a segment list.” On the existing supplier and partner completion cards require the verified entity, relationship status, supporting agreement/confirmation and relevant services; distinguish prospective partners from active ones. Keep CRM as source of truth and Marketing Plan as the ClickUp index. Actual register availability and partnership validity are <strong>UNVERIFIED</strong>; a CRM/account export and confirmations from the relationship owners would settle them.</p>
+<h3 id="c6--clickup--give-campaigns-an-actual-high-level-plan-to-link-to">C6 — <code>clickup</code> — Give campaigns an actual high-level plan to link to</h3>
+<p><strong>Change →</strong> Define acceptance criteria on the Integrated Digital Strategy card routed by C4, and link all 26 campaign cards to it. <strong>Why →</strong> Eight profile-completion cards are inputs, not an approved high-level plan. A parent campaign link on a social post cannot substitute for a campaign-to-plan link. <strong>Evidence →</strong> §13's Marketing Plan allocation contains only eight profile pages; §9.2's campaign fields omit a plan reference, objective, target and budget. The Integrated Digital Strategy collateral row explicitly calls for a franchise-acquisition system measured through qualified progression to sale.</p>
+<p><strong>Exact fix →</strong> Require Ena's plan to record planning period, franchise-acquisition objective, audience and territory priorities, channel choices, budget decision, KPI baseline/target, target date and Ricardo's approval evidence. On every campaign add “Plan: [ClickUp link]; Objective/KPI: [specific plan objective and approved target]; Audience/territory: [selection]; Budget: [approved amount or decision pending].” Populate the existing Objective and Campaign fields where applicable; use description links where their field types do not support relationships. Keep campaigns waiting for release while those decisions are pending. Put approved measurable quarterly results in existing OKRs; do not invent targets or create an empty OKR just to fill the list.</p>
+<h3 id="c7--clickup--finish-campaign-briefs-without-flattening-their-source-cadence-or-status">C7 — <code>clickup</code> — Finish campaign briefs without flattening their source cadence or status</h3>
+<p><strong>Change →</strong> Add a production gate and source provenance to each of the 26 Campaigns cards. <strong>Why →</strong> The proposed “12 themes per approved brand campaign” overwrites a 52-week programme; blank funnel/approval data and source On Hold states cannot disappear during loading. <strong>Evidence →</strong> <code>grid-Q7dfDYxOIr</code> has 12 month placeholders for ACDC Express Advantage and 52 numbered placeholders for Empower Your Future; <code>grid-pRsJ1CLESk</code> gives them Monthly and Weekly cadences respectively. <code>grid-KMsMqSr_2e</code> has seven blank funnel stages; targeted status cells split 11 Draft/11 blank across the three families. §9 maps source statuses to board states, but §13 claims every loaded card is Open. Service cadence is “Bi Monthly” in <code>grid-9fPzOvB7mL</code>.</p>
+<p><strong>Exact fix →</strong> Require Ena to preserve source table/name/status/cadence, link the plan (C6), name the approver, and write a title, angle, intended publication period and channel outputs for each selected theme. Keep <strong>12 monthly</strong> Advantage themes and <strong>52 weekly</strong> Empower themes unless Ricardo explicitly changes the plan; do not manufacture topics for held campaigns. Define “Bi Monthly” as either twice monthly or every two months before scheduling the seven service campaigns; its intended meaning is <strong>UNVERIFIED</strong>. Check actual board states: Powering the Future and Plug into Success should be <code>waiting</code>; apply §9's stated <code>in progress</code> mapping to the two source-approved campaigns only as briefing work, with publication gated on approval; Draft/blank sources map to <code>Open</code>, retaining the blank as unknown source metadata. Mark completion only when each chosen theme has its approved brief and linked output cards, each owned by Ena. Update §9's 12-theme prescription and §13's all-Open claim accordingly; no new status is needed.</p>
+<h3 id="c8--document--make-the-calendar-build-internally-consistent-and-fnd-scoped">C8 — <code>document</code> — Make the calendar build internally consistent and FND-scoped</h3>
+<p><strong>Change →</strong> Replace §8.4's “13 SA dates” instruction and §8.3's automatic retail-loyalty audience choice. <strong>Why →</strong> The PRD otherwise specifies 14 dated public-holiday days, and §7 forbids consumer activation from this FND lane before scope is decided. Eleven empty industry slots are capacity, not evidence of eleven relevant events. <strong>Evidence →</strong> §§8.1 and 10.5 enumerate 12 named holidays plus two observed days; <code>grid-BCrvEtSB7B</code> has 11 SA slots, 11 industry slots and five specials rows, one with an empty topic. §8.3 selects VIP/Client Types 1–4 even though §7.2 identifies mixed FND/COR audiences.</p>
+<p><strong>Exact fix →</strong> Write in §§8.4 and 10.5: “Ena builds 12 SA holiday themes against the PRD's 14 dated days, linking observed days to their original theme. Add confirmed industry events only after recording organiser source, date, venue/format, relevance to franchise acquisition, activation and budget decision; unused slots remain unused. Specify four quarterly specials; the fifth placeholder is not a fifth commitment. Record an explicit decision on franchisee retention/referrals versus consumer loyalty; no consumer audience is activated from FND without a documented scope decision.” Require Seasonal Promotions frame checklists, linked Event Tracking cards for selected dated activations, and channel briefs for approved Q1 work. This review checks the PRD's date arithmetic; the cited Gazette was not independently retrieved, so its external verification remains <strong>UNVERIFIED</strong> pending that primary calendar.</p>
+<h3 id="c9--clickup--complete-the-account-and-evidence-contract-on-every-recurring-card">C9 — <code>clickup</code> — Complete the account and evidence contract on every recurring card</h3>
+<p><strong>Change →</strong> Populate the existing 18 Recurring cards with the specific inputs and completion checks that §10.4 currently only requests. <strong>Why →</strong> Generic product names, thirteen placeholder mailing lists and twelve identical 1970 report months cannot drive reproducible reports. <strong>Evidence →</strong> <code>grid-C4rao1PAZK</code> has 12 identical <code>1970-01-21</code> Month values; its metric columns are links. Both Email Segments tables (<code>grid-GQrDJnpPxO</code>, <code>grid-9JhaQegN0O</code>) have non-URL list placeholders. <code>grid-1KtzySUGmH</code> lacks all profile links/handles; the keyword-to-page table has no page URLs. No task descriptions or per-card field values are present in the count snapshot.</p>
+<p><strong>Exact fix →</strong> For each occurrence require Ena, reporting period, approved FND accounts, exact account/property/list/page URL or ID, extraction window/timezone, metric definition, evidence link and completion criterion. Use existing Source, Report Period and Audit Scope fields where suitable; add no field. Monthly completion requires a dated source export, populated applicable metrics, a written finding and linked actions; link a report file into the document's link-type cells rather than pasting metric prose there. Give each intended report month its real month key after reconciling the two existing SEO-report links; never overwrite evidence by guessing those links' periods. Quarterlies must check the whole approved website inventory, every confirmed channel/ad account, all six SEO disciplines, positive/negative terms and all 39 brand-audit metrics; each finding gets an Ena-owned action in the appropriate existing list and a link back. Set access failures to <code>blocked</code>; record verified no-activity explicitly rather than inventing zeroes. Record Ricardo's comments separately (C3).</p>
+<h3 id="c10--clickup--repair-all-seo-inputs-not-just-the-400-row-master">C10 — <code>clickup</code> — Repair all SEO inputs, not just the 400-row master</h3>
+<p><strong>Change →</strong> Expand the existing Projects keyword-library build and the six SEO Goals cards to replace template scope before creating optimisation work. <strong>Why →</strong> The six correctly named disciplines still point at another industry's pages; none is an executable ACDC target. <strong>Evidence →</strong> <code>grid-qSsdLJkc_k</code> has 25 nonblank interior-design keywords and 375 blank Keyword cells, with service/location/province/country blank throughout. <code>grid-utHwWlGNnv</code> still names <code>/services/interior-design-cape-town</code>, <code>/services/interior-design</code>, <code>/portfolio/hotel-design</code> and <code>/blog/interior-trends-2025</code>. <code>grid-FLvKI8wTqZ</code> contains only five populated page-type placeholders plus one blank row, with no Page URL.</p>
+<p><strong>Exact fix →</strong> Add: “Ena replaces example paths with verified ACDC FND page URLs, records page inventory and baseline metrics, and approves the service/territory scope before rebuilding keywords. Keep the twelve-type method in KW Research; file the accepted keyword library there, the verified keyword-to-page map and SEO changes in Optimization, and actual outreach in Link Building. Each SEO Goals card records a baseline, approved target, review date and linked delivery work; the six disciplines are strategy cards, not six completed audits.” Preserve the one-off build in Projects; do not bulk-load blank/template rows or invent backlinks from the generic example.</p>
+<h3 id="c11--document--stop-silently-converting-the-malformed-service-row-into-a-duplicate">C11 — <code>document</code> — Stop silently converting the malformed service row into a duplicate</h3>
+<p><strong>Change →</strong> Correct §4's service table, distinct-offering count and pricing references in §6. <strong>Why →</strong> The PRD currently supplies a service identity the source does not establish and attributes the 92 score to the wrong named row. <strong>Evidence →</strong> <code>grid-35G1nkZxGu</code>: row 2's Main Category is the four-line “Centralised supplier agreements … Structured rebate agreements” text, Group Category is Supplier-Negotiated Pricing, description concerns tested operating procedures, priority 92. Row 3 is actually named Supplier-Negotiated Pricing, priority 78. The corresponding row in <code>grid-S3CgLnMJSN</code> describes a proven operating system, not a duplicate pricing offer.</p>
+<p><strong>Exact fix →</strong> Write: “Eight service rows exist. One row's service identity is malformed and requires owner confirmation; the number of distinct offerings is UNVERIFIED. The explicitly named Supplier-Negotiated Pricing row scores 78; the malformed row scores 92.” Display row 2's source label or “[service name unresolved; source row 2]”, retain its source description, and remove the invented duplicate label. Make the existing service-profile completion card require Ena to obtain the intended name/category and reconcile linked personas/campaigns before it is used in a brief; do not guess a replacement service.</p>
+<h3 id="c12--document--correct-partner-relationship-arithmetic-and-avoid-unsupported-claims">C12 — <code>document</code> — Correct partner relationship arithmetic and avoid unsupported claims</h3>
+<p><strong>Change →</strong> Replace §5's “six” banks and all-eight-services assertion for the skills institutions. <strong>Why →</strong> It misstates actual links and hides the difference between the persona and campaign tables. <strong>Evidence →</strong> <code>grid-iutl0cXc0R</code> has seven partners with eight services each (Capitec, FNB, Standard Bank, Absa, TymeBank and the two networks), three skills institutions with one each, and Bank Zero/Nedbank with zero: <strong>7×8 + 3×1 + 2×0 = 59</strong>. <code>grid-KMsMqSr_2e</code> instead links all twelve partner campaign rows to all eight service rows. Seven banks are named in <code>grid-jftYy7LXHD</code>; no cost or executed partnership evidence is supplied.</p>
+<p><strong>Exact fix →</strong> Write: “Seven banking segments are named. Persona service links total 59: seven partners × eight, three skills institutions × one, two banks × zero. The partner campaign table links every campaign to all eight service rows; Ena must reconcile that broad campaign mapping with the narrower persona links before briefing.” Replace “cheapest reach” with “priority scores 65 and 20; cost is not provided”. Describe partnerships as target/proposed segments until C5 verifies relationship status; keep Nedbank/Bank Zero's missing links visible rather than filling them by inference.</p>
+<h3 id="c13--document--distinguish-an-existing-url-from-an-existing-document-file">C13 — <code>document</code> — Distinguish an existing URL from an existing document file</h3>
+<p><strong>Change →</strong> Qualify the two proposed Asset Library cards and the repository's “live link” claims. <strong>Why →</strong> A folder URL cannot prove that Marketing Strategy Deck exists, is approved or can be opened. <strong>Evidence →</strong> <code>grid-DRcDYg-lpD</code> gives that deck a <code>/folders/a8gel75a4a8a6dbcb4ebc8ff63f478bb6ea08</code> URL, identical to WorkDrive Master in Quick Links (<code>grid--NqC_lDP1j</code>), and a placeholder final asset. §7.3 calls it a “working file”; the same section correctly says no destination was authenticated. <code>inventory.json</code>'s Approval Status page has a generic Filestage-home button, not proof of a brand project.</p>
+<p><strong>Exact fix →</strong> Write: “Two asset/reference cards are proposed: brand-manual reference content and a Marketing Strategy Deck folder reference. No final deck file or link health has been verified. An Asset Library card is accepted only when Ena supplies a document-specific file/page link, confirms access, records version and sign-off state, and identifies any usage restriction. The existing brand-manual page may serve as a reference; do not describe its folders as approved final files. File discovery for the strategy deck belongs to Marketing Plan until the document is located.” Replace “ACDC approvals project … live link” with “Filestage home link; brand-project URL UNVERIFIED”. Successful authenticated WorkDrive/Filestage reads by an entitled operator would settle these claims.</p>
+<h3 id="c14--document--use-the-actual-eight-channel-inventory-in-both-measurement-and-audit">C14 — <code>document</code> — Use the actual eight-channel inventory in both measurement and audit</h3>
+<p><strong>Change →</strong> Correct §§10.1, 10.3 and 11's platform enumeration. <strong>Why →</strong> The monthly list omits Pinterest, while “eight social platforms and Google Business” overcounts the source. <strong>Evidence →</strong> <code>grid-1KtzySUGmH</code> has Facebook, Instagram, LinkedIn, Google My Business, YouTube, TikTok, X and “Pintrest”: <strong>seven social platforms plus Google Business Profile, eight entries total</strong>. Every Profile Link and Handle cell is blank.</p>
+<p><strong>Exact fix →</strong> Write: “Inventory: Facebook, Instagram, LinkedIn, YouTube, TikTok, X, Pinterest and Google Business Profile. Ena confirms which accounts exist and are in FND scope; every confirmed account appears in the monthly report and quarterly audit, and absent/unavailable accounts are recorded explicitly.” Correct the spelling to Pinterest; do not omit it without a recorded scope decision or infer active accounts from console home URLs.</p>
+<h3 id="c15--document--replace-automatic-keyword-promotionexclusion-with-intent-and-outcome-checks">C15 — <code>document</code> — Replace automatic keyword promotion/exclusion with intent and outcome checks</h3>
+<p><strong>Change →</strong> Rewrite §10.2's positive and negative keyword decision rules. <strong>Why →</strong> Clicks/top-20 rank do not establish franchise-buyer relevance; “costly” does not establish that a converting query should be excluded. <strong>Evidence →</strong> §10.2 says “every query that earned clicks or a top-20 position” and “every irrelevant or costly query”; §7 already warns of consumer audiences mixed into this FND document.</p>
+<p><strong>Exact fix →</strong> Write: “Positive harvest: Ena evaluates queries against FND intent, territory and qualified-lead outcomes; retain accepted terms with the supporting period, metrics and target page, and record rejected/held terms with reasons. Paid negative sweep: use the search-terms report, conversion evidence and the plan's approved performance threshold; document the reason, campaign/ad-group scope and match type before exclusion, then check the impact next period. Organic SEO uses intent exclusions in research/content decisions, not an ad-account negative list. Report estimated avoided spend as an estimate; claim savings only against a stated comparison.” Keep the recurring triggers in Recurring and delivery work in KW Research/Optimization.</p>
+<h3 id="c16--document--resolve-calendar-and-mixed-pr-view-homes-without-new-structure">C16 — <code>document</code> — Resolve calendar and mixed PR-view homes without new structure</h3>
+<p><strong>Change →</strong> Align §11's Website contract with §14's Projects mapping and split the mixed PR &amp; Events view by work type. <strong>Why →</strong> Website currently becomes a catch-all calendar store, while Event Tracking receives undated PR that its own contract excludes. <strong>Evidence →</strong> §11 says Website holds “the master content calendar and its market views”; §14 places six calendar/setup pages in Projects and maps PR &amp; Events Views wholesale to Event Tracking. <code>grid-THwEKbIrRV</code> carries channel/campaign fields; PR &amp; Events Views (<code>pages/section-JpmQScKYbT</code>) has no populated records to justify an exclusive event home.</p>
+<p><strong>Exact fix →</strong> Write: “Projects owns initial setup of Content &amp; Channel Planning, Master Content Calendar, Market Calendar Views, Channel Calendars Views, Calendar View and Master Table. After setup, the master calendar is an index of linked work, not a second delivery backlog: page/landing work → Website, articles → Blog, posts → Social, email → Email, campaign/paid work → Campaigns, seasonal frames → Seasonal Promotions, dated logistics → Event Tracking. Brand Views and Targeted Views may be indexed from Campaigns, and Always On Views from Seasonal Promotions, but their content rows still route by delivery channel. A view inherits the home of each underlying item. PR &amp; Events Views splits dated events to Event Tracking and undated PR planning/copy to Campaigns, the closest existing home; design remains Creative Projects.” Remove the blanket calendar/view wording from Website. No new list, folder or duplicate content card is required.</p>
+<h3 id="c17--document--correct-the-remaining-count-labels-without-expanding-scope">C17 — <code>document</code> — Correct the remaining count labels without expanding scope</h3>
+<p><strong>Change →</strong> Fix the KPI and §12's claims about numeric themes and calendar views. <strong>Why →</strong> These are small factual errors that change the work an operator thinks must be repaired. <strong>Evidence →</strong> <code>grid-DRcDYg-lpD</code> has 42 row occurrences but only 41 named collateral specs. <code>grid-Q7dfDYxOIr</code> has 12 month labels plus 52 numeric topics; <code>grid-BCrvEtSB7B</code> has 26 numeric topics and one empty topic, all with blank descriptions. The eight calendar-view tables in <code>table-data.json</code> contain <strong>one</strong> Calendar View row plus seven empty views, not “all nine views … 0”.</p>
+<p><strong>Exact fix →</strong> Change the KPI to “41 collateral specifications” (show “+ 1 brand-manual reference” separately if useful). Replace “91 … all bare numbers” with “91 placeholder theme rows: 12 month labels, 78 numeric labels and one empty topic; all descriptions are blank.” Replace §12 gap 3's evidence with “Master Content Table: one placeholder; eight views: Calendar View repeats that placeholder, seven others are empty.” Keep 924 as row <strong>occurrences</strong>, not distinct records; retain 56 pages, 78 table occurrences, 44 formulas and six controls, which reconcile to the supplied inventory.</p>
+<h3 id="c18--document--restore-the-stakeholder-data-that-exists-and-qualify-roster-currency">C18 — <code>document</code> — Restore the stakeholder data that exists and qualify roster currency</h3>
+<p><strong>Change →</strong> Correct §7.1's empty roles and §12 gap 6's claim that the named contacts have left. <strong>Why →</strong> The first erases available approval context; the second asserts employment changes the snapshots do not establish. <strong>Evidence →</strong> <code>grid-crRh0JMwEt</code> identifies Ricardo and Mario as CEO/Decision Maker, Nadine as COO/Approver, Lauren as HOD/Approver and Nkuli as HOD/Approver; a sixth row contains only a notes-canvas reference. <code>grid-8n0Ag5gcp0</code> names Rhona Nortje/CMO and Jorica Fouasse/Account Manager; no departure/current-roster evidence is included. §7.1 already calls currency UNVERIFIED.</p>
+<p><strong>Exact fix →</strong> Restore those five named stakeholders' source roles and influence levels, labelled “source-recorded; current authority unverified”; do not infer an organisation from an email address. Write in §12: “Contacts page names two people; current role/availability and replacement routing are UNVERIFIED. Ena confirms the current roster and approval mandate before routing approvals.” Count five named stakeholder records plus one notes-only row, rather than treating six table occurrences as six people.</p>
+<h2 id="mapping-audit--all-19-existing-lists">Mapping audit — all 19 existing lists</h2>
+<p>Use the counts below as the <strong>20:10 snapshot</strong>, not as proof of the reported final load. Appendix A was checked against all <strong>56 distinct page titles</strong> in <code>inventory.json</code>: none is omitted; its page totals reconcile to <strong>78 table occurrences / 924 row occurrences</strong>. The page groups below account for all 56 once. Proposed cards cover <strong>26 campaigns + 3 seasonal + 8 profiles + 6 SEO disciplines + 1 keyword method + 2 projects + 18 recurring + 2 references + 40 briefs = 106</strong>; apply C4's routing and consolidation before treating those as 106 independent obligations. Final task-level placements remain UNVERIFIED because of APP_002; exact-title corrections above are instructions for an operator, not claims that live moves occurred.</p>
+<table>
+<thead>
+<tr>
+<th>Existing list (full ID)</th>
+<th>Holds now in snapshot; source-page homes and placement decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OKRs</strong> <code>1501000000001527</code></td>
+<td><strong>0</strong>; no source page solely owns this list. Keep empty until C6 yields approved, measurable quarterly results; do not put the six SEO discipline tasks here merely to fill it.</td>
+</tr>
+<tr>
+<td><strong>Marketing Plan</strong> <code>1501000000001528</code></td>
+<td><strong>8</strong> profile completion cards; retain <strong>Welcome &amp; Overview, Quick Links, Contacts, Cliq Chat, Client Profile, Contacts &amp; Stakeholders, Company Snapshot, Competitors &amp; Market Insights, Clients: Brand Personas, Clients: Service/ Product Personas, Clients: Partner Personas, Clients: Suppliers Personas, Clients: Customer Personas, Strategic Foundation</strong> as its 14 reference pages. Add the strategy-authoring scope from C4, named-register output C5 and plan linkage C6; restore source roles C18.</td>
+</tr>
+<tr>
+<td><strong>Campaigns</strong> <code>1501000000001529</code></td>
+<td><strong>26</strong>; retain <strong>Brand, Targeted, Service /Product, Partner, Supplier, Customers, Brand Views, Targeted Views, Paid Media / PPC Views</strong> as nine campaign/reference pages. Supplier is an empty blueprint, not a reason to invent campaigns. Correct source states/themes (C7); accept undated PR from the mixed view as the explicit compromise (C4, C16), with paid buying here and ad artwork in Creative Projects.</td>
+</tr>
+<tr>
+<td><strong>Seasonal Promotions</strong> <code>1501000000001530</code></td>
+<td><strong>3</strong> frames; retain <strong>Always On, Always On Views</strong>. Frames and four quarterly-special checklist items are correctly placed; put dated activations in Event Tracking and resolve FND loyalty before commissioning consumer material (C8).</td>
+</tr>
+<tr>
+<td><strong>Website</strong> <code>1501000000001531</code></td>
+<td><strong>0</strong>; no whole source page has to be forced here. Receive Landing Page Copy from C4 and actual page/landing outputs; remove the all-channel calendar store from its contract (C16).</td>
+</tr>
+<tr>
+<td><strong>Blog</strong> <code>1501000000001532</code></td>
+<td><strong>0</strong>; no source page requires a blog card yet. Receive approved article briefs from campaign themes; keep landing-page copy in Website and template keywords out of the backlog (C7, C10).</td>
+</tr>
+<tr>
+<td><strong>Social</strong> <code>1501000000001533</code></td>
+<td><strong>0</strong>; retain <strong>Social Media, Social Media Views</strong>. Receive post copy/scheduling from C4; separate its creative jobs and correct the eight-entry inventory (C14).</td>
+</tr>
+<tr>
+<td><strong>Email</strong> <code>1501000000001534</code></td>
+<td><strong>0</strong>; retain <strong>Email Segments, Email Marketing Views</strong>. Receive HTML/copy/template work from C4; the 13 definitions are reference scope, not 13 verified lists or blanket FND audiences (C8–C9).</td>
+</tr>
+<tr>
+<td><strong>Creative Projects</strong> <code>1501000000001535</code></td>
+<td><strong>0</strong>; planned <strong>40</strong> briefs are a mixed allocation, not all design. Retain <strong>Approvals &amp; Reviews, FileStage Approval Workflow, Approval Status</strong>; treat <strong>Marketing Collateral</strong> as a routing register rather than a fourth page wholly owned here. Remove strategy/calendar/copy scopes via C4; retain linked design, layout, print and video work.</td>
+</tr>
+<tr>
+<td><strong>Asset Library</strong> <code>1501000000001536</code></td>
+<td><strong>0</strong>; proposed <strong>2</strong> references require qualification. Retain <strong>Brand Manual &amp; Assets, Signed Client Content, Brand Manual</strong> as three reference/repository pages. Signed content has no records to preload; the strategy-deck folder is not a verified file (C13), and the collateral manual must link to the existing reference (C4).</td>
+</tr>
+<tr>
+<td><strong>Event Tracking</strong> <code>1501000000001537</code></td>
+<td><strong>0</strong>; <strong>PR &amp; Events Views</strong> is a mixed lens, so retain only its dated-event component here (C16). Receive verified activations with date, relevance, owner, venue, budget decision and result; no invented events to fill 11 slots (C8).</td>
+</tr>
+<tr>
+<td><strong>KW Research</strong> <code>1501000000001538</code></td>
+<td><strong>1</strong> keyword-method programme; retain <strong>Keyword Library, Logic Master Keyword</strong>. Method/library belong here; the one-off rebuild remains Projects, page implementation goes Optimization, and the 400 template rows are not cards (C10, C15).</td>
+</tr>
+<tr>
+<td><strong>Optimization</strong> <code>1501000000001539</code></td>
+<td><strong>0</strong>; retain <strong>Keyword &lt;&gt; Landing Page</strong>. Require verified URLs and accepted query/page mappings before raising work; keep recurring trigger cards in Recurring and their linked delivery actions here (C9–C10, C15).</td>
+</tr>
+<tr>
+<td><strong>Link Building</strong> <code>1501000000001540</code></td>
+<td><strong>0</strong>; no dedicated source page. Retain the off-page discipline in SEO Goals; route only actual targets/outreach here when identified, without inventing commitments from its example row (C10).</td>
+</tr>
+<tr>
+<td><strong>SEO Goals</strong> <code>1501000000001541</code></td>
+<td><strong>6</strong> discipline cards; retain <strong>SEO + Keywords, SEO Strategy Builder</strong>. Strategy/KPI scope is right; replace unrelated example paths and add measurable targets, then link delivery lists (C10).</td>
+</tr>
+<tr>
+<td><strong>Meeting Tracker</strong> <code>1501000000001542</code></td>
+<td><strong>1 historical</strong> card; retain <strong>Book Meetings, Meetings &amp; Actions</strong>. No new meeting card is justified by the placeholder alone; preserve historical evidence and link actual new meeting actions to their delivery homes.</td>
+</tr>
+<tr>
+<td><strong>Briefed-In</strong> <code>1501000000002303</code></td>
+<td><strong>2 historical</strong> cards; retain <strong>Submit Request, Submission Guidelines, Desk Submission of Ticket Manual, Desk Tracking Status</strong>. Intake/reference mapping is right; do not describe it as historically empty or preload fake demand (C1).</td>
+</tr>
+<tr>
+<td><strong>Recurring</strong> <code>1501000000002304</code></td>
+<td><strong>18</strong>; retain <strong>Reporting &amp; Analytics, Brand Audit</strong>. All 8+3+6+1 triggers belong here; the audit register does not become 39 assets or design jobs. Correct repetition, ownership, periods and outputs (C2–C3, C9).</td>
+</tr>
+<tr>
+<td><strong>Projects</strong> <code>1501000000002305</code></td>
+<td><strong>10 = 2 new + 8 historical</strong>; retain setup ownership of <strong>Content &amp; Channel Planning, Master Content Calendar, Market Calendar Views, Channel Calendars Views, Calendar View, Master Table</strong>. One-off calendar and keyword builds fit; merge Campaign Calendar's setup scope into the existing build (C4). Historical duplicate-by-title claims are UNVERIFIED without task reads; compare IDs/deliverables before consolidating, and keep annual repetition in Recurring (C2, C16).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-is-missing-entirely">What is missing entirely</h2>
+<ul>
+<li><strong>A required named direct-client/account register:</strong> add the C5 acceptance criterion; §7's segment lists and optional homes do not supply it.</li>
+<li><strong>An approved high-level plan referenced by campaign cards:</strong> supply C6; profile completion and a strategy-deck folder URL do not establish this connection.</li>
+<li><strong>A resolved recurring schedule and account-to-evidence matrix:</strong> implement C2/C9. Frequency and generic analytics product names exist; verified next occurrences and account mappings do not appear in the evidence package.</li>
+<li><strong>A home for undated PR and mixed collateral copy within the contract:</strong> state C4/C16's Campaigns/Website/Email/Social compromises; no additional folder or list is justified.</li>
+</ul>
+<h2 id="do-not-change">Do not change</h2>
+<ul>
+<li>Retain the 19 existing lists and six-status vocabulary; use the existing fields before adding any structure (§§11, 13; lane snapshot).</li>
+<li>Retain 26 campaigns: 4 brand + 7 service + 12 partner + 3 customer, excluding empty rows (campaign tables).</li>
+<li>Retain the 18-trigger design: 8 monthly reporting + 3 monthly optimisation + 6 quarterly + 1 annual (§10).</li>
+<li>Retain the audit register in Recurring and the distinction between approved files and production briefs (§§11, 14; qualify file evidence via C13).</li>
+<li>Retain 56 pages / 78 table occurrences / 924 row occurrences / 44 formulas / 6 controls; do not count views as distinct business records (<code>inventory.json</code>, <code>table-data.json</code>).</li>
+</ul>
+<p>Changes: <strong>18 — 11 document, 7 clickup, 0 field</strong>. No live changes were executed. Resolve the UNVERIFIED items through the named read access before certifying live state or silently changing the source facts.</p>
+<p>Validation: the report checks account for all 56 page titles, all 19 list IDs and C1–C18; the count addends and change-type totals reconcile. PR-Agent's diff-only check reported “No major issues detected”, effort 2/5, no relevant tests and no security concerns; its saved output is <a href="PR-AGENT.md">reports/PR-AGENT.md</a>. Use that as a report-diff check only; it did not verify ClickUp, the source document or this review's business judgments.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
