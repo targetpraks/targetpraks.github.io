@@ -942,24 +942,33 @@ the first call: <b>≥0.80 acts, 0.50–0.79 holds with a caveat, below 0.50 dro
 creates — campaigns, content, creative, SEO, events and all fifteen routines — until Ricardo names a second owner. One assignee only: this space
 refuses multiple assignees (<code>ITEM_417</code>), so a second name goes in the description, never in the assignee field.</div>
 
-<h3>The two fields, and what the API actually did</h3>
+<h3>The two fields — what exists now</h3>
 <p>The decision lane approved two fields on lists that already exist — <code>Campaign</code> (text) on the nine content, creative and campaign lists,
-and <code>Polarity</code> (Positive / Negative) on <code>KW Research</code>. <b>The write did not land.</b> ClickUp returned
-<code>{"err":"Rate limit reached","ECODE":"APP_002"}</code> for all ten POSTs and kept refusing reads for more than half an hour afterwards, so the
-honest state is: <b>zero fields created by this pass</b>. The exact payloads are staged and idempotent — the script checks for a name clash and
-aborts before writing, so it can be re-run the moment the window opens.</p>
-<div class="warn"><b>A second hand is already in this space.</b> One list answered cleanly during the outage (<code>KW Research</code>) and it now
-carries <b>twenty</b> fields, where the 19:35 export recorded twelve — including a <code>Campaign</code> text field, plus <code>Platform</code>,
-<code>Asset Type</code>, <code>Audit Scope</code>, <code>Report Period</code>, <code>Cadence</code>, <code>Source</code> and <code>Published URL</code>.
-None of those are mine. Someone — Ricardo or Ena — is building the schema by hand right now, which is the good outcome: the lane is being made to work.
-It also means <b>one writer at a time</b>: the remaining writes wait until that person is done, or the same field is created twice.</div>
+and <code>Polarity</code> (Positive / Negative) on <code>KW Research</code>. What actually happened is worth recording exactly, because the first
+attempt looked like a failure and was not.</p>
+<p><b>Campaign was already there.</b> Ten POSTs returned <code>{"err":"Rate limit reached","ECODE":"APP_002"}</code> and created nothing. When the
+window reopened, every one of the nine target lists read back with a <b>Campaign</b> text field already on it — created at <b>19:03 SAST</b>, roughly
+two hours before this pass reached the schema step, by another writer building the same lane (their schema is twenty fields, not twelve). Creating it
+again would have been the duplicate the clash-check exists to prevent; the check never fired because the writes never landed.</p>
+<p><b>Polarity was created by this pass.</b> One spaced POST to <code>KW Research</code> (1501000000001578) succeeded:
+field <code>3084a46d-993d-4e4f-af68-d7084d42d770</code>, type <code>drop_down</code>, options <b>Positive</b> / <b>Negative</b>, read back and confirmed.
+That closes the one gap the audit named — negative keywords now have a register instead of living in a task description.</p>
+<p class="small">Rate-limit behaviour under current contention: bursts are refused outright, a single call every 20–60 seconds goes through. Every
+remaining write in this plan must be spaced that way, and every read-back loop must treat <code>APP_002</code> as “unknown”, never as “absent” —
+three lists first read as missing the field and all three had it.</p>
+<div class="warn"><b>A second hand is in this space, and it got there first.</b> Every list read now carries <b>twenty</b> fields, where the 19:35
+export recorded twelve — the extra eight include <code>Campaign</code>, <code>Platform</code>, <code>Asset Type</code>, <code>Audit Scope</code>,
+<code>Report Period</code>, <code>Cadence</code>, <code>Source</code> and <code>Published URL</code>. None of those are mine: someone — Ricardo or
+Ena — has been building this lane's schema by hand since 19:03, which is the outcome that matters. It also sets the rule for the rest of the load:
+<b>one writer at a time</b>, read before you write, and never create a field whose name already exists — on this workspace a field cannot be
+edited or deleted afterwards.</div>
 <table><thead><tr><th style="width:220px">Field</th><th style="width:110px">Type</th><th>Where</th><th>State</th></tr></thead><tbody>
-<tr><td><b>Campaign</b></td><td class="small">text (short)</td><td class="small">Website · Blog · Social · Email · Creative Projects · Asset Library · Campaigns · Event Tracking · Seasonal Promotions</td><td class="warncell">Specified; POST refused (APP_002). One list already carries it — added by another hand.</td></tr>
-<tr><td><b>Polarity</b></td><td class="small">drop-down: Positive, Negative</td><td class="small">KW Research</td><td class="warncell">Specified; POST refused. Not present on the list read.</td></tr>
+<tr><td><b>Campaign</b></td><td class="small">text (short) · <code>1c50012c</code></td><td class="small">Website · Blog · Social · Email · Creative Projects · Asset Library · Campaigns · Event Tracking · Seasonal Promotions (also on Marketing Plan and KW Research)</td><td class="okcell">Present and verified on all nine target lists — created 19:03 by another writer, not by this pass.</td></tr>
+<tr><td><b>Polarity</b></td><td class="small">drop-down: Positive, Negative · <code>3084a46d</code></td><td class="small">KW Research</td><td class="okcell">Created by this pass and verified by read-back.</td></tr>
 <tr><td colspan="4" class="small">Deliberately not created: Campaign Family, Routine Code, Cadence, Asset Kit, Source Status, Source Page — refused by the lane; the title and description carry them.</td></tr>
 </tbody></table>
-<p class="small">Re-run command, idempotent and clash-checked: <code>bash ~/.hermes/cache/scratch/add-fields.sh</code> — it prints the plan, aborts on any
-existing name, creates what is missing, then reads every list back and reports per-list verification.</p>
+<p class="small">Method for anything still to be added: <code>bash ~/.hermes/cache/scratch/add-fields.sh</code> prints the plan, aborts on any existing
+name, creates only what is missing, then reads every list back. It is the reason the Campaign field was not duplicated when the window reopened.</p>
 </section><section id="load">
 <h2 class="sec"><span class="no">13</span> Load plan — creates nothing</h2>
 <p class="lead">The order work would be loaded in, once approved, with the counts the audit made me recompute. Nothing here ran while this PRD was
