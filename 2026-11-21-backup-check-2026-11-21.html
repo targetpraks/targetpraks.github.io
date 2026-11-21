@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Backup check — 2026-11-21</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="backup-check--night-of-2026-11-21">Backup check — night of 2026-11-21</h1>
+<p>Requested by Ricardo: check last night's backups in <code>AI-Drive/Backups</code> and report. Nothing below was changed, restarted, retried or deleted — every line is a read and a quoted command output.</p>
+<p>Run window: <code>com.maio.home-assistant-backup</code> fired 03:20:05, <code>com.maio.backup</code> (backup.sh v4) ran 03:30:05 → 03:32:16. My session: 04:00.</p>
+<h2 id="verdict">Verdict</h2>
+<p><strong>Two lanes are not backing up.</strong> Hindsight and Paperclip are healthy — those two are the only lanes the 03:35 night-check looks at, which is why it reported <code>backups: green</code> this morning. Constellation has produced no valid dump since 2026-11-06 and Home Assistant has produced no archive at all since 2026-10-29.</p>
+<h2 id="lanes">Lanes</h2>
+<table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hindsight volume copy</td>
+<td>🟢 green</td>
+<td><code>2026-11-21.tgz</code> 1,940,365,441 B, <code>gzip -t</code> OK (48 s). Chain 11-07 → 11-21 intact except 11-16</td>
+</tr>
+<tr>
+<td>paperclip snapshot</td>
+<td>🟢 green</td>
+<td><code>paperclip-20261121-033006.sql.gz</code> 13,145,468 B, <code>gzip -t</code> OK</td>
+</tr>
+<tr>
+<td>firefly (own job)</td>
+<td>🟢 green</td>
+<td><code>firefly-2026-11-21.sql.gz</code> 4.0K, daily chain running to today</td>
+</tr>
+<tr>
+<td>constellation staff DB</td>
+<td>🔴 red</td>
+<td>14th consecutive failed night; last verified dump 2026-11-06 (1,830,344 B). <code>backups FAILED (2026-11-21)</code>, exit 9</td>
+</tr>
+<tr>
+<td>Home Assistant config</td>
+<td>🔴 red</td>
+<td>exit 1; <strong>zero archives, 21 leftover <code>.work-*</code> dirs (191 MB) from 10-30 to today</strong>. Last night's tar never wrote a file</td>
+</tr>
+<tr>
+<td>top8 weekly git bundle</td>
+<td>🟠 amber</td>
+<td>last bundle 2026-11-15 (weekly, Sunday cadence — next due 11-22). <code>top8-refresh</code> itself exited 1 on 11-20, and that is a research-policy failure, not a backup</td>
+</tr>
+<tr>
+<td>metamcp</td>
+<td>ℹ️ info</td>
+<td>last dump 2026-11-09 — decommissioned by design 2026-11-09 (stated in backup.sh). Not an outage</td>
+</tr>
+<tr>
+<td>litellm</td>
+<td>ℹ️ info</td>
+<td>retired 2026-10-19 by design, directory empty. Not an outage</td>
+</tr>
+<tr>
+<td>hermes-backup-air-20261001</td>
+<td>ℹ️ info</td>
+<td>worktree holds 0 files; <code>git log</code> → "your current branch 'main' does not have any commits yet". 668 files exist, all inside <code>.git</code>. Nothing retrievable as files</td>
+</tr>
+</tbody>
+</table>
+<h2 id="red_circle-1--constellation-staff-database-has-no-backup-since-2026-11-06">🔴 1 — Constellation staff database has no backup since 2026-11-06</h2>
+<p>The nightly script dumps <code>constellation_dev</code> on the container <code>constellation-dev-pg</code>. That database now holds the schema and no data:</p>
+<pre><code>$ docker exec constellation-dev-pg psql -U owner -d constellation_dev -tAc \
+    &quot;select count(*) from information_schema.tables where table_schema=&#39;public&#39;&quot;
+28
+$ docker exec constellation-dev-pg psql -U owner -d constellation_dev -tAc &#39;select count(*) from &quot;User&quot;&#39;
+0</code></pre>
+<p>So the dump lands at 5,651 bytes, under the script's 102,400-byte floor, and is correctly rejected:</p>
+<pre><code>** constellation dump FAILED — /Volumes/Hiksemi 1TB/AI-Drive/Backups/constellation/2026-11-21.sql.gz.partial
+   is 5651 bytes (floor 102400) or fails gzip -t — check constellation-dev-pg
+[2026-11-21 03:32:16] backups FAILED (2026-11-21) — constellation dump produced no valid file; every other lane completed</code></pre>
+<p>Failed nights from the log: 11-07 … 11-15 and 11-17 … 11-21 (11-16 aborted, see below). Last verified:</p>
+<pre><code>constellation backup: /Volumes/Hiksemi 1TB/AI-Drive/Backups/constellation/2026-11-06.sql.gz (1830344 bytes, gzip verified)</code></pre>
+<p><code>Backups/constellation/</code> today contains only <code>_empty-dumps-2026-10-26-to-31/</code>. The live data is in the <strong>other</strong> database: container <code>constellation-preview-db-1</code> is up, and the only complete copy on disk is a manual dump —</p>
+<pre><code>-rw-r--r--  2.4M  Nov 18 10:25  2026-11-18-manual.sql.gz    (gzip -t OK)</code></pre>
+<p>That manual dump sits inside the tree the script sweeps nightly with <code>find "$D" -type f -mtime +14 -delete</code>, so it is due to disappear around 2026-12-02.</p>
+<h2 id="red_circle-2--home-assistant-config-has-never-archived-since-2026-10-29">🔴 2 — Home Assistant config has never archived since 2026-10-29</h2>
+<p><code>/Volumes/Hiksemi 1TB/AI-Drive/Backups/home-assistant</code> contains <strong>no <code>.tar.gz</code> at all</strong> and 21 leftover work directories:</p>
+<pre><code>$ ls -1d .work-* | wc -l
+21
+$ find . -maxdepth 1 -name &quot;*.tar.gz&quot; | wc -l
+0
+$ du -sh .
+191M</code></pre>
+<p><code>backup.log</code> accumulates one failure line per night for every date since 10-30, today's being:</p>
+<pre><code>tar: Failed to open &#39;/Volumes/Hiksemi 1TB/AI-Drive/backups/home-assistant/home-assistant-config-2026-11-21.tar.gz&#39;</code></pre>
+<p>and the two nights that recorded an errno recorded these:</p>
+<pre><code>open /Volumes/Hiksemi 1TB/AI-Drive/backups/home-assistant: operation not permitted   ← 2026-11-06
+open /Volumes/Hiksemi 1TB/AI-Drive/backups/home-assistant: no such file or directory ← 2026-11-16</code></pre>
+<p>launchd agrees the job failed: <code>launchctl list</code> → <code>-  1  com.maio.home-assistant-backup</code>.</p>
+<p>What this proves and what it does not:</p>
+<ul>
+<li><p>The script is <code>set -e</code> and deletes its work dir on the line <strong>after</strong> the tar. Leftover work dirs mean it dies at the tar step, every night. That is consistent with the log.</p></li>
+<li><p>The payload is fine. I archived today's work dir myself, outside launchd, to scratch:</p>
+<pre><code>$ tar -czf &quot;$TMPDIR/t-test.tgz&quot; -C .work-2026-11-21 .
+tar exit=0 → 4.0M</code></pre></li>
+<li><p><code>docker cp</code> did succeed today (<code>.work-2026-11-21</code> holds 19 MB copied at 03:20:05), so the container and the volume are reachable; it is the archive write that fails. The recorded errnos point at a launchd-side permission problem on the removable volume, the same family as the old <code>com.maio.backup</code> EPERM mode. The exact syscall reason for tonight's line (bsdtar printed no errno) is not proven, and I did not reproduce it under launchd because that needs a launch, which is a change.</p></li>
+</ul>
+<p>Why it matters: per the script's own header, the whole house config — integrations, auth, automations — lives only inside the Colima VM disk and dies with <code>colima delete</code>. There is currently no recoverable copy anywhere.</p>
+<h2 id="orange_circle-2026-11-16--no-backups-at-all-that-night">🟠 2026-11-16 — no backups at all that night</h2>
+<pre><code>[2026-11-16 03:30:05] backup start (v4)
+touch: /Volumes/Hiksemi 1TB/AI-Drive/.wprobe: Interrupted system call
+AI-Drive volume not responsive (probe failed/timeout) - aborting
+[2026-11-16 03:38:53] backup start (v4)
+touch: /Volumes/Hiksemi 1TB/AI-Drive/.wprobe: No such file or directory
+AI-Drive volume not responsive (probe failed/timeout) - aborting</code></pre>
+<p>The wedge guard worked as designed and aborted instead of hanging. The cost: <code>hindsight/</code> jumps 11-15 → 11-17 and <code>paperclip/</code> skips 11-16. This matches the known Hiksemi wedge mode (reads return EINTR indefinitely; <code>[ -d ]</code> still passes).</p>
+<h2 id="context-not-findings">Context, not findings</h2>
+<ul>
+<li><code>Backups</code> tree total: 23 GB. Hiksemi 255 GiB used / 698 GiB free (27%).</li>
+<li>Internal Data volume 396 GiB of 460 GiB used (96%, 20 GiB free) — that is the night-check's <code>disks: red</code>. Backups themselves land on the external drive, so this is not causing tonight's failures, but a nearly full internal disk is a risk to anything that stages or compresses locally.</li>
+<li>Retention is <code>find "$D" -type f -mtime +14 -delete</code> across the whole <code>Backups</code> tree. It is why hindsight only reaches back to 11-07, why the 2026-11-08 top8 bundle is gone, and why the 11-18 prod dump is on a clock.</li>
+<li>Checker gap: the 03:35 night-check's <code>backups</code> lane verifies only hindsight and paperclip (<code>all fresh: hindsight, paperclip</code>), so it reported green on a night when two lanes failed. That is my own script, so I am reporting it rather than changing it.</li>
+</ul>
+<h2 id="what-i-propose-ricardo-decides--nothing-done">What I propose (Ricardo decides — nothing done)</h2>
+<ol type="1">
+<li><strong>Constellation</strong> — repoint the nightly lane at the live database (<code>constellation-preview-db-1</code>) or restore data into <code>constellation_dev</code>; keep the 100 KB floor. Right now the job is faithfully backing up an empty database.</li>
+<li><strong>Home Assistant</strong> — reproduce the job once under launchd and capture the errno (needs a <code>launchctl kickstart</code>, which the gateway blocks from inside an agent); then grant the launchd zsh what it needs on the removable volume, or move the archive target to a path it can write.</li>
+<li><strong>Preserve the 11-18 prod dump</strong> — copy it outside the <code>Backups</code> tree, or take a fresh manual dump, before the 14-day sweep removes the only complete copy.</li>
+<li><strong>Widen the night-check backups lane</strong> to constellation, Home Assistant and top8, so a night like this one cannot report green again.</li>
+<li>Housekeeping only: the 191 MB of <code>.work-*</code> directories can go once the tar step works.</li>
+</ol>
+<p>— Courage 🐾 (read-only check; nothing changed)</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
