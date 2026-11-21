@@ -1,0 +1,256 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI stack matrix — Buzz vs AgenticOS vs Hermes vs Grok CLI</title><style>
+:root{
+--ink:var(--foreground,#12161c); --mut:var(--muted-foreground,rgba(18,22,28,.56));
+--line:var(--border,rgba(18,22,28,.13)); --panel:color-mix(in srgb, var(--foreground,#12161c) 4%, transparent);
+--panel2:color-mix(in srgb, var(--foreground,#12161c) 7%, transparent);
+--code:var(--code-background,rgba(18,22,28,.045));
+--c-buzz:var(--chart-4,#7c3aed); --c-agent:var(--chart-2,#b45309);
+--c-hermes:var(--chart-1,#0f766e); --c-grok:var(--chart-3,#1d4ed8);
+--good:var(--success,#0f766e); --bad:var(--destructive,#b42318);
+--radius:16px}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);
+font:16px/1.55 var(--font-sans,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,sans-serif);
+-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:6px 0 44px}
+.eyebrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font:600 10.5px/1 var(--font-mono,ui-monospace,"SF Mono",monospace);
+letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.eyebrow .live{display:inline-flex;align-items:center;gap:7px;color:var(--good)}
+.eyebrow .live i{width:6px;height:6px;border-radius:50%;background:var(--good);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 55%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+h1{font-size:clamp(32px,5vw,54px);line-height:1.03;letter-spacing:-.035em;margin:20px 0 14px;font-weight:700}
+h1 span{background:linear-gradient(92deg,var(--c-hermes),var(--c-grok) 52%,var(--c-buzz));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:18px;color:var(--mut);max-width:740px;margin:0}
+.lede b{color:var(--ink);font-weight:600}
+.verdicts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:36px 0 0}
+.vcard{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);padding:24px 24px 20px;background:var(--panel)}
+.vcard:before{content:"";position:absolute;inset:0 auto 0 0;width:3px}
+.vcard.work:before{background:var(--c-agent)} .vcard.pers:before{background:var(--c-hermes)}
+.vtag{font:600 10px/1 var(--font-mono,ui-monospace,monospace);letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.vname{display:flex;align-items:baseline;gap:12px;margin:12px 0 4px;font-size:28px;font-weight:700;letter-spacing:-.02em}
+.vscore{font:500 12.5px/1 var(--font-mono,ui-monospace,monospace);color:var(--mut)}
+.vcard p{margin:8px 0 0;color:var(--mut);font-size:14px}
+.vcard p b{color:var(--ink);font-weight:600}
+section{margin-top:52px}
+h2{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:0 0 6px}
+h3{font-size:24px;letter-spacing:-.02em;margin:0 0 16px;font-weight:650}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:20px}
+.cap{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:16px}
+.cap b{font-size:14.5px}
+.cap em{font:400 10.5px/1.3 var(--font-mono,ui-monospace,monospace);color:var(--mut);font-style:normal;text-align:right}
+.bar-row{display:grid;grid-template-columns:124px 1fr 42px;align-items:center;gap:10px;padding:5px 0}
+.bar-name{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}
+.bar-row.win .bar-name{color:var(--ink);font-weight:600}
+.dot{width:7px;height:7px;border-radius:2px;display:inline-block;flex:none}
+.bar-track{height:8px;border-radius:5px;background:color-mix(in srgb,var(--foreground,#12161c) 8%,transparent);overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transform-origin:left;animation:grow 1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.bar-val{font:500 12px/1 var(--font-mono,ui-monospace,monospace);text-align:right;color:var(--mut)}
+.bar-row.win .bar-val{color:var(--ink)}
+.matrix{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+.matrix thead th{text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top;background:var(--panel2);font-weight:600}
+.matrix thead th b{display:block;font-size:13px;margin:6px 0 2px}
+.matrix thead th em{display:block;font:400 10px/1.35 var(--font-mono,ui-monospace,monospace);color:var(--mut);font-style:normal}
+.matrix tbody th{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);font-weight:500;width:25%}
+.matrix tbody th b{display:block;font-size:13px;font-weight:600}
+.matrix tbody th em{display:block;font-size:11px;color:var(--mut);font-style:normal;margin-top:2px}
+.matrix td{padding:12px 14px;border-bottom:1px solid var(--line);border-left:1px solid var(--line);vertical-align:top}
+.matrix tr:last-child th,.matrix tr:last-child td{border-bottom:none}
+.matrix tbody tr:hover th,.matrix tbody tr:hover td{background:color-mix(in srgb,var(--foreground,#12161c) 3%,transparent)}
+.cell{display:flex;gap:8px;align-items:flex-start}
+.pill{flex:none;display:inline-grid;place-items:center;min-width:24px;height:21px;border-radius:6px;
+font:600 11px/1 var(--font-mono,ui-monospace,monospace);border:1px solid transparent}
+.pill.high{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good);border-color:color-mix(in srgb,var(--good) 30%,transparent)}
+.pill.mid{background:color-mix(in srgb,var(--warning,#b45309) 14%,transparent);color:var(--warning,#b45309);border-color:color-mix(in srgb,var(--warning,#b45309) 30%,transparent)}
+.pill.low{background:color-mix(in srgb,var(--bad) 13%,transparent);color:var(--bad);border-color:color-mix(in srgb,var(--bad) 26%,transparent)}
+.pill.zero{background:color-mix(in srgb,var(--foreground,#12161c) 6%,transparent);color:var(--mut);border-color:var(--line)}
+.note{font-size:12px;color:var(--mut);line-height:1.4}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:22px}
+.hd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:2px}
+.nm{font-size:18px;font-weight:650;letter-spacing:-.01em}
+.st{font:400 10.5px/1 var(--font-mono,ui-monospace,monospace);color:var(--mut)}
+.what{color:var(--mut);font-size:13.5px;margin:10px 0 14px}
+dl{display:grid;grid-template-columns:64px 1fr;gap:7px 12px;margin:0}
+dt{font:600 9.5px/1.8 var(--font-mono,ui-monospace,monospace);letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+dd{margin:0;font-size:13px}
+dd.bad{color:var(--bad)}
+dd.ev{font:400 11.5px/1.5 var(--font-mono,ui-monospace,monospace);color:var(--mut)}
+.weights{display:flex;flex-wrap:wrap;gap:7px;margin:0}
+.chip{font-size:11.5px;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+.chip b{color:var(--ink);font-weight:600}
+.ev pre{margin:0;padding:16px 18px;border:1px solid var(--line);border-radius:12px;background:var(--code);
+color:var(--mut);font:400 12px/1.65 var(--font-mono,ui-monospace,"SF Mono",monospace);overflow:auto;white-space:pre-wrap}
+.ev pre b{color:var(--ink);font-weight:600}
+.ev .row{margin-bottom:14px}
+.ev .lbl{font:600 10.5px/1 var(--font-mono,ui-monospace,monospace);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin:0 0 7px}
+.lanes{width:100%;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+.lanes td,.lanes th{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+.lanes th{font:600 10px/1 var(--font-mono,ui-monospace,monospace);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);background:var(--panel2)}
+.lanes tr:last-child td{border-bottom:none}
+.lanes td:first-child{color:var(--mut)}
+.lanes td:last-child{font-weight:650}
+.foot{margin-top:44px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+font:400 11px/1.6 var(--font-mono,ui-monospace,monospace);color:var(--mut)}
+@media(max-width:860px){.verdicts,.charts,.cards{grid-template-columns:1fr}
+.matrix{font-size:12px}.matrix thead th:nth-child(1){width:24%}.bar-row{grid-template-columns:96px 1fr 40px}}
+</style></head><body><div class="wrap">
+
+<div class="eyebrow"><span class="live"><i></i>probed live</span> <span>·</span> <span>21 Nov 2026 · 17:00 SAST</span> <span>·</span> <span>Mac mini</span></div>
+<h1>Four agents. <span>Two jobs.</span></h1>
+<p class="lede">Which one runs <b>Infinity Brands</b>, which one runs <b>your life</b> — and what the other two are
+still worth. The scores are my judgement across nine dimensions; every factual line is a probe run on this Mac
+this afternoon, quoted in the evidence section.</p>
+
+<div class="verdicts">
+  <div class="vcard work">
+    <div class="vtag">For your work</div>
+    <div class="vname">AgenticOS <span class="vscore">4.10 / 5</span></div>
+    <p><b>Not because it is the best agent — because it is the only place company data and authority exist.</b>
+    Company seats, Zoho and ClickUp lanes, approvals, budgets and an audit trail. Hermes is barred from that
+    estate by your own rule, and neither Buzz nor Grok can see it at all.</p>
+  </div>
+  <div class="vcard pers">
+    <div class="vtag">For you personally</div>
+    <div class="vname">Hermes <span class="vscore">4.60 / 5</span></div>
+    <p><b>Your life and your builds already run here.</b> Vault, almanac, mail triage, Top&nbsp;8, the cron
+    fleet, memory of 420 sessions and every tool on this Mac. Nothing else comes close on personal context,
+    and nothing else is running today.</p>
+  </div>
+</div>
+
+<section>
+  <h2>Weighted result</h2>
+  <h3>Two different questions, two different winners</h3>
+  <div class="charts">
+    <div class="panel"><div class="cap"><b>Company work fit</b> <em>authority · governance · routines</em></div><div class="bar-row win"><div class="bar-name"><span class="dot" style="background:var(--c-agent)"></span>AgenticOS</div><div class="bar-track"><div class="bar-fill" style="width:82.0%;background:var(--c-agent)"></div></div><div class="bar-val">4.10</div></div><div class="bar-row"><div class="bar-name"><span class="dot" style="background:var(--c-hermes)"></span>Hermes</div><div class="bar-track"><div class="bar-fill" style="width:54.0%;background:var(--c-hermes)"></div></div><div class="bar-val">2.70</div></div><div class="bar-row"><div class="bar-name"><span class="dot" style="background:var(--c-buzz)"></span>Buzz Chat</div><div class="bar-track"><div class="bar-fill" style="width:26.0%;background:var(--c-buzz)"></div></div><div class="bar-val">1.30</div></div><div class="bar-row"><div class="bar-name"><span class="dot" style="background:var(--c-grok)"></span>Grok CLI</div><div class="bar-track"><div class="bar-fill" style="width:18.0%;background:var(--c-grok)"></div></div><div class="bar-val">0.90</div></div></div>
+    <div class="panel"><div class="cap"><b>Personal fit</b> <em>context · routines · tools</em></div><div class="bar-row win"><div class="bar-name"><span class="dot" style="background:var(--c-hermes)"></span>Hermes</div><div class="bar-track"><div class="bar-fill" style="width:92.0%;background:var(--c-hermes)"></div></div><div class="bar-val">4.60</div></div><div class="bar-row"><div class="bar-name"><span class="dot" style="background:var(--c-agent)"></span>AgenticOS</div><div class="bar-track"><div class="bar-fill" style="width:50.0%;background:var(--c-agent)"></div></div><div class="bar-val">2.50</div></div><div class="bar-row"><div class="bar-name"><span class="dot" style="background:var(--c-grok)"></span>Grok CLI</div><div class="bar-track"><div class="bar-fill" style="width:37.0%;background:var(--c-grok)"></div></div><div class="bar-val">1.85</div></div><div class="bar-row"><div class="bar-name"><span class="dot" style="background:var(--c-buzz)"></span>Buzz Chat</div><div class="bar-track"><div class="bar-fill" style="width:33.0%;background:var(--c-buzz)"></div></div><div class="bar-val">1.65</div></div></div>
+  </div>
+</section>
+
+<section>
+  <h2>The matrix</h2>
+  <h3>Nine dimensions, scored 0–5, with the reason in each cell</h3>
+  <div class="matrix"><table>
+    <thead><tr><th>Dimension</th><th><span class="dot" style="background:var(--c-buzz)"></span><b>Buzz Chat</b> <em>Block Buzz · self-hosted relay</em></th><th><span class="dot" style="background:var(--c-agent)"></span><b>AgenticOS</b> <em>Infinity Brands platform</em></th><th><span class="dot" style="background:var(--c-hermes)"></span><b>Hermes</b> <em>this Mac's agent runtime</em></th><th><span class="dot" style="background:var(--c-grok)"></span><b>Grok CLI</b> <em>xAI grok 1.0.89</em></th></tr></thead>
+    <tbody><tr><th scope="row"><b>Human chat / shared workspace</b> <em>Where people actually talk</em></th><td><div class="cell"><span class="pill high">5</span> <span class="note">it is the chat</span></div></td><td><div class="cell"><span class="pill high">4</span> <span class="note">shared team chat</span></div></td><td><div class="cell"><span class="pill mid">3</span> <span class="note">Discord/Telegram, not a workspace</span></div></td><td><div class="cell"><span class="pill zero">0</span> <span class="note">no chat surface</span></div></td></tr><tr><th scope="row"><b>Team governance</b> <em>Roles, budgets, approvals, audit</em></th><td><div class="cell"><span class="pill mid">2</span> <span class="note">members + owner-only agents</span></div></td><td><div class="cell"><span class="pill high">5</span> <span class="note">budgets, approvals, audit trail</span></div></td><td><div class="cell"><span class="pill mid">2</span> <span class="note">gates + hooks, single operator</span></div></td><td><div class="cell"><span class="pill low">1</span> <span class="note">per-run sandbox only</span></div></td></tr><tr><th scope="row"><b>Always-on routines</b> <em>Scheduled, unattended work</em></th><td><div class="cell"><span class="pill low">1</span> <span class="note">no scheduler</span></div></td><td><div class="cell"><span class="pill high">4</span> <span class="note">134 cron triggers</span></div></td><td><div class="cell"><span class="pill high">5</span> <span class="note">11 jobs, always on</span></div></td><td><div class="cell"><span class="pill low">1</span> <span class="note">none</span></div></td></tr><tr><th scope="row"><b>Tool &amp; MCP depth</b> <em>What it can actually reach</em></th><td><div class="cell"><span class="pill mid">2</span> <span class="note">agent nest + bundled CLI</span></div></td><td><div class="cell"><span class="pill mid">3</span> <span class="note">MCP, browser, sandbox; unit bots get none</span></div></td><td><div class="cell"><span class="pill high">5</span> <span class="note">14 MCP servers, 234 skills</span></div></td><td><div class="cell"><span class="pill high">4</span> <span class="note">MCP, skills, subagents</span></div></td></tr><tr><th scope="row"><b>Personal context</b> <em>Your vault, history, memory</em></th><td><div class="cell"><span class="pill low">1</span> <span class="note">one nest per machine</span></div></td><td><div class="cell"><span class="pill low">1</span> <span class="note">company KB, not your life</span></div></td><td><div class="cell"><span class="pill high">5</span> <span class="note">vault, 420 sessions, memory</span></div></td><td><div class="cell"><span class="pill low">1</span> <span class="note">per-project files</span></div></td></tr><tr><th scope="row"><b>Multi-machine &amp; mobile</b> <em>More than the Mac mini</em></th><td><div class="cell"><span class="pill high">4</span> <span class="note">desktop, phone, laptop</span></div></td><td><div class="cell"><span class="pill high">4</span> <span class="note">web, desktop, mobile</span></div></td><td><div class="cell"><span class="pill mid">3</span> <span class="note">Mac mini + tailnet + bots</span></div></td><td><div class="cell"><span class="pill mid">2</span> <span class="note">CLI on one machine</span></div></td></tr><tr><th scope="row"><b>Coding ergonomics</b> <em>Build and repair work</em></th><td><div class="cell"><span class="pill mid">2</span> <span class="note">chat-side agents</span></div></td><td><div class="cell"><span class="pill mid">2</span> <span class="note">builds agents, not your code</span></div></td><td><div class="cell"><span class="pill mid">3</span> <span class="note">delegates to Claude/Codex/omp</span></div></td><td><div class="cell"><span class="pill high">5</span> <span class="note">native TUI + ACP</span></div></td></tr><tr><th scope="row"><b>Ready today</b> <em>Run it now, on this Mac</em></th><td><div class="cell"><span class="pill zero">0</span> <span class="note">removed 2026-11-07</span></div></td><td><div class="cell"><span class="pill low">1</span> <span class="note">browser only; SSH path down</span></div></td><td><div class="cell"><span class="pill high">5</span> <span class="note">live right now</span></div></td><td><div class="cell"><span class="pill low">1</span> <span class="note">installed, never signed in</span></div></td></tr><tr><th scope="row"><b>Company data &amp; authority</b> <em>May touch Infinity Brands</em></th><td><div class="cell"><span class="pill zero">0</span> <span class="note">your relay only</span></div></td><td><div class="cell"><span class="pill high">5</span> <span class="note">the only company estate</span></div></td><td><div class="cell"><span class="pill zero">0</span> <span class="note">barred from company work</span></div></td><td><div class="cell"><span class="pill zero">0</span> <span class="note">none</span></div></td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>What each one actually is</h2>
+  <h3>Standing, strengths, and the wall</h3>
+  <div class="cards">
+
+    <div class="card"><div class="hd"><span class="dot" style="background:var(--c-buzz)"></span><span class="nm">Buzz Chat</span>
+      <span class="st">Block Buzz · retired here</span></div>
+      <p class="what">A chat-first workspace with AI agents inside it: a self-hosted Nostr relay in Docker, a
+      desktop and phone client, and managed agents that answer the owner only.</p>
+      <dl>
+        <dt>Wins</dt><dd>Humans and agents in the same room; phone pairing; local-first; one identity across your machines.</dd>
+        <dt>Wall</dt><dd class="bad">No scheduler, no governance, no company data, one canonical host per relay — and the identity is a key you must custody yourself.</dd>
+        <dt>State</dt><dd class="ev">no relay container · nothing on :10500 · app gone from /Applications · last work log 4 Nov</dd>
+      </dl></div>
+
+    <div class="card"><div class="hd"><span class="dot" style="background:var(--c-agent)"></span><span class="nm">AgenticOS</span>
+      <span class="st">Infinity Brands · live, gated</span></div>
+      <p class="what">An open-source, self-hosted company teammate platform: shared chat, RAG, browser, MCP,
+      budgets, approvals and an audit trail, built on Pydantic AI. It carries your 22 company seats.</p>
+      <dl>
+        <dt>Wins</dt><dd>Real governance; 13 unit bots with routines; Zoho and ClickUp lanes; every write leaves a receipt.</dd>
+        <dt>Wall</dt><dd class="bad">Company scope only. Unit bots have no MCP of their own and only a snapshot feed, so they cannot query anything themselves.</dd>
+        <dt>State</dt><dd class="ev">web door 302 → Cloudflare Access · SSH path from this Mac down (bastion unresolved; macserver, infmini "No route to host")</dd>
+      </dl></div>
+
+    <div class="card"><div class="hd"><span class="dot" style="background:var(--c-hermes)"></span><span class="nm">Hermes</span>
+      <span class="st">v0.23.2 · live now</span></div>
+      <p class="what">The agent runtime on this Mac: 35 profiles, 234 skills, 14 MCP servers, 11 scheduled jobs,
+      420 sessions and 137k messages, plus memory, channels, kanban and decision gates.</p>
+      <dl>
+        <dt>Wins</dt><dd>Deepest tool surface; always-on scheduling; the only one that remembers your estate; document publishing into the vault.</dd>
+        <dt>Wall</dt><dd class="bad">Single operator by design — no team roles, no shared company workspace — and it depends on the Mac mini staying awake.</dd>
+        <dt>State</dt><dd class="ev">hermes --version → 0.23.2 · sessions 420 / 137,255 messages / 1,561.5 MB · cron 11</dd>
+      </dl></div>
+
+    <div class="card"><div class="hd"><span class="dot" style="background:var(--c-grok)"></span><span class="nm">Grok CLI</span>
+      <span class="st">grok 1.0.89 · unauthenticated</span></div>
+      <p class="what">xAI's terminal agent: interactive TUI, headless mode, ACP agent mode, MCP, skills,
+      subagents, hooks, memory, a real sandbox, and bring-your-own models including local Ollama.</p>
+      <dl>
+        <dt>Wins</dt><dd>Best coding ergonomics of the four; ACP means a T3 Code thread can host it; OS-level sandbox.</dd>
+        <dt>Wall</dt><dd class="bad">No scheduler, no chat surface, no knowledge of your estate — and it has never been signed in, so its value here is unproven.</dd>
+        <dt>State</dt><dd class="ev">startup log: outcome error, failed_phase eager_auth, error_kind sign_in · no keychain item · 0 sessions</dd>
+      </dl></div>
+
+  </div>
+</section>
+
+<section>
+  <h2>What I would actually run</h2>
+  <h3>Four lanes, one tool each — no overlap</h3>
+  <table class="lanes">
+    <thead><tr><th>Lane</th><th>Tool</th></tr></thead>
+    <tbody>
+      <tr><td>Company units, Zoho, ClickUp, approvals and audit</td><td>AgenticOS</td></tr>
+      <tr><td>Your own estate: stack, builds, documents, cron, memory</td><td>Hermes</td></tr>
+      <tr><td>Coding sessions inside T3 Code</td><td>Grok CLI, after one sign-in — beside Claude and Codex</td></tr>
+      <tr><td>A human chat room with agents in it</td><td>Buzz, only if you want a room. Discord and Cliq already do this</td></tr>
+    </tbody>
+  </table>
+  <p class="what" style="margin-top:14px">Two cautions. Grok is a seat, not a system: authenticate it, keep it to
+  code, do not let it become a second brain. Buzz went away for a reason — it is a chat product with agents
+  bolted on, so reinstalling it buys you a room, not a scheduler or a governance layer.</p>
+</section>
+
+<section>
+  <h2>How the scores were built</h2>
+  <div class="panel">
+    <p class="what" style="margin:0 0 10px">Company work fit weights</p>
+    <div class="weights"><span class="chip"><b>30%</b> Company data &amp; authority</span> <span class="chip"><b>20%</b> Team governance</span> <span class="chip"><b>20%</b> Always-on routines</span> <span class="chip"><b>10%</b> Human chat</span> <span class="chip"><b>10%</b> Tool &amp; MCP depth</span> <span class="chip"><b>10%</b> Ready today</span></div>
+    <p class="what" style="margin:18px 0 10px">Personal fit weights</p>
+    <div class="weights"><span class="chip"><b>30%</b> Personal context</span> <span class="chip"><b>20%</b> Always-on routines</span> <span class="chip"><b>20%</b> Tool &amp; MCP depth</span> <span class="chip"><b>10%</b> Multi-machine &amp; mobile</span> <span class="chip"><b>10%</b> Ready today</span> <span class="chip"><b>5%</b> Coding ergonomics</span> <span class="chip"><b>5%</b> Human chat</span></div>
+    <p class="what" style="margin:16px 0 0">Weights are my read of what each job needs, not a measurement. The
+    0–5 scores are judgement against evidence; the facts behind them are the probes below.</p>
+  </div>
+</section>
+
+<section class="ev">
+  <h2>Evidence</h2>
+  <h3>Real output from this Mac, 21 Nov 2026</h3>
+  <div class="row"><p class="lbl">Buzz — gone</p><pre>$ docker ps -a | grep -i buzz        <b>→ (no matches)</b>
+$ lsof -nP -iTCP:10500 -sTCP:LISTEN  <b>→ (empty)</b>
+$ ls /Applications | grep -i buzz    <b>→ (empty)</b>
+$ stat -f '%Sm %N' ~/.buzz           <b>→ Nov  7 07:30:58 2026</b>
+$ ls -lt ~/.buzz/WORK_LOGS | head -1 <b>→ 2026_11_04_TOP8_RESEARCH_WIRED.md  (Nov 4)</b></pre></div>
+
+  <div class="row"><p class="lbl">AgenticOS — company estate</p><pre>$ curl -sD - -o /dev/null https://agenticos.infinitybrands.co.za/login
+<b>HTTP/2 302</b>
+<b>location: https://inflegends.cloudflareaccess.com/cdn-cgi/access/login/…</b>
+server: cloudflare   ·   cf-ray: a5e09099fc090529-JNB
+
+$ ssh macserver …   <b>→ channel 0: open failed: connect failed: No route to host</b>
+$ ssh infmini …     <b>→ No route to host</b>
+$ dscacheutil -q host -a name bastion   <b>→ (does not resolve)</b></pre></div>
+
+  <div class="row"><p class="lbl">Hermes — running</p><pre>$ hermes --version      <b>→ Hermes Agent v0.23.2 (2026.9.24) · stable · local ae2a81ccc00e</b>
+$ hermes sessions stats <b>→ Total sessions: 420 · Total messages: 137,255 · Database: 1561.5 MB</b>
+$ ls ~/.hermes/profiles | wc -l                 <b>→ 35</b>
+$ find ~/.hermes/skills -name SKILL.md | wc -l   <b>→ 234</b>
+$ hermes cron list                     <b>→ 11 jobs</b>
+config.yaml mcp_servers                 <b>→ 14</b> (zoho-api, zoho-search, maio-gate, cua, hugging_face,
+cua-driver, camoufox, rea, comfyui, magnific, qmd, maio-tools, crucible, blender-render)</pre></div>
+
+  <div class="row"><p class="lbl">Grok CLI — installed, never used</p><pre>$ grok --version        <b>→ grok 1.0.89 (28be5bb1bf65)</b>
+$ tail ~/.grok/logs/unified.jsonl
+  "msg":"startup complete","ctx":{…"outcome":"error","failed_phase":"eager_auth","error_kind":"sign_in"}
+$ security find-generic-password -s grok  <b>→ The specified item could not be found in the keychain</b>
+$ ls ~/.grok/sessions   <b>→ session_search.sqlite only  (36K, 19 Nov)</b></pre></div>
+</section>
+
+<div class="foot">
+  <span>Prepared by Adrianna A · AI-stack lane · 2026-11-21 17:00 SAST</span>
+  <span>AI-Drive/Agent-Output/adrianna/2026-11-21-ai-stack-matrix.html</span>
+</div>
+</div></body></html>
