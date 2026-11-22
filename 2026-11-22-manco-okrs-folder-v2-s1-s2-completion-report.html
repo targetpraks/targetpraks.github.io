@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>MANCO OKRs folder v2 — S1 + S2 completion report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="okrs-folder-v2--s1--s2-completion-report">OKRs folder v2 — S1 + S2 completion report</h1>
+<p>ClickUp workspace 4627083 (Infinity Brands), space 901211093531 (MANCO), folder <code>1501000000001617</code>. Run 2026-11-22, 12:40–13:40 SAST. Every number below is read from the live API by the script named beside it; nothing is hand-typed. Raw receipts are in <code>worker/</code> next to this file.</p>
+<h2 id="s1--structure-reversible-no-task-data-touched">S1 — structure (reversible, no task data touched)</h2>
+<h3 id="11-five-template-lists-archived">1.1 Five template lists archived</h3>
+<table>
+<thead>
+<tr>
+<th>List id</th>
+<th>Name at archive time</th>
+<th>Tasks (live, subtasks included)</th>
+<th>Archived now</th>
+<th>What it held</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1501000000002240</code></td>
+<td>✨ Template Guide</td>
+<td>0</td>
+<td>yes</td>
+<td>Empty ClickUp stock 'Template Guide' list — no tasks at all; pure product onboarding content.</td>
+</tr>
+<tr>
+<td><code>1501000000002238</code></td>
+<td>OKR Framework</td>
+<td>23</td>
+<td>yes</td>
+<td>Stock ClickUp OKR-Framework example content: 23 demo objectives/KRs (employee happiness, pipeline cover, NPS) with the template's own copy, not company commitments.</td>
+</tr>
+<tr>
+<td><code>1501000000002237</code></td>
+<td>OKR Planning</td>
+<td>4</td>
+<td>yes</td>
+<td>The four stock OKR process steps shipped with the ClickUp template (Develop OKRs, Rollout OKRs, Monthly Check-in, Quarter Retrospective).</td>
+</tr>
+<tr>
+<td><code>1501000000002235</code></td>
+<td>CY 2026</td>
+<td>39</td>
+<td>yes</td>
+<td>Stock 'CY 2026' example OKRs — generic sample commitments for a calendar year that has passed, superseded by the FY2027 rows in 1 · Objectives.</td>
+</tr>
+<tr>
+<td><code>1501000000002239</code></td>
+<td>CY 20XX</td>
+<td>9</td>
+<td>yes</td>
+<td>Stock 'CY 20XX' placeholder list — demo tasks literally named '[Key Result 1]' / '[Key Result 2]' under sample objectives; no real content.</td>
+</tr>
+</tbody>
+</table>
+<p><code>PUT /list/{id}</code> <code>{"archived": true}</code>, then a separate <code>GET /list/{id}</code> per list — all five read back <code>archived: true</code> (<code>worker/s1_archive.py</code>, <code>worker/archive-receipt.json</code>). Nothing was deleted; every list can be restored with one toggle.</p>
+<h3 id="12-eight-lists-renamed--13-folder-renamed">1.2 Eight lists renamed · 1.3 folder renamed</h3>
+<table>
+<thead>
+<tr>
+<th>List id</th>
+<th>Before</th>
+<th>After (read back)</th>
+<th>HTTP</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1501000000002604</code></td>
+<td>FY2027 OKRs — Objectives</td>
+<td><strong>1 · Objectives</strong></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>1501000000002605</code></td>
+<td>FY2027 OKRs — Business KPIs</td>
+<td><strong>2 · Business KPIs</strong></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>1501000000002606</code></td>
+<td>FY2027 OKRs — BU Scorecards</td>
+<td><strong>3 · BU Scorecards</strong></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>1501000000002839</code></td>
+<td>FY2027 OKRs — Measure Register</td>
+<td><strong>4 · Measure Register</strong></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>1501000000002840</code></td>
+<td>FY2027 OKRs — Quarterly Reviews</td>
+<td><strong>5 · Quarterly Reviews</strong></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>1501000000002607</code></td>
+<td>Monthly Close — Close</td>
+<td><strong>6 · Close — 2026-11</strong></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>1501000000002608</code></td>
+<td>Monthly Close — Exceptions</td>
+<td><strong>7 · Close Exceptions</strong></td>
+<td>200</td>
+</tr>
+<tr>
+<td><code>1501000000002609</code></td>
+<td>Performance Framework — Rules &amp; Change Log</td>
+<td><strong>8 · Rules &amp; Change Log</strong></td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+<p>Folder <code>1501000000001617</code>: OKRs → <strong>FY2027 OKRs</strong>, read back after the write (HTTP 200).</p>
+<h3 id="14-two-docs-pinned-to-the-folder">1.4 Two docs, pinned to the folder</h3>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>id</th>
+<th>Page</th>
+<th>Characters read back</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Performance OS — Framework</td>
+<td><code>4d6mb-53372</code></td>
+<td><code>4d6mb-7352</code></td>
+<td>7398</td>
+</tr>
+<tr>
+<td>Close Contract</td>
+<td><code>4d6mb-53392</code></td>
+<td><code>4d6mb-7372</code></td>
+<td>5157</td>
+</tr>
+</tbody>
+</table>
+<p>Both sit in the folder's Docs section (the v3 API returns no URL for a doc, so the id is the handle).</p>
+<ul>
+<li><strong>Performance OS — Framework</strong> — probe phrases on the re-read page: ✓ The four words, ✓ seven gate conditions, ✓ 10,000 basis points, ✓ Who verifies, ✓ not yet decided</li>
+<li><strong>Close Contract</strong> — probe phrases on the re-read page: ✓ Who captures, ✓ day three, ✓ Who verifies, ✓ exception is raised, ✓ not yet decided</li>
+</ul>
+<p>Both pages were written with <code>PUT /api/v3/workspaces/4627083/docs/{doc}/pages/{page}</code> and re-read with <code>?content_format=text/md</code>. They derive from the approved policy in <code>8 · Rules &amp; Change Log</code> and PRD v1.3 §4.3 / §7.1 / §8, and each ends with an explicit <strong>not yet decided</strong> list instead of an invented rule.</p>
+<h3 id="15-three-staff-views-on-1--objectives">1.5 Three staff views on <code>1 · Objectives</code></h3>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>id</th>
+<th>Filters as persisted (read back)</th>
+<th>Grouping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>My quarter</td>
+<td><code>4d6mb-53412</code></td>
+<td><code>assignee EQ [6805502]</code>; <code>dueDate EQ ['thisQuarter']</code></td>
+<td>none</td>
+</tr>
+<tr>
+<td>BU — this quarter</td>
+<td><code>4d6mb-53432</code></td>
+<td><code>dueDate EQ ['thisQuarter']</code></td>
+<td>assignee</td>
+</tr>
+<tr>
+<td>All commitments</td>
+<td><code>4d6mb-53452</code></td>
+<td>none</td>
+<td>cf_5f03c736-0fb8-4595-b85b-dee099bcb1a0</td>
+</tr>
+</tbody>
+</table>
+<p>Filters are only accepted inside <code>POST /list/{id}/view</code> in this workspace, so each view was created complete and then verified with <code>GET /view/{id}</code>. No filter was silently dropped. The fourth view in the list (<code>FY2027 commitment review</code>) was already there and was left alone.</p>
+<p>Because a custom field cannot be used as a view filter here, the quarter is carried by the <strong>due date</strong> — which is exactly why §2.2 had to land first.</p>
+<h2 id="s2--data-integrity">S2 — data integrity</h2>
+<h3 id="21-due-date-automation-probe--holds">2.1 Due-date automation probe — HOLDS</h3>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Row</td>
+<td><code>1an4v5wyvd7</code> — Ensure Engagement of all Monthly NPS Surveys. (Q1)</td>
+</tr>
+<tr>
+<td>Before</td>
+<td>2026-11-24T02:00:00Z</td>
+</tr>
+<tr>
+<td>Written</td>
+<td>2027-03-31T12:00:00Z, <code>PUT /task/{id}</code> → HTTP 200</td>
+</tr>
+<tr>
+<td>Read back at t+5 s</td>
+<td>2027-03-31T02:00:00Z</td>
+</tr>
+<tr>
+<td>Read back at t+35 s</td>
+<td>2027-03-31T02:00:00Z</td>
+</tr>
+<tr>
+<td>Read back at t+95 s</td>
+<td>2027-03-31T02:00:00Z</td>
+</tr>
+<tr>
+<td>Verdict</td>
+<td><strong>HOLDS</strong></td>
+</tr>
+</tbody>
+</table>
+<p>PUT accepted 200. ClickUp normalised the date-only value to the space's existing convention (02:00:00Z on the same calendar date: the other 370 rows carry 2026-11-24T02:00:00Z for the same reason). The calendar date did not change across three reads spanning 95 s.</p>
+<p>Basis of the verdict: read-back calendar date == 2027-03-31 at t+5s, t+35s, t+95s (not epoch equality: time-of-day is normalised by ClickUp) (<code>worker/probe-duedate.json</code>). The date held, so §2.2 was allowed to run.</p>
+<h3 id="22-quarter-end-due-dates--371-rows">2.2 Quarter-end due dates — 371 rows</h3>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rows in the manifest (built in code from <code>raw/all.json</code>)</td>
+<td>371</td>
+</tr>
+<tr>
+<td>Rows now carrying a non-2026-11-24 due date</td>
+<td><strong>371</strong></td>
+</tr>
+<tr>
+<td>Rows still on 2026-11-24</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Rows whose date equals the manifest date</td>
+<td>371</td>
+</tr>
+<tr>
+<td>Rows off-manifest</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Rows that should not exist</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Live histogram: 2027-03-31 → 107 rows · 2027-06-30 → 75 rows · 2027-09-30 → 73 rows · 2027-12-31 → 116 rows.</p>
+<p>2 rows read individually with a full <code>GET /task/{id}</code>:</p>
+<ul>
+<li><code>1an4v5wyy1y</code> — Ensure Engagement of all Monthly NPS Surveys. → <strong>2027-12-31T02:00:00Z</strong></li>
+<li><code>1an4v5wyvda</code> — Ensure Engagement of all Monthly NPS Surveys. → <strong>2027-09-30T02:00:00Z</strong></li>
+</ul>
+<p>Pace: one write every ~1.6 s; no throttle across 371 writes. Ledger <code>worker/ledger-duedates.jsonl</code> holds one receipt per row (task id, old date, new date, HTTP status) and the run resumes from it, so a throttle storm costs minutes, not duplicates. Objective rows and year-long measures took 2027-12-31.</p>
+<h3 id="23-quarter-suffix-on-titles--preview-only-waiting-on-a-go-ahead">2.3 Quarter suffix on titles — preview only, waiting on a go-ahead</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key results carrying a <code>Quarter</code></td>
+<td>320</td>
+</tr>
+<tr>
+<td>Edited in the preview (each verified by read-back)</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Clean rows left for the go-ahead</td>
+<td><strong>291</strong></td>
+</tr>
+<tr>
+<td>Titles that already carried a marker</td>
+<td>19 (agree 15 · contradict 4)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>1an4v5wyuuz</code> (Q1) Implement Legal Coda Document and update by tracking on Le → <strong>… Tables — Q1</strong></li>
+<li><code>1an4v5wyuv0</code> (Q1) Implement Procurement Tracker in CRM with list of approved → <strong>…Vendors — Q1</strong></li>
+<li><code>1an4v5wyuv2</code> (Q1) SOP Management &amp; Standardization → <strong>…ization — Q1</strong></li>
+<li><code>1an4v5wyuv3</code> (Q1) SOP Management &amp; Standardization → <strong>…ization — Q1</strong></li>
+<li><code>1an4v5wyuv4</code> (Q1) Increase in HOF NPS Surveys completed → <strong>…mpleted — Q1</strong></li>
+<li><code>1an4v5wyuve</code> (Q1) Build and link Zeestore Site for INF → <strong>…for INF — Q1</strong></li>
+<li><code>1an4v5wyuw9</code> (Q1) Increase Active number of FIN SLA clients by 1 → <strong>…ts by 1 — Q1</strong></li>
+<li><code>1an4v5wyuwd</code> (Q1) Increase Active number of HRM SLA clients by 1 → <strong>…ts by 1 — Q1</strong></li>
+<li><code>1an4v5wyuwh</code> (Q1) Increase Active number of SAL SLA clients by 2 → <strong>…ts by 2 — Q1</strong></li>
+<li><code>1an4v5wyuwn</code> (Q1) Increase Active number of ITC SLA clients by 2 → <strong>…ts by 2 — Q1</strong></li>
+</ul>
+<p>The four rows whose title contradicted their <code>Quarter</code> field were reverted to their exact original names and are listed with the before/after pairs on the card. No bulk overwrite was used to settle a contradiction.</p>
+<h3 id="24-kpi-id-join--320-of-320">2.4 KPI ID join — 320 of 320</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Key results carrying a <code>KPI measure</code> relation</td>
+<td>320</td>
+</tr>
+<tr>
+<td>Joined to a register row that has a KPI ID</td>
+<td><strong>320 of 320</strong></td>
+</tr>
+<tr>
+<td>Unmatched (reported, never guessed)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Distinct KPI IDs written</td>
+<td>162</td>
+</tr>
+<tr>
+<td>Rows in the write ledger / failed</td>
+<td>320 / 0</td>
+</tr>
+</tbody>
+</table>
+<p>Spot-checked after the write: five rows read live, each <code>KPI ID</code> equal to the register row its relation points at (5/5 match), and 0 of 51 objective rows carry a KPI ID.</p>
+<h3 id="25-cadence-pillar-kpi-type-verifier">2.5 Cadence, Pillar, KPI Type, Verifier</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Written</th>
+<th>Rows blank</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cadence</td>
+<td>320 of 320 → <code>Monthly</code></td>
+<td>0 (320 written)</td>
+<td>the policy states owners collect monthly evidence, and no measure body overrides it</td>
+</tr>
+<tr>
+<td>Verifier</td>
+<td>0</td>
+<td>371 of 371</td>
+<td>no unit-&gt;department-head mapping is stated anywhere in the folder; guessing a signer is forbidden by policy</td>
+</tr>
+<tr>
+<td>Pillar</td>
+<td>0</td>
+<td>371 of 371</td>
+<td>no measure body states a pillar</td>
+</tr>
+<tr>
+<td>KPI Type</td>
+<td>0</td>
+<td>371 of 371</td>
+<td>no measure body states a KPI type</td>
+</tr>
+</tbody>
+</table>
+<p>Rule used: policy: monthly evidence collection; no measure body overrides it</p>
+<h3 id="26-identifier-defects-and-the-prefix-contradictions">2.6 Identifier defects and the prefix contradictions</h3>
+<ul>
+<li><code>1an4v5wyvc5</code>: <code>FXS-FXS\nADM414</code> → <strong><code>FXS-FXS ADM414</code></strong>, read back <code>FXS-FXS ADM414</code> (OK).</li>
+<li><code>1an4v5wyv4z</code>: <code>INF-BND2291</code> → <strong><code>INF-BND 2291</code></strong>, read back <code>INF-BND 2291</code> (OK).</li>
+</ul>
+<p><strong>20 rows</strong> carry a KR-ID prefix that disagrees with their <code>Brand</code> field (EXP: 14, PPP: 1, TLF: 5).</p>
+<p>In 18 of the 20, the task title names the same brand as the field — so the <strong>field and the title are right and the KR-ID prefix is the stale part</strong> (those IDs were copied from an INF template onto EXP, TLF and PPP rows). The two remainder rows rest on the Brand + Business-Unit pair alone. <strong>No KR ID was rewritten</strong>: renaming 20 identifiers is a decision, and it is on the list below.</p>
+<h3 id="27-measure-register--brand-and-business-unit">2.7 Measure Register — Brand and Business Unit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Written</th>
+<th>Derivable</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Brand</td>
+<td><strong>130</strong></td>
+<td>130</td>
+<td>the <code>Scope:</code> token when it is a Brand option; <code>Group</code>/<code>MANCO</code>/<code>EXCO</code> → <code>ALL</code></td>
+</tr>
+<tr>
+<td>Business Unit</td>
+<td><strong>15</strong></td>
+<td>15</td>
+<td>only where the scope names a unit (<code>FIN HRM ADM ITC MKT SAL</code>) or says <code>&lt;UNIT&gt; SLA</code></td>
+</tr>
+<tr>
+<td>Owner</td>
+<td>0</td>
+<td>160</td>
+<td><strong>the register has no Owner field</strong>, and this job creates none; the derived owner is kept in <code>worker/register-decisions.json</code></td>
+</tr>
+</tbody>
+</table>
+<p>Left unresolved, by scope text — never guessed:</p>
+<ul>
+<li><code>IT service desk</code> × 5</li>
+<li><code>Tier Up</code> × 4</li>
+<li><code>CRM</code> × 2</li>
+<li><code>HOF</code> × 2</li>
+<li><code>EXP HR</code> × 1</li>
+<li><code>EXP finance</code> × 1</li>
+<li><code>EXP operations</code> × 1</li>
+<li><code>Finance</code> × 1</li>
+</ul>
+<p>A token that exists on <strong>both</strong> picklists (<code>EXP TLF FXS FXL PPP DID NVP</code>) was written as Brand only: the body never says which list it meant, so the unit stayed blank rather than duplicating a code into two fields. Where two or more key results pointed at one measure and named different owners, the owner was left blank.</p>
+<h3 id="28-two-empty-lists-seeded">2.8 Two empty lists seeded</h3>
+<table>
+<thead>
+<tr>
+<th>List</th>
+<th>Rows created</th>
+<th>Due date read back</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3 · BU Scorecards</td>
+<td>10</td>
+<td>2027-12-31</td>
+</tr>
+<tr>
+<td>6 · Close — 2026-11</td>
+<td>11</td>
+<td>2026-11-30</td>
+</tr>
+</tbody>
+</table>
+<p>Every row was re-read after creation: 85 field writes, 0 due-date mismatches. No field was created. Scorecards carry <code>Business Unit</code>, <code>Period = FY2027</code>, <code>Gate = Draft</code>. Close rows carry <code>Business Unit</code>, <code>Period = 2026-11</code>, <code>Close Status = Open</code>, <code>Submission due = 2026-11-25</code>, <code>Exception count = 0</code>, plus one group row with <code>Brand = ALL</code>.</p>
+<h2 id="verified-state-read-back-at-the-end-workerverify_allpy">Verified state, read back at the end (<code>worker/verify_all.py</code>)</h2>
+<ul>
+<li>Folder: <strong>FY2027 OKRs</strong></li>
+<li>Lists: 1 · Objectives (<code>1501000000002604</code>) · 2 · Business KPIs (<code>1501000000002605</code>) · 3 · BU Scorecards (<code>1501000000002606</code>) · 6 · Close — 2026-11 (<code>1501000000002607</code>) · 7 · Close Exceptions (<code>1501000000002608</code>) · 8 · Rules &amp; Change Log (<code>1501000000002609</code>) · 4 · Measure Register (<code>1501000000002839</code>) · 5 · Quarterly Reviews (<code>1501000000002840</code>)</li>
+<li>Archived and confirmed: ✨ Template Guide, OKR Framework, OKR Planning, CY 2026, CY 20XX</li>
+<li><code>1 · Objectives</code>: 371 rows · KPI ID 320 · Cadence 320 · Verifier 0 · Pillar 0 · KPI Type 0</li>
+<li><code>4 · Measure Register</code>: 162 rows · Brand 130 · Business Unit 15 · KPI ID 162</li>
+<li>Docs in the folder: 2 · views on <code>1 · Objectives</code>: FY2027 commitment review, My quarter, BU — this quarter, All commitments</li>
+<li>Titles carrying a quarter suffix: 10 · IDs repaired: FXS-FXS ADM414×1 + INF-BND 2291×1 · residual ids with a line break: 0</li>
+</ul>
+<h2 id="waiting-on-ricardo">Waiting on Ricardo</h2>
+<ol type="1">
+<li><strong>Go-ahead for the remaining 291 title suffixes</strong> (§2.3) — the 10 previews are on the card.</li>
+<li><strong>The four quarter contradictions</strong> — title and <code>Quarter</code> field disagree on the same four FXS rows. Which is right?</li>
+<li><strong>A named verifier per business unit.</strong> 0 of 371 rows can be signed until someone owns verification.</li>
+<li><strong>The 20 KR-ID prefixes</strong> that say INF on EXP / TLF / PPP rows. Field and title agree; the prefix is stale.</li>
+<li><strong>An Owner field on the Measure Register</strong> — or a decision that the owner lives only on the commitment row.</li>
+<li><strong>Eight scope texts that name nothing on either picklist</strong>: <code>IT service desk</code> (5), <code>Tier Up</code> (4), <code>CRM</code> (2), <code>HOF</code> (2), <code>EXP HR</code>, <code>EXP finance</code>, <code>EXP operations</code>, <code>Finance</code>.</li>
+<li><strong>PPP, DID and NVP</strong> have both a scorecard gap and a close gap: they are options, but carry no commitment, so they got no scorecard and no close row. If they hold FY2027 commitments, those rows need creating first.</li>
+</ol>
+<h2 id="evidence-files">Evidence files</h2>
+<ul>
+<li><code>worker/archive-receipt.json</code> — the five archived lists: counts, notes, read-back</li>
+<li><code>worker/renames.json</code> — the eight renames and the folder rename, with read-backs</li>
+<li><code>worker/docs.json</code> — both docs: ids, page ids, characters, probe phrases</li>
+<li><code>worker/views.json</code> — the three views and the filters that actually persisted</li>
+<li><code>worker/probe-duedate.json</code> — the automation probe, three read-backs</li>
+<li><code>worker/manifest-duedates.json</code> — 371 rows: old date, new date, basis</li>
+<li><code>worker/ledger-duedates.jsonl</code> — one receipt per due-date row, HTTP status included</li>
+<li><code>worker/verify-duedates.json</code> — the space read back: histogram, off-manifest rows, samples</li>
+<li><code>worker/titles-preview.json</code> — the 10 edited titles, the 19 already tagged, the 4 reverted</li>
+<li><code>worker/kpiid-join.json</code> — the KPI ID join and its unmatched set</li>
+<li><code>worker/derive-2-5.json</code> — cadence writes and every blank field with its reason</li>
+<li><code>worker/defects.json</code> — the two normalisations and the 20 contradictions</li>
+<li><code>worker/register-decisions.json</code> — all 162 register rows and the rule that produced each value</li>
+<li><code>worker/register-writes.json</code> — Brand / Business Unit write counts</li>
+<li><code>worker/seed.json</code> — the 21 seeded rows, their field writes and due-date read-backs</li>
+<li><code>worker/verification.json</code> — the final read-back of the whole folder</li>
+<li><code>worker/api-log.jsonl</code> — every HTTP call with status and ECODE</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
