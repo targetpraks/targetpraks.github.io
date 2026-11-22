@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Knowledge Garden — a knowledge bot for every space</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="knowledge-garden--a-knowledge-bot-for-every-space">Knowledge garden — a knowledge bot for every space</h1>
+<p><strong>Author:</strong> Adrianna A · <strong>Date:</strong> 2026-11-22 · <strong>Space:</strong> AI-Space <strong>Question from Ricardo:</strong> <em>"Can we make sure that all our systems have a knowledge bot and that it has automation that is improving, updating and maintaining all knowledge within its correct environment and space?"</em></p>
+<p><strong>Answer: yes — and it is running now.</strong> Seven spaces, seven named bots, one engine, nine scheduled runs, 26 decisions waiting on you. Every number in this report comes from a run made while writing it.</p>
+<hr />
+<h2 id="1-what-knowledge-bot-means-here">1. What "knowledge bot" means here</h2>
+<p>The post that prompted this (Nicholas Charriere, 2026-11-21) draws the line I used: a <strong>butler</strong> is attached to a person; a <strong>gardener</strong> is attached to a <em>space</em>. The gardener's edits change things for everyone in the space, so it needs an owner who signs off.</p>
+<p>So each bot here is:</p>
+<ul>
+<li><strong>attached to a space</strong>, not to a conversation or a person;</li>
+<li><strong>owns its corpus</strong> — one root, one index, one digest, one owner;</li>
+<li><strong>proposes, never silently rewrites</strong> — except in the two spaces this lane actually owns;</li>
+<li><strong>signed off by a human</strong> for anything that changes what people read.</li>
+</ul>
+<p>The company lane already had this model on paper: <code>PRD-SYSTEMS-MAINTENANCE-AND-KNOWLEDGE.md</code> v3.1 (2026-11-20) gives Infinity Brands unit bots their KBs, DOC Bot, SOP Bot and Superman. This build is the <strong>other half</strong> — Ricardo's own estate — which had no gardener at all.</p>
+<hr />
+<h2 id="2-the-seven-spaces-as-audited-today">2. The seven spaces, as audited today</h2>
+<table>
+<thead>
+<tr>
+<th>space</th>
+<th>bot</th>
+<th>documents</th>
+<th>index</th>
+<th>findings (warn)</th>
+<th>open decisions</th>
+<th>write rights</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maio Hub vault</td>
+<td><strong>Beast</strong></td>
+<td>3,453</td>
+<td>3,216 docs</td>
+<td>643 (245)</td>
+<td>8</td>
+<td>propose only — Beast applies via OpenKnowledge</td>
+</tr>
+<tr>
+<td>Work drive</td>
+<td><strong>Bruce Wayne</strong></td>
+<td>5,115</td>
+<td>3,873</td>
+<td>1,053 (678)</td>
+<td>4</td>
+<td>propose</td>
+</tr>
+<tr>
+<td>Personal drive</td>
+<td><strong>Splinter</strong></td>
+<td>552</td>
+<td>66</td>
+<td>118 (8)</td>
+<td>2</td>
+<td>propose</td>
+</tr>
+<tr>
+<td>AI-Space</td>
+<td><strong>Adrianna A</strong></td>
+<td>110</td>
+<td>110</td>
+<td>30 (29)</td>
+<td>4</td>
+<td>write</td>
+</tr>
+<tr>
+<td>DevMini (code mirror)</td>
+<td><strong>Builder</strong></td>
+<td>9,624</td>
+<td>9,569</td>
+<td>24 (24)</td>
+<td>2</td>
+<td>propose</td>
+</tr>
+<tr>
+<td>AI Hub</td>
+<td><strong>Adrianna A</strong></td>
+<td>2,173</td>
+<td>2,579</td>
+<td>442 (257)</td>
+<td>3</td>
+<td>write</td>
+</tr>
+<tr>
+<td>Agent output</td>
+<td><strong>Courage</strong></td>
+<td>4,576</td>
+<td>4,657</td>
+<td>1,025 (653)</td>
+<td>3</td>
+<td>write (90-day retention)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>26,418 documents under care.</strong> Zones inside a space carry their own bot: the Work drive splits into Infinity Brands (Mr. Infinity, handed to the company lane), Papa Pasta (Papa Prime), HR and the ventures (Bruce Wayne); Personal splits into Health, Wealth, Family, Relationships, Esoteric (Splinter).</p>
+<p>The vault is untouched by the engine — it is opened read-only. Beast remains the only writer, through OpenKnowledge, and only after your go.</p>
+<hr />
+<h2 id="3-the-loop-and-what-it-does-at-each-step">3. The loop, and what it does at each step</h2>
+<pre><code>snapshot → audit → index → propose → decide → tune → digest</code></pre>
+<table>
+<thead>
+<tr>
+<th>step</th>
+<th>what happens</th>
+<th>evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Capture</strong></td>
+<td>every document's size, mtime and content hash is stored, so the next run knows what is new, changed or gone</td>
+<td><code>new / modified / deleted</code> in every digest</td>
+</tr>
+<tr>
+<td><strong>Check</strong></td>
+<td>duplicate content, duplicate names, empty files, missing frontmatter (vault), broken relative links, orphans older than 30 days (vault), staleness by status, retention age, index age</td>
+<td>643 findings on the vault, 118 on Personal</td>
+</tr>
+<tr>
+<td><strong>Update</strong></td>
+<td>each space gets its own FTS5 index, rebuilt nightly; <code>kgarden.py search &lt;space&gt; "query"</code> returns ranked passages with zone</td>
+<td>vault index 112 MB / 3,216 docs; search for "brief playbook" returns the Brief Playbook first</td>
+</tr>
+<tr>
+<td><strong>Propose</strong></td>
+<td>findings group into proposals by kind and zone, each naming the owner bot; nothing is written to a propose-only space</td>
+<td>26 open proposals, owners correct per zone</td>
+</tr>
+<tr>
+<td><strong>Decide</strong></td>
+<td><code>decide &lt;space&gt; &lt;id&gt; accept|reject</code> records the call</td>
+<td>tested: <code>cd562f21 recorded as rejected</code></td>
+</tr>
+<tr>
+<td><strong>Tune</strong></td>
+<td>five rejects of one check kind suppress it in future proposals</td>
+<td>tested on a fixture: after 5 rejects, <code>suppress: ["broken_link"]</code> and the proposal disappeared</td>
+</tr>
+<tr>
+<td><strong>Improve</strong></td>
+<td>every search is logged; a question that returns nothing three times becomes a "write this note" proposal</td>
+<td>tested: 4 zero-hit searches produced <code>aa519037 knowledge_gap</code></td>
+</tr>
+<tr>
+<td><strong>Report</strong></td>
+<td>per-space <code>latest.md</code>, fleet <code>weekly-YYYY-MM-DD.md</code>, machine feed <code>garden.json</code></td>
+<td><code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/kgarden/</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-what-the-first-pass-actually-found">4. What the first pass actually found</h2>
+<p>These are real, and they are the work the bots will now keep doing:</p>
+<ul>
+<li><strong>The vault rots at the seam between notes and time.</strong> 288 broken links, almost all of them pointing at a note that was archived or renamed after the link was written — for example <code>Personal/4.Research/log.md</code> still links <code>../5.PARA/4.Archive/2026-11-13-nine-schools-rated-for-a-grade-4-place-in-2027-distance.md</code>, and the Reddam archive notes point at <code>~/AI-Drive/Agent-Output/splinter/...</code> attachment paths that have moved. 1,553 notes have no inbound link at all; 1,044 of those have been untouched for 30+ days and are the real candidates for linking or archiving. 90 notes are missing frontmatter or required fields.</li>
+<li><strong>The Work drive is carrying duplicate weight.</strong> 206 groups of identical documents and 375 repeated basenames, plus 422 empty files (test fixtures and truncated exports). The Zoho audit artefacts and the HR export folder account for most of it.</li>
+<li><strong>Agent output never forgets.</strong> 229 files are past their 90-day retention, and the same PRD or report often exists three or four times under near-identical names. That is what "the vault holds the finalized copy" should have prevented.</li>
+<li><strong>AI Hub has a staging backlog.</strong> <code>~/AI Hub/staging/vault-handoff/</code> holds documents that were staged for the vault and never filed — some four copies deep (<code>...-5.md</code>).</li>
+<li><strong>DevMini is clean at the document level:</strong> 24 findings in 9,624 documents, all broken links in docs that point at vault root files by relative path.</li>
+</ul>
+<hr />
+<h2 id="5-what-runs-when-and-how-you-hear-about-it">5. What runs, when, and how you hear about it</h2>
+<table>
+<thead>
+<tr>
+<th>job id</th>
+<th>job</th>
+<th>schedule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>d416c00e58a7</code></td>
+<td>vault · Beast</td>
+<td>02:10 daily</td>
+</tr>
+<tr>
+<td><code>adea1bef2227</code></td>
+<td>work · Bruce Wayne</td>
+<td>02:30 daily</td>
+</tr>
+<tr>
+<td><code>30838f65f0fe</code></td>
+<td>personal · Splinter</td>
+<td>02:45 daily</td>
+</tr>
+<tr>
+<td><code>b1b7bb16f6ef</code></td>
+<td>AI-Space · Adrianna A</td>
+<td>03:00 daily</td>
+</tr>
+<tr>
+<td><code>dc0373cb3976</code></td>
+<td>DevMini · Builder</td>
+<td>03:15 daily</td>
+</tr>
+<tr>
+<td><code>27628ff5f0a1</code></td>
+<td>AI Hub · Adrianna A</td>
+<td>03:30 daily</td>
+</tr>
+<tr>
+<td><code>c034e5853c3b</code></td>
+<td>agent output · Courage</td>
+<td>03:45 daily</td>
+</tr>
+<tr>
+<td><code>f104058c4c2c</code></td>
+<td>weekly roll-up</td>
+<td>Monday 06:30</td>
+</tr>
+<tr>
+<td><code>93b69f7ab880</code></td>
+<td>garden health check</td>
+<td>09:00 daily</td>
+</tr>
+</tbody>
+</table>
+<p>All nine deliver to the crons channel. A run is <strong>silent unless</strong> it produces a new decision, sees five or more new documents, or it is Monday. The health check stays silent unless a space has not been audited or indexed in 48 hours.</p>
+<p><strong>Verified, not assumed:</strong> the personal job was fired by hand — execution <code>1b8d98c07cd24b568f2374f4cb70f67d</code>, status <code>completed</code>, output <code>silent (empty output)</code>; then, with one proposal deliberately removed so there was something to say, the same job produced the digest line and the decision list. A Discord send from the same profile returned <code>sent</code>. Earlier jobs were created in the <code>courage</code> profile and reported <em>"ran, but the result was not delivered (platform 'discord' not configured)"</em> — they were moved to the default profile, which is where the connected bot lives.</p>
+<p>The digest uses the local triage gate once per reporting run and appends to <code>Agent-Output/adrianna/gates.csv</code> (verified row: <code>2026-11-22T07:32:08+0200,triage,category,informational,0.8310</code>).</p>
+<hr />
+<h2 id="6-your-decisions-by-number">6. Your decisions, by number</h2>
+<p>Nothing below is urgent; none of it is a rewrite. Accept or reject per group:</p>
+<table>
+<thead>
+<tr>
+<th>space</th>
+<th>id</th>
+<th>what</th>
+<th>how many</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vault</td>
+<td><code>ffd50718</code></td>
+<td>identical notes, keep the longest</td>
+<td>27</td>
+</tr>
+<tr>
+<td>vault</td>
+<td><code>8925343d</code></td>
+<td>broken links to archived notes</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>vault</td>
+<td><code>fd7eb853</code></td>
+<td>orphans untouched 30+ days</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>vault</td>
+<td><code>ca95021c</code></td>
+<td>stale by status</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>vault</td>
+<td><code>a43a74e9</code></td>
+<td>frontmatter gaps</td>
+<td>40</td>
+</tr>
+<tr>
+<td>vault</td>
+<td><code>c57b04d5</code></td>
+<td>duplicate basenames</td>
+<td>40</td>
+</tr>
+<tr>
+<td>vault</td>
+<td><code>98cc8dbd</code></td>
+<td>missing frontmatter</td>
+<td>16</td>
+</tr>
+<tr>
+<td>vault</td>
+<td><code>d2ddf4f3</code></td>
+<td>empty notes</td>
+<td>2</td>
+</tr>
+<tr>
+<td>work</td>
+<td><code>a6c7a47b</code></td>
+<td>broken links</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>work</td>
+<td><code>4687a0b8</code></td>
+<td>duplicate content</td>
+<td>40</td>
+</tr>
+<tr>
+<td>work</td>
+<td><code>d6014c39</code></td>
+<td>duplicate names</td>
+<td>40</td>
+</tr>
+<tr>
+<td>work</td>
+<td><code>a4f403a2</code></td>
+<td>empty files</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>personal</td>
+<td><code>dd04257b</code></td>
+<td>duplicate content in the Reddam archive</td>
+<td>8</td>
+</tr>
+<tr>
+<td>personal</td>
+<td><code>201ea965</code></td>
+<td>duplicate statements</td>
+<td>40</td>
+</tr>
+<tr>
+<td>aispace</td>
+<td><code>fc1a3d0f</code></td>
+<td>broken links after the vault move</td>
+<td>18</td>
+</tr>
+<tr>
+<td>aispace</td>
+<td><code>09e3c099</code></td>
+<td>duplicate research captures</td>
+<td>10</td>
+</tr>
+<tr>
+<td>aispace</td>
+<td><code>31940f31</code></td>
+<td>empty dump</td>
+<td>1</td>
+</tr>
+<tr>
+<td>aispace</td>
+<td><code>efca6064</code></td>
+<td>duplicate FINDINGS.md</td>
+<td>1</td>
+</tr>
+<tr>
+<td>dev</td>
+<td><code>13e57526</code></td>
+<td>broken doc links</td>
+<td>12</td>
+</tr>
+<tr>
+<td>dev</td>
+<td><code>204a3e99</code></td>
+<td>empty CLAUDE.md stubs</td>
+<td>12</td>
+</tr>
+<tr>
+<td>aihub</td>
+<td><code>fc362da8</code></td>
+<td>duplicate content</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>aihub</td>
+<td><code>63f45aaf</code></td>
+<td>duplicate names</td>
+<td>40</td>
+</tr>
+<tr>
+<td>aihub</td>
+<td><code>99ad55f6</code></td>
+<td>empty files</td>
+<td>7</td>
+</tr>
+<tr>
+<td>output</td>
+<td><code>058c728b</code></td>
+<td>duplicate content</td>
+<td>40+</td>
+</tr>
+<tr>
+<td>output</td>
+<td><code>5c1ee61f</code></td>
+<td>duplicate names</td>
+<td>40</td>
+</tr>
+<tr>
+<td>output</td>
+<td><code>8eb140ab</code></td>
+<td>empty files</td>
+<td>7</td>
+</tr>
+</tbody>
+</table>
+<p>Full lists and examples: <code>AI-Drive/Agent-Output/kgarden/&lt;space&gt;/latest.md</code>.</p>
+<hr />
+<h2 id="7-the-company-lane">7. The company lane</h2>
+<p><code>Infinity Brands</code> (133 documents) is audited read-only in the Work space and marked <code>handoff: agenticos</code>. Its seven findings (five broken links, two duplicates) are written up in <code>AI-Drive/Agent-Output/kgarden/INFINITY-HANDOFF.md</code> for Mr. Infinity and the AgenticOS DOC/SOP bots. This lane does not fix company knowledge and does not run company work.</p>
+<hr />
+<h2 id="8-honest-limits">8. Honest limits</h2>
+<ul>
+<li><strong>The vault is still hand-maintained.</strong> The gardener can prove what is broken; only Beast can repair it. That is deliberate.</li>
+<li><strong>A bot is only as good as its checks.</strong> Duplicate detection on a code mirror is meaningless (git worktrees are copies), so it is switched off for DevMini; retention is meaningless for a reference archive, so it runs only on agent output. Each space's rule is visible in <code>~/AI Hub/kgarden/spaces.json</code>, not buried in code.</li>
+<li><strong>Search is lexical, not semantic.</strong> FTS5 finds phrases and stems; the vault's hybrid vector search (<code>qmd</code>, refreshed 03:50 by <code>nexus-vault-index</code>) remains the semantic lane. The gardener's index adds the per-space cut, zone metadata and the zero-hit log.</li>
+<li><strong>The internal disk is at 96% (19 GB free).</strong> The gardener's state is 520 MB. If that becomes uncomfortable, the first fix is to store only excerpts in the index rather than full bodies.</li>
+</ul>
+<hr />
+<h2 id="related">Related</h2>
+<ul>
+<li><a href="../../ReadME_MasterIndex.md">ReadME_MasterIndex.md</a></li>
+<li><a href="../../User.md">User.md</a></li>
+<li><a href="../../Soul.md">Soul.md</a></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
