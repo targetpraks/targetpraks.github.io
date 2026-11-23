@@ -145,6 +145,11 @@
 <table>
   <tr><th>Model</th><th>Access</th><th class="num">Hard puzzles</th><th>Tool call</th><th>Clean output</th><th class="num">Latency</th><th class="num">Marginal cost</th></tr>
   <tr class="win">
+    <td><b>Claude Opus 5.5</b><br><span class="muted">via the new Hermes provider</span></td><td>antigravity · delegation route</td>
+    <td class="num"><b>8/8</b></td><td class="ok">pass</td><td class="ok">clean</td>
+    <td class="num">15.6 s</td><td class="num">$0</td>
+  </tr>
+  <tr class="win">
     <td><b>Claude Opus 5.5</b></td><td>agy · subscription</td>
     <td class="num"><b>8/8</b></td><td class="muted">—</td><td class="ok">JSON, no leakage</td>
     <td class="num">43–45 s</td><td class="num">$0</td>
@@ -203,11 +208,11 @@
       <li><b>$5.9 — background review.</b> Was $14.17 this morning before it stopped running on the main model.</li>
       <li><b>$1.42 vision, $0.70 council, $0.05 titles</b> — noise.</li>
     </ul>
-    <p class="muted" style="margin-top:10px">Google adds $0 to this. The subscription is already paid; the lane it buys is not metered.</p>
+    <p class="muted" style="margin-top:10px">Google adds $0 to this. The subscription is already paid; the lane it buys is not metered — and Hermes records <b>0 tokens</b> for ACP calls, so its own accounting cannot see them. Read <code>agy -p "/usage"</code> for the real quota.</p>
   </div>
   <div class="card">
     <h3>The one lever Google does create</h3>
-    <p>If the <code>deep</code> seat moved from glm-5.3 to Gemini 4, a hard-reasoning call goes from $0.0123 to $0 — but at 51 s instead of 1.5 s, and it needs an external-process provider written first.</p>
+    <p>If the <code>deep</code> seat moved from glm-5.3 to the subscription lane, a hard-reasoning call goes from $0.0123 to $0 — but at 15–45 s instead of 1.5 s. The provider now exists, so that is one config line away; I left <code>deep</code> on glm-5.3 because a 30× latency penalty on every deep task is a worse trade than saving a cent.</p>
     <p>At your current volume that is a few dollars a month. <b>The prize is quality and quota headroom, not savings</b> — which is exactly why it should be an escalation you choose per problem, not a seat that everything silently lands on.</p>
   </div>
 </div>
@@ -215,8 +220,8 @@
 <h2>6 · Decisions for you</h2>
 <div class="grid2">
   <div class="card">
-    <h3>1. Wire the subscription lane as a real delegation route <span class="pill p-warn">build</span></h3>
-    <p>Hermes already has the plumbing for CLI-backed providers (<code>external_process</code>, the same shape as GitHub Copilot's ACP lane). One profile pointing at <code>agy acp</code> exposes every model on the plan — Gemini 4, Opus 5.5 and Sonnet 5.5 alike — and then <code>deep</code> can name the one you prefer. Real work, maybe an hour, and it makes the subscription a first-class seat instead of a remembered shell command.</p>
+    <h3>1. Subscription lane as a delegation route <span class="pill p-good">done</span></h3>
+    <p><b>Built and proven.</b> <code>agy acp</code> speaks the same JSON-RPC as the Copilot ACP lane, so a provider plugin reuses that client with no core patch. Route <code>escalate</code> → Opus 5.5 (high) now exists in all 36 homes; a delegated call returned the right route and the right answer. A direct turn runs in 15.6 s against 45–60 s shelling out to the CLI.</p>
   </div>
   <div class="card">
     <h3>2. Main model → mimo-v2.6-flash <span class="pill p-warn">$68/mo</span></h3>
