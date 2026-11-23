@@ -123,7 +123,7 @@
   <tr>
     <td><b>Mixture of Agents</b></td>
     <td>Preset <code>default</code>: glm-5.3 + kimi-k3.1-pro + hy4 at high effort, aggregator nemotron-3-ultra</td>
-    <td><b>Off right now</b> (good). If switched on: <b>$0.107 per user turn = 32× a main turn.</b> Two of the three advisors are the two most expensive models on the card, and kimi is the weakest reasoner I measured. hy4 also returned truncated answers at default effort in the label and reasoning probes.</td>
+    <td><b>Off right now</b> (good). If switched on: <b>$0.107 per user turn = 32× a main turn.</b> Two of the three advisors are the two most expensive models on the card, and kimi is the weakest reasoner I measured. hy4 also returned truncated answers at default effort in the label and reasoning probes, and the aggregator itself — nemotron-3-ultra, the model that has to emit the final answer — truncated on strict JSON at a 300-token budget.</td>
     <td><span class="pill p-warn">leave off</span> · lean preset costed below</td>
   </tr>
 </table>
@@ -150,7 +150,7 @@
 <table>
   <tr>
     <th>Model</th><th class="num">$ in / out</th><th class="num">$ per main call</th>
-    <th>Tool loop</th><th>Exact format</th><th>Code 3 tasks</th><th>48k recall</th><th>Hard puzzles</th><th>p50 latency</th>
+    <th>Tool call</th><th>Exact format</th><th>Code 3 tasks</th><th>48k recall</th><th>Hard puzzles</th><th>p50 latency</th>
   </tr>
   <tr>
     <td><code>deepseek-v4.1-flash</code> <span class="muted">· current main</span></td>
@@ -195,6 +195,18 @@
     <td class="no">fail</td><td class="num">17s</td>
   </tr>
   <tr>
+    <td><code>nemotron-3-super</code></td>
+    <td class="num">0.015 / 0.60</td><td class="num">$0.00271</td>
+    <td class="ok">pass</td><td class="no">empty at default effort</td><td class="no">—</td><td class="no">—</td>
+    <td class="ok">96</td><td class="num">0.62s</td>
+  </tr>
+  <tr>
+    <td><code>nemotron-3-ultra</code> <span class="muted">· MoA aggregator</span></td>
+    <td class="num">0.10 / 3.00</td><td class="num">$0.0071</td>
+    <td class="ok">pass</td><td class="no">truncated at 300 tok</td><td class="no">—</td><td class="no">—</td>
+    <td class="ok">96</td><td class="num">—</td>
+  </tr>
+  <tr>
     <td><code>mistral-large-4</code></td>
     <td class="num">0.70 / 2.10</td><td class="num">$0.0058</td>
     <td class="ok">pass</td><td class="no">empty 1/3</td><td class="no">—</td><td class="no">—</td>
@@ -202,7 +214,7 @@
   </tr>
 </table>
 <p class="muted" style="font-size:12.5px;margin-top:9px">
-  <b>Empty-answer trap:</b> every thinking model — glm-5.3-flash, minimax-m3.1-flash, nemotron-3-super, hy4, deepseek-v4-pro, kimi-k3.1-pro, inkling — returned an <b>empty string</b> on a summarisation prompt at default effort, because the whole output budget went to thinking tokens. All of them answered cleanly at <code>reasoning_effort: none</code>. Any auxiliary slot pinned to a thinking model must carry an explicit effort setting, or the task silently returns nothing.
+  <b>Empty-answer trap:</b> every thinking model — glm-5.3-flash, minimax-m3.1-flash, nemotron-3-super, hy4, deepseek-v4-pro, kimi-k3.1-pro, inkling — returned an <b>empty string</b> on a summarisation prompt at default effort, because the whole output budget went to thinking tokens. All of them answered cleanly at <code>reasoning_effort: none</code>. Any auxiliary slot pinned to a thinking model must carry an explicit effort setting, or the task silently returns nothing. The full two-round tool loop (call → read result → answer) and the exact-format probe were run on deepseek, mimo, gemma4 and beam — all four passed both; the Tool call column above is the single-call probe the wider set received.
 </p>
 
 <h2>5 · Applied today (36 homes, backed up, verified)</h2>
