@@ -179,11 +179,20 @@ docker compose -f docker-compose.selfhost.yml ps
 docker compose -f docker-compose.selfhost.yml logs -f backend</code></pre>
 <ul>
 <li>Web: http://localhost:3000 · API: http://localhost:8080 · Health: /healthz</li>
-<li>Both bind 127.0.0.1 only — nothing on the LAN or tailnet can reach it.</li>
+<li>Containers bind 127.0.0.1 only; remote access is through a tailnet TLS proxy (below), never a 0.0.0.0 bind.</li>
 <li>Telemetry off (DO_NOT_TRACK=1).</li>
 </ul>
+<h2 id="remote-access-macbook-air-ipad-iphone">Remote access (MacBook Air, iPad, iPhone)</h2>
+<p>Tailscale serve terminates TLS for the tailnet and proxies to the loopback port:</p>
+<pre><code>tailscale serve --bg --https=10040 http://127.0.0.1:3000
+tailscale serve status</code></pre>
+<ul>
+<li>Board from the laptop: <a href="https://ricardos-mac-mini.taile9f837.ts.net:10040">https://ricardos-mac-mini.taile9f837.ts.net:10040</a></li>
+<li>Tailnet only (no Funnel). Verified: root 200, /login 200, /api/config 200, static chunks 200.</li>
+<li>.env carries FRONTEND_ORIGIN and MULTICA_APP_URL set to that URL, so links, CORS and cookies resolve on the remote origin.</li>
+</ul>
 <h2 id="login">Login</h2>
-<p>No SMTP/Resend configured, so email codes print to the backend log:</p>
+<p>Login codes are emailed through SMTP (host/port/user/from in .env, mode 600, git-ignored; sender is the existing Infinity Brands notifications address). Codes arrive by mail; the backend log fallback no longer prints them:</p>
 <pre><code>docker compose -f docker-compose.selfhost.yml logs backend --since 5m | grep &quot;Verification code&quot;</code></pre>
 <p>Enter <a href="mailto:rickymaio@gmail.com">rickymaio@gmail.com</a> at http://localhost:3000/login, then the code from the log. Codes expire in 10 minutes; one per email per 60 seconds.</p>
 <p>Headless alternative (used in setup): POST /auth/send-code → code from log → POST /auth/verify-code (returns a session JWT) → POST /api/tokens with that JWT → multica login --token mul_…</p>
@@ -281,13 +290,13 @@ multica runtime list</code></pre>
 <li>hermes session/new failed … "Gateway draining: update_paused". Multica builds a per-task HERMES_HOME overlay; the first tasks each triggered a Hermes source-update / dependency tail that takes the shared checkout lock and fences the gateway for every other run (upstream multica#9390). Fix applied: HERMES_DISABLE_LAZY_INSTALLS=1 in each Hermes agent's custom_env (multica agent env set <id> --custom-env '{"HERMES_DISABLE_LAZY_INSTALLS":"1"}').</li>
 <li>Codex/agent role pushback: an agent handed work outside its stated role comments and stops rather than acting. That is the identity guard working; assign work that matches the card's owner.</li>
 <li>Ports 3000/8080 were free; if a dev server takes 3000 later, set BACKEND_PORT / FRONTEND_PORT in .env and restart.</li>
-<li>No email backend: login codes only appear in logs. Needed before any non-local access.</li>
+<li>If mail delivery ever fails, codes are still stored in <code>verification_code</code> (Postgres) and the backend log; check the log for an SMTP error line first.</li>
 </ol>
-<h2 id="open-decisions-for-ricardo">Open decisions for Ricardo</h2>
+<h2 id="decisions-taken-2026-11-23">Decisions taken 2026-11-23</h2>
 <ol type="1">
-<li>Tailnet access — expose the board to iPhone/iPad via Tailscale + TLS reverse proxy (never a 0.0.0.0 bind). Requires email login first.</li>
-<li>Email login — wire SMTP/Resend so codes arrive by mail.</li>
-<li>Roster scope — whether Bruce Wayne / Splinter cards should run live work in this workspace.</li>
+<li>Tailnet access — done: tailscale serve on :10040, tailnet only.</li>
+<li>Email login — done: SMTP relay configured, codes delivered by mail.</li>
+<li>Open — whether Bruce Wayne / Splinter cards should run live work in this workspace.</li>
 </ol>
 <h2 id="screenshot">Screenshot</h2>
 <p>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/adrianna/multica-board-2026-11-23.png</p>
