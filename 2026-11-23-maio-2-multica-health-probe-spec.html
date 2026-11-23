@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>MAIO-2 — Multica health probe spec</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="maio-2--health-probe-for-multica-in-maio-os">MAIO-2 — Health probe for Multica in Maio OS</h1>
+<p><strong>Issue:</strong> MAIO-2 · Health probe for Multica in Maio OS (project AI Stack) <strong>Step:</strong> Spec → Build · <strong>Author:</strong> Adrianna A · <strong>Date:</strong> 2026-11-23 <strong>Target repo:</strong> <code>targetpraks/maio-os</code> (clone <code>/Volumes/Hiksemi 1TB/DevMini/maio-os</code>, app files at repo root)</p>
+<h2 id="1-problem">1. Problem</h2>
+<p>Maio OS System ▸ Stack is the surface Ricardo uses to answer "is everything up?". It already carries the local stack (snapshot probes), legacy dev hosts, the machine snapshot and the gated service-control card — but <strong>Multica, the platform this workspace runs on, is invisible there</strong>. When the Multica backend, its web app or the local daemon stops, nothing on the cockpit says so; the only way to find out is to run <code>multica daemon status</code> in a terminal or notice tasks quietly stop being picked up.</p>
+<p>The issue asks for a Multica row in System ▸ Stack covering three things: <strong>backend <code>/healthz</code>, web <code>/</code>, daemon status</strong> — with <strong>live state</strong>, and <strong>red when down</strong>.</p>
+<h2 id="2-what-is-actually-there-verified-2026-11-23-0720-sast">2. What is actually there (verified 2026-11-23, 07:20 SAST)</h2>
+<p>All three probes were exercised for real before this spec was written:</p>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Endpoint</th>
+<th>Verified answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backend health</td>
+<td><code>http://localhost:8080/healthz</code></td>
+<td><code>200</code> · <code>{"status":"ok","checks":{"db":"ok","migrations":"ok"}}</code></td>
+</tr>
+<tr>
+<td>Web app</td>
+<td><code>http://localhost:3000/</code></td>
+<td><code>200</code> · <code>text/html</code> · 403,496 bytes (Next.js shell)</td>
+</tr>
+<tr>
+<td>Local daemon</td>
+<td><code>http://127.0.0.1:19514/health</code></td>
+<td><code>200</code> · <code>{"status":"running","pid":9747,"uptime":"11m27s","running_task_count":3,…}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Facts that shape the design:</p>
+<ul>
+<li><strong>Both 8080 and 3000 are SSH port-forwards, not local servers.</strong> <code>lsof -nP -iTCP:8080 -sTCP:LISTEN</code> and the same for 3000 both name <code>ssh</code> (PID 10959). A dead tunnel therefore looks exactly like a dead backend — the card must say "not answering", it must not guess which half failed.</li>
+<li><strong>The daemon is local and self-reports its port:</strong> <code>~/.multica/daemon.port</code> = <code>{"port":19514,"pid":9747}</code>. The port moves between daemon restarts, so it is <strong>read, never hardcoded</strong>.</li>
+<li><strong>The URLs are configuration, not constants:</strong> <code>~/.multica/config.json</code> holds <code>server_url</code>, <code>app_url</code>, <code>workspace_id</code> — <strong>and the API token</strong> (<code>mul_…</code>). The token must never be read into the payload, the fix log or <code>data.js</code>.</li>
+<li><code>multica daemon status --output json</code> is the CLI equivalent of the daemon probe; it is the fallback when <code>daemon.port</code> is missing or stale.</li>
+<li>Maio OS's Stack section draws snapshot rows from <code>DATA.stack</code> (generator, 4× daily) and its live service card from <code>/local.js</code>. <strong>A snapshot row cannot satisfy "red when down"</strong> — it would be hours stale. This is a companion (live) collector, like <code>firefly</code>.</li>
+</ul>
+<h2 id="3-scope">3. Scope</h2>
+<h3 id="in-scope">In scope</h3>
+<ol type="1">
+<li><strong><code>companion/collectors.mjs</code> — new <code>collectMultica()</code>.</strong>
+<ul>
+<li>Reads <code>MULTICA_CONFIG</code> (default <code>~/.multica/config.json</code>) for <code>server_url</code> and <code>app_url</code>, and <code>~/.multica/daemon.port</code> for <code>{port,pid}</code>. <strong>Whitelists the fields it needs</strong> (<code>JSON.parse</code> then pick <code>server_url</code>/<code>app_url</code>); it never stringifies the whole file.</li>
+<li>Three probes, run in parallel, each with its own <code>try/catch</code> and <code>AbortSignal.timeout(2500)</code> (same discipline as <code>collectFirefly</code>), so one dead endpoint never hides the other two:
+<ul>
+<li><code>backend</code> — <code>GET {server_url}/healthz</code> → up when HTTP 200 <strong>and</strong> body <code>status === "ok"</code>; carries <code>db</code> and <code>migrations</code> sub-checks and the latency.</li>
+<li><code>web</code> — <code>GET {app_url}/</code> → up when 2xx <strong>and</strong> an HTML content type.</li>
+<li><code>daemon</code> — <code>GET http://127.0.0.1:{port}/health</code> → up when 200 <strong>and</strong> body <code>status === "running"</code>; carries <code>pid</code>, <code>uptime</code>, <code>running_task_count</code>. If <code>daemon.port</code> is missing/unreadable, fall back to <code>multica daemon status --output json</code>; if the reported pid no longer matches the process in <code>daemon.port</code>, report <code>warn</code> with the mismatch named, never a silent green.</li>
+</ul></li>
+<li>Returns <code>{ ok, generatedAt, backend, web, daemon }</code>; <code>ok</code> is true only when all three are up. Every failure path returns a short, honest <code>error</code> string (connection refused, timeout, code, body mismatch) — never a fabricated state.</li>
+<li>Registered in <code>collectAll()</code> as <code>safe('multica', collectMultica)</code> so a thrown probe cannot take the payload hostage.</li>
+<li><strong>Env overrides for QA:</strong> <code>MULTICA_CONFIG</code>, <code>MULTICA_SERVER_URL</code>, <code>MULTICA_APP_URL</code>, <code>MULTICA_DAEMON_PORT</code> (and optionally <code>MULTICA_DAEMON_HEALTH</code>). This is what makes the "red when down" test non-destructive.</li>
+</ul></li>
+<li><strong><code>index.html</code> — a Multica card in <code>renderStack()</code>.</strong>
+<ul>
+<li>New <code>multicaCard()</code> placed with the other live cards (after <code>stackServicesCard()</code>).</li>
+<li>Heading <strong>"Multica — workspace runtime"</strong> plus the local badge, then three rows matching the issue's wording: <strong>Backend <code>/healthz</code></strong>, <strong>Web <code>/</code></strong>, <strong>Daemon status</strong>.</li>
+<li>Each row: name · endpoint/latency detail · a pill. Up = <code>pill ok</code>, down = <code>pill bad</code> (red), degraded = <code>pill warn</code>. The daemon row shows <code>pid · uptime · N running</code>.</li>
+<li>Values match the ground truth in §2 (pid reads as <code>9747</code> when <code>~/.multica/daemon.pid</code> says so).</li>
+<li><strong>Honest degradation:</strong> with no <code>/local.js</code>, the card renders the same "needs the local companion (127.0.0.1:9111)" note the service card uses — never a green row.</li>
+</ul></li>
+<li><strong><code>VIEW_SIGS.stack</code></strong> (index.html ≈ line 717) gains the <code>multica</code> key so the section repaints when a probe changes state (today it only watches <code>services.items</code>); without this the row would be correct in the DOM and stale on screen.</li>
+<li><strong><code>ops/deploy.sh</code> payload install</strong> — <code>companion/collectors.mjs</code> is already in the payload map; no new file, so the deploy path is unchanged: <code>./ops/deploy.sh</code> then <code>./ops/deploy.sh --check</code>.</li>
+</ol>
+<h3 id="out-of-scope-deliberate">Out of scope (deliberate)</h3>
+<ul>
+<li>No restart/fix action for Multica (no <code>launchctl</code> kick, no <code>multica daemon restart</code> button). This is a read-only health row; two-way actions need their own guard rails and a separate go.</li>
+<li>No changes to <code>generator/maio_os_gen.py</code> / <code>data.js</code> — the row is live-only by design.</li>
+<li>No tailnet exposure, no auth/token work, no alerting or paging. The token is a hazard to avoid, not a feature to add.</li>
+<li>No changes to Multica itself or to the SSH tunnels.</li>
+</ul>
+<h2 id="4-acceptance-criteria">4. Acceptance criteria</h2>
+<ol type="1">
+<li><strong>Shape</strong> — System ▸ Stack shows a card titled "Multica — workspace runtime" with exactly three rows: Backend <code>/healthz</code>, Web <code>/</code>, Daemon status.</li>
+<li><strong>Live</strong> — with the stack up, all three rows are green and their values agree with the endpoints in §2 (backend 200 + <code>db/migrations</code> ok; web 200 HTML; daemon <code>running</code>, pid equal to <code>~/.multica/daemon.pid</code>).</li>
+<li><strong>Red when down</strong> — pointing any probe at a dead endpoint makes <strong>that</strong> row red within one refresh cycle (≤30 s), carrying the real error text; the page never renders green for an endpoint that did not answer.</li>
+<li><strong>Isolation</strong> — a single dead probe does not blank the other two rows.</li>
+<li><strong>Honest absence</strong> — served without the companion, the card says the action/probe lane is unavailable instead of showing green.</li>
+<li><strong>No secret</strong> — the <code>mul_…</code> token never appears in <code>/local.js</code>, <code>/api/fix/log</code>, <code>data.js</code>, or any collector log line.</li>
+<li><strong>No regression</strong> — the existing snapshot rows, legacy-hosts block, machine snapshot and service card are unchanged; <code>node --check</code> passes on <code>index.html</code>'s inline script and <code>companion/collectors.mjs</code>; <code>ops/deploy.sh --check</code> reports <code>in sync</code>.</li>
+</ol>
+<h2 id="5-the-exact-test-that-proves-it">5. The exact test that proves it</h2>
+<p>Run from the repo (work in a worktree, never the base checkout that 9111 serves).</p>
+<p><strong>T1 — live payload carries all three probes</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> http://127.0.0.1:9111/local.js <span class="kw">|</span> <span class="ex">python3</span> <span class="at">-c</span> <span class="st">&#39;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="st">import sys, json, re</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="st">d = json.loads(re.search(r&quot;=\s*(\{.*\});?\s*$&quot;, sys.stdin.read(), re.S).group(1))</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="st">m = d[&quot;multica&quot;]; print(json.dumps(m, indent=1))</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="st">assert m[&quot;backend&quot;][&quot;ok&quot;] is True and m[&quot;backend&quot;].get(&quot;status&quot;) == 200</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">assert m[&quot;web&quot;][&quot;ok&quot;] is True</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="st">assert m[&quot;daemon&quot;][&quot;ok&quot;] is True</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="st">assert str(m[&quot;daemon&quot;][&quot;pid&quot;]) == open(&quot;/Users/ricardomaio/.multica/daemon.pid&quot;).read().strip()</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="st">print(&quot;T1 PASS&quot;)&#39;</span></span></code></pre></div>
+<p>Expected: <code>T1 PASS</code>, backend body shows <code>db: ok</code>, <code>migrations: ok</code>.</p>
+<p><strong>T2 — red when down, without touching the real tunnels</strong> (QA companion on 9130, every probe pointed at a dead port)</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="va">WT</span><span class="op">=</span>/tmp/maio-os-qa-multica          <span class="co"># worktree path</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$WT</span><span class="st">/companion&quot;</span> <span class="kw">&amp;&amp;</span> <span class="va">MAIO_OS_ROOT</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$WT</span><span class="st">&quot;</span> <span class="va">MULTICA_SERVER_URL</span><span class="op">=</span>http://127.0.0.1:9 <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>   <span class="va">MULTICA_APP_URL</span><span class="op">=</span>http://127.0.0.1:9 <span class="va">MULTICA_DAEMON_PORT</span><span class="op">=</span>9 <span class="ex">node</span> server.mjs <span class="at">--port</span> 9130 <span class="kw">&amp;)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">sleep</span> 2</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> http://127.0.0.1:9130/local.js <span class="kw">|</span> <span class="ex">python3</span> <span class="at">-c</span> <span class="st">&#39;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="st">import sys, json, re</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="st">d = json.loads(re.search(r&quot;=\s*(\{.*\});?\s*$&quot;, sys.stdin.read(), re.S).group(1))[&quot;multica&quot;]</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="st">assert d[&quot;ok&quot;] is False</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">assert d[&quot;backend&quot;][&quot;ok&quot;] is False and d[&quot;backend&quot;][&quot;error&quot;]</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">assert d[&quot;web&quot;][&quot;ok&quot;] is False     and d[&quot;web&quot;][&quot;error&quot;]</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">assert d[&quot;daemon&quot;][&quot;ok&quot;] is False  and d[&quot;daemon&quot;][&quot;error&quot;]</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="st">print(&quot;T2 PASS&quot;, d[&quot;backend&quot;][&quot;error&quot;])&#39;</span></span></code></pre></div>
+<p>Then in a browser open <code>http://127.0.0.1:9130/?v=1#stack</code> (fresh query — a hash-only change does not reload) and assert the three rows carry the red pill class and no green pill:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode js"><code class="sourceCode javascript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>[<span class="op">...</span><span class="bu">document</span><span class="op">.</span><span class="fu">querySelectorAll</span>(<span class="st">&#39;.multica-row .pill&#39;</span>)]<span class="op">.</span><span class="fu">map</span>(p <span class="kw">=&gt;</span> p<span class="op">.</span><span class="at">className</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">// =&gt; [&quot;pill bad&quot;,&quot;pill bad&quot;,&quot;pill bad&quot;]</span></span></code></pre></div>
+<p><strong>T3 — isolation</strong> — restart the 9130 QA instance with only <code>MULTICA_DAEMON_PORT=9</code>; expect daemon red, backend + web green. Proves the probes are independent.</p>
+<p><strong>T4 — no secret</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-s</span> http://127.0.0.1:9111/local.js <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-c</span> <span class="st">&#39;mul_&#39;</span>   <span class="co"># must print 0</span></span></code></pre></div>
+<p><strong>T5 — live browser check</strong> — <code>http://127.0.0.1:9111/?v=N#stack</code>: three green rows whose pid/uptime match T1's payload. Read geometry/classes from the live DOM, not a headless screenshot.</p>
+<p><strong>T6 — regression and deploy</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> <span class="at">--check</span> companion/collectors.mjs</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> <span class="at">-</span> <span class="op">&lt;&lt;&#39;PY&#39;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">import re; h=open(&#39;index.html&#39;).read()</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">for i,s in enumerate(re.findall(r&#39;&lt;script&gt;(.*?)&lt;/script&gt;&#39;, h, re.S)):</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="st">    open(f&#39;/tmp/maio-inline-{i}.js&#39;,&#39;w&#39;).write(s)</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="op">PY</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f <span class="kw">in</span> /tmp/maio-inline-<span class="pp">*</span>.js<span class="kw">;</span> <span class="cf">do</span> <span class="ex">node</span> <span class="at">--check</span> <span class="st">&quot;</span><span class="va">$f</span><span class="st">&quot;</span><span class="kw">;</span> <span class="cf">done</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="ex">./ops/deploy.sh</span> <span class="kw">&amp;&amp;</span> <span class="ex">./ops/deploy.sh</span> <span class="at">--check</span>    <span class="co"># expect: in sync … every runtime copy matches &lt;sha&gt;</span></span></code></pre></div>
+<p>The build is only done when T1, T2, T3, T4, T5 and T6 pass on the merged branch, with the T2/T3 red-pill evidence captured, and the deploy stamp re-read at the end.</p>
+<h2 id="6-implementation-notes-for-build">6. Implementation notes for Build</h2>
+<ul>
+<li><code>collectFirefly</code> in <code>companion/collectors.mjs</code> (~line 895) is the pattern to copy: origin constant from env, <code>AbortSignal.timeout</code>, honest <code>error</code> string, <code>generatedAt</code> at the end.</li>
+<li><code>collectAll()</code> (~line 1244) destructures results in a fixed order — add <code>multica</code> to the <code>Promise.all</code> list and to the returned object, in the same edit.</li>
+<li><code>stackServicesCard()</code> (~line 2361) shows the exact "needs the local companion" notebox to reuse.</li>
+<li>The section is served from the base checkout's working tree while the companion runs installed copies: after editing <code>collectors.mjs</code>, kick <code>com.maio.maio-os-local</code> (it imports collectors at boot) or the row will look unchanged.</li>
+<li>Keep <code>data.js</code> out of the diff; the refresh job owns it.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
