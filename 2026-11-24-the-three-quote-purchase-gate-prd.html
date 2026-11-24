@@ -130,7 +130,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>Status</td>
-<td>Draft for Ricardo's approval</td>
+<td>Partially implemented 2026-11-24 — see §14. One decision open: who signs (§4.1)</td>
 </tr>
 <tr>
 <td>Date</td>
@@ -189,11 +189,21 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Nothing about this is vendor-specific. It applies to whatever a buyer is purchasing.</p>
 <hr />
 <h2 id="2-the-problem">2. The problem</h2>
-<p>There is no purchase control in the org today:</p>
+<p>Approvals on purchase orders are already switched on in this org — but they are not Ricardo's, and they carry no quotation evidence.</p>
+<p><strong>Correction to the first edition of this PRD.</strong> It said no approval rule existed. That was wrong, and the error is worth recording: <code>GET /inventory/v1/settings/approvals?entity_type=purchaseorder</code> lists only <em>custom</em> approvals, and that list is empty — but the module's Multi-Level flow is live elsewhere. Verified on 2026-11-24:</p>
 <ul>
-<li><strong>No approval rule exists.</strong> <code>GET /inventory/v1/settings/approvals?organization_id=716443079&amp;entity_type=purchaseorder</code> → <code>{"approvals": []}</code>. All 83 existing purchase orders could be sent, received and billed without anyone signing anything.</li>
+<li>Submitting draft <code>PO-00085</code> produced <code>status: pending_approval</code> with <code>approvers_list</code> = <strong>Anne Fourie (level 1) → Jaques Mulder (level 2)</strong> and <code>can_send_in_mail: false</code>.</li>
+<li>Recently issued POs (<code>PO-00088</code>, <code>PO-00089</code>) carry approval paths with Jaques Mulder's and Anne Fourie's decisions.</li>
+</ul>
+<p>So the real gap is not "no gate". It is:</p>
+<ol type="1">
+<li>The gate signs off a PO with no requirement that three quotes were obtained or attached.</li>
+<li>The approvers are the admin and CAO chain, not the person buying; nobody is looking at the quotes.</li>
+<li>There is no place on the purchase order to record the three quotes, so the approval decision has nothing to stand on.</li>
+</ol>
+<ul>
 <li><strong>A custom module cannot fix that.</strong> Custom modules are UI-only: <code>/inventory/v1/custommodules</code> → <code>404 Invalid URL Passed</code>. Nothing inside a custom module can block a purchase order, count records, or be read by an automation.</li>
-<li>The only thing that actually stops a purchase is the <strong>Approvals</strong> feature, because "further actions can be performed only after the transaction is approved".</li>
+<li>Custom fields on the purchase order cannot be created through the API either — <code>POST /settings/customfields</code> returns <code>405</code>, <code>PATCH</code> returns <code>501</code>. That part is a UI step.</li>
 </ul>
 <p>So the gate lives on the purchase order; the three quotes are the evidence the approver checks at that gate.</p>
 <hr />
@@ -219,51 +229,31 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">E</span>{<span class="vs">Approver</span>}</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--</span> <span class="vs">Approve </span><span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="vs">Send PO → receive → bill</span>]</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--</span> <span class="vs">Reject </span><span class="pp">--&gt;</span> <span class="dt">B</span></span></code></pre></div>
-<h3 id="41-the-gate--approval-on-every-purchase-order">4.1 The gate — approval on every purchase order</h3>
-<p>Settings → Purchases → Purchase Orders → <strong>Approvals</strong> → Approval Type <strong>Multi-Level Approval</strong>.</p>
+<h3 id="41-the-gate--what-already-exists-and-the-one-choice-left">4.1 The gate — what already exists, and the one choice left</h3>
+<p>Purchase order approval is already on in this org. What is not decided is <strong>who signs</strong>.</p>
 <table>
 <thead>
 <tr>
-<th>Setting</th>
-<th>Value</th>
-<th>Why</th>
+<th>Option</th>
+<th>What it means</th>
+<th>Consequence</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Level 1 approver</td>
-<td>Ricardo (or a purchasing lead, if you'd rather not see every PO)</td>
-<td>Named person, not "any admin"</td>
+<td><strong>A. Keep the existing chain</strong> — Anne Fourie (level 1) → Jaques Mulder (level 2)</td>
+<td>Three quotes are added to the PO as evidence; the same people sign</td>
+<td>Smallest change, no policy shift, but the approvers are not looking at the purchase</td>
 </tr>
 <tr>
-<td>Level 2 approver</td>
-<td>Pamela Fourie (CFO) — optional</td>
-<td>Covers absence; catches value</td>
-</tr>
-<tr>
-<td>Level 2 threshold</td>
-<td>Only above an amount you set (e.g. R50,000)</td>
-<td>Keeps routine buys to one signature</td>
-</tr>
-<tr>
-<td>Allow approvers to approve transactions they create</td>
-<td><strong>Off</strong></td>
-<td>A buyer cannot approve their own purchase</td>
-</tr>
-<tr>
-<td>Notify approvers on submit</td>
-<td><strong>On</strong></td>
-<td>Email + in-app</td>
-</tr>
-<tr>
-<td>Notify submitters on decision</td>
-<td><strong>On</strong></td>
-<td>Buyer learns immediately</td>
+<td><strong>B. Switch the module to Custom Approval</strong> — the staged rule <code>Three-quote purchase gate</code> (id <code>2270401000010838744</code>, criteria total &gt; 0) puts Ricardo at level 1</td>
+<td>That rule already exists and was created over the API</td>
+<td>Buying waits on Ricardo; Anne and Jaques drop out of the loop</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Multi-Level, not Simple.</strong> Simple Approval lets <em>any</em> admin or approver approve — including the buyer's colleagues. Multi-Level with named approvers is the difference between a gate and a formality.</p>
-<p><strong>What the gate blocks:</strong> send, receive, convert to bill — all unavailable until approved. "Further actions can be performed only after the transaction is approved."</p>
+<p>The switch between Multi-Level and Custom Approval is <strong>UI-only</strong>: the API creates and edits custom rules (<code>POST /settings/approvals</code> → <code>201</code>), but it cannot make a rule the default (<code>is_default</code> comes back <code>false</code> on every write) or change the module's approval type. So Option B is one radio button in Settings → Purchases → Purchase Orders → Approvals, and it is Ricardo's call, because it moves who can authorise money.</p>
+<p>Whichever option is chosen, the gate behaves the same: <strong>send, receive, convert to bill are unavailable until approved.</strong> Verified: <code>can_send_in_mail: false</code> on a pending PO.</p>
 <h3 id="42-the-evidence--three-quotes-on-the-po">4.2 The evidence — three quotes on the PO</h3>
 <p>Two parts, both on the purchase order itself:</p>
 <p><strong>a. Attachments.</strong> The buyer attaches the three supplier PDFs to the PO before submitting. All three are visible to the approver on the same screen, and stay on the record.</p>
@@ -539,12 +529,29 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="12-evidence">12. Evidence</h2>
 <ul>
-<li><code>GET /inventory/v1/settings/approvals?organization_id=716443079&amp;entity_type=purchaseorder</code> → <code>{"approvals": []}</code> — no rule configured.</li>
+<li><code>GET /inventory/v1/settings/approvals?entity_type=purchaseorder</code> → <code>{"approvals": []}</code> <strong>before</strong> the change — but this endpoint lists only <em>custom</em> rules; the module's Multi-Level flow (Anne Fourie → Jaques Mulder) was already live, proven by <code>PO-00085</code> submitting to <code>pending_approval</code> and by the approval paths on <code>PO-00088</code> / <code>PO-00089</code>.</li>
 <li><code>GET /inventory/v1/custommodules?organization_id=716443079</code> → <code>404 Invalid URL Passed</code> — custom modules are UI-only.</li>
 <li><code>GET /inventory/v1/organizations</code> → <code>plan_name: Zoho One</code>, <code>planDisplayName: ENTERPRISE_NEW</code> — Multi-Level Approval and Custom Approvals in plan.</li>
 <li>Zoho Inventory help, <em>Configure Approvals</em>: No Approval / Simple / Multi-Level (up to 10 levels); "further actions can be performed only after the transaction is approved"; "allow approvers to approve the transactions they create".</li>
 <li>Zoho Inventory help, <em>Transaction Approval Workflow</em>: Save and Submit, Submit for Approval, Approve/Reject with reason, resubmit, Final Approve by admin, bulk approve, Pending Approvals view.</li>
 <li>Org data: 83 purchase orders, 15 active vendor names — volume is compatible with a single named approver.</li>
 </ul>
+<hr />
+<h2 id="14-implementation-log--2026-11-24">14. Implementation log — 2026-11-24</h2>
+<p><strong>Done</strong></p>
+<ul>
+<li>Custom approval rule created over the API and read back: <code>Three-quote purchase gate</code>, id <code>2270401000010838744</code>, entity <code>purchaseorder</code>, criteria <code>total greater_than 0</code>, one level — Ricardo Maio (<code>2270401000000182001</code>). It is <strong>staged but not active</strong>: every write returns <code>is_default: false</code>, and the module is on Multi-Level, so the flow still runs Anne → Jaques.</li>
+<li>Live proof that the gate blocks sending: draft <code>PO-00085</code> (test record, item <code>ZZTEST-Handoff</code>, R1.00) submitted → <code>status: pending_approval</code>, approvers Anne Fourie → Jaques Mulder, <code>can_send_in_mail: false</code>.</li>
+</ul>
+<p><strong>Blocked, and why</strong></p>
+<ul>
+<li>Switching the module's approval type from Multi-Level to Custom Approval — no API surface; it is a radio button in the Approvals tab. Needs Ricardo.</li>
+<li>Creating the five purchase-order custom fields — <code>POST /inventory/v1/settings/customfields</code> → <code>405 The HTTP method POST is not allowed</code>, <code>PATCH</code> → <code>501 not implemented</code>. UI only.</li>
+</ul>
+<p><strong>Cleanup</strong></p>
+<ul>
+<li><code>PO-00085</code> was rejected after the test (<code>status: rejected</code>) so it would not sit in Anne's approval queue. It is a test record with a ZZTEST item; it can be deleted by Ricardo if he wants the clutter gone — I have not deleted it.</li>
+</ul>
+<p><strong>What "actioned" therefore means today:</strong> the gate was already there and is proven to block; the quotation evidence does not exist yet, because it lives in a form only the UI can change. The two remaining steps are a five-minute UI pass.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
