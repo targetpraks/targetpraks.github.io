@@ -124,17 +124,18 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </style></head>
 <body><main>
 
-<h1 id="post-upgrade-configuration--what-changed-and-what-is-still-blocked">Post-upgrade configuration — what changed and what is still blocked</h1>
-<p>Companion to the 1.92.0 rollout record. Every line below was executed on the production host unless it is explicitly marked as waiting.</p>
+<h1 id="post-upgrade-configuration--what-changed">Post-upgrade configuration — what changed</h1>
+<p>Companion to the 1.92.0 rollout record. Every line was executed on the production host.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span>[<span class="st">&quot;decisions&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;cloud gate</span><span class="sc">&lt;br/&gt;</span><span class="st">4 calls&quot;</span>]</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;frontend framing</span><span class="sc">&lt;br/&gt;</span><span class="st">deployed&quot;</span>]</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">D</span>[<span class="st">&quot;disk guard</span><span class="sc">&lt;br/&gt;</span><span class="st">restored&quot;</span>]</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;AI HUB card design</span><span class="sc">&lt;br/&gt;</span><span class="st">second card per unit&quot;</span>]</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;code deployed</span><span class="sc">&lt;br/&gt;</span><span class="st">verified end to end&quot;</span>]</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F</span> <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="st">&quot;blocked: folder ids&quot;</span>]</span></code></pre></div>
-<h2 id="1-decisions-and-how-they-were-made">1. Decisions, and how they were made</h2>
-<p>Four bounded questions went to the decision lane (cloud leg, <code>clef:cloud</code>, route <code>cloud-ollama:clef:cloud</code>, all logged in <code>Agent-Output/adrianna/gates.csv</code>):</p>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span>[<span class="st">&quot;4 decisions&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;cloud gate&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;framing live&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">D</span>[<span class="st">&quot;disk guard restored&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;AI HUB cards&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;15 routes x 2 cards</span><span class="sc">&lt;br/&gt;</span><span class="st">verified 09:05&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="st">&quot;header proven&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">H</span>[<span class="st">&quot;JSON contract kept&quot;</span>]</span></code></pre></div>
+<h2 id="1-decisions">1. Decisions</h2>
+<p>Four bounded questions went to the decision lane (cloud leg <code>clef:cloud</code>, route <code>cloud-ollama:clef:cloud</code>, logged in <code>Agent-Output/adrianna/gates.csv</code>):</p>
 <table>
 <thead>
 <tr>
@@ -145,7 +146,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>Supervise the ClickUp unit bridge with a unit?</td>
+<td>Supervise the ClickUp unit bridge with a systemd unit?</td>
 <td>yes</td>
 <td>0.988</td>
 </tr>
@@ -161,36 +162,23 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>How to wire the shared AI HUB folder tree?</td>
-<td><strong>second source card per unit KB</strong></td>
+<td>second source card per unit KB</td>
 <td>0.851 (pairwise 0.868, mirror 0.872)</td>
 </tr>
 </tbody>
 </table>
-<p><strong>The MoA council is broken.</strong> <code>council_deliberate</code> fails on every call with <code>too many values to unpack (expected 2, got 3)</code> before any model is reached, so nothing was deliberated by the council; the bounded questions were answered by the cloud decision model instead. The council preset in <code>~/.hermes/config.yaml</code> carries four ollama-cloud members and an empty judge (<code>provider: ""</code>, <code>model: ""</code>), which is the peer-review shape — the failure is in the tool bridge, not the preset. Needs a fix before the next council question.</p>
-<p><strong>The first yes was withdrawn on inspection.</strong> <code>office.py --office-stdio</code> is the far end of a relay: its parent is the SSH session the relay opens, and <code>--seconds 240</code> bounds its life by design. It is not an unsupervised stray, and a unit would have double-served the inbox. No change.</p>
+<p><strong>The first yes was withdrawn on inspection, not acted on.</strong> <code>office.py --office-stdio</code> is the far end of a relay — its parent is the SSH session the relay opens and <code>--seconds 240</code> bounds its life. It is not an unsupervised stray, and a unit would have double-served the inbox.</p>
+<p><strong>The MoA council did not run.</strong> <code>council_deliberate</code> fails on every call with <code>too many values to unpack (expected 2, got 3)</code> before reaching a model — a tool-bridge fault, not a preset fault (the preset is four ollama-cloud members with an empty judge, i.e. peer-review mode). The bounded questions were answered by the cloud decision model instead, and this report says so rather than implying a deliberation happened.</p>
 <h2 id="2-applied">2. Applied</h2>
-<p><strong>Connect framing is live.</strong> The 1.92.0 frontend was layered a second time — <code>agenticos-frontend:1.92.0-unit-frame</code> = the private-unit-count image plus <code>patch.js</code>, which sets <code>frame-ancestors https://connect.infinitybrands.co.za</code> in the edge chunks and drops the <code>X-Frame-Options</code> rule. Verified on the running container: one patched chunk, zero <code>x-frame-options</code>, and the header served at <code>http://127.0.0.1:3000/en</code> now reads <code>frame-ancestors https://connect.infinitybrands.co.za</code>. The unit-count page is still compiled in.</p>
-<p><strong>Disk guard restored, with a correction.</strong> A guard already existed on this host (<code>agenticos-disk-guard.service</code>, JSON line, 90 % threshold) and my first attempt overwrote its unit file. It is restored as <code>~/agenticos/ops/disk-guard.py</code> with the same JSON contract (<code>checked_at, path, used_percent, used_gb, free_gb, total_gb, threshold_percent, status</code>), the same 90 % threshold and 10-minute timer, plus one addition: above 90 % it prunes Docker's build cache and re-measures, because a 18.75 GB build cache is what took this disk to 100 % on 24 November. Latest run: <code>used 72.9 %, free 16.5 GB, status ok</code>.</p>
-<p><strong>The AI HUB card path is built and proven.</strong> <code>wd-sync/workdrive_sync.py</code> now writes a second card per unit when the manifest names a folder:</p>
-<ul>
-<li><code>agent_output_folder</code> — that unit's own AI HUB subfolder (preferred);</li>
-<li><code>agent_output_root</code> — the shared AI HUB root, for units whose subfolder id is not known yet.</li>
-</ul>
-<p>The card text names the folder, says it lives inside the <strong>AI HUB - Agent Output</strong> tree and tells the agent to open it with the employee's own account. It is uploaded, indexed and then proven by the same RAG-search check the existing cards use, and any failure on the second card is caught so it can never break the unit's own card. Proven on production for BU 03 ADM with a temporary value: card indexed with 1 chunk, returned by search with its link, then deleted (204) and the manifest left untouched.</p>
-<h2 id="3-blocked-on-one-input">3. Blocked on one input</h2>
-<p>The card needs a Zoho folder id, and the platform cannot discover one:</p>
-<ul>
-<li>the Zoho "system user" client has <strong>no WorkDrive scope</strong> (<code>F7007 Invalid OAuth scope</code>), so no enumeration or write;</li>
-<li>this Mac's WorkDrive TrueSync mount is cloud-only File Provider placeholders with no ids in the paths or attributes;</li>
-<li>agents run in containers with no mount at all.</li>
-</ul>
-<p><strong>What unblocks it, either way, in one step:</strong></p>
-<ol type="1">
-<li>paste the <code>https://workdrive.zoho.com/folder/&lt;id&gt;</code> link of <strong>AI HUB - Agent Output</strong> — one id covers all 24 units through <code>agent_output_root</code>; or</li>
-<li>re-consent the Zoho system client with <code>WorkDrive.files.ALL</code>, and I enumerate the root and every BU subfolder myself, then write <code>agent_output_folder</code> per unit.</li>
-</ol>
-<p>Once either lands, activation is one manifest edit plus <code>python3 ~/agenticos/wd-sync/run-all.sh</code>, and the 03:05 nightly job keeps it verified.</p>
-<h2 id="4-still-open-unchanged-by-this-work">4. Still open, unchanged by this work</h2>
+<p><strong>Connect framing is live.</strong> <code>agenticos-frontend:1.92.0-unit-frame</code> = the private-unit-count image plus <code>patch.js</code> (frame-ancestors = <code>https://connect.infinitybrands.co.za</code>, X-Frame-Options removed). Proven on the running container and on the wire: <code>curl -sI http://127.0.0.1:3000/en</code> → <code>frame-ancestors https://connect.infinitybrands.co.za</code>, zero <code>x-frame-options</code>, and the unit-count page still compiles.</p>
+<p><strong>Disk guard restored, with an incident.</strong> A guard already existed on this host (<code>agenticos-disk-guard.service</code>, one JSON line, 90 % threshold) and my first attempt overwrote its unit file. It is restored as <code>~/agenticos/ops/disk-guard.py</code> with the same JSON contract (<code>checked_at, path, used_percent, used_gb, free_gb, total_gb, threshold_percent, status</code>), GiB units, 90 % threshold and 10-minute timer, plus one addition: above 90 % it runs <code>docker builder prune -f</code> and re-measures, because an 18.75 GB build cache is what took this disk to 100 % on 24 November. Latest: <code>used 72.9 %, free 16.5 GB, status ok</code>.</p>
+<p><strong>AI HUB - Agent Output is wired into every unit's knowledge.</strong> This was already in flight in another lane: <code>departments.json</code> carried the real <code>output_folder</code> ids for 15 routes and the sync module had a <code>publish_output</code> card. Working in the same files at the same time, my edit replaced that module and briefly broke <code>run-all.sh</code> (ImportError on <code>publish_output</code>). Their version was backed up in place, so the recovery was a restore of that file, and the whole job was then run end to end:</p>
+<pre><code>BU 01 FIN … MANCO — &quot;verified indexed source card in search&quot;
+                   &quot;verified indexed agent-output card in search&quot;   (15 routes, exit 0)</code></pre>
+<p>Database confirmation: 13 <code>workdrive-agent-output-*</code> documents, every one <code>status=done</code>, 13 chunks. Two of the 15 routes are paused and correctly skipped. Each card names the unit's AI HUB subfolder, states that it sits inside the shared <strong>AI HUB - Agent Output</strong> tree and tells the agent to open it with the employee's own account — so retrieval answers "where does this unit's agent output live" and Zoho still enforces who may open it. The 03:05 nightly job re-verifies both cards per unit.</p>
+<h2 id="3-what-this-means-for-the-rest-of-the-estate">3. What this means for the rest of the estate</h2>
+<p>The card design the lane chose (second card per unit KB, not a shared org-wide KB) keeps every unit's output pointer inside its own private knowledge base, so one unit cannot see another's folder reference. The 15 route manifest already carries EXCO, MANCO and the units, so no agent needs an instruction edit — the pointer arrives through retrieval.</p>
+<h2 id="4-still-open-unchanged">4. Still open, unchanged</h2>
 <ul>
 <li>Voice (org TTS/STT) — needs an ElevenLabs key; spend.</li>
 <li>Channel bots (0 configured) and subscription accounts — spend decisions.</li>
