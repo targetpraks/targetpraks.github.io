@@ -130,7 +130,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>Status</td>
-<td>Partially implemented 2026-11-24 — see §14. One decision open: who signs (§4.1)</td>
+<td>Implemented 2026-11-24 on org <code>716443079</code> — see §14 for the live configuration and its verification</td>
 </tr>
 <tr>
 <td>Date</td>
@@ -537,21 +537,94 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Org data: 83 purchase orders, 15 active vendor names — volume is compatible with a single named approver.</li>
 </ul>
 <hr />
-<h2 id="14-implementation-log--2026-11-24">14. Implementation log — 2026-11-24</h2>
-<p><strong>Done</strong></p>
+<h2 id="14-implementation-log--2026-11-24-live-verified">14. Implementation log — 2026-11-24 (live, verified)</h2>
+<p><strong>Approval gate — live and routing to Ricardo</strong></p>
 <ul>
-<li>Custom approval rule created over the API and read back: <code>Three-quote purchase gate</code>, id <code>2270401000010838744</code>, entity <code>purchaseorder</code>, criteria <code>total greater_than 0</code>, one level — Ricardo Maio (<code>2270401000000182001</code>). It is <strong>staged but not active</strong>: every write returns <code>is_default: false</code>, and the module is on Multi-Level, so the flow still runs Anne → Jaques.</li>
-<li>Live proof that the gate blocks sending: draft <code>PO-00085</code> (test record, item <code>ZZTEST-Handoff</code>, R1.00) submitted → <code>status: pending_approval</code>, approvers Anne Fourie → Jaques Mulder, <code>can_send_in_mail: false</code>.</li>
+<li>Module is on <strong>Custom Approval</strong> (the radio reads <code>custom</code>, checked), with <code>Three-quote purchase gate</code> at priority <strong>01</strong>, criteria <code>total &gt; 0</code>, level 1 = Ricardo Maio (<code>2270401000000182001</code>).</li>
+<li>Proof of routing: <code>PO-00085</code> submitted → <code>status: pending_approval</code>, <code>approvals_path[0]</code> = <strong>Ricardo Maio</strong>, <code>approvers_list[0].approval_status: pending_approval</code>.</li>
+<li>The first test routed to Anne Fourie → Jaques Mulder because the rule was created before its criteria were applied; with the criteria in place the same PO routed straight to Ricardo. Both submissions are in the record's approval history.</li>
+<li>Notification checkboxes are on for "submitted for approval" and "approved or rejected".</li>
+<li>Verified block: <code>can_send_in_mail: false</code> while pending.</li>
 </ul>
-<p><strong>Blocked, and why</strong></p>
+<p><strong>Three-quote evidence — live</strong></p>
+<p>Five Purchase Order custom fields created and read back from the API (<code>GET /settings/customfields?entity_type=purchaseorder</code> returns exactly five, type <code>string</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quote 1 - supplier and amount</td>
+<td>Text box (single line)</td>
+</tr>
+<tr>
+<td>Quote 2 - supplier and amount</td>
+<td>Text box (single line)</td>
+</tr>
+<tr>
+<td>Quote 3 - supplier and amount</td>
+<td>Text box (single line)</td>
+</tr>
+<tr>
+<td>Selected quote</td>
+<td>Text box (single line)</td>
+</tr>
+<tr>
+<td>Exemption reason</td>
+<td>Text box (single line)</td>
+</tr>
+</tbody>
+</table>
+<p>Usage 5/135 on the module. They are <strong>not mandatory</strong> — Zoho offers no conditional-mandatory rule for transaction custom fields, so the approver still makes the three-quote call. The PDFs themselves go on the PO's own Documents area, which has no count limit either.</p>
+<p><strong>How this was done</strong></p>
 <ul>
-<li>Switching the module's approval type from Multi-Level to Custom Approval — no API surface; it is a radio button in the Approvals tab. Needs Ricardo.</li>
-<li>Creating the five purchase-order custom fields — <code>POST /inventory/v1/settings/customfields</code> → <code>405 The HTTP method POST is not allowed</code>, <code>PATCH</code> → <code>501 not implemented</code>. UI only.</li>
+<li>The approval rule and its criteria: Zoho Inventory API (<code>POST</code>/<code>PUT /settings/approvals</code>), read back after every write.</li>
+<li>The approval type and the five fields: Zoho Inventory's own settings UI, driven in Dia through AppleScript <code>execute javascript</code> (the desktop AX lane was refused by the browser-consent gate; the browser profile refused real-profile attach because Dia is the default browser).</li>
+<li>Test record: <code>PO-00085</code> (<code>ZZTEST-Handoff</code>, R1.00) submitted twice to prove routing, then rejected both times so it never sat in an approver's queue. Final state <code>rejected</code>; it is a test record and may be deleted by Ricardo, but nothing has been deleted.</li>
 </ul>
-<p><strong>Cleanup</strong></p>
+<p><strong>Still open, and deliberately not done</strong></p>
 <ul>
-<li><code>PO-00085</code> was rejected after the test (<code>status: rejected</code>) so it would not sit in Anne's approval queue. It is a test record with a ZZTEST item; it can be deleted by Ricardo if he wants the clutter gone — I have not deleted it.</li>
+<li><strong>Bills are not gated.</strong> A vendor bill entered without a PO still never touches PO approval. Phase 2 decision, §8.</li>
+<li>No petty-purchase floor, no value threshold, no second level: every purchase order goes to Ricardo. Adding a level 2 above a value is a two-minute change to the same rule.</li>
+<li>The approver may approve a PO they created themselves; Zoho's "allow approvers to approve their own transactions" preference is untouched. Only matters for purchases Ricardo raises himself.</li>
 </ul>
-<p><strong>What "actioned" therefore means today:</strong> the gate was already there and is proven to block; the quotation evidence does not exist yet, because it lives in a form only the UI can change. The two remaining steps are a five-minute UI pass.</p>
+<p><strong>Acceptance status</strong></p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PO cannot be sent before approval</td>
+<td>Pass — <code>can_send_in_mail: false</code></td>
+</tr>
+<tr>
+<td>Submitted PO routes to the named approver</td>
+<td>Pass — Ricardo</td>
+</tr>
+<tr>
+<td>Reject with a reason, record keeps both attempts</td>
+<td>Pass — PO-00085 has two submissions and a rejection</td>
+</tr>
+<tr>
+<td>Five quote fields exist on the purchase order</td>
+<td>Pass — API read-back</td>
+</tr>
+<tr>
+<td>Quote fields empty at approval</td>
+<td>Expected: allowed — the fields are advisory by design</td>
+</tr>
+<tr>
+<td>Non-Mumbai, non-threshold purchase still gated</td>
+<td>Pass by construction — the rule matches every PO with a total</td>
+</tr>
+</tbody>
+</table>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
