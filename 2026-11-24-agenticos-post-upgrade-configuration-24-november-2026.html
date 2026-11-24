@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>AgenticOS — post-upgrade configuration, 24 November 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="post-upgrade-configuration--what-changed-and-what-is-still-blocked">Post-upgrade configuration — what changed and what is still blocked</h1>
+<p>Companion to the 1.92.0 rollout record. Every line below was executed on the production host unless it is explicitly marked as waiting.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span>[<span class="st">&quot;decisions&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;cloud gate</span><span class="sc">&lt;br/&gt;</span><span class="st">4 calls&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;frontend framing</span><span class="sc">&lt;br/&gt;</span><span class="st">deployed&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">D</span>[<span class="st">&quot;disk guard</span><span class="sc">&lt;br/&gt;</span><span class="st">restored&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;AI HUB card design</span><span class="sc">&lt;br/&gt;</span><span class="st">second card per unit&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;code deployed</span><span class="sc">&lt;br/&gt;</span><span class="st">verified end to end&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F</span> <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="st">&quot;blocked: folder ids&quot;</span>]</span></code></pre></div>
+<h2 id="1-decisions-and-how-they-were-made">1. Decisions, and how they were made</h2>
+<p>Four bounded questions went to the decision lane (cloud leg, <code>clef:cloud</code>, route <code>cloud-ollama:clef:cloud</code>, all logged in <code>Agent-Output/adrianna/gates.csv</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Answer</th>
+<th>p</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Supervise the ClickUp unit bridge with a unit?</td>
+<td>yes</td>
+<td>0.988</td>
+</tr>
+<tr>
+<td>Install a disk-headroom watchdog?</td>
+<td>yes</td>
+<td>0.987</td>
+</tr>
+<tr>
+<td>Apply the Zoho Connect framing allowlist?</td>
+<td>yes</td>
+<td>0.854</td>
+</tr>
+<tr>
+<td>How to wire the shared AI HUB folder tree?</td>
+<td><strong>second source card per unit KB</strong></td>
+<td>0.851 (pairwise 0.868, mirror 0.872)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The MoA council is broken.</strong> <code>council_deliberate</code> fails on every call with <code>too many values to unpack (expected 2, got 3)</code> before any model is reached, so nothing was deliberated by the council; the bounded questions were answered by the cloud decision model instead. The council preset in <code>~/.hermes/config.yaml</code> carries four ollama-cloud members and an empty judge (<code>provider: ""</code>, <code>model: ""</code>), which is the peer-review shape — the failure is in the tool bridge, not the preset. Needs a fix before the next council question.</p>
+<p><strong>The first yes was withdrawn on inspection.</strong> <code>office.py --office-stdio</code> is the far end of a relay: its parent is the SSH session the relay opens, and <code>--seconds 240</code> bounds its life by design. It is not an unsupervised stray, and a unit would have double-served the inbox. No change.</p>
+<h2 id="2-applied">2. Applied</h2>
+<p><strong>Connect framing is live.</strong> The 1.92.0 frontend was layered a second time — <code>agenticos-frontend:1.92.0-unit-frame</code> = the private-unit-count image plus <code>patch.js</code>, which sets <code>frame-ancestors https://connect.infinitybrands.co.za</code> in the edge chunks and drops the <code>X-Frame-Options</code> rule. Verified on the running container: one patched chunk, zero <code>x-frame-options</code>, and the header served at <code>http://127.0.0.1:3000/en</code> now reads <code>frame-ancestors https://connect.infinitybrands.co.za</code>. The unit-count page is still compiled in.</p>
+<p><strong>Disk guard restored, with a correction.</strong> A guard already existed on this host (<code>agenticos-disk-guard.service</code>, JSON line, 90 % threshold) and my first attempt overwrote its unit file. It is restored as <code>~/agenticos/ops/disk-guard.py</code> with the same JSON contract (<code>checked_at, path, used_percent, used_gb, free_gb, total_gb, threshold_percent, status</code>), the same 90 % threshold and 10-minute timer, plus one addition: above 90 % it prunes Docker's build cache and re-measures, because a 18.75 GB build cache is what took this disk to 100 % on 24 November. Latest run: <code>used 72.9 %, free 16.5 GB, status ok</code>.</p>
+<p><strong>The AI HUB card path is built and proven.</strong> <code>wd-sync/workdrive_sync.py</code> now writes a second card per unit when the manifest names a folder:</p>
+<ul>
+<li><code>agent_output_folder</code> — that unit's own AI HUB subfolder (preferred);</li>
+<li><code>agent_output_root</code> — the shared AI HUB root, for units whose subfolder id is not known yet.</li>
+</ul>
+<p>The card text names the folder, says it lives inside the <strong>AI HUB - Agent Output</strong> tree and tells the agent to open it with the employee's own account. It is uploaded, indexed and then proven by the same RAG-search check the existing cards use, and any failure on the second card is caught so it can never break the unit's own card. Proven on production for BU 03 ADM with a temporary value: card indexed with 1 chunk, returned by search with its link, then deleted (204) and the manifest left untouched.</p>
+<h2 id="3-blocked-on-one-input">3. Blocked on one input</h2>
+<p>The card needs a Zoho folder id, and the platform cannot discover one:</p>
+<ul>
+<li>the Zoho "system user" client has <strong>no WorkDrive scope</strong> (<code>F7007 Invalid OAuth scope</code>), so no enumeration or write;</li>
+<li>this Mac's WorkDrive TrueSync mount is cloud-only File Provider placeholders with no ids in the paths or attributes;</li>
+<li>agents run in containers with no mount at all.</li>
+</ul>
+<p><strong>What unblocks it, either way, in one step:</strong></p>
+<ol type="1">
+<li>paste the <code>https://workdrive.zoho.com/folder/&lt;id&gt;</code> link of <strong>AI HUB - Agent Output</strong> — one id covers all 24 units through <code>agent_output_root</code>; or</li>
+<li>re-consent the Zoho system client with <code>WorkDrive.files.ALL</code>, and I enumerate the root and every BU subfolder myself, then write <code>agent_output_folder</code> per unit.</li>
+</ol>
+<p>Once either lands, activation is one manifest edit plus <code>python3 ~/agenticos/wd-sync/run-all.sh</code>, and the 03:05 nightly job keeps it verified.</p>
+<h2 id="4-still-open-unchanged-by-this-work">4. Still open, unchanged by this work</h2>
+<ul>
+<li>Voice (org TTS/STT) — needs an ElevenLabs key; spend.</li>
+<li>Channel bots (0 configured) and subscription accounts — spend decisions.</li>
+<li>Personal model keys (0) — policy decision.</li>
+<li><code>deepseek-v4.1-flash</code> has no catalog price, so run cost reads <code>0.000000</code>.</li>
+<li>Dumps live on the same disk as the database; no off-host copy.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
