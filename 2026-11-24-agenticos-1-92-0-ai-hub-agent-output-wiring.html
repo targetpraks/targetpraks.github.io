@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgenticOS 1.92.0 — AI HUB wiring and stack improvements</title>
+<style>
+  :root { --ink:#14161a; --muted:#5d6572; --line:#e3e6ea; --accent:#1f6feb; --ok:#1a7f37; --warn:#9a6700; --bg:#ffffff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:56px 28px 80px; }
+  header { border-bottom:2px solid var(--ink); padding-bottom:18px; margin-bottom:36px; }
+  .kicker { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+  h1 { font-size:34px; line-height:1.2; margin:10px 0 8px; letter-spacing:-.02em; }
+  .sub { color:var(--muted); font-size:15px; }
+  h2 { font-size:20px; margin:38px 0 12px; letter-spacing:-.01em; }
+  h3 { font-size:15px; margin:24px 0 6px; }
+  p, li { color:#252a31; }
+  code { background:#f4f5f7; padding:1px 5px; border-radius:4px; font-size:13px; }
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:14px; }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .pill { display:inline-block; font-size:11px; font-weight:600; padding:2px 7px; border-radius:999px; }
+  .pill.ok { background:#e6f4ea; color:var(--ok); }
+  .pill.warn { background:#fff4e5; color:var(--warn); }
+  blockquote { margin:16px 0; padding:10px 16px; border-left:3px solid var(--accent);
+               background:#f6f9ff; color:#22303f; font-size:14px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin:18px 0; }
+  .card { border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .card b { display:block; font-size:24px; letter-spacing:-.02em; }
+  .card span { font-size:13px; color:var(--muted); }
+  ul.tight li { margin:4px 0; }
+  footer { margin-top:48px; border-top:1px solid var(--line); padding-top:16px; font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="kicker">Infinity Brands · AgenticOS · 24 November 2026</div>
+  <h1>AI HUB - Agent Output is wired into every agent</h1>
+  <p class="sub">What changed on the platform tonight, the proof for each change, and the four things still open.</p>
+</header>
+
+<div class="grid">
+  <div class="card"><b>16</b> <span>department folders now hold a <code>Hermes Output</code></span></div>
+  <div class="card"><b>13</b> <span>unit knowledge bases recall their output folder</span></div>
+  <div class="card"><b>21</b> <span>agents republished with the destination in their instructions</span></div>
+  <div class="card"><b>35</b> <span>Hermes persona files on hub v2, with the link</span></div>
+</div>
+
+<h2>1. The release and the frame patch</h2>
+<p>The console runs 1.92.0. The frontend image <code>agenticos-frontend:1.92.0-unit-frame</code> is live and
+healthy, and its headers now carry the allowlist that lets Zoho Connect embed it:</p>
+<blockquote>content-security-policy: … frame-ancestors https://connect.infinitybrands.co.za … </blockquote>
+<p>Read back from the running container (<code>curl -sI http://127.0.0.1:8080/en</code>) — this is the one-line
+re-patch that was outstanding since the 1.92.0 build.</p>
+
+<h2>2. The hub itself</h2>
+<p>Team folder <code>AI HUB - Agent Output</code> (<code>r58xcc5d05e333c7d4c4d8db3060af992c582</code>) now has a
+<code>Hermes Output</code> subfolder in <strong>all 16</strong> department folders — BU 01–12, EXCO, MANCO,
+REP - Reporting &amp; Notes, NVP - Nova Property. Five already existed and were reused; eleven were created.
+Every one was listed again and checked by id: <strong>16 verified, 0 problems</strong>.</p>
+<p>Folder creation is the only write of the night that changed WorkDrive structure. It was cleared by the
+decision lane first (<code>money</code> gate: <code>noul 0.0043</code> → proceed).</p>
+
+<h2>3. Recall, not just instruction</h2>
+<p>A source card is the mechanism a knowledge base actually answers from. Each active unit base now carries a
+<strong>second</strong> card naming its own output folder, so the id is retrievable rather than memorised:</p>
+<table>
+  <tr><th>Card</th><th>Question it answers</th><th>Verified by</th></tr>
+  <tr><td><code>workdrive-folder-&lt;unit&gt;-*.md</code></td><td>Where is the unit's own WorkDrive folder?</td><td>13/13 routes</td></tr>
+  <tr><td><code>workdrive-agent-output-&lt;unit&gt;-*.md</code></td><td>Where does an agent file output for this unit?</td><td>13/13 routes</td></tr>
+</table>
+<p>Each card is proven the hard way: upload, wait for indexing, then a RAG search that must return
+<em>that document</em> and its link. The nightly 03:05 job publishes both from now on
+(<code>run-all.sh</code> → <code>publish()</code> + <code>publish_output()</code>), idempotently, with 15
+unit tests green in the source repo.</p>
+
+<h2>4. Every agent knows where its output goes</h2>
+<p>21 agents were republished with a 550–650 character block appended to their existing instructions — the
+unit agents get their own department folder link, the cross-cutting agents (SOP, DOC, DECK, NUM, Superman,
+Iron Man, Architect) get the hub plus the rule to use the requesting department's folder.</p>
+<p>It is live, not merely stored. A real run on FIN Bot, asked where it files a report, answered:</p>
+<blockquote>"Inside <strong>Hermes Output</strong> in the hub folder <strong>AI HUB - Agent Output / BU 01 FIN - Finance</strong>, named <code>YYYY-MM-DD-what-it-is</code> (HTML preferred, Markdown for text)."</blockquote>
+<p>On this Mac the Hermes fleet — Adrianna, Bruce Wayne, Splinter, Scribe, Beast and the rest — moved to
+<code>agent-output-hub v2</code> in all 35 persona files, with the hub link, the 16-folder map and a pointer
+to the nightly lane.</p>
+
+<h2>5. Two smaller improvements</h2>
+<h3>Disk guard</h3>
+<p>The host hit 100 % once with nothing watching. A read-only check now runs every 10 minutes as a systemd
+user timer, writes <code>~/agenticos/readiness/disk-guard.json</code>, and fails the unit above 90 % so
+<code>systemctl --user --failed</code> shows it. It never deletes anything. First run: 72.9 % used, status
+<code>ok</code>, timer <code>active</code>.</p>
+<h3>A correction on the unit-count bridge</h3>
+<p>My earlier note said the ClickUp unit-count bridge needed a systemd unit with <code>Restart=always</code>.
+Reading the helper shows that is wrong: it speaks a lockstep frame protocol over SSH stdin/stdout and is
+started per challenge by the caller, with a bounded window. Keeping it "always running" would break the
+pipe it needs. What it actually needs is its caller (the Air at 192.168.88.70) staying honest — the local
+helper checksum verifies against <code>SHA256SUMS.json</code>, and it did tonight.</p>
+
+<h2>Still open</h2>
+<table>
+  <tr><th>Item</th><th>Why it waits</th></tr>
+  <tr><td><span class="pill warn">DASH Bot</span> left as it was</td><td>Its draft carries someone's unpublished change (read access to three tables, notification targets). Publishing my block would have shipped that too. Say the word and I publish both, or clear the draft first.</td></tr>
+  <tr><td>Backups are on the same disk</td><td>The nightly dumps sit beside the database with no off-host copy — no recovery if the volume fails.</td></tr>
+  <tr><td>Voice, channel bots, personal model keys, subscription accounts</td><td>All cost money or shift cost onto staff. Prepared and untouched.</td></tr>
+  <tr><td>16 schedules flagged <code>review_required</code></td><td>Changed instructions and collections need a human review pass, not an automated one.</td></tr>
+</table>
+
+<footer>
+  Evidence for every line above was read from the live system tonight: container headers, WorkDrive folder
+  listings, RAG search results, the published agent version rows, and one real agent run. No figure here is
+  inferred from a plan.
+</footer>
+</main>
+</body>
+</html>
