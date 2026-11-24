@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD — AgenticOS workflow programme (rev 2)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd--agenticos-workflow-programme">PRD — AgenticOS workflow programme</h1>
+<p><strong>What this is.</strong> The contract for the workflow layer of the Infinity Brands AI platform: which jobs become workflows, which must not, who owns each one, how they are gated, what "working" means, and what gets built next.</p>
+<p><strong>Why this revision exists.</strong> Rev 1 (21:30) was my own design after four drafts were built. Rev 2 puts that design in front of three independent models, keeps what survived, and reverses two calls. The review record is §10 — including the premise one reviewer got wrong, which I had supplied.</p>
+<p><strong>Status.</strong> <code>PROPOSED</code>. Four workflows exist as private drafts, every one with a succeeded test run. Nothing is published; publishing is the owner's act (§11).</p>
+<hr />
+<h2 id="1-goal">1. Goal</h2>
+<p>Make the workflow layer the company's deterministic workhorse: lanes that pull company registers, compute in code, write the prose with one model step, and put the result in front of <strong>a named human who acts on it</strong> — reliably enough that a missed Monday is noticed, honestly enough that every number says how old it is, and thinly enough that no lane is a second voice for a job a bot already does.</p>
+<p>End states this PRD may produce, in order of preference:</p>
+<ol type="1">
+<li>Six to eight lanes live, each with a signed publishing contract (§5.8), a watchdog behind them and a weekly used-or-not report in front of their reader.</li>
+<li>The same lanes as drafts, proven by test runs — if the owner withholds publishing authority.</li>
+<li>A documented refusal: the layer is not worth running because the registers behind it cannot be kept clean or fresh (§9 R1/R3). Say so rather than publish reports nobody can trust.</li>
+</ol>
+<hr />
+<h2 id="2-why-it-matters--evidence">2. Why it matters — evidence</h2>
+<p>Measured this session; literal outputs in <code>AI-Drive/Agent-Output/adrianna/agenticos-workflows-2026-11-24/PRD-EVIDENCE.md</code>.</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Observation</th>
+<th>What it means here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E1</td>
+<td>15 containers Up on macserver; platform 1.92.0 live</td>
+<td>A real estate to automate against</td>
+</tr>
+<tr>
+<td>E2</td>
+<td>22 agents, 13 of them unit bots, each running the same routine set</td>
+<td>Bot-shaped work exists; <strong>a workflow that repeats a routine is noise with a run id</strong></td>
+</tr>
+<tr>
+<td>E3</td>
+<td>35 context documents, one <code>ROUTINE FEED</code> per unit, refreshed from ClickUp by a read-only credential on another Mac</td>
+<td>The feeds are the main input — and nothing measures their age</td>
+</tr>
+<tr>
+<td>E4</td>
+<td>8 virtual tables (drawers, stores, units, findings, ledger, estate, satellites, tasks) with revisions and history</td>
+<td>Machine-readable company data already exists</td>
+</tr>
+<tr>
+<td>E6</td>
+<td>4 workflows, all <code>draft</code>, <code>published_version=None</code>, 0 exposures</td>
+<td>Nothing runs unattended today</td>
+</tr>
+<tr>
+<td>E7</td>
+<td>All four have succeeded test runs</td>
+<td>The graphs are real</td>
+</tr>
+<tr>
+<td>E8</td>
+<td>Register sweep: 21/21 drawers with blanks, 11 with no owner function, 2 duplicate names</td>
+<td>The first lane produced a finding nobody had</td>
+</tr>
+<tr>
+<td>E9</td>
+<td>Findings review: 7 open, 4 blockers, 1 with no due date</td>
+<td>The second produced a live risk list</td>
+</tr>
+<tr>
+<td>E10</td>
+<td>MCP inventory: ClickUp 67 tools, Zoho 19, GitHub 46, Blender 5</td>
+<td><strong>Corrected 21:40.</strong> My 18:15 report said "0 tools"; the field is <code>last_tools</code> and it is populated. The connector lane was never blocked</td>
+</tr>
+<tr>
+<td>E11</td>
+<td><code>zoho-mcp</code> container Up, answering <code>POST /mcp 200</code> from app containers</td>
+<td>The gateway is live</td>
+</tr>
+<tr>
+<td>E12</td>
+<td><code>ZOHO_ALLOW_WRITES=1</code>, <code>ZOHO_MAIL_ALLOW_SEND=1</code></td>
+<td>Writes and mail send are open at the gateway: the workflow layer is the only guard</td>
+</tr>
+<tr>
+<td>E13</td>
+<td><code>mcp.call</code> checks a tool name only when a cache exists; the node carries <code>approvers</code> and <code>approval</code></td>
+<td>Typos fail late; approval is per node, configurable</td>
+</tr>
+<tr>
+<td>E14</td>
+<td>94 node types</td>
+<td>The constraint is design, not capability</td>
+</tr>
+<tr>
+<td>E15</td>
+<td>Sandbox Python: no imports, no network, no filesystem</td>
+<td>All arithmetic is pure; every external read is an HTTP or MCP node</td>
+</tr>
+<tr>
+<td>E16</td>
+<td>Table reads cap at 100 records per page with <code>has_more</code></td>
+<td>Multi-table lanes must page, or say "first 100"</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>Live probe: workflow <code>2c142730</code> ran <code>mcp.call</code> → Zoho <code>services</code> → <code>core.output</code>, <strong>succeeded</strong>, returning the real service map</td>
+<td>The connector lane is proven, not assumed</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>Same probe with <code>projects_portals</code> → <code>MCP_TOOL_ERROR</code></td>
+<td>Projects v3 needs wider OAuth scopes; filing into Projects is not available yet</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-what-exists-today">3. What exists today</h2>
+<table>
+<thead>
+<tr>
+<th>Workflow</th>
+<th>Trigger</th>
+<th>Reads</th>
+<th>Writes</th>
+<th>Test evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Research Brief</td>
+<td>manual</td>
+<td>HN, GitHub, Wikipedia (keyless)</td>
+<td>none</td>
+<td>3 succeeded; first failed on an empty URL, fixed</td>
+</tr>
+<tr>
+<td>Brief Intake Router</td>
+<td>manual</td>
+<td>request text</td>
+<td>none — drafts only</td>
+<td>2 succeeded, two requests routed correctly</td>
+</tr>
+<tr>
+<td>Document Register Sweep</td>
+<td>cron <code>0 7 * * 1</code></td>
+<td>Document Library Drawers</td>
+<td>none</td>
+<td>1 succeeded; 21/21 blanks</td>
+</tr>
+<tr>
+<td>Open Findings Review</td>
+<td>cron <code>30 6 * * 1</code></td>
+<td>maintenance_findings</td>
+<td>none</td>
+<td>1 succeeded; 7 open / 4 blockers</td>
+</tr>
+</tbody>
+</table>
+<p>Each is 5–8 nodes, one or two model calls, under two minutes.</p>
+<p><strong>Constraints that shape every decision.</strong> A graph cannot discover a route mid-run — every branch is declared, and judgment belongs in <code>ai.classify</code>/<code>ai.extract</code> with a confidence floor. Python is arithmetic only (E15). Table reads page at 100 (E16). Publishing grants unattended authority, so the watchdog precedes every schedule. The unit bots already hold a routine fleet (E2). Workflows cannot write the vault.</p>
+<hr />
+<h2 id="4-the-job-type-test-for-a-non-engineer">4. The job-type test (for a non-engineer)</h2>
+<p>Two questions, in order:</p>
+<ol type="1">
+<li><strong>"Could I write every step on one card before it first runs — and would the same card be right every time?"</strong> No → judgment; go to 2. Yes → a graph, <em>provided the card names the inputs, the order and what "finished" means</em>.</li>
+<li><strong>"Must it happen at a set time or on a record change, whether or not I remembered?"</strong> Yes → a <strong>routine</strong> (the unit-bot lane: judgment on a clock). No → an <strong>agent conversation</strong>.</li>
+</ol>
+<p>One line: <em>a workflow must still be right if it ran at 3 a.m. with everyone asleep.</em></p>
+<p><strong>Promotion rule (adopted from the panel).</strong> If an existing routine passes the fixed-shape test, promote it into a workflow — do not run both. Two voices saying the same thing is the failure this rule exists to prevent.</p>
+<hr />
+<h2 id="5-design">5. Design</h2>
+<h3 id="51-the-spine-shared-graph-patterns-instantiated-against-real-registers">5.1 The spine: shared graph patterns, instantiated against real registers</h3>
+<p><strong>Decision (all three reviewers converged; wording is the synthesis).</strong> The programme is built from a small set of <strong>shared graph patterns</strong> — scheduled reconciliation, record-transition alert, approved correction, structured intake, sourced research — each instantiated against a real company register, with a named reader. <strong>Never one copy per unit</strong>: thirteen forks of a lane fork every fix thirteen times (E2 shows the estate already solved that with one routine set cloned thirteen ways).</p>
+<p>Reviewer split and how it was settled:</p>
+<ul>
+<li><em>glm-5.3-flash</em> argued for general lanes with the unit as an input, and worried general lanes become memo wallpaper.</li>
+<li><em>kimi-k3.1-pro</em> argued for business lanes from shared patterns, instantiated only where a unit has a demonstrated need, and warned against centring the programme on the two easy demos (research, intake).</li>
+<li><em>mistral-large-4</em> argued for unit-specific lanes with the four drafts kept as "the shared kit underneath", and added that the output is provable precisely because the counts come from our own registers.</li>
+</ul>
+<p>Settled: <strong>the pattern is general, the data and the reader are specific.</strong> The two demo-easy lanes (L1 research, L2 intake) stay utilities, not the centre. A lane is only proposed when its register and its reader both exist.</p>
+<h3 id="52-lane-register">5.2 Lane register</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Lane</th>
+<th>Pattern</th>
+<th>Trigger</th>
+<th>Reads</th>
+<th>Computes (code)</th>
+<th>Reader</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>Research Brief</td>
+<td>sourced research</td>
+<td>manual</td>
+<td>HN, GitHub, Wikipedia</td>
+<td>keyword build, source numbering</td>
+<td>whoever asked</td>
+<td>built</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>Brief Intake Router</td>
+<td>structured intake</td>
+<td>manual → form</td>
+<td>request, Unit and Brand Directory</td>
+<td>eight lines, confidence floor, date flag</td>
+<td>unit desk</td>
+<td>built</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Document Register Sweep</td>
+<td>scheduled reconciliation</td>
+<td>Mon 07:00</td>
+<td>Document Library Drawers</td>
+<td>blanks, duplicates, owner split</td>
+<td>ADM/ITC</td>
+<td>built</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>Open Findings Review</td>
+<td>scheduled reconciliation</td>
+<td>Mon 06:30</td>
+<td>maintenance_findings</td>
+<td>severity counts, missing due dates</td>
+<td>EXCO, owner</td>
+<td>built</td>
+</tr>
+<tr>
+<td>L5</td>
+<td>Input Freshness Watch</td>
+<td>scheduled reconciliation</td>
+<td>hourly</td>
+<td><code>ROUTINE FEED</code> stamps</td>
+<td>age per feed vs threshold</td>
+<td>owner, platform bot</td>
+<td><strong>to build — first</strong></td>
+</tr>
+<tr>
+<td>L6</td>
+<td>Workflow Failure Watchdog</td>
+<td>record-transition (failure)</td>
+<td>on workflow failure</td>
+<td>the failed run</td>
+<td>timestamp, lane, error code</td>
+<td>owner</td>
+<td><strong>to build — before any publish</strong></td>
+</tr>
+<tr>
+<td>L7</td>
+<td>Findings ↔︎ Ledger Reconciliation</td>
+<td>scheduled reconciliation</td>
+<td>weekly</td>
+<td>findings + ledger, paged</td>
+<td>open findings missing a ledger row, orphans, state mismatches</td>
+<td>maintenance owner</td>
+<td>to build</td>
+</tr>
+<tr>
+<td>L8</td>
+<td>Blocker Transition Alert</td>
+<td>record-transition</td>
+<td>findings record changed</td>
+<td>the changed record and its prior revision</td>
+<td>transition into open/blocker, repeat-alert suppression</td>
+<td>maintenance owner</td>
+<td>to build</td>
+</tr>
+<tr>
+<td>L9</td>
+<td>Drawer Correction Approval</td>
+<td>approved correction</td>
+<td>manual / form</td>
+<td>Drawers + Unit and Brand Directory</td>
+<td>before/after diff, validations</td>
+<td>ADM steward</td>
+<td>to build</td>
+</tr>
+<tr>
+<td>L10</td>
+<td>Store / Satellite / Estate Reconciliation</td>
+<td>scheduled reconciliation</td>
+<td>weekly</td>
+<td>Store Network, TLF Satellites, estate_inventory, Unit Directory</td>
+<td>dangling refs, exact duplicates, blanks</td>
+<td>TLF + ADM/NVP</td>
+<td>to build</td>
+</tr>
+<tr>
+<td>L11</td>
+<td>Zoho Read Lane</td>
+<td>sourced research</td>
+<td>manual → cron</td>
+<td><code>mcp.call</code> zoho <code>read</code>/<code>crm_search</code></td>
+<td>selection and shaping</td>
+<td>unit desk</td>
+<td>to build (proven possible, P1)</td>
+</tr>
+<tr>
+<td>L12</td>
+<td>Unit Research Pack</td>
+<td>sourced research</td>
+<td>manual/chat</td>
+<td>unit knowledge base + Drawers first, external second</td>
+<td>internal/external separation, numbering</td>
+<td>asking unit</td>
+<td>to upgrade L1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Build order: L5 → L6 → L7 → L8 → L9 → L10 → L11 → L12.</strong> L5 and L6 come first because everything else stands on inputs whose freshness is unknown (L5) and on schedules nobody is watching (L6). L7 and L10 are the first lanes that prove the programme changes a register rather than describing it.</p>
+<p><strong>Before L7 is built:</strong> confirm findings and ledger share a reliable typed key. If they do not, the key is the work — automating a fuzzy match is worse than no lane.</p>
+<p><strong>Explicit non-builds.</strong> No per-unit copies (§5.1). No customer chatbot. No third standalone Monday memo: L3 and L4 fold into one reading habit when L7 lands, rather than a fourth voice. No workflow that files into Zoho Projects until the Projects scope exists (P2). No new research variant until a unit brings a recurring question and a named consumer.</p>
+<h3 id="53-the-connector-lane-proven">5.3 The connector lane, proven</h3>
+<p><code>mcp.call</code> reaches the Zoho gateway today (P1). Two facts govern its use:</p>
+<ul>
+<li><strong>Write gates are open at the gateway</strong> (E12). Every Zoho tool that can change something is configured <code>approval: "writes"</code> with named approvers — never <code>"none"</code>, never an open group.</li>
+<li><strong>A null tool cache skips validation</strong> (E13). The connections do carry inventories (E10), so publish-time checking works; a connection whose cache is empty must be tested before a workflow names one of its tools.</li>
+</ul>
+<p>Projects v3 is unavailable (P2), so L2 keeps drafting: it may propose the eight lines; a human files.</p>
+<h3 id="54-the-freshness-rule">5.4 The freshness rule</h3>
+<p>No published lane reports a number without saying when the data behind it was read. Every output opens with <code>data as of &lt;timestamp&gt;</code> computed in code from the newest stamp it used, and L5 pages the owner when any feed passes its threshold (proposed 36 hours — two missed daily cycles).</p>
+<h3 id="55-the-gate-rule">5.5 The gate rule</h3>
+<p><strong>Gate at the authority boundary — the first point where the lane stops observing and starts acting on something another person must trust:</strong> a write to a system of record, an outbound message, a filing, an obligation. Never on a read, a count, a draft or an internal exception alert.</p>
+<ul>
+<li>Gate the exception, not the run: a judgment step pauses only below its confidence floor (L2 uses 70).</li>
+<li>Never re-gate what one approval already covered.</li>
+<li>A gate in front of a read, or in front of a step that already self-flags uncertainty, is waste — and repeated low-risk approvals train people to rubber-stamp, which is worse than no gate.</li>
+</ul>
+<p>Applied: L1–L5, L7, L8, L10, L11, L12 have <strong>no</strong> gates. L6 has none (it only informs). L9 gates once per batch, before table updates. L11 gates only writes.</p>
+<h3 id="56-cost-and-failure-behaviour">5.6 Cost and failure behaviour</h3>
+<p>One or two model calls per run is the budget; past three, the lane has rotted into a chat. <code>on_tool_error: fail</code> everywhere except research fetches, which complete so a missing source degrades the brief instead of killing the run. A failed step must name its node and error code; L6 turns that into a notification.</p>
+<h3 id="57-the-watchdog">5.7 The watchdog</h3>
+<p><code>trigger.workflow_failed</code> → <code>notification.send</code> to the owner. One node, zero model calls, built <strong>before the first publish</strong> so no schedule dies silently.</p>
+<h3 id="58-the-publishing-contract-adopted-from-the-panel">5.8 The publishing contract (adopted from the panel)</h3>
+<p><strong>Nothing publishes without a one-page contract, signed by a named business owner.</strong> The contract carries:</p>
+<ol type="1">
+<li>the business owner and the named reader;</li>
+<li>the unique job, in one sentence, and why no existing routine or workflow already does it (the §4 overlap check);</li>
+<li>the data sources, and what "fresh" means for each;</li>
+<li>the intended action the reader takes from the output, and its baseline today;</li>
+<li>the weekly outcome measure that would show it working;</li>
+<li>notification limits — how often it may speak, and to whom;</li>
+<li>the retirement condition.</li>
+</ol>
+<p>A lane that cannot fill this in is not ready to publish, however green its test run. This is the programme's governance spine: without it, the failure mode is many green workflows producing polished, unowned messages (§9 R2).</p>
+<hr />
+<h2 id="6-phases">6. Phases</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Work</th>
+<th>Gate to the next phase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Owner answers §11; write the publishing contract template (§5.8)</td>
+<td>D1–D4 answered</td>
+</tr>
+<tr>
+<td>1</td>
+<td>L5 Input Freshness Watch + L6 watchdog as drafts, test-run</td>
+<td>Both green; a deliberately stale feed is caught; a failed run pages</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Contracts for L3 and L4; publish those two with the owner's word</td>
+<td>One full week unattended, watchdog quiet, both consumed</td>
+</tr>
+<tr>
+<td>3</td>
+<td>L7 findings↔︎ledger (key verified first) + L8 blocker alert</td>
+<td>L7 finds zero or names real exceptions; L8 fires once, not repeatedly</td>
+</tr>
+<tr>
+<td>4</td>
+<td>L9 Drawer Correction Approval — the first write</td>
+<td>One approved correction, revision returned, one rejected, nothing changed</td>
+</tr>
+<tr>
+<td>5</td>
+<td>L10 store/satellite/estate reconciliation</td>
+<td>Dangling references found and counted in code</td>
+</tr>
+<tr>
+<td>6</td>
+<td>L11 Zoho read lane; L12 unit research pack</td>
+<td>A real read returns records without a scope error</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-acceptance-criteria">7. Acceptance criteria</h2>
+<p>Runnable against the live instance from the host (<code>ssh macserver</code>; token from <code>~/agenticos/owner-credentials.txt</code>). Each names its proving command and pass condition.</p>
+<ol type="1">
+<li><strong>The lane count is real.</strong> <code>GET /api/v1/workflows</code> → <code>total</code> matches §5.2's "built" rows, and every named lane exists. <em>(Today: 4 + 1 probe.)</em></li>
+<li><strong>Every draft validates.</strong> <code>GET /api/v1/workflows/{id}/check</code> → <code>"graph_valid": true</code>.</li>
+<li><strong>Every lane has a succeeded test run.</strong> <code>GET /api/v1/workflow-runs?workflow_id={id}</code> → at least one <code>succeeded</code>.</li>
+<li><strong>Every published lane has a contract.</strong> For each published workflow, a contract file exists under <code>AgenticOS/contracts/&lt;slug&gt;.md</code> carrying all seven §5.8 items. <em>(Today: none — phase 2 work.)</em></li>
+<li><strong>No published lane reports a number without an age.</strong> Its output contains the literal <code>data as of</code>.</li>
+<li><strong>The freshness lane catches a stale feed.</strong> Set one feed's stamp 40 h back, run L5 → output names that feed and a notification row exists; restore the stamp.</li>
+<li><strong>The watchdog pages.</strong> Force a failure (<code>error.raise</code>), run L6 → a notification naming the failed run id exists.</li>
+<li><strong>A write path never writes without approval.</strong> Run L9 with a drawer needing correction → status <code>awaiting_approval</code>, drawer revision unchanged; approve → revision +1; reject → unchanged.</li>
+<li><strong>A reconciliation with no exceptions says so.</strong> L7 or L10 on clean data → output states zero exceptions and sends no report. <em>(An exception-free reconciliation is not a failure.)</em></li>
+<li><strong>The connector lane answers.</strong> <code>mcp.call</code> → zoho <code>services</code> succeeds. <em>(Proven: run <code>7e69f286</code>.)</em></li>
+<li><strong>Nothing was published by the agent.</strong> <code>GET /api/v1/workflows</code> → <code>published_version</code> null on every workflow until the owner says otherwise.</li>
+<li><strong>Cost stays ≤ 2 model calls per run.</strong> Run detail shows at most two <code>ai.*</code> steps.</li>
+</ol>
+<hr />
+<h2 id="8-verification-plan">8. Verification plan</h2>
+<ol type="1">
+<li>Draft, validate (<code>/check</code>), test-run with real inputs. No publish.</li>
+<li>Before any publish: L6 fires (§7.7) and L5 sees a stale feed (§7.6); contracts written (§7.4).</li>
+<li>Publish read-only lanes first; one full week against §9's measures.</li>
+<li>Only then a write path, exercised once end to end with a recorded approval and a rejection.</li>
+<li>Re-read every count here at execution; the estate is live and the numbers move.</li>
+</ol>
+<hr />
+<h2 id="9-measures-risks-out-of-scope">9. Measures, risks, out of scope</h2>
+<h3 id="weekly-per-published-lane">Weekly, per published lane</h3>
+<ul>
+<li><strong>Reliability</strong> — runs expected vs completed, failures by node, retries, duration, runs waiting on approval.</li>
+<li><strong>Coverage</strong> — records or pages examined, sources used, any source that stopped answering.</li>
+<li><strong>Quality</strong> — sampled accuracy of the arithmetic and the extraction, <code>unsure</code> flags fired and whether they were right, human edits, rejected approvals, confirmed false positives.</li>
+<li><strong>Action</strong> — alerts acknowledged, corrections approved, exceptions resolved, time to a recorded human action.</li>
+<li><strong>Outcome trend</strong> — the backlog the lane exists to move (baseline: 7 open findings / 4 blockers; 21/21 drawers with blanks, 11 without an owner).</li>
+<li><strong>Attention cost</strong> — messages emitted, duplicates, exception-free runs, reader feedback.</li>
+<li><strong>Resource cost</strong> — model calls and spend, and <strong>cost per actioned output</strong>, not cost per run.</li>
+</ul>
+<p><strong>Working</strong> means the named reader consumed it and acted, without redoing the arithmetic. <strong>Retire</strong> when: unread for three consecutive cycles; readers routinely redo its work; a write-path output is later found wrong (zero tolerance); it duplicates a routine or another lane; or its attention cost exceeds its measured outcome. Retire by unpublishing — the history stays.</p>
+<h3 id="risks">Risks</h3>
+<ul>
+<li><strong>R1 — Inputs with no measured freshness.</strong> The <code>ROUTINE FEED</code> documents arrive through one read-only credential on another Mac and nothing records their age. An unattended Monday report on a stalled feed is confidently wrong. <em>Mitigation: L5 and §5.4 precede every publish.</em></li>
+<li><strong>R2 — Unowned automation sprawl.</strong> Many green workflows producing polished, duplicated messages nobody is accountable for. <em>Mitigation: §5.8 contract, §4 overlap check, weekly used-or-not report.</em></li>
+<li><strong>R3 — Registers that cannot be joined.</strong> Findings and ledger may not share a reliable key; store, satellite and estate references may dangle. <em>Mitigation: verify the key before L7/L10; if it is missing, establishing it is the work.</em></li>
+<li><strong>R4 — Open Zoho write gates</strong> (E12) with a permissive <code>approval</code> setting. <em>Mitigation: §5.3 rule, checked at publish review.</em></li>
+<li><strong>R5 — Paging truncation.</strong> A one-page read on a growing table reports a false total. <em>Mitigation: loop on <code>has_more</code>, or state "first 100" in the output.</em></li>
+</ul>
+<h3 id="out-of-scope">Out of scope</h3>
+<p>Per-unit lane copies; a customer-facing chatbot; filing into Zoho Projects before its scope exists; anything that writes the vault; spend and legal decisions.</p>
+<hr />
+<h2 id="10-review-record--round-1">10. Review record — round 1</h2>
+<h3 id="lanes-run-and-what-actually-came-back">Lanes run, and what actually came back</h3>
+<table>
+<thead>
+<tr>
+<th>Reviewer</th>
+<th>Invocation</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>glm-5.3-flash:cloud</code></td>
+<td><code>hermes chat --provider council</code></td>
+<td>The council provider failed to initialise and fell back to one model (<code>agent.log</code>: <code>Fallback activated: glm-5.3-flash:cloud</code>). <strong>One voice, no seats, no peer review</strong> — reported as such, not as a council</td>
+</tr>
+<tr>
+<td>MoA panel (<code>glm-5.3</code>, <code>hy4</code>, <code>kimi-k3.1-pro</code> → <code>nemotron-3-ultra</code>)</td>
+<td><code>hermes chat --provider moa --query-file</code></td>
+<td>All three reference seats engaged (<code>Auxiliary moa_reference</code> ×3); the aggregator hung 25 minutes with no output and was killed. <strong>No synthesis produced</strong></td>
+</tr>
+<tr>
+<td><code>council_deliberate</code> tool</td>
+<td>direct call</td>
+<td>Plugin error: <code>too many values to unpack (expected 2, got 3)</code>. Not retried</td>
+</tr>
+<tr>
+<td><code>kimi-k3.1-pro:cloud</code></td>
+<td><code>hermes chat -m kimi-k3.1-pro:cloud</code></td>
+<td>Full six-part assessment, 11,085 bytes</td>
+</tr>
+<tr>
+<td><code>mistral-large-4:cloud</code></td>
+<td><code>hermes chat -m mistral-large-4:cloud --reasoning low</code></td>
+<td>Full six-part assessment, 6,625 bytes</td>
+</tr>
+</tbody>
+</table>
+<p>Three independent opinions, three different families. The MoA synthesis is missing and is not substituted for.</p>
+<h3 id="findings-adjudicated">Findings, adjudicated</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Finding</th>
+<th>Source</th>
+<th>Adopted?</th>
+<th>What changed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>The spine is patterns instantiated against real registers, not general-only or sixteen forks</td>
+<td>all three, differently</td>
+<td><strong>Adopted — synthesised</strong></td>
+<td>§5.1: "the pattern is general, the data and the reader are specific". glm's unit-as-input kept; kimi's "only where a unit has demonstrated need" kept; mistral's "four drafts are the shared kit" kept</td>
+</tr>
+<tr>
+<td>2</td>
+<td>The job-type test</td>
+<td>all three</td>
+<td><strong>Adopted, merged</strong></td>
+<td>§4 — kimi's fixed-shape statement + glm's clock question, plus kimi's promotion rule</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Publishing requires a one-page contract: owner, reader, unique job, sources, action, baseline, measure, notification limits, retirement</td>
+<td>kimi (fullest), mistral (named reader + routine-conflict check + usage report)</td>
+<td><strong>Adopted</strong></td>
+<td>New §5.8; phase 0; acceptance 7.4</td>
+</tr>
+<tr>
+<td>4</td>
+<td>A named reader is compulsory; a lane nobody is accountable for is shelfware</td>
+<td>glm, mistral</td>
+<td><strong>Adopted</strong></td>
+<td>§1, §5.8.1, §9 "working" definition</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Event-driven blocker alert beside the Monday review</td>
+<td>all three</td>
+<td><strong>Adopted</strong></td>
+<td>L8</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Cross-register integrity lanes: findings↔︎ledger, store↔︎satellite↔︎directory, estate↔︎store</td>
+<td>kimi, mistral</td>
+<td><strong>Adopted</strong></td>
+<td>L7, L10 — with kimi's condition: verify the shared key first</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Gate at the authority boundary, never on a read or a draft</td>
+<td>all three, near-identical</td>
+<td><strong>Adopted</strong></td>
+<td>§5.5</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Rich weekly measures; cost per actioned output; retire by unpublishing and keep history</td>
+<td>kimi (fullest), mistral</td>
+<td><strong>Adopted</strong></td>
+<td>§9</td>
+</tr>
+<tr>
+<td>9</td>
+<td>An exception-free reconciliation is a success, not a failure</td>
+<td>kimi</td>
+<td><strong>Adopted</strong></td>
+<td>Acceptance 7.9</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Biggest risk is input freshness; stamp every output with its age</td>
+<td>glm</td>
+<td><strong>Adopted as R1</strong></td>
+<td>§5.4, §9 R1 — kimi's sprawl kept as R2; both are real and different</td>
+</tr>
+<tr>
+<td>11</td>
+<td>Build order: EXCO roll-up first</td>
+<td>glm</td>
+<td><strong>Rejected</strong></td>
+<td>A roll-up of lanes whose inputs are untrusted multiplies the error. Freshness (L5), watchdog (L6) and the integrity lanes come first; a roll-up waits until L3/L4/L7 are trusted</td>
+</tr>
+<tr>
+<td>12</td>
+<td>"No Zoho/ClickUp workflow until tools exist"</td>
+<td>mistral (and glm, in passing)</td>
+<td><strong>Rejected — premise false</strong></td>
+<td>E10 and P1: inventories are populated (Zoho 19, ClickUp 67) and a live <code>mcp.call</code> returned real Zoho data. I supplied that false premise in the brief; the correction is recorded in PRD-EVIDENCE.md, and L11 now exists</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Replace the generic research lane with a unit research pack: internal registers first, external second</td>
+<td>mistral</td>
+<td><strong>Adopted</strong></td>
+<td>L12, an upgrade of L1 rather than a second graph</td>
+</tr>
+<tr>
+<td>14</td>
+<td>Add a unit scorecard lane writing to a table for week-over-week deltas</td>
+<td>mistral</td>
+<td><strong>Deferred</strong></td>
+<td>It writes on first build; §5.5 puts write paths behind the contract and a proven read-only week. Revisit after phase 4</td>
+</tr>
+<tr>
+<td>15</td>
+<td>Research Brief and Brief Intake Router must not become the centre of the programme</td>
+<td>kimi</td>
+<td><strong>Adopted</strong></td>
+<td>§5.1, and the build order puts four register lanes ahead of any research work</td>
+</tr>
+</tbody>
+</table>
+<h3 id="corrections-to-my-own-rev-1">Corrections to my own rev 1</h3>
+<ul>
+<li>The claim "all four MCP connections report zero cached tools" was wrong — my inventory read the JSON key <code>tools</code> instead of <code>last_tools</code>. Recorded as a correction in PRD-EVIDENCE.md, and the panel brief carried the error, which is why two reviewers reasoned from it.</li>
+<li>Rev 1 ranked the EXCO roll-up second; it is now last-but-one, on the reviewers' reasoning that a roll-up of untrusted inputs compounds rather than reduces error.</li>
+</ul>
+<hr />
+<h2 id="11-decisions--who-decides-what">11. Decisions — who decides what</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Owner</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Publish L3 and L4 (the two read-only Monday lanes) once their contracts are written</td>
+<td>Ricardo</td>
+<td><strong>open</strong></td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Build order L5 → L6 → L7 → L8 → L9 → L10 → L11 → L12</td>
+<td>Ricardo</td>
+<td><strong>open</strong> — proposed</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Stale-feed threshold for L5</td>
+<td>Ricardo</td>
+<td><strong>open</strong> — proposed 36 hours</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Who approves write paths (L9, L11) — named people or the approval permission</td>
+<td>Ricardo</td>
+<td><strong>open</strong> — proposed: named people</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Keep <code>ZOHO_ALLOW_WRITES=1</code> at the gateway</td>
+<td>Ricardo</td>
+<td><strong>open</strong> — advisory; the agent does not change an environment gate</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing here spends money, signs anything, or publishes a workflow. D1–D5 are the owner's.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
