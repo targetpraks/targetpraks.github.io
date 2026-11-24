@@ -219,6 +219,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Machine-counting "three". Zoho Inventory cannot count attachments or child records on a transaction; see §5.</li>
 <li>Per-vendor or per-category rule sets. The gate applies to all purchase orders.</li>
 <li>Any change to vendors, items, prices or accounts.</li>
+<li>A Request-for-Quote / bidding workflow inside Zoho Inventory. The product has no such module — see §4.6.</li>
 </ul>
 <hr />
 <h2 id="4-the-design">4. The design</h2>
@@ -339,6 +340,23 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Approvals on a custom module only gate <em>that module's records</em>, not the buying that follows.</li>
 </ul>
 <p>A module can hold the paperwork. Only the purchase order approval can stop the purchase.</p>
+<h3 id="46-why-there-is-no-request-for-quote--and-how-a-buyer-actually-asks">4.6 Why there is no Request for Quote — and how a buyer actually asks</h3>
+<p>This is the obvious question about the design: the gate needs three quotes, so where is the request for quote, and where do vendors send their prices? <strong>Nowhere inside Zoho Inventory, because the product has no RFQ at all.</strong> Verified on 2026-11-24:</p>
+<ul>
+<li><strong>The documentation has no such feature.</strong> Zoho Inventory's own documentation index (<code>zoho.com/us/inventory/llms.txt</code>, 241 pages) contains <strong>zero</strong> occurrences of <em>quote</em>, <em>quotation</em>, <em>RFQ</em> or <em>bid</em>. Its purchase side is purchase orders, purchase receives, bills, purchase returns and vendor credits — nothing before the PO.</li>
+<li><strong>The API has no such endpoint.</strong> <code>GET /inventory/v1/requestforquotes</code>, <code>/rfqs</code>, <code>/request_for_quotes</code> and <code>/purchaserequests</code> all return <code>404 code 5 "Invalid URL Passed"</code>, while a control call to <code>/inventory/v1/vendors</code> on the same token answers normally.</li>
+<li><strong>The UI has no such module.</strong> The role read-back of this org's 203 Inventory permission checkboxes (<code>data/roles_matrix_verified.json</code>) yields 92 distinct module permissions — items, sales orders, invoices, purchase orders, bills, vendors, price lists, stock counts and so on — and <strong>none</strong> is a quote, RFQ or bid module. That is why the roles matrix in <code>docs/roles-permission-matrix.md</code> has no RFQ row: there is no RFQ row to grant.</li>
+<li><strong>The one vendor-facing channel does not take bids.</strong> The Vendor Portal lets a vendor view purchase orders, accept or decline them, comment on them, upload invoices and track payments. Quote submission is not among its functions, and it opens only after a PO already exists — which is after the gate.</li>
+<li><strong>The <code>request_for_quote</code> entity you can see in <code>GET /inventory/v1/roles/{id}</code> is not Inventory.</strong> That endpoint returns a fixed catalogue of 26 entities belonging to the neighbouring Zoho apps (expense reports, trips, petty cash, budget, procurement). It is the same API quirk already recorded in the roles matrix: the role API never returns Inventory's own module set.</li>
+</ul>
+<p><strong>Where RFQ does exist:</strong> Zoho ERP and Zoho Procurement — create a request for quotes, invite vendors, collect bids in the vendor portal, compare and award, and the award becomes the purchase order. That is a different product with its own subscription, data model and users, and it is outside the scope you set for this work ("nothing outside Zoho Inventory"). Moving to it is a product decision, not a settings change; it would replace this gate rather than sit beside it.</p>
+<p><strong>So the request for quote stays manual, and the design should say how.</strong> Phase 1, written into the buyer brief:</p>
+<ol type="1">
+<li>Send the same one-page request to at least three vendors: items, quantities, delivery date, quote validity, and "prices ex VAT, delivered".</li>
+<li>Keep each reply as a file — PDF, email export or photo — and attach it to the purchase order in step 3.</li>
+<li>Raise the PO, attach the three replies, fill the three quote fields and the selected quote, then Save and Submit.</li>
+</ol>
+<p>The buyer's request template is the only thing missing from the paperwork, and it costs one paragraph to write. The evidence a monthly audit needs is still the three attachments and five fields on the PO, whoever the vendors were and however they were asked.</p>
 <hr />
 <h2 id="5-what-is-hard-and-what-is-soft">5. What is hard and what is soft</h2>
 <table>
@@ -386,7 +404,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="6-daily-flow">6. Daily flow</h2>
 <ol type="1">
-<li>Buyer gathers three quotes.</li>
+<li>Buyer sends the request to at least three vendors and gathers the quotes (there is no RFQ in Inventory — §4.6; a one-page email template is all this needs).</li>
 <li>Buyer raises the purchase order as they do today.</li>
 <li>Buyer attaches the three PDFs, fills the three quote fields and the selected quote.</li>
 <li><strong>Save and Submit.</strong></li>
@@ -525,12 +543,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>Value threshold for level 2</strong> — R50,000, or another number?</li>
 <li><strong>Petty floor</strong> — is there an amount under which staff can just buy (my suggestion: R1,000), or does every purchase go through the gate?</li>
 <li><strong>Bills</strong> — leave ungated for phase 1 (my recommendation, keeps friction low and matches "then they go about their business"), or gate bills above a value now?</li>
+<li><strong>Request for Quote</strong> — is email + three PDFs on the PO enough, or do you want a real bidding workflow (Zoho Procurement / Zoho ERP: invite vendors, collect bids, compare, award → PO)? Inventory cannot do it, so that is a product move with its own cost, not a setting here.</li>
 </ol>
 <hr />
 <h2 id="12-evidence">12. Evidence</h2>
 <ul>
 <li><code>GET /inventory/v1/settings/approvals?entity_type=purchaseorder</code> → <code>{"approvals": []}</code> <strong>before</strong> the change — but this endpoint lists only <em>custom</em> rules; the module's Multi-Level flow (Anne Fourie → Jaques Mulder) was already live, proven by <code>PO-00085</code> submitting to <code>pending_approval</code> and by the approval paths on <code>PO-00088</code> / <code>PO-00089</code>.</li>
 <li><code>GET /inventory/v1/custommodules?organization_id=716443079</code> → <code>404 Invalid URL Passed</code> — custom modules are UI-only.</li>
+<li><strong>No RFQ exists in Inventory (2026-11-24):</strong> <code>GET /inventory/v1/requestforquotes</code>, <code>/rfqs</code>, <code>/request_for_quotes</code>, <code>/purchaserequests</code> → <code>404 code 5 "Invalid URL Passed"</code>, against a <code>200</code> control on <code>/inventory/v1/vendors</code>; Zoho Inventory's documentation index (<code>/us/inventory/llms.txt</code>, 241 pages) has no quote/RFQ/bid entry; the 92 module permissions read back from this org's role UI contain none; the Vendor Portal carries purchase orders, invoices and payments only. RFQ is a Zoho ERP / Zoho Procurement feature (§4.6).</li>
 <li><code>GET /inventory/v1/organizations</code> → <code>plan_name: Zoho One</code>, <code>planDisplayName: ENTERPRISE_NEW</code> — Multi-Level Approval and Custom Approvals in plan.</li>
 <li>Zoho Inventory help, <em>Configure Approvals</em>: No Approval / Simple / Multi-Level (up to 10 levels); "further actions can be performed only after the transaction is approved"; "allow approvers to approve the transactions they create".</li>
 <li>Zoho Inventory help, <em>Transaction Approval Workflow</em>: Save and Submit, Submit for Approval, Approve/Reject with reason, resubmit, Final Approve by admin, bulk approve, Pending Approvals view.</li>
