@@ -227,13 +227,20 @@ paperclip backup: .../paperclip/paperclip-20261124-033006.sql.gz (12782022 bytes
 <ol type="1">
 <li><strong>Point the Constellation lane at the database that matters.</strong> Decide which instance is authoritative — the office/cloud production URL behind the 2026-11-18 manual dump, or a local restore of it — and either give the nightly job that connection or take the dump on the host that owns it and copy it in. Keep the 100 KB floor: it is the only reason this was visible at all.</li>
 <li><strong>Take one fresh Constellation production dump</strong> now; the newest real-data copy is six days old.</li>
-<li><strong>Fix the Home Assistant lane the hindsight way</strong> — <code>docker exec home-assistant tar czf - -C /config . &gt; "$DEST/home-assistant-config-$TS.tar.gz"</code>, then <code>gzip -t</code> plus a size floor, then remove the <code>.work</code> directory. That removes bsdtar from the write path entirely.</li>
+<li><strong>Fix the Home Assistant lane the hindsight way</strong> — stream the archive out of the container so the host tar is never in the write path: <code>docker exec home-assistant tar czf - -C /config . &gt; "$DEST/home-assistant-config-$TS.tar.gz"</code>, then <code>gzip -t</code> plus a size floor, then remove the <code>.work</code> directory. This is Docker's own documented <a href="https://docs.docker.com/engine/storage/volumes/#back-up-restore-or-migrate-data">volume backup pattern</a>.</li>
 <li><strong>Make both lanes report into the nightly verdict.</strong> <code>com.maio.backup</code> said "every other lane completed" while HA had failed 12 minutes earlier, and the 06:30 night-check still prints <code>backups green</code> — it only looks at hindsight and paperclip. A lane that fails silently is the same as no lane.</li>
 <li><strong>Settle retention.</strong> <code>paperclipai db:backup --retention-days 30</code> is moot because line 108 of <code>backup.sh</code> prunes everything older than 14 days; the oldest file on the drive is 2026-11-09. Pick 14 or 30, and scope the sweep so it cannot walk into <code>.work-*</code> staging copies.</li>
 <li><strong>A second copy.</strong> hindsight, paperclip and Constellation exist on this one USB drive and nowhere else. One volume failure takes all three.</li>
 <li><strong>Housekeeping:</strong> 14 empty top-level folders are left behind by the pruner (<code>litellm/</code>, <code>homeassistant/</code>, <code>dia-*</code>, <code>constellation-2026-10-19*</code>, <code>launchagents-pre-*</code>, <code>qwenpaw.*</code>, <code>soul-*</code>, <code>orca-state</code>, <code>Ollama-app-*</code>, <code>stray-home-AI-Drive*</code>), plus <code>constellation/_empty-dumps-2026-10-26-to-31/</code>.</li>
 </ol>
 <p>Outside this scope but worth one look: <code>com.maio.firefly-backup</code> (02:45 daily) writes 4 KB dumps to <code>~/AI Hub/firefly/backups/</code>, not to AI-Drive — either it is a genuinely tiny database or it is dumping almost nothing.</p>
+<h2 id="where-the-claims-come-from">Where the claims come from</h2>
+<ul>
+<li>A <code>pg_dump</code> of a database with no rows is still a <em>valid</em> archive — it is just tiny. That is why the 100 KB floor, not <code>gzip -t</code>, is the check that caught this: <a href="https://www.postgresql.org/docs/current/app-pgdump.html">PostgreSQL <code>pg_dump</code></a> · <a href="https://www.postgresql.org/docs/current/backup-dump.html">SQL dump backups</a></li>
+<li>Streaming a tar out of a container (<code>docker exec … tar czf - … &gt; file</code>) keeps the host tar binary out of the write path: <a href="https://docs.docker.com/engine/storage/volumes/#back-up-restore-or-migrate-data">Docker volumes — back up, restore, migrate</a></li>
+<li><code>docker cp</code> preserves source metadata, which is why the staged copies carry the container's own timestamps: <a href="https://docs.docker.com/reference/cli/docker/container/cp/">docker container cp</a></li>
+<li>The <code>deny(1) file-write-create</code> line is macOS App Sandbox policy, not a disk fault: <a href="https://developer.apple.com/documentation/security/app-sandbox">Apple — App Sandbox</a></li>
+</ul>
 <p>— Courage 🐾 (checks only; nothing changed)</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
