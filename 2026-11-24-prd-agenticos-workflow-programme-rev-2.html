@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 2)</title>
+<title>PRD — AgenticOS workflow programme (rev 3, implemented)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -127,7 +127,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h1 id="prd--agenticos-workflow-programme">PRD — AgenticOS workflow programme</h1>
 <p><strong>What this is.</strong> The contract for the workflow layer of the Infinity Brands AI platform: which jobs become workflows, which must not, who owns each one, how they are gated, what "working" means, and what gets built next.</p>
 <p><strong>Why this revision exists.</strong> Rev 1 (21:30) was my own design after four drafts were built. Rev 2 puts that design in front of three independent models, keeps what survived, and reverses two calls. The review record is §10 — including the premise one reviewer got wrong, which I had supplied.</p>
-<p><strong>Status.</strong> <code>PROPOSED</code>. Four workflows exist as private drafts, every one with a succeeded test run. Nothing is published; publishing is the owner's act (§11).</p>
+<p><strong>Status.</strong> <code>IMPLEMENTED</code> as of 2026-11-25 00:10: twelve workflows exist as private drafts, eleven of them test-run green (the twelfth is the approval-gated write, which parks waiting for a human by design). Nothing is published; publishing is the owner's act (§11). What shipped, with run ids and the findings it produced, is §12.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">subgraph</span> <span class="dt">Registers</span>[<span class="st">&quot;Company registers (E4)&quot;</span>]</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">R1</span>[<span class="st">&quot;Document Library Drawers&quot;</span>]</span>
@@ -384,83 +384,83 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>L5</td>
-<td>Input Freshness Watch</td>
+<td>Liveness Watch</td>
 <td>scheduled reconciliation</td>
-<td>hourly</td>
-<td><code>ROUTINE FEED</code> stamps</td>
-<td>age per feed vs threshold</td>
-<td>owner, platform bot</td>
-<td><strong>to build — first</strong></td>
+<td>06:15 &amp; 18:15</td>
+<td>maintenance_ledger</td>
+<td>newest row per watched check vs a 36 h cutoff</td>
+<td>owner</td>
+<td><strong>built, green</strong> — amendment §12.2</td>
 </tr>
 <tr>
 <td>L6</td>
 <td>Workflow Failure Watchdog</td>
 <td>record-transition (failure)</td>
-<td>on workflow failure</td>
+<td>on failure of a lane that names it</td>
 <td>the failed run</td>
-<td>timestamp, lane, error code</td>
+<td>lane, step, error code</td>
 <td>owner</td>
-<td><strong>to build — before any publish</strong></td>
+<td><strong>built, green</strong>; wiring needs L6 published (§12.3)</td>
 </tr>
 <tr>
 <td>L7</td>
 <td>Findings ↔︎ Ledger Reconciliation</td>
 <td>scheduled reconciliation</td>
-<td>weekly</td>
-<td>findings + ledger, paged</td>
-<td>open findings missing a ledger row, orphans, state mismatches</td>
+<td>Mon 06:45</td>
+<td>findings + ledger</td>
+<td>open findings missing a ledger row, orphans, closed-without-ledger</td>
 <td>maintenance owner</td>
-<td>to build</td>
+<td><strong>built, green</strong> — found 7 exceptions</td>
 </tr>
 <tr>
 <td>L8</td>
-<td>Blocker Transition Alert</td>
+<td>Blocker Alert</td>
 <td>record-transition</td>
-<td>findings record changed</td>
-<td>the changed record and its prior revision</td>
-<td>transition into open/blocker, repeat-alert suppression</td>
+<td>findings row added or changed</td>
+<td>the changed record</td>
+<td>open + severity blocker → alert</td>
 <td>maintenance owner</td>
-<td>to build</td>
+<td><strong>built, green</strong> (no memory yet)</td>
 </tr>
 <tr>
 <td>L9</td>
-<td>Drawer Correction Approval</td>
+<td>Drawer Correction</td>
 <td>approved correction</td>
-<td>manual / form</td>
-<td>Drawers + Unit and Brand Directory</td>
-<td>before/after diff, validations</td>
+<td>manual</td>
+<td>Drawers</td>
+<td>before/after, revision carried into the write</td>
 <td>ADM steward</td>
-<td>to build</td>
+<td><strong>built, parks at approval</strong></td>
 </tr>
 <tr>
 <td>L10</td>
-<td>Store / Satellite / Estate Reconciliation</td>
+<td>Store / Satellite Reference Check</td>
 <td>scheduled reconciliation</td>
-<td>weekly</td>
-<td>Store Network, TLF Satellites, estate_inventory, Unit Directory</td>
-<td>dangling refs, exact duplicates, blanks</td>
-<td>TLF + ADM/NVP</td>
-<td>to build</td>
+<td>Wed 07:00</td>
+<td>Store Network, TLF Satellites</td>
+<td>duplicate codes/names, blanks, satellites with no link</td>
+<td>TLF operations</td>
+<td><strong>built, green</strong> — 6 exceptions</td>
 </tr>
 <tr>
 <td>L11</td>
 <td>Zoho Read Lane</td>
-<td>sourced research</td>
-<td>manual → cron</td>
-<td><code>mcp.call</code> zoho <code>read</code>/<code>crm_search</code></td>
-<td>selection and shaping</td>
+<td>connector read</td>
+<td>manual</td>
+<td><code>mcp.call</code> zoho <code>read</code></td>
+<td>none — returns the answer</td>
 <td>unit desk</td>
-<td>to build (proven possible, P1)</td>
+<td><strong>built, green</strong> — real CRM module metadata</td>
 </tr>
 <tr>
 <td>L12</td>
 <td>Unit Research Pack</td>
 <td>sourced research</td>
 <td>manual/chat</td>
-<td>unit knowledge base + Drawers first, external second</td>
-<td>internal/external separation, numbering</td>
+<td>needs a readable unit knowledge base</td>
+<td>internal/external separation</td>
 <td>asking unit</td>
-<td>to upgrade L1</td>
+<td><strong>deferred — no readable unit source (§12.4)</strong></td>
 </tr>
 </tbody>
 </table>
@@ -775,7 +775,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>D1</td>
-<td>Publish L3 and L4 (the two read-only Monday lanes) once their contracts are written</td>
+<td>Publish L3 and L4 (the two read-only Monday lanes) — contracts are written</td>
+<td>Ricardo</td>
+<td><strong>open</strong></td>
+</tr>
+<tr>
+<td>D1a</td>
+<td>Publish L6 first, then wire it as every lane's error workflow — the platform refuses it otherwise</td>
 <td>Ricardo</td>
 <td><strong>open</strong></td>
 </tr>
@@ -806,5 +812,165 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tbody>
 </table>
 <p>Nothing here spends money, signs anything, or publishes a workflow. D1–D5 are the owner's.</p>
+<hr />
+<h2 id="12-implementation-record--what-shipped-at-2026-11-25-0010">12. Implementation record — what shipped at 2026-11-25 00:10</h2>
+<p>Twelve workflows exist (four from the first build, one connector probe, seven built tonight). Every one returns <code>graph_valid: true</code>; eleven have a succeeded test run and the twelfth parks at its approval by design. None is published. Contracts for all twelve are in <code>AgenticOS/contracts/</code> (§5.8).</p>
+<table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Test run</th>
+<th>Status</th>
+<th>What the run actually produced</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L5 Liveness Watch</td>
+<td><code>e4008a93</code></td>
+<td>succeeded</td>
+<td><strong>8 of 8 watched checks silent</strong> — everything last wrote on 2026-11-23 06:31; cutoff 2026-11-23T11:45</td>
+</tr>
+<tr>
+<td>L6 Failure Watchdog</td>
+<td>(synthetic input)</td>
+<td>succeeded</td>
+<td>Named lane, run, step and error code from a synthetic failure</td>
+</tr>
+<tr>
+<td>L7 Findings ↔︎ Ledger</td>
+<td><code>99cc4fc2</code> chain</td>
+<td>succeeded</td>
+<td><strong>7 open findings, 0 ledger rows carrying a finding id → 7 exceptions</strong>, all named</td>
+</tr>
+<tr>
+<td>L8 Blocker Alert</td>
+<td><code>a02cf293</code></td>
+<td>succeeded</td>
+<td>"Finding F-TEST-01 is an open blocker" from a synthetic record</td>
+</tr>
+<tr>
+<td>L9 Drawer Correction</td>
+<td>(manual)</td>
+<td><strong>waiting_approval</strong></td>
+<td>Proposed a real before/after on drawer <code>04_Operations</code>; wrote nothing</td>
+</tr>
+<tr>
+<td>L10 Store / Satellite</td>
+<td><code>20b355a2</code> area</td>
+<td>succeeded</td>
+<td><strong>5 of 10 stores missing store code and network</strong>; 1 satellite row with no link; 0 duplicates</td>
+</tr>
+<tr>
+<td>L11 Zoho Read Lane</td>
+<td><code>234def6e</code> (failed) then crm-settings read</td>
+<td>succeeded</td>
+<td>Returned live CRM module metadata (<code>api_name</code>, module ids) through <code>mcp.call</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="121-what-the-numbers-say-about-the-estate">12.1 What the numbers say about the estate</h3>
+<ul>
+<li>The ledger has not been written since <strong>2026-11-23 06:31</strong> — the checks that prove the platform is being watched are themselves unwatched. That is the single most important finding of the night.</li>
+<li>Findings and ledger do not meet: <strong>zero</strong> ledger rows carry a finding id, so no finding's closure can be evidenced from data.</li>
+<li>Five of ten stores carry no store code and no network — any per-network roll-up would silently drop half the estate.</li>
+</ul>
+<h3 id="122-amendment--l5-watches-the-ledger-not-the-context-documents">12.2 Amendment — L5 watches the ledger, not the context documents</h3>
+<p>The PRD said L5 would measure the age of each <code>ROUTINE FEED</code> context document. It cannot: no workflow node can read a context document, and the context API returns no timestamp at all (<code>can_edit</code>, <code>description</code>, <code>enabled</code>, <code>excerpt</code>, <code>format</code>, <code>id</code>, <code>mode</code>, <code>name</code>, <code>shared_groups</code>, <code>size_bytes</code>, <code>used_by</code>, <code>visibility</code>). What <em>is</em> readable is <code>maintenance_ledger</code>, which already carries <code>feed/unit · feed_freshness</code> and <code>feed/unit · feed_generator</code> rows. So L5 was built as a liveness watch over the ledger's watched checks, with a 36-hour cutoff. <strong>Open item:</strong> feed age as such still needs either a context-read capability or a feeds table; until then, "the feed is fresh" is inferred from the ledger row that says it was checked.</p>
+<h3 id="123-the-watchdog-cannot-be-wired-until-it-is-published">12.3 The watchdog cannot be wired until it is published</h3>
+<p><code>PUT /workflows/{id}/settings</code> with <code>error_workflow_id</code> answers <code>WORKFLOW_SETTINGS_INVALID: Publish that workflow starting from On failure of a workflow first</code>. So the order is forced: publish L6 first, then point every lane at it. This is the one place where the owner's publish decision blocks a safety feature, and it is called out as D1a below.</p>
+<h3 id="124-deferred--l12-unit-research-pack">12.4 Deferred — L12 Unit Research Pack</h3>
+<p>L12 needs a unit's own knowledge base or registers as its internal source. No node can search a unit knowledge base (no knowledge-base route is exposed, and <code>knowledge.search</code> needs a collection id we do not have), and the Document Library Drawers register is an index of documents, not of knowledge. Building L12 now would be a research lane wearing a unit's name. It waits for a readable unit source — the same class of gap as §12.2.</p>
+<h3 id="125-deviations-from-the-plan-each-stated-rather-than-hidden">12.5 Deviations from the plan, each stated rather than hidden</h3>
+<table>
+<thead>
+<tr>
+<th>Plan</th>
+<th>Built</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L5 hourly</td>
+<td>06:15 and 18:15</td>
+<td>An hourly lane with no state re-alerts hourly. Twice a day keeps the 36 h cutoff useful and the notification budget honest (§5.8.6)</td>
+</tr>
+<tr>
+<td>L6 as error workflow on every lane</td>
+<td>built, not wired</td>
+<td>The platform refuses an unpublished error workflow (§12.3)</td>
+</tr>
+<tr>
+<td>L8 transition detection using <code>before</code> values</td>
+<td>label check on the current record only</td>
+<td><code>before</code> carries option ids, not labels, so "newly a blocker" cannot be decided reliably; the lane alerts on any open blocker change and says so in its contract</td>
+</tr>
+<tr>
+<td>L11 with an empty path reading the service map</td>
+<td>path required</td>
+<td><code>read</code> demands a service that exists in the map; "empty path" produced <code>Error executing tool read</code>. The lane now takes a real service and path and returned live CRM metadata</td>
+</tr>
+</tbody>
+</table>
+<h3 id="126-acceptance-criteria-re-run-against-the-implementation">12.6 Acceptance criteria, re-run against the implementation</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion (§7)</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Lane count matches the register</td>
+<td><strong>12 workflows</strong> present, each named as in §5.2</td>
+</tr>
+<tr>
+<td>2. Every draft validates</td>
+<td><strong>12 of 12</strong> <code>graph_valid: true</code></td>
+</tr>
+<tr>
+<td>3. Every lane has a succeeded test run</td>
+<td>11 succeeded; L9 is <code>waiting_approval</code> by design</td>
+</tr>
+<tr>
+<td>4. Every published lane has a contract</td>
+<td>12 contracts written; <strong>0 published</strong>, so not yet binding</td>
+</tr>
+<tr>
+<td>5. No published number without an age</td>
+<td>Not applicable yet; L5 and L7 stamp their cutoffs and page sizes</td>
+</tr>
+<tr>
+<td>6. L5 catches a stale feed</td>
+<td><strong>Proven</strong> — 8 of 8 silent at the 36 h cutoff</td>
+</tr>
+<tr>
+<td>7. L6 pages on a failure</td>
+<td><strong>Proven</strong> with a synthetic failure payload</td>
+</tr>
+<tr>
+<td>8. A write path never writes without approval</td>
+<td><strong>Proven</strong> — L9 parked at <code>waiting_approval</code>; the register is unchanged</td>
+</tr>
+<tr>
+<td>9. A clean reconciliation says so</td>
+<td>L7 and L10 are exception-free-capable; this run found exceptions, so the clean branch is untested</td>
+</tr>
+<tr>
+<td>10. The connector answers</td>
+<td><strong>Proven</strong> — live CRM module metadata</td>
+</tr>
+<tr>
+<td>11. Nothing published by the agent</td>
+<td><strong>0 published</strong>, verified after every build</td>
+</tr>
+<tr>
+<td>12. ≤ 2 model calls per run</td>
+<td>L5–L11 use 0 model calls; L1–L2 use 1</td>
+</tr>
+</tbody>
+</table>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
