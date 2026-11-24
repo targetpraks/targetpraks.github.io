@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>The Mumbai Quote Gate PRD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="the-mumbai-quote-gate--prd">The Mumbai Quote Gate — PRD</h1>
+<p><strong>Requiring three quotations and an approval before a Mumbai purchase can leave the building — entirely inside Zoho Inventory.</strong></p>
+<table>
+<tbody>
+<tr>
+<td>Status</td>
+<td>Draft for Ricardo's approval</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>2026-11-24</td>
+</tr>
+<tr>
+<td>Organisation</td>
+<td>Infinity Brands — Zoho Inventory org <code>716443079</code></td>
+</tr>
+<tr>
+<td>Owner</td>
+<td>Ricardo Maio</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>Adrianna A (AI stack)</td>
+</tr>
+<tr>
+<td>Out of scope by instruction</td>
+<td>Anything outside Zoho Inventory — no Creator, no Flow, no external app</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-decision-requested">1. Decision requested</h2>
+<ol type="1">
+<li>Approve the three-part build described here (two custom modules, one approval rule), or send it back with changes.</li>
+<li>Confirm <strong>what "Mumbai" is</strong> — see §11, question 1. The spec is written for the case that Mumbai is a <strong>supplier/vendor group</strong>; the criterion is a single setting if it turns out to be a buying desk instead.</li>
+<li>Name the approver and one backup (§8).</li>
+</ol>
+<p>No configuration is written to the live org until Ricardo says go.</p>
+<hr />
+<h2 id="2-problem">2. Problem</h2>
+<p>Purchases from Mumbai have no controlled paper trail and no sign-off. The gate everyone assumes exists does not:</p>
+<ul>
+<li><strong>No approval rule is configured at all.</strong> <code>GET /inventory/v1/settings/approvals?entity_type=purchaseorder</code> on org <code>716443079</code> returns <code>{"approvals": []}</code>. Every one of the 83 purchase orders in the org can be sent, received and billed without anyone approving anything.</li>
+<li>A Custom Module by itself cannot fix this. <strong>Custom modules are UI-only</strong> — <code>/inventory/v1/custommodules</code> returns <code>404 Invalid URL Passed</code>, so nothing inside a custom module can block, trigger or validate a purchase order.</li>
+<li>What Custom Modules <em>can</em> do is hold the quotation register and run an approval of their own (Blueprints), and what Approvals can do is stop a purchase order from moving forward. Option 1 combines those two facts; it does not pretend a module can count.</li>
+</ul>
+<p>The org is on <strong>Zoho One / ENTERPRISE_NEW</strong> (<code>/inventory/v1/organizations</code>), so Custom Approvals (Professional+) and Custom Modules are within plan. Blueprints are <strong>early access</strong> and must be switched on by Zoho support.</p>
+<hr />
+<h2 id="3-goals-and-non-goals">3. Goals and non-goals</h2>
+<p><strong>Goals</strong></p>
+<ol type="1">
+<li>Every Mumbai purchase has a named sourcing request, three comparable quotations on record, and Ricardo's approval before the PO is sent.</li>
+<li>The approval is a system block on the purchase order, not a convention.</li>
+<li>The evidence (three PDFs + comparable amounts) survives the purchase, retrievable months later for audit.</li>
+</ol>
+<p><strong>Non-goals</strong></p>
+<ul>
+<li>Automatically counting quotations and blocking the 12th attempt at a PO. Nothing inside Zoho Inventory can count child records on a transaction; see §5.</li>
+<li>Replacing buying judgement. The approver is the control; the system makes the approver's decision cheap and recorded.</li>
+<li>Any change to vendors, items, prices or accounts.</li>
+</ul>
+<hr />
+<h2 id="4-who-does-what">4. Who does what</h2>
+<table>
+<thead>
+<tr>
+<th>Actor</th>
+<th>In Zoho Inventory</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Buyer / sourcing owner</td>
+<td>Creates Purchase Request and Quotation records</td>
+<td>Gets the quotes, loads them, keeps them accurate</td>
+</tr>
+<tr>
+<td>Ricardo (admin)</td>
+<td>Transition owner on both blueprints; approver on POs</td>
+<td>Approves or rejects</td>
+</tr>
+<tr>
+<td>Backup approver (CFO — Pamela Fourie)</td>
+<td>Second-level approver / SLA escalation</td>
+<td>Covers absence</td>
+</tr>
+<tr>
+<td>Finance</td>
+<td>Pays against approved bills</td>
+<td>Cannot pay an unapproved bill</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-what-this-really-enforces--read-this-before-approving">5. What this really enforces — read this before approving</h2>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Strength</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PO cannot be sent / received / billed until approved</td>
+<td><strong>Hard</strong> (system)</td>
+<td>Zoho Approval blocks <em>further actions</em> until approved: "Further actions can be performed only after the transaction is approved"</td>
+</tr>
+<tr>
+<td>Mumbai POs route to Ricardo, not to just any admin</td>
+<td><strong>Hard</strong> (system)</td>
+<td>Custom Approval with a vendor criterion; rule priority decides the flow</td>
+</tr>
+<tr>
+<td>A quotation cannot be marked Selected without its PDF and price</td>
+<td><strong>Hard inside the module</strong> (system)</td>
+<td>Blueprint transition with mandatory fields + checklist will not complete until filled</td>
+</tr>
+<tr>
+<td>A sourcing request cannot be approved with fewer than three quote references</td>
+<td><strong>Soft</strong> (checklist)</td>
+<td>Blueprint checklists are ticked by the approver; the system does not count</td>
+</tr>
+<tr>
+<td>A buyer cannot raise a Mumbai PO without a sourcing request</td>
+<td><strong>Soft</strong></td>
+<td>Zoho cannot require a custom module record on a PO. The approver is the check</td>
+</tr>
+<tr>
+<td>Nobody bypasses the gate by billing directly</td>
+<td><strong>Hard only if Bills approval is also enabled</strong></td>
+<td>A bill entered without a PO never touches PO approval</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The honest sentence:</strong> the system guarantees that <em>nothing gets sent or paid without an approval</em>; it makes <em>three quotes</em> the documented condition of that approval, not a computed rule. That is the ceiling inside Zoho Inventory.</p>
+<hr />
+<h2 id="6-design">6. Design</h2>
+<p>Three parts, all inside the app:</p>
+<pre><code>Purchase Request  ──lookup──►  Quotation ×3        (register + evidence)
+       │                          │
+       └── approved ──────────────┴──►  Purchase Order  ──►  approval gate  ──►  vendor</code></pre>
+<h3 id="61-custom-module-a--purchase-requests">6.1 Custom module A — "Purchase Requests"</h3>
+<p>One record per buying decision.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Request No</td>
+<td>Text (primary)</td>
+<td>Convention <code>SR-2026-001</code>; auto-number if the builder offers it</td>
+</tr>
+<tr>
+<td>Subject</td>
+<td>Text</td>
+<td>What is being bought, one line</td>
+</tr>
+<tr>
+<td>Requester</td>
+<td>Text or Lookup (user)</td>
+<td>Who asked</td>
+</tr>
+<tr>
+<td>Sourcing owner</td>
+<td>Text or Lookup (user)</td>
+<td>Who is chasing the quotes</td>
+</tr>
+<tr>
+<td>Supplier group</td>
+<td>Dropdown</td>
+<td><code>Mumbai</code>, <code>Other</code> — drives the view, not the gate</td>
+</tr>
+<tr>
+<td>Currency</td>
+<td>Dropdown</td>
+<td>ZAR / INR / USD</td>
+</tr>
+<tr>
+<td>Budget</td>
+<td>Amount</td>
+<td>What we expect to spend</td>
+</tr>
+<tr>
+<td>Required by</td>
+<td>Date</td>
+<td></td>
+</tr>
+<tr>
+<td>Approval status</td>
+<td>Dropdown</td>
+<td><code>Draft</code>, <code>Quotes Requested</code>, <code>Submitted for Approval</code>, <code>Approved</code>, <code>Rejected</code>, <code>Closed</code> — this is the <strong>blueprint field</strong></td>
+</tr>
+<tr>
+<td>Quote 1 / Quote 2 / Quote 3</td>
+<td>Lookup → Quotations</td>
+<td>The three references the approver checks</td>
+</tr>
+<tr>
+<td>PO number</td>
+<td>Text</td>
+<td>Filled after the PO exists</td>
+</tr>
+<tr>
+<td>Justification / notes</td>
+<td>Multi-line text</td>
+<td>Why these suppliers, why this choice</td>
+</tr>
+</tbody>
+</table>
+<p>Table <strong>Requirement</strong> (mandatory): Item · Description · Qty · Target price.</p>
+<h3 id="62-custom-module-b--quotations">6.2 Custom module B — "Quotations"</h3>
+<p>One record per quotation received.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quote Ref</td>
+<td>Text (primary)</td>
+<td>Supplier's own reference</td>
+</tr>
+<tr>
+<td>Sourcing Request</td>
+<td>Lookup → Purchase Requests</td>
+<td>Puts the quote in the request's Related List</td>
+</tr>
+<tr>
+<td>Supplier</td>
+<td>Lookup → Vendors</td>
+<td>The actual vendor</td>
+</tr>
+<tr>
+<td>Quote date</td>
+<td>Date</td>
+<td></td>
+</tr>
+<tr>
+<td>Valid until</td>
+<td>Date</td>
+<td>Approver checks it has not expired</td>
+</tr>
+<tr>
+<td>Currency</td>
+<td>Dropdown</td>
+<td>ZAR / INR / USD</td>
+</tr>
+<tr>
+<td>Amount</td>
+<td>Amount</td>
+<td>Ex-VAT, as quoted</td>
+</tr>
+<tr>
+<td>Lead time (days)</td>
+<td>Number</td>
+<td></td>
+</tr>
+<tr>
+<td>Payment terms</td>
+<td>Text</td>
+<td></td>
+</tr>
+<tr>
+<td>Deliverable / spec notes</td>
+<td>Multi-line text</td>
+<td>What exactly the price buys</td>
+</tr>
+<tr>
+<td>FX rate to ZAR</td>
+<td>Decimal</td>
+<td>Only where the quote is in INR/USD</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Dropdown</td>
+<td><code>Received</code>, <code>Verified</code>, <code>Selected</code>, <code>Not selected</code> — <strong>blueprint field</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Attachment: the supplier's PDF on the record. If the module builder offers no file field, the PDF goes on the record's attachment area and the blueprint checklist below is what enforces it.</p>
+<h3 id="63-blueprints">6.3 Blueprints</h3>
+<p>Both are early access — Zoho support must enable Blueprints for the org (§10, step 1).</p>
+<p><strong>Blueprint "Quotation check"</strong> (module: Quotations)</p>
+<ul>
+<li><em>Verify</em> — Received → Verified. Owner: sourcing owner. Mandatory fields: Quote date, Valid until, Amount, Currency. Checklist: "Supplier PDF attached", "Supplier name matches the quote", "Amount is ex-VAT".</li>
+<li><em>Select</em> — Verified → Selected. Owner: Ricardo. Checklist: "Compared against the other two quotes on this request", "Validity date covers the PO date".</li>
+</ul>
+<p><strong>Blueprint "Sourcing approval"</strong> (module: Purchase Requests)</p>
+<ul>
+<li><em>Submit</em> — Draft → Quotes Requested → Submitted for Approval. Owner: sourcing owner. Mandatory: Quote 1, Quote 2, Quote 3, Currency, Budget.</li>
+<li><em>Approve</em> — Submitted for Approval → Approved. Owner: Ricardo. Checklist: "Three quotes present and comparable", "Three quote PDFs attached to the request", "Budget covers the selected quote".</li>
+<li><em>Reject</em> — Submitted for Approval → Rejected. Owner: Ricardo. Mandatory: rejection reason (text field on the form, filled at transition).</li>
+<li>SLA on <code>Submitted for Approval</code>: 2 working days → notify Ricardo and the backup; 3 working days → email both.</li>
+</ul>
+<h3 id="64-approvals-on-purchase-orders">6.4 Approvals on Purchase Orders</h3>
+<p>Settings → Purchases → Purchase Orders → Approvals → <strong>Custom Approval</strong> → New Custom Approval.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Approval name</td>
+<td><code>Mumbai purchases — three quotes</code></td>
+</tr>
+<tr>
+<td>Criteria</td>
+<td>Vendor <strong>equals</strong> each Mumbai supplier (one criterion per vendor, OR-joined). If Mumbai turns out to be a buying desk, the criterion becomes <strong>Created By / user</strong> instead — the rest of the design is unchanged</td>
+</tr>
+<tr>
+<td>Flow</td>
+<td>Level 1 — Ricardo; Level 2 — backup (optional, recommended)</td>
+</tr>
+<tr>
+<td>Priority</td>
+<td>1 (above any future threshold rule)</td>
+</tr>
+<tr>
+<td>"Allow approvers to approve transactions they create"</td>
+<td><strong>Off</strong></td>
+</tr>
+<tr>
+<td>Notify approvers on submit</td>
+<td>On</td>
+</tr>
+</tbody>
+</table>
+<p>Second rule, recommended in the same screen: <code>Any PO above R50,000</code> → Level 1 Ricardo. This closes the "buy it from someone else" hole without needing to enumerate vendors.</p>
+<h3 id="65-approvals-on-bills-and-payments-made">6.5 Approvals on Bills and Payments Made</h3>
+<p>Without this, a direct bill bypasses the PO entirely. Recommended: Bills → Approvals → Simple Approval (or a custom rule above R10,000) with finance as approver. Phase 2 if Ricardo wants the first cut small — but then say so out loud, because the gate has a side door.</p>
+<h3 id="66-purchase-order-custom-fields-evidence-on-the-po-itself">6.6 Purchase order custom fields (evidence on the PO itself)</h3>
+<p>Add to the PO form: <strong>Sourcing Request No</strong> (text) and <strong>Three quotes attached</strong> (checkbox). They give the approver everything on one screen, and they are what audit reads after the register has moved on.</p>
+<hr />
+<h2 id="7-operating-procedure">7. Operating procedure</h2>
+<p><strong>Happy path.</strong> Buyer raises Purchase Request → requests quotes from three suppliers → loads three Quotation records, attaches three PDFs → verifies each, selects one → submits the request → Ricardo approves → buyer raises the PO against the selected quote, fills Sourcing Request No, ticks the checkbox, attaches the three PDFs → <strong>Save and Submit</strong> → Ricardo approves → PO can be sent.</p>
+<p><strong>Exception — sole source / urgent.</strong> Request still raised, with Quote 2 and Quote 3 marked <code>Sole source</code> by using a quotation record whose supplier is <code>Sole source (documented)</code> and whose notes carry the reason. Ricardo approves or rejects; the exception is visible in the register and countable at month end.</p>
+<p><strong>Monthly audit.</strong> Filter Purchase Requests to <code>Approved</code>, sort by date, export; check every Mumbai PO in the same period matches a request and three quotations. Any orphan is a control failure to raise with the buyer, not a system failure.</p>
+<hr />
+<h2 id="8-roles-and-permissions">8. Roles and permissions</h2>
+<table>
+<thead>
+<tr>
+<th>Permission</th>
+<th>Who</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Custom module access — Purchase Requests (create/edit)</td>
+<td>Purchasing, brand buyers</td>
+</tr>
+<tr>
+<td>Custom module access — Quotations (create/edit)</td>
+<td>Purchasing, brand buyers</td>
+</tr>
+<tr>
+<td>Blueprint transition <em>Verify</em> / <em>Submit</em></td>
+<td>Purchasing, brand buyers</td>
+</tr>
+<tr>
+<td>Blueprint transitions <em>Select</em> / <em>Approve</em> / <em>Reject</em></td>
+<td>Ricardo</td>
+</tr>
+<tr>
+<td>Purchase Orders → Approve</td>
+<td>Ricardo (level 1), Pamela Fourie (level 2 / backup)</td>
+</tr>
+<tr>
+<td>Settings → Approvals / Custom Modules</td>
+<td>Ricardo, CTO only</td>
+</tr>
+</tbody>
+</table>
+<p>Restriction that matters: <strong>admins can "Final Approve" any transaction</strong>, bypassing levels. Keep admin count small (currently 26 users, several already inactive) and treat Final Approve as an exception that gets logged and reviewed.</p>
+<hr />
+<h2 id="9-acceptance-tests-all-must-pass-before-this-is-called-done">9. Acceptance tests (all must pass before this is called done)</h2>
+<ol type="1">
+<li>Create a Purchase Request for a Mumbai item with fewer than three quote references → <em>Submit</em> is refused; the missing fields are named.</li>
+<li>Add a quotation without an amount → <em>Verify</em> is refused.</li>
+<li>Add three complete quotations, attach PDFs, submit → lands in Ricardo's Pending Approvals; email arrives.</li>
+<li>Approve the request → status <code>Approved</code>; transition buttons disappear for the buyer.</li>
+<li>Raise a PO to a Mumbai vendor → submit → PO appears in Pending Approvals; <strong>Send, Receive and Convert to Bill are unavailable</strong> until approved.</li>
+<li>Approve the PO → Send becomes available; approval history shows who approved and when.</li>
+<li>Raise the same PO to a non-Mumbai vendor under R50,000 → no approval demanded.</li>
+<li>Direct vendor bill (no PO) → payment blocked if §6.5 was enabled; if not enabled, this test fails by design and is recorded as accepted risk.</li>
+<li>Reject a PO with a reason → buyer can edit and resubmit; both attempts visible in approval history.</li>
+</ol>
+<hr />
+<h2 id="10-rollout">10. Rollout</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Step</th>
+<th>Owner</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Email <a href="mailto:support@zohoinventory.com">support@zohoinventory.com</a> to enable <strong>Blueprints</strong> for org 716443079 (early access)</td>
+<td>Ricardo</td>
+<td>5 min + wait</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Create module <em>Quotations</em>, then <em>Purchase Requests</em>; add fields and tables</td>
+<td>Ricardo / Adrianna guided</td>
+<td>45 min</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Create the two blueprints, set transition owners and checklists; publish</td>
+<td>Ricardo</td>
+<td>40 min</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Configure Custom Approval on Purchase Orders; set rule priority</td>
+<td>Ricardo</td>
+<td>15 min</td>
+</tr>
+<tr>
+<td>5</td>
+<td>(Recommended) Bills approval</td>
+<td>Ricardo</td>
+<td>10 min</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Add the two PO custom fields</td>
+<td>Ricardo</td>
+<td>10 min</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Run acceptance tests §9 with one real Mumbai purchase</td>
+<td>Ricardo + buyer</td>
+<td>30 min</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Brief the buyers: one page, the happy path and the exception</td>
+<td>Ricardo</td>
+<td>15 min</td>
+</tr>
+</tbody>
+</table>
+<p>If Blueprints are not enabled in time, <strong>ship steps 2, 4, 5, 6 anyway</strong>: the PO gate and the bills gate are the money controls and do not depend on early access. The quotation status field then moves by hand until Blueprints land.</p>
+<hr />
+<h2 id="11-open-questions">11. Open questions</h2>
+<ol type="1">
+<li><strong>What is Mumbai?</strong> A supplier group we buy from, the buying desk that raises the orders, or a customer asking us for quotes? The spec above assumes supplier. If it is the buying desk, the Custom Approval criterion becomes the user/branch that created the PO — everything else stands.</li>
+<li><strong>Approver and backup</strong> — Ricardo plus Pamela, or someone else as second level?</li>
+<li><strong>Threshold</strong> — is R50,000 the right "any PO needs approval" line, or a different number?</li>
+<li><strong>Bills</strong> — enable the direct-bill gate now (§6.5) or accept the side door for phase one?</li>
+</ol>
+<hr />
+<h2 id="12-risks">12. Risks</h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Blueprints stay early access for weeks</td>
+<td>PO and bills approvals stand alone; status moved by hand meanwhile</td>
+</tr>
+<tr>
+<td>Buyers keep the register in their head</td>
+<td>Request No is required on the PO by the approver's checklist; orphan report monthly</td>
+</tr>
+<tr>
+<td>Approver becomes the bottleneck</td>
+<td>SLA escalation to backup at 2 working days</td>
+</tr>
+<tr>
+<td>Quotes in INR, PO in ZAR</td>
+<td>FX rate field on the quotation; approver checks both figures</td>
+</tr>
+<tr>
+<td>Admin Final Approve used casually</td>
+<td>Small admin group; Final Approve reviewed monthly</td>
+</tr>
+<tr>
+<td>Custom modules have no API</td>
+<td>Audit is by view + export, not by script; accept and document</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-evidence">13. Evidence</h2>
+<ul>
+<li><code>GET /inventory/v1/settings/approvals?organization_id=716443079&amp;entity_type=purchaseorder</code> → <code>{"approvals": []}</code> (no rule configured).</li>
+<li><code>GET /inventory/v1/custommodules?organization_id=716443079</code> → <code>404 Invalid URL Passed</code> (custom modules are UI-only).</li>
+<li><code>GET /inventory/v1/organizations</code> → <code>plan_name: Zoho One</code>, <code>planDisplayName: ENTERPRISE_NEW</code>, <code>zohoOne: true</code>.</li>
+<li>Zoho Inventory help, <em>Configure Approvals</em>: approvals available for Purchase Orders, Bills, Payments Made, Custom Modules; further actions only after approval; up to 10 levels.</li>
+<li>Zoho Inventory help, <em>Custom Approval</em>: Professional and higher; criteria-based flows; priority ordering.</li>
+<li>Zoho Inventory help, <em>Blueprints</em>: early access, requires <a href="mailto:support@zohoinventory.com">support@zohoinventory.com</a>; states, transitions, transition owners, mandatory fields/checklists/messages, SLA; sequential/parallel up to five sub-transitions.</li>
+<li>Zoho Inventory help, <em>Custom Modules</em>: fields and tables, lookups and related lists, validation rules, module permissions; no API.</li>
+<li>Data: 83 purchase orders in the org, 15 active vendor names, no vendor or user named Mumbai.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
