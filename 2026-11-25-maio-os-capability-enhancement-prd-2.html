@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Maio OS - Capability Enhancement PRD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<p>PRODUCT REQUIREMENTS DOCUMENT - MAIO OS CAPABILITY ENHANCEMENT</p>
+<p>Document .......... PRD Version ........... 1.0 Date .............. 2026-11-25 Product ........... Maio OS, the household cockpit Route in scope ..... <a href="https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel">https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel</a> Stack ............. T3 Code (Nightly) Surface verified .. <a href="https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel">https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel</a> returns 200; same build served by the companion on <a href="http://127.0.0.1:9111/">http://127.0.0.1:9111/</a> Requested by ...... Ricardo Assigned to ....... Google Neon Status ............ Draft for approval. No work starts until Ricardo approves the scope.</p>
+<p>01 - PURPOSE</p>
+<p>This document defines the enhancements to every capability of the website at <a href="https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel">https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel</a> and assigns responsibility for the delivery of each to Google Neon.</p>
+<p>The request named no specific enhancement for any capability. Every enhancement detail that the requester did not state is marked [unspecified]. The proposed requirement under each capability is derived from the live build and its documented contracts, so the scope is grounded in what the site actually does today, not in assumption.</p>
+<p>02 - PRODUCT IN ONE PARAGRAPH</p>
+<p>Maio OS is a single-user workspace over Ricardo's household: one static shell, one generated data snapshot, and one loopback companion that adds live machine readings, the fleet board, document reading, vault search, and the folded-in Life applications. Content opens in the main area with persistent navigation and bookmarkable routes. There are no floating windows and no pop-up search. The vault is read-only to the site and Beast is its only writer. Money and legal actions are never taken from the site.</p>
+<p>03 - CURRENT CAPABILITY INVENTORY (EVIDENCE FROM THE LIVE BUILD)</p>
+<p>Shell and navigation</p>
+<ul>
+<li>One HTML shell at the repository root: index.html, 218,201 bytes, with assets/theme.css, assets/workspace.css and an icons.svg sprite.</li>
+<li>19 section definitions registered in the shell: overview, projects, agents, reports (Library), kanban, machine, vault, prds, stack, almanac, recordings, path, wheel, astro, top8, accounts, search, file (hidden), about.</li>
+<li>Persistent sidebar, breadcrumbs, top bar with a generated-at stamp, and a Search button that binds Command-K.</li>
+<li>Route grammar: #section, #project:name, #agent:name, #file:relative-path, #report:agent, #docs:title, #almanac:YYYY-MM-DD, #desk.</li>
+</ul>
+<p>Data</p>
+<ul>
+<li>data.js is a 328 KB generated snapshot, owned by the refresh job and never hand-edited.</li>
+<li>local.js is the live payload, refreshed on a 30 second cycle and on window focus. Its keys are: machine, ram, slow, ollama, omlx, sessions, spend, kanban, launchd, docker, serves, library, services, recordings, almanac, path, firefly, companion.</li>
+<li>Snapshot and live readings are rendered as distinct states with honest badges.</li>
+</ul>
+<p>Companion API (declared in /openapi.json)</p>
+<ul>
+<li>GET /health, GET /local.js, GET /openapi.json.</li>
+<li>GET /api/fix/log, POST /api/fix, GET /api/vault/search, GET /api/vault/note, GET /files/{rel}.</li>
+<li>GET /api/top8/status, GET /api/top8/research.</li>
+<li>Reverse proxies for /wheel (Next application on 127.0.0.1:3210) and /astro; static serve for /top8.</li>
+<li>Every route enforces a Host allowlist; fix endpoints require a token for non-loopback hosts; vault reads require an allowlisted origin when an origin is present.</li>
+</ul>
+<p>Gated actions</p>
+<ul>
+<li>Trim RAM, model unload, model warm, allowlisted service restart across 6 labels, and data refresh.</li>
+<li>Each action is two-click confirmed, cool-down limited, and written to the action log.</li>
+</ul>
+<p>Work</p>
+<ul>
+<li>Projects, Kanban and Agents sections, reading the generated snapshot plus the live fleet board.</li>
+</ul>
+<p>Knowledge</p>
+<ul>
+<li>Library over three shelves (Machine, Public, Docs), PRDs found in the vault, and Vault search plus read-only note rendering through the companion.</li>
+</ul>
+<p>Life</p>
+<ul>
+<li>Almanac: daily reading, weekly Green Light timing map, Oracle of the Week, event calendar, and the moon computed in-process.</li>
+<li>The Path: the Manual and the Grimoire of Light, with today's principle and the grimoire's cleansing window read against the computed moon.</li>
+<li>Wheel of Life: a mounted Next 16.3.2 application with React 19 and Prisma 7.9.1 over SQLite, with pages for the wheel, goals, ikigai, thinking, board and settings, and API routes for stock, backup and upload.</li>
+<li>Astro Cartography, Top 8 magazine, and Accounts (Firefly III, linked out and never framed, read-only).</li>
+</ul>
+<p>System</p>
+<ul>
+<li>Machine, Stack and About, including launchd, docker, serves, local model runtimes and the service allowlist.</li>
+</ul>
+<p>04 - ENHANCEMENT REQUIREMENTS</p>
+<p>Each requirement names the capability, its evidence-backed current state, the requester's stated enhancement detail, the proposed requirement, the assigned owner, and acceptance. Where the requester gave no detail, the detail reads [unspecified].</p>
+<p>E1 - Shell and navigation</p>
+<ul>
+<li>Current state: 19 sections, persistent sidebar, breadcrumbs, hash routes, Command-K search button, no floating windows.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: add a section-level overview for every group, a keyboard route jump, and a visible state for every route that matches nothing, so no dead link renders an empty frame. Keep the settled shell shape: no window manager, no modal search.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: every section id in the registered list renders on a fresh load and on a direct hash load; an unmatched route shows one escaped notice inside the parent section; no fixed overlay is introduced; the existing route grammar is unchanged. Target coverage percentage: [unspecified].</li>
+</ul>
+<p>E2 - Search</p>
+<ul>
+<li>Current state: Command-K opens the Search section; results cover sections, projects, agents and documents.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: one ranked search index over sections, projects, agents, library entries, PRD titles and vault notes, with the result type shown, and a deep link that reproduces the result on reload.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: a query returns results across all six result types; selecting a result opens a bookmarkable route; a query for a note that does not exist states so rather than failing. Minimum result quality bar: [unspecified].</li>
+</ul>
+<p>E3 - Work: Projects</p>
+<ul>
+<li>Current state: the Projects section lists indexed projects from the generated snapshot, with detail inside the section and parent breadcrumbs.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: per-project state, owner, next due date and last touch, computed from the snapshot with the source timestamp shown on the card.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: each project exposes state, owner, due date and last touch, or an explicit empty marker; no field is invented when the snapshot lacks it. Field set and priority order: [unspecified].</li>
+</ul>
+<p>E4 - Work: Kanban</p>
+<ul>
+<li>Current state: the fleet board from the live payload, with the twelve most recent card titles carried in the snapshot.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: column counts, blocked cards surfaced first, age of each card, and a link from a card to its agent. Card titles that reach data.js stay masked at the publish boundary.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: counts match the live payload exactly; blocked cards are visually first and carry their blocking reason in plain English; no unmasked user text reaches the snapshot. Board interaction model (read-only or actionable): [unspecified].</li>
+</ul>
+<p>E5 - Work: Agents</p>
+<ul>
+<li>Current state: the roster with portraits, plus per-agent session and spend readings from the usage ledger.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: one agent page per roster entry showing role, owning lane, last activity, token spend and open cards, with a route to the agent.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: every roster entry has a reachable route; spend and session figures carry their source and time; a missing reading shows a dash rather than a zero. Which agents must be listed: [unspecified].</li>
+</ul>
+<p>E6 - Knowledge: Library, PRDs, Vault</p>
+<ul>
+<li>Current state: three library shelves over local.js with a public shelf in the snapshot; PRDs read from the vault; vault search and note reading through the companion, plain text only.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: search across shelves, filter by kind and date, and a stable reader route for each document; vault remains read-only from the site.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: a document reachable from a shelf opens at a stable #file: route; shelf filtering changes the rendered content and the route agrees with it; no write path to the vault exists in the build. Retention rules and shelf policy: [unspecified].</li>
+</ul>
+<p>E7 - System: Machine and Stack</p>
+<ul>
+<li>Current state: RAM, local model runtimes, sessions, spend, launchd, docker, serves, and the six-label service allowlist, with gated actions.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: one health summary that ranks current problems, evidence attached to each, and the safe action offered inline for the problems the allowlist covers.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: every problem in the summary names its source reading and timestamp; an offered action is allowlisted, two-click confirmed, cool-down limited and logged; no action touches money, legal, the vault, or the companion itself. Problem taxonomy and thresholds: [unspecified].</li>
+</ul>
+<p>E8 - Life: Wheel of Life (the route this document was requested on)</p>
+<ul>
+<li>Current state: a mounted Next 16.3.2 application with pages for wheel, goals, ikigai, thinking, board and settings, Prisma 7.9.1 over SQLite, API routes for stock, backup and upload, proxied at /wheel from 127.0.0.1:3210.</li>
+<li>Documented defects in the application's own PRD: the schema stores a month, not a week; scores are integers and reject half points; eight seeded areas against nine in the practice, with Romance never scored; no provenance on a score; no lifecycle state per area; no quadrant or channel, so the mind, body, spirit and vocation roll-up cannot be computed.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: close the six documented defects, then expose the weekly instrument honestly: period as a week, half-point scores, the ninth area, filer and verification provenance per score, a lifecycle state per area, and a quadrant roll-up. Keep one wheel: the database is the record and markdown becomes an export.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: a filed weekly score with a half point round-trips through the database and renders; each score names who filed it and when; the roll-up totals match a computed check; the eight existing areas and the ninth coexist without a data loss. Migration cut-over date and historical backfill policy: [unspecified].</li>
+</ul>
+<p>E9 - Life: Almanac, The Path, Astro Cartography, Top 8</p>
+<ul>
+<li>Current state: dated vault readings with the moon computed in-process; the practice lane showing the manual's own text in order; the astro application; the computed magazine.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: a single dated timeline across the four surfaces, so a reading, a rite window, a chart and a magazine issue sit on one line with their own dates, and a gap in the corpus is stated as a gap.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: every item on the timeline carries its source date and age; a surface with no fresh input says so; no reading is re-dated to today. Timeline window and ordering: [unspecified].</li>
+</ul>
+<p>E10 - Life: Accounts</p>
+<ul>
+<li>Current state: Firefly III reachability and the newest backup are surfaced; the ledger is linked out and never framed; no balance is shown and no write exists.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: show ledger health (answering or not, age of the newest backup) and a link out, and nothing that reads or moves money.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: no balance, transaction or write appears in the build; the backup age is shown with its source; the link opens the ledger in its own surface. Additional account surfaces: [unspecified]. Any change to money handling is a decision for Ricardo and is out of this scope.</li>
+</ul>
+<p>E11 - Companion API and gated actions</p>
+<ul>
+<li>Current state: 10 declared routes plus two application proxies and one static application; Host allowlist; token requirement for remote fixes; origin allowlist for vault reads; action log.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: publish the API contract in the page, show the action log in Stack, and keep one guard path for any new action: origin check, two-click confirmation, cool-down, receipt.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: /openapi.json and the page's API card agree; every action in the log has a receipt with a result; a foreign origin receives 403 without the action running; no new action is added without riding the existing guard. Which endpoints may become public: [unspecified].</li>
+</ul>
+<p>E12 - Data freshness, performance, mobile and accessibility</p>
+<ul>
+<li>Current state: a generated snapshot refreshed four times daily, a live payload every 30 seconds, distinct snapshot and live badges, a phone-attached navigation layout, and 44 pixel tap targets on list links.</li>
+<li>Requested enhancement detail: [unspecified].</li>
+<li>Proposed requirement: state the age of every reading at the point of reading, keep the first paint under a fixed budget on the tailnet route, and hold the 44 pixel target rule across every new control.</li>
+<li>Owner: Google Neon.</li>
+<li>Acceptance: no reading renders without an age or an explicit live marker; the served page and its assets meet the performance budget; a phone-width pass shows no target under 44 pixels and no fixed overlay. Budget value, supported device matrix and accessibility conformance level: [unspecified].</li>
+</ul>
+<p>05 - ASSIGNMENT AND RESPONSIBILITY</p>
+<ul>
+<li>Assigned owner: Google Neon, for every requirement in section 04, named individually per requirement.</li>
+<li>Google Neon is accountable for: the design of each change, the implementation on a branch, the verification evidence for every acceptance line, and a written statement of anything it could not verify.</li>
+<li>Ricardo retains final authority on money, legal matters, scope approval, and any merge. No change lands on the deployed build without his word.</li>
+<li>The vault stays read-only to the site and to Google Neon; Beast remains its only writer.</li>
+<li>Any enhancement that would need a new credential, a spend, or a write to a live business system is routed to Ricardo as a decision, not implemented.</li>
+<li>Interfaces Google Neon must respect: the shell shape in the product contract, the route grammar, the vault boundary, and the existing action guard.</li>
+</ul>
+<p>06 - MILESTONES</p>
+<ul>
+<li>M1 - Scope confirmed by Ricardo, requirement detail filled in where the document reads [unspecified]. Date: [unspecified].</li>
+<li>M2 - E8 Wheel of Life defects closed, first delivery. Date: [unspecified].</li>
+<li>M3 - Work and Knowledge requirements (E3 to E6). Date: [unspecified].</li>
+<li>M4 - Life timeline and Accounts health (E9, E10). Date: [unspecified].</li>
+<li>M5 - API publishing, performance, mobile and accessibility (E11, E12). Date: [unspecified].</li>
+<li>M6 - Full sweep of all 19 sections on the local companion and the tailnet route, evidence attached. Date: [unspecified].</li>
+</ul>
+<p>07 - RISKS</p>
+<ul>
+<li>Scope creep from [unspecified] details: the document cannot be estimated until Ricardo fills in the open items.</li>
+<li>Schema migration risk in the Wheel application, which holds live SQLite data: mitigation is a backup before migration, a reversible migration, and a verified row count on both sides.</li>
+<li>Shared working tree: another session can commit while a branch is in flight. Mitigation is work in a worktree, a re-check of the branch immediately before commit, and a final re-check of the deployed build.</li>
+<li>Tailnet route drift: the HTTPS entry is a serve rule, not a property of the application. Mitigation is to prove the route before promising a link.</li>
+<li>Data freshness depends on the refresh job. A stale corpus must be shown as stale, never re-dated.</li>
+</ul>
+<p>08 - OPEN ITEMS FOR RICARDO</p>
+<ul>
+<li>The specific enhancement wanted for each capability in section 04: [unspecified].</li>
+<li>Priority order across E1 to E12: [unspecified].</li>
+<li>Any performance, coverage or accessibility threshold to hold Google Neon to: [unspecified].</li>
+<li>Whether the Kanban is read-only or actionable in this phase: [unspecified].</li>
+<li>Whether the nine-area weekly wheel replaces the eight-area monthly one, and from which week: [unspecified].</li>
+<li>Whether the timeline in E9 replaces the four separate surfaces or sits beside them: [unspecified].</li>
+</ul>
+<p>09 - DEFINITION OF DONE</p>
+<ul>
+<li>Every requirement in section 04 is either delivered with evidence against its acceptance line or recorded as not delivered with the reason.</li>
+<li>The full section sweep passes on the local companion and on <a href="https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel">https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel</a>.</li>
+<li>No money, legal, credential or vault write has been performed anywhere in the work.</li>
+<li>Ricardo has approved the scope and the merge.</li>
+</ul>
+<p>END OF DOCUMENT</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
