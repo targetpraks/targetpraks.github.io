@@ -170,9 +170,27 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tbody>
 </table>
 <p>Carried from the 03:35 night check, unchanged: <strong>cua</strong> (<code>spacesd=False</code>, known macOS 27 TCC/AX breakage) and <strong>disks</strong> (internal 92 % now, 91 % at 03:35).</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">LIVE</span>[<span class="st">&quot;Serving now&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">G</span>[<span class="st">&quot;Decision gates</span><span class="sc">&lt;br/&gt;</span><span class="st">daemon · inference · CLI · MCP&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">C</span>[<span class="st">&quot;Colima / Docker</span><span class="sc">&lt;br/&gt;</span><span class="st">28 containers · vm 1537 MB free&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">W</span>[<span class="st">&quot;Google Workspace</span><span class="sc">&lt;br/&gt;</span><span class="st">token ok · Gmail 22051 msgs&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">T</span>[<span class="st">&quot;Gateway · Tailscale · keep-awake</span><span class="sc">&lt;br/&gt;</span><span class="st">Hiksemi rw ok&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">BROKEN</span>[<span class="st">&quot;Not serving&quot;</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">K</span>[<span class="st">&quot;F1 Constellation staff :3214</span><span class="sc">&lt;br/&gt;</span><span class="st">crash loop · P2010 no migrations table&quot;</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">O</span>[<span class="st">&quot;F2 OpenKnowledge semantic</span><span class="sc">&lt;br/&gt;</span><span class="st">0 of 3172 chunks embedded&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">WATCH</span>[<span class="st">&quot;Watch&quot;</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="dt">P</span>[<span class="st">&quot;F3 Paperclip</span><span class="sc">&lt;br/&gt;</span><span class="st">1 error + 9 paused seats&quot;</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="dt">D</span>[<span class="st">&quot;F4 logs 1.5 GB</span><span class="sc">&lt;br/&gt;</span><span class="st">disk 92 %&quot;</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Q</span>[<span class="st">&quot;cua spacesd=false</span><span class="sc">&lt;br/&gt;</span><span class="st">disks amber&quot;</span>]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">K</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;writes 690 B/s&quot;</span><span class="vs">|</span> <span class="dt">D</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">K</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;feeds false green to&quot;</span><span class="vs">|</span> <span class="dt">N</span>[<span class="st">&quot;night-check launchd_sweep&quot;</span>]</span></code></pre></div>
 <hr />
 <h2 id="f1--constellation-staff-server-is-down-red-prominent">F1 — Constellation staff server is DOWN (RED, prominent)</h2>
-<p>The launchd job that serves the staff app is in a respawn crash loop, and nothing is listening.</p>
+<p>The launchd job that serves the staff app is in a respawn <a href="https://www.launchd.info/">KeepAlive</a> crash loop, and nothing is listening.</p>
 <pre><code>$ lsof -nP -iTCP:3214 -sTCP:LISTEN
 (no output)
 
@@ -204,7 +222,7 @@ Node.js v26.13.1</code></pre>
 $ docker exec constellation-dev-pg psql -U owner -d constellation_dev -tAc \
     &quot;select to_regclass(&#39;public._prisma_migrations&#39;);&quot;
 (empty = null)</code></pre>
-<p>Container <code>constellation-dev-pg</code> is <code>Up 45 hours</code> on <code>127.0.0.1:55440</code>, so the process has been failing since roughly the last boot — the schema is present (28 tables) but the app's startup migration check aborts before it binds the port. The failure is the same each cycle: <code>start-staff.mjs</code> asks Prisma for migration state, Prisma cannot find <code>_prisma_migrations</code>, the process exits 1, KeepAlive respawns it 15 s later.</p>
+<p>Container <code>constellation-dev-pg</code> is <code>Up 45 hours</code> on <code>127.0.0.1:55440</code>, so the process has been failing since roughly the last boot — the schema is present (28 tables) but the app's startup migration check aborts before it binds the port. The failure is the same each cycle: <code>start-staff.mjs</code> asks <a href="https://www.prisma.io/docs/orm/reference/error-reference">Prisma</a> for migration state, Prisma cannot find <code>_prisma_migrations</code>, the process exits 1, KeepAlive respawns it 15 s later.</p>
 <p><strong>Proposal (needs Ricardo's word — it writes to the database):</strong> decide whether the intent is <code>prisma migrate resolve --applied &lt;baseline&gt;</code> against the existing 28-table schema, or a fresh <code>migrate deploy</code> on a rebuilt database. Either is a write to a live business system; I am not touching it. Until then the staff app is unavailable and the log keeps growing (F4).</p>
 <p><strong>Note on the night check (second-order finding):</strong> the 03:35 run recorded <code>launchd_sweep … restarted: com.maio.constellation-dev</code> and marked the lane green. The kickstart succeeded; the <em>service</em> did not. A restart is not a heal — the sweep would be more honest re-checking service state after a kickstart instead of counting the kickstart as the result.</p>
 <hr />
@@ -217,7 +235,7 @@ exit=1</code></pre>
 <p>Full semantic status from the live server:</p>
 <pre><code>$ curl -sS -m 8 http://127.0.0.1:64200/api/semantic-status
 {&quot;enabled&quot;:true,&quot;keyPresent&quot;:false,&quot;keyStoreUnavailable&quot;:false,&quot;keyStoredInFile&quot;:false,&quot;keyNotRequired&quot;:true,&quot;keySource&quot;:null,&quot;keyHint&quot;:null,&quot;ready&quot;:false,&quot;capable&quot;:false,&quot;providerError&quot;:false,&quot;providerErrorReason&quot;:null,&quot;embedded&quot;:0,&quot;total&quot;:3172}</code></pre>
-<p><strong>It is not a provider outage.</strong> The configured embedding model answers with real vectors:</p>
+<p><strong>It is not a provider outage.</strong> The configured embedding model (<a href="https://ollama.com/library/nomic-embed-text">nomic-embed-text</a>) answers with real vectors:</p>
 <pre><code>$ curl -sS -m 30 http://127.0.0.1:11434/v1/embeddings \
     -H &#39;Content-Type: application/json&#39; \
     -d &#39;{&quot;model&quot;:&quot;nomic-embed-text:latest&quot;,&quot;input&quot;:&quot;health probe&quot;}&#39;
@@ -347,6 +365,14 @@ $ echo probe &gt; &quot;/Volumes/Hiksemi 1TB/AI-Drive/.courage-rw-probe&quot;  �
 <li><strong>F3 Paperclip</strong> — say whether the nine paused seats should stay paused, and whether <code>Mr. Infinity</code> (error) should be resumed.</li>
 <li><strong>Housekeeping</strong> — the requested LiteLLM lanes (alias probe, fallback alert) should be dropped from the standing instructions for this run, since the scripts no longer exist; the ledger fallback rate is the surviving equivalent.</li>
 </ol>
+<h2 id="sources-and-evidence">Sources and evidence</h2>
+<p>Every number above is a command's own output, run on this Mac at 06:30–06:35 SAST; the raw blocks sit in the lane sections. The three outside references used to read those outputs:</p>
+<ul>
+<li><a href="https://www.prisma.io/docs/orm/reference/error-reference">Prisma error reference — P2010 / 42P01</a> — the missing-relation error in F1</li>
+<li><a href="https://ollama.com/library/nomic-embed-text">Ollama library — nomic-embed-text</a> — the embedding model OK is configured to use</li>
+<li><a href="https://www.launchd.info/">launchd.info — KeepAlive and spawn scheduled</a> — how a crash loop presents in <code>launchctl print</code></li>
+</ul>
+<p>Local artefacts: <code>AI-Drive/Agent-Output/courage/night-check-2026-11-25.md</code> (03:35 run, read not re-run), <code>~/Library/Logs/com.maio.courage-nightcheck.log</code>, <code>~/.config/maio-stack/logs/constellation-prod-3214.log</code>.</p>
 <p>— Courage 🐾 (read-only check; nothing restarted, nothing edited)</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
