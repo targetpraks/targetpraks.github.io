@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD - Maio OS Accounts: Firefly dashboard, summary and statement coverage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd---maio-os-accounts-firefly-dashboard-summary-and-statement-coverage">PRD - Maio OS Accounts: Firefly dashboard, summary and statement coverage</h1>
+<p>Status: PROPOSED Date: 2026-11-25 Accountable owner: Google Neon (Gemini 4 Neon, escalate lane via Antigravity) Product surface: <a href="https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel">https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel</a> Accounts route: #accounts on the same companion origin, and 127.0.0.1:9111 locally Repo: /Volumes/Hiksemi 1TB/DevMini/maio-os Document: PRD-v3-accounts-firefly.md Pairs with: PRD-v2-enhanced.md (current cockpit PRD), PRD-PROGRESS.md (evidence log) Supersedes: nothing. The shipped Accounts section is the baseline this document upgrades.</p>
+<h2 id="1-what-this-version-fixes">1. What this version fixes</h2>
+<ul>
+<li>The Accounts section is a status card, not a dashboard. It reports reachability and the age of the newest database dump, then links out. It shows no money at all.</li>
+<li>The cockpit has no summary anywhere. There is no net worth, no cash versus debt, no month income and spend, no spend by category.</li>
+<li>The companion exposes no Firefly read API. The whole ledger is visible only inside Firefly's own web UI, which refuses to be framed.</li>
+<li>Nothing tells Ricardo which bank statements never arrived. There is no bill monitor, no statement register and no coverage board, in the cockpit or in Firefly.</li>
+<li>Firefly's own bill, budget, attachment and tag modules are empty, so no existing surface can answer what is missing.</li>
+</ul>
+<h2 id="2-product-in-five-lines">2. Product in five lines</h2>
+<ul>
+<li>One Accounts page answers five questions: how much do I have, where does it sit, what did I spend, what is unpaid, which document is missing.</li>
+<li>Every number is read from Firefly III over its own API on this Mac. Nothing is typed, estimated or restated from a previous session.</li>
+<li>Every number carries the timestamp it was read and the account it came from, so a stale figure can never pass for a live one.</li>
+<li>A coverage board names each monitored account and the exact statements that have not arrived, computed from the statement archive and corroborated against Firefly's last activity date.</li>
+<li>The page is read-only. No cockpit control can create, edit, pay or delete anything.</li>
+</ul>
+<h2 id="3-evidence-register">3. Evidence register</h2>
+<p>Read on 2026-11-25 between 10:35 and 10:50 SAST. Every figure below is output from a command, not a memory.</p>
+<ul>
+<li>E1 Firefly is answering. Command: curl -s -H "Authorization: Bearer <token>" <a href="http://127.0.0.1:8085/api/v1/about">http://127.0.0.1:8085/api/v1/about</a>. Output: version 6.7.9, api_version 6.7.9. Accounts endpoint returns HTTP 200.</li>
+<li>E2 Accounts and balances. Command: GET /api/v1/accounts?type=asset and ?type=liability.
+<ul>
+<li>FNB Aspire Current 62015686093, asset, ZAR, balance 5712.70, last activity 2026-05-14</li>
+<li>Bank Zero 80204463071, asset, ZAR, balance 12423.41, last activity 2026-06-28</li>
+<li>Discovery Purple Card 10376065275, liability, ZAR, balance -150915.47, last activity 2026-07-07</li>
+<li>Totals: cash 18136.11, debt -150915.47, net -132779.36</li>
+</ul></li>
+<li>E3 Ledger volume. Command: GET /api/v1/transactions?limit=1 and /api/v1/categories. Output: 9606 transactions, 27 categories, 0 tags.</li>
+<li>E4 Empty modules. Command: GET /api/v1/bills, /budgets, /attachments. Output: total 0 for each. There is no bill data to render and no attachment register to check.</li>
+<li>E5 Year to date, ZAR. Command: GET /api/v1/summary/basic?start=2026-01-01&amp;end=2026-11-25. Output: balance-in-ZAR -105902.52, spent-in-ZAR -1360042.03, earned-in-ZAR 1254139.51, net-worth-in-ZAR -132779.36.</li>
+<li>E6 Currency mismatch. Command: GET /api/v1/currencies. Output: EUR is the default currency and is enabled; ZAR is enabled; every account is ZAR. A November-2026 summary query returned EUR keys valued 0 alongside the ZAR keys. Any dashboard that trusts the default currency reports zeros.</li>
+<li>E7 Framing is impossible. Command: curl -s -D - -o /dev/null <a href="http://127.0.0.1:8085/">http://127.0.0.1:8085/</a>. Output: HTTP/1.1 302 Found, X-Frame-Options: deny, Content-Security-Policy: default-src 'none'; object-src 'none'. A Firefly panel inside the cockpit cannot work; the cockpit must read the API and render its own.</li>
+<li>E8 The shipped Accounts renderer shows state only. Source: index.html lines 1343-1371. It prints reachability, local and tailnet URLs and newest dump, and states in a comment "No balance is ever restated here". That comment is the design constraint this PRD replaces: balances are now restated, with provenance, from the API.</li>
+<li>E9 No Firefly route exists on the companion. Command: grep -n "app.get|createServer|pathname ===" companion/server.mjs. The routed paths are /astro, /health, /openapi.json, /local.js, /recordings-digest.json, /api/fix, /api/fix/log, /api/vault/search, /api/vault/note, /files, /wheel, /top8, /api/top8/research. There is no /api/firefly/*.</li>
+<li>E10 Statement archive coverage on disk. Command: ls of AI-Drive/Personal/Wealth/Banking.
+<ul>
+<li>FNB Statements: 14 entries, newest 2026-05 - FNB - 62015686093.pdf</li>
+<li>Discovery Statements: 140 entries, newest "July 2026.pdf"</li>
+<li>BankZero_Statements: 74 entries, newest "Ricardo Maio 80204463071 June2026.pdf" and its .xls</li>
+</ul></li>
+<li>E11 Prior import run. Document: AI-Drive/Personal/wealthos/Scrooge-Statement-Processing-Report-2026-09-03.md. Output: 142 statement files, 9516 rows imported, span 2014-11-19 to 2026-07-07, balances reconcile to the cent for 12/12 FNB, 137/140 Discovery, 37/37 Bank Zero registers. The same document records two accounts with no statement source on disk, FNB Scheduled 62585575891 and the Millennium bcp and bunq accounts, and it recommends asking Ricardo for those PDFs.</li>
+<li>E12 The coverage method already corroborates itself. Firefly's last activity date equals the newest received statement close for every account: FNB 2026-05-14 against a May 2026 statement, Bank Zero 2026-06-28 against June 2026, Discovery 2026-07-07 against July 2026. Last activity is therefore a valid cross-check for the archive.</li>
+<li>E13 Tests. Command: sh ops/check.sh. Output: 13 tests, 13 pass, 0 fail, 138 ms, followed by one trailing-whitespace finding in apps/top8/site/dist/section/carpet-cleaners.html:145 which fails the check.</li>
+<li>E14 Backups run. Live page reading: firefly-2026-11-25.sql.gz, 0 MB, 8 h old, 18 kept. Directory listing of ~/AI Hub/firefly/backups confirms firefly-2026-11-25.sql.gz as newest.</li>
+<li>E15 Repo state at the time of writing. Branch feat/esoteric-zone, HEAD 146ca314, and top8 canonical JSON files already modified in the working tree.</li>
+</ul>
+<h2 id="4-current-state">4. Current state</h2>
+<ul>
+<li>The cockpit is a single static file (index.html) reading a generated MAIO_DATA snapshot, plus a live companion at 127.0.0.1:9111 and its tailnet proxy at 9443.</li>
+<li>Sections render from the companion's collected state object. The firefly key carries ok, status, localUrl, url, backups and generatedAt, collected by collectFirefly in companion/collectors.mjs lines 885-935.</li>
+<li>That collector only probes the Firefly root URL with redirect manual and stats the backups directory. It never authenticates and never reads a balance.</li>
+<li>Firefly holds 9606 transactions and three working accounts but nothing above the transaction layer: no bills, no budgets, no attachments, no tags.</li>
+<li>The statement archive on disk is a separate, better-maintained record than Firefly's activity dates, and nothing joins the two.</li>
+</ul>
+<h2 id="5-design">5. Design</h2>
+<h3 id="51-read-path">5.1 Read path</h3>
+<ul>
+<li>The browser never talks to Firefly. Firefly blocks frames and denies inline script, so a browser-side integration is impossible by design, and a token in the page would be a leak.</li>
+<li>The companion reads the API server-side. A new helper fireflyRead(path, query) in companion/collectors.mjs reads the token from the environment variable FIREFLY_TOKEN and falls back to ~/AI Hub/firefly/.token. The token never enters a log line, a response body, an error string or the browser.</li>
+<li>Requests are GET only, 6 s timeout, one retry on a socket error, and a 60 s in-process cache so a page refresh cannot hammer the ledger.</li>
+<li>On failure the last good payload is served with readAt and a stale flag. The page never shows zeros in place of an unknown.</li>
+<li>Endpoints sit behind the existing Host and Origin guards, the existing rolling rate limiter (per endpoint), and are declared in companion/openapi.mjs so the contract test covers them.</li>
+</ul>
+<h3 id="52-new-endpoints">5.2 New endpoints</h3>
+<ul>
+<li>GET /api/firefly/health - reachable, version, latency ms, baseCurrency, tokenPresent.</li>
+<li>GET /api/firefly/overview - currency, netWorth, cashTotal, debtTotal, ytd {spent, earned, net}, month {spent, earned, net}, accounts summary, readAt.</li>
+<li>GET /api/firefly/accounts - one row per account: id, name, type, role, balance, currency, lastActivity, daysSinceActivity, coverageGap.</li>
+<li>GET /api/firefly/activity?from=&amp;to=&amp;limit= - date, description, amount, category, account name. Default: last 30 days, 20 rows, capped at 100.</li>
+<li>GET /api/firefly/breakdown?from=&amp;to= - spend by category, amount, share of total, plus an "uncategorised" remainder.</li>
+<li>GET /api/firefly/coverage - the statement board described in 5.4.</li>
+</ul>
+<p>Every response carries readAt in ISO local time and source "firefly-api". Numbers are returned as strings with two decimals, unrounded integers kept server-side, so the browser cannot introduce float drift.</p>
+<h3 id="53-accounts-page-layout-top-to-bottom">5.3 Accounts page layout, top to bottom</h3>
+<ol type="1">
+<li>Freshness strip: source, readAt, Firefly version, currency, stale badge when the last read failed.</li>
+<li>Summary band: net worth, cash, debt, month spend, month income, month net. Six figures, each with its own readAt inherited from the strip.</li>
+<li>Account cards: name and masked number, balance, last activity date, days since activity, statement gap count, and a link out to Firefly for any write.</li>
+<li>Spend by category, month to date: top eight categories plus an "other" remainder, with the uncategorised share stated explicitly.</li>
+<li>Recent activity: 20 rows, date, description, category, account, amount.</li>
+<li>Statement coverage board: one row per monitored account with state current, late or never received, and the missing months listed by name.</li>
+<li>Data quality notes: base currency mismatch (EUR default versus ZAR data), uncategorised share, backup age, and the count of accounts Firefly knows that the archive does not.</li>
+<li>The existing honest note about framing stays, shortened, because it explains why the page is a rendered dashboard and not an embedded Firefly.</li>
+</ol>
+<h3 id="54-statement-coverage-engine">5.4 Statement coverage engine</h3>
+<ul>
+<li>A config file companion/firefly-coverage.json holds one entry per monitored account: Firefly account id, display name, cadence (monthly), expected day of month, archive folder, filename pattern, and whether the account is monitored at all.</li>
+<li>Expected periods are every month from the account's first received statement to the current month. Received periods are files in the archive that match the pattern and parse. Missing periods are the difference, listed by month.</li>
+<li>State per account: current when the newest received period is the previous or current month, late when the current month has passed its expected day without a file, never received when the archive holds nothing.</li>
+<li>Corroboration rule: when Firefly's lastActivity falls before the newest received period, the row is flagged "ledger behind archive" instead of "current". This catches the case where the PDF arrived but was never imported.</li>
+<li>Accounts known to Firefly but configured unmonitored are listed separately as "no source", never silently omitted.</li>
+<li>The board never claims a statement arrived because a transaction exists, and never infers a missing file from a balance change.</li>
+</ul>
+<h3 id="55-coverage-as-measured-today">5.5 Coverage as measured today</h3>
+<ul>
+<li>FNB Aspire 62015686093: newest received May 2026. Missing June, July, August, September, October, November 2026. Six statements.</li>
+<li>Discovery Purple Card 10376065275: newest received July 2026. Missing August, September, October, November 2026. Four statements.</li>
+<li>Bank Zero 80204463071: newest received June 2026. Missing July, August, September, October, November 2026. Five statements.</li>
+<li>Total missing across the three monitored accounts: 15 monthly statements.</li>
+<li>No source on disk: FNB Scheduled 62585575891, Millennium bcp, bunq. FNB Scheduled is named in the September 2026 import report as a sub-ledger without statement files.</li>
+</ul>
+<h3 id="56-failure-and-empty-states">5.6 Failure and empty states</h3>
+<ul>
+<li>Firefly unreachable: strip shows the last readAt and a stale badge, all figures keep their last good values, coverage board still renders from the archive alone, and one line says which call failed and when it last succeeded.</li>
+<li>Token absent: strip says the token is missing, summary and account panels are not rendered at all, coverage board still renders from the archive.</li>
+<li>No bills configured: the unpaid line reads "no bills set up in Firefly" rather than 0.00, because zero would be a false statement about unknown debts.</li>
+<li>No budgets: the budget surface is omitted, not shown empty, until budgets exist.</li>
+</ul>
+<h2 id="6-feature-table">6. Feature table</h2>
+<p>Priority P0 ships first, P1 next, P2 optional. Every row is owned by Google Neon.</p>
+<ul>
+<li>F-A1 Firefly read helper with token isolation. P0. Why: nothing else can exist without an authenticated server-side read. Acceptance: grep -c "FIREFLY_TOKEN" companion/collectors.mjs returns at least 1, and grep -c "Authorization" index.html returns 0.</li>
+<li>F-A2 /api/firefly/health. P0. Acceptance: curl <a href="http://127.0.0.1:9111/api/firefly/health">http://127.0.0.1:9111/api/firefly/health</a> returns 200 with version "6.7.9" and baseCurrency "EUR".</li>
+<li>F-A3 /api/firefly/overview with summary band data. P0. Acceptance: cashTotal plus debtTotal equals netWorth to the cent [-132779.36 today].</li>
+<li>F-A4 Account cards with last activity and days since. P0. Acceptance: three rows returned with lastActivity 2026-05-14, 2026-06-28, 2026-07-07.</li>
+<li>F-A5 Spend by category, month to date, with uncategorised remainder. P1. Acceptance: category amounts sum to the month spend returned by Firefly's own summary endpoint for the same window.</li>
+<li>F-A6 Recent activity table with category and account. P1. Acceptance: 20 rows by default, limit above 100 clamps to 100.</li>
+<li>F-A7 /api/firefly/coverage and the board. P0. Acceptance: response lists 15 missing months split 6, 4, 5 across the three monitored accounts.</li>
+<li>F-A8 Corroboration flag "ledger behind archive". P1. Acceptance: with the archive newest at 2026-07 and lastActivity at 2026-05, the FNB row is flagged; with matching dates it is not.</li>
+<li>F-A9 Unmonitored account register. P1. Acceptance: FNB Scheduled 62585575891, Millennium bcp and bunq appear in the "no source" list.</li>
+<li>F-A10 Stale and failure states. P0. Acceptance: stopping Firefly leaves six figures visible with readAt and a stale badge, with no zero substitution.</li>
+<li>F-A11 Currency discipline. P0. Acceptance: every monetary field in every response is ZAR, and no key ending -in-EUR appears in any /api/firefly/* payload.</li>
+<li>F-A12 Data quality notes including backup age. P1. Acceptance: note shows the newest dump filename and its age in hours.</li>
+<li>F-A13 OpenAPI declarations and contract test. P1. Acceptance: node tests/companion-api.test.mjs passes with the new paths covered.</li>
+<li>F-A14 Renderer tests in tests/cockpit.test.mjs. P1. Acceptance: the six blocks render from a fixture payload, and missing collections produce the honest empty strings, not blank cards.</li>
+<li>F-A15 Statement gap list export. P2. Acceptance: GET /api/firefly/coverage?format=csv returns one row per missing month, and a request with format other than json or csv returns 400.</li>
+<li>F-A16 No write path. P0. Acceptance: grep -c "method: 'POST'|method: "POST"" companion/collectors.mjs returns 0 in the Firefly section, and no /api/fix action name references firefly.</li>
+</ul>
+<h2 id="7-guardrails">7. Guardrails</h2>
+<ul>
+<li>Read-only. No POST, PUT, PATCH or DELETE is ever sent to Firefly. The cockpit shows money; Firefly and Ricardo move it.</li>
+<li>Money and legal stay with Ricardo. This PRD creates no payment, refund, filing or e-signature path, and the dashboard must not grow one.</li>
+<li>No secret in the browser, in a log line, in an error body or in a published document. The token stays in the environment or in the 0600 file, read by the companion only.</li>
+<li>No invented number. A failed read keeps the last good value with its readAt, or shows nothing. Zero is never used for unknown.</li>
+<li>Currency correctness: report ZAR, state the EUR base-currency mismatch once in the data quality note, never sum across currencies.</li>
+<li>The vault stays read-only. No statement file is moved, renamed or deleted by this work.</li>
+<li>No new model, MCP server, channel or schedule. Coverage is computed on read, not by a new cron.</li>
+<li>The repo check stays green: sh ops/check.sh must pass, and the trailing-whitespace finding in apps/top8/site/dist/section/carpet-cleaners.html:145 must be fixed or excluded before this work lands.</li>
+<li>Work starts from a clean base. The current tree is on feat/esoteric-zone with modified top8 canonical files, so implementation begins in a fresh worktree from main.</li>
+</ul>
+<h2 id="8-acceptance-criteria">8. Acceptance criteria</h2>
+<p>Each criterion names the command that proves it. Baselines are today's measured values on 2026-11-25.</p>
+<ul>
+<li>A1 curl -s -o /dev/null -w "%{http_code}" <a href="http://127.0.0.1:9111/api/firefly/health">http://127.0.0.1:9111/api/firefly/health</a> prints 200.</li>
+<li>A2 curl -s <a href="http://127.0.0.1:9111/api/firefly/overview">http://127.0.0.1:9111/api/firefly/overview</a> | jq '.cashTotal, .debtTotal, .netWorth' prints "18136.11", "-150915.47", "-132779.36".</li>
+<li>A3 curl -s <a href="http://127.0.0.1:9111/api/firefly/overview">http://127.0.0.1:9111/api/firefly/overview</a> | jq '[.accounts[].balance] | length' prints 3.</li>
+<li>A4 curl -s <a href="http://127.0.0.1:9111/api/firefly/coverage">http://127.0.0.1:9111/api/firefly/coverage</a> | jq '[.accounts[].missing | length] | add' prints 15.</li>
+<li>A5 curl -s <a href="http://127.0.0.1:9111/api/firefly/coverage">http://127.0.0.1:9111/api/firefly/coverage</a> | jq -r '.accounts[] | "(.name) (.missing|length)"' prints FNB 6, Bank Zero 5, Discovery 4.</li>
+<li>A6 grep -c "FIREFLY_TOKEN|firefly/.token" companion/collectors.mjs prints a count of at least 1; grep -c "Authorization: Bearer" index.html prints 0.</li>
+<li>A7 curl -s <a href="http://127.0.0.1:9111/api/firefly/overview">http://127.0.0.1:9111/api/firefly/overview</a> | jq -r 'keys[]' contains no key matching -in-EUR.</li>
+<li>A8 Stop the Firefly container, reload #accounts, and the page still shows six figures, a readAt timestamp and a stale badge; no figure reads 0.00 unless Firefly itself returned 0.</li>
+<li>A9 sh ops/check.sh prints "pass 13" or more and "fail 0".</li>
+<li>A10 node --test tests/companion-api.test.mjs exits 0 with the new paths listed in /openapi.json.</li>
+<li>A11 curl -s -o /dev/null -w "%{http_code}" <a href="http://127.0.0.1:9111/api/firefly/coverage?format=xml">http://127.0.0.1:9111/api/firefly/coverage?format=xml</a> prints 400.</li>
+<li>A12 Opening #accounts on a 390 px viewport shows no horizontal scroll: document.documentElement.scrollWidth equals clientWidth.</li>
+<li>A13 The "no source" list renders FNB Scheduled 62585575891, Millennium bcp and bunq, read from the coverage payload, not hardcoded in HTML.</li>
+</ul>
+<h2 id="9-verification-plan">9. Verification plan</h2>
+<ol type="1">
+<li>Run sh ops/check.sh on a clean worktree and record the baseline (today 13 pass, 1 whitespace finding).</li>
+<li>Build the helper and /health first, and prove a real authenticated read with curl before any rendering work.</li>
+<li>Add overview and accounts, and compare every figure against a direct /api/v1/summary/basic call for the same window.</li>
+<li>Add coverage and prove the 15-month gap against a manual listing of the three archive folders.</li>
+<li>Exercise the failure states by stopping Firefly, and by unsetting the token, and record both screens' actual text.</li>
+<li>Run the phone-width check at 390 px in a real browser.</li>
+<li>Publish the result as a report and file it through the vault handoff.</li>
+</ol>
+<h2 id="10-metrics">10. Metrics</h2>
+<ul>
+<li>Time from page load to a rendered summary on the companion: target under 400 ms warm, measured by the existing route timing method.</li>
+<li>Firefly read latency per call: record p50 and p95 on the machine, target under 250 ms.</li>
+<li>Statement gap awareness: the board names every missing month, target zero unknown states for monitored accounts.</li>
+<li>Coverage of the acceptance list at handover: 13 of 13 criteria, each with pasted output.</li>
+</ul>
+<h2 id="11-risks">11. Risks</h2>
+<ul>
+<li>Currency: Firefly's default currency is EUR while every account is ZAR. A careless use of summary/basic reports zeroes. Mitigation: request ZAR explicitly and assert no EUR keys reach the page (A7).</li>
+<li>Stale-looking truth: balances from May and July 2026 are correct as last imported and wrong as "today". Mitigation: every figure carries readAt and the account's last activity date, and the coverage board states the gap.</li>
+<li>API drift: Firefly 6.7.9 is the pinned version. Mitigation: the health endpoint reports the version, and the contract test pins the fields the page uses.</li>
+<li>Token handling: a token read into a browser bundle would be a leak. Mitigation: server-side only, asserted by A6.</li>
+<li>Archive naming drift: the archive already mixes "2026-05 - FNB - 62015686093.pdf" with "July 2026.pdf" and "Ricardo Maio 80204463071 June2026.pdf". Mitigation: per-account filename patterns in config, and an "unparsed" state that lists files rather than guessing.</li>
+<li>Working tree already dirty on feat/esoteric-zone. Mitigation: fresh worktree from main.</li>
+</ul>
+<h2 id="12-out-of-scope">12. Out of scope</h2>
+<ul>
+<li>Writing to Firefly, importing statements, or repairing the existing import. That is a Scrooge task and a separate decision.</li>
+<li>Setting up Firefly bills and budgets. The dashboard renders them when they exist; creating them is a change to a live financial system and needs Ricardo's go.</li>
+<li>Bank API connections or open banking feeds.</li>
+<li>FX conversion between ZAR and EUR.</li>
+<li>Any payment, filing or e-signature surface.</li>
+<li>Reworking sections other than Accounts, apart from one optional summary line on Overview [unspecified].</li>
+</ul>
+<h2 id="13-open-questions-for-ricardo">13. Open questions for Ricardo</h2>
+<ul>
+<li>Cadence and expected day for FNB Aspire, Discovery and Bank Zero statements: assumed monthly, day of month [unspecified]. Which day does each land.</li>
+<li>FNB Scheduled 62585575891: is it still active, and do its statements exist anywhere [unspecified].</li>
+<li>Millennium bcp and bunq: still used, and should they be monitored [unspecified].</li>
+<li>Do you want Firefly bills configured (rent, subscriptions, card minimums) so the unpaid line is real, or is a statement-coverage board enough for now [unspecified].</li>
+<li>Should the summary band also appear on Overview, or stay inside Accounts [unspecified].</li>
+<li>Is the EUR base currency change acceptable (all data is ZAR), or must Firefly keep EUR and the dashboard translate [unspecified].</li>
+</ul>
+<h2 id="14-responsibility">14. Responsibility</h2>
+<ul>
+<li>Google Neon (Gemini 4 Neon on the escalate lane via Antigravity) is accountable for the whole document: the read helper, the five endpoints, the Accounts dashboard, the coverage board, the failure states and every acceptance criterion. Neon signs the handover with pasted command output, not with a summary.</li>
+<li>Adrianna A (AI stack) approves the endpoint shapes, the token handling and the OpenAPI contract, and decides anything that touches the companion's guards or rate limits.</li>
+<li>Scrooge (the finance seat) supplies the archive conventions: which folder holds which account, which filename pattern is authoritative, and what a parsed statement looks like. Scrooge does not implement the page.</li>
+<li>Beast files the finished report into the vault through OpenKnowledge. The cockpit and this repo stay read-only to the vault.</li>
+<li>Ricardo holds the money and legal decision: bills configuration, base-currency change, and any import of the missing statements. The dashboard shows; it does not act.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
