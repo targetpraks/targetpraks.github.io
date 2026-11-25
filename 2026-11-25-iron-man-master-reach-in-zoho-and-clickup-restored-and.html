@@ -302,5 +302,27 @@ IRON MAN  run b9beb5c0  -&gt; status: awaiting_approval</code></pre>
 <h3 id="durability-fix-applied">Durability fix applied</h3>
 <p><code>zoho-mcp</code> is a standalone container on the compose network, so <code>agenticos.sh down</code> could not remove the network it holds and a later <code>up</code> left it stranded — every Zoho call from every seat would fail as "unreachable". Patched: <code>zoho_up</code> on up/restart, <code>docker rm -f zoho-mcp</code> before down, backup <code>agenticos.sh.bak-zoho-20261125T113546</code>, <code>bash -n</code> clean.</p>
 <p>Remaining watch items: the write flags are a hand-edited env line (a restore from <code>credentials.env.bak-gates-…</code> closes them again); the two Zoho refresh tokens and the ClickUp token can be revoked with no alert; two lanes published Iron Man v28/v29 during the same session.</p>
+<hr />
+<h2 id="second-pass--fix-them-all-2026-11-25-1400-sast">Second pass — "fix them all" (2026-11-25, 14:00 SAST)</h2>
+<h3 id="the-mac-lane-exists-now">The Mac lane exists now</h3>
+<p>The platform host (192.168.88.226, Ubuntu) and the Mac mini (192.168.0.157) are on different subnets and the platform cannot ping the Mac. So the lane runs outward from the Mac, and nothing is exposed to either LAN:</p>
+<pre><code>Mac mini   mac-control :8810 (127.0.0.1, bearer)  --ssh -R--&gt;  macserver loopback :8810
+                                                                ^ mac-control-bridge (host net) on 172.25.0.1:8810
+                                                                ^ AgenticOS app container -&gt; http://172.25.0.1:8810/mcp</code></pre>
+<ul>
+<li>7 tools: <code>mac_exec</code>, <code>mac_read</code>, <code>mac_write</code>, <code>mac_ls</code>, <code>mac_info</code>, <code>mac_clickup_read</code>, <code>mac_clickup_call</code>.</li>
+<li>Bearer auth, audit log <code>~/AI Hub/logs/mac-control.jsonl</code>, deny-list for destructive commands, reads marked <code>readOnlyHint</code> so they run free while <code>mac_exec</code>/<code>mac_write</code>/<code>mac_clickup_call</code> park for one click.</li>
+<li>Bound to Iron Man (v35) and Superman (v27), <code>allowed_tools: null</code>.</li>
+<li>Proof, live run <code>81fbccbe</code>: <em>"Host <code>Ricardos-Mac-mini.local</code>, OS <code>macOS-27.2.1-arm64</code>. <code>/team/4627083/goal</code> returned HTTP 200 … No changes made."</em></li>
+<li>Platform side needed <code>172.25.0.1</code> in <code>MCP_ALLOWED_HOSTS</code> (SSRF protection), <code>.env</code> backed up, app+worker recreated.</li>
+</ul>
+<h3 id="clickups-real-gaps-and-the-fix">ClickUp's real gaps, and the fix</h3>
+<p><code>clickup_get_operators</code> lists: field, field_option, folder_status, form, list, list_status, space_status, task, task_type, <strong>view</strong>. So views <em>are</em> covered and goals/webhooks/guests are not — neither as tools nor operators. <code>mac_clickup_read</code> / <code>mac_clickup_call</code> close that: ClickUp REST v2 with Ricardo's own token, which stays on the Mac. Verified: <code>GET /team/4627083/goal</code> → 200, <code>GET /team/4627083/webhook</code> → 200.</p>
+<h3 id="supermans-shell">Superman's shell</h3>
+<p><code>sandbox</code> is now <code>service/workbench</code> with <code>include_execute</code>; <code>host-lane.sh</code> covers his <code>xa-</code> workspace and proves it: <code>sandboxd-xa-…a57a7294… -&gt; macmini-inf</code>. He has the same <code>/workspace/bin/host</code> lane Iron Man has.</p>
+<h3 id="watched-now">Watched now</h3>
+<p><code>stack-health.py</code> (cron, 30 min) checks the Zoho flags, both Zoho tokens, the gateway's network, the platform, every MCP connection's last status and the Mac lane. Latest run: <code>{"status": "ok", "failures": []}</code>.</p>
+<h3 id="still-yours">Still yours</h3>
+<p>Zoho Desk scope: the 103-scope string is in <code>AI-Drive/Agent-Output/adrianna/zoho-scopes-with-desk.txt</code> — one re-consent in the Zoho API console and I swap the token and restart the gateway.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
