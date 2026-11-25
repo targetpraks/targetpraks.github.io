@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 6)</title>
+<title>PRD — AgenticOS workflow programme (rev 7)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1172,5 +1172,14 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 <p><strong>Why a script and not a workflow:</strong> a graph cannot run <code>df</code>, and the platform's own health endpoint is loopback-only — <code>http.request</code> refuses private addresses by design, while the public URL answers <strong>302</strong> from Cloudflare Access before it ever reaches the app (the very blindness F-20261121-01 describes). The Mac has the tunnel and the ssh route, so the Mac measures and the platform stores.</p>
 <p><strong>Known noise:</strong> three manual runs inside one minute left duplicate pairs (15:05:11, :43, :51). They are truthful measurements, so they stay; the hourly heartbeat plus on-change writes is the steady-state shape.</p>
 <p><strong>What is still unwritten:</strong> <code>feed_freshness</code> and <code>feed_generator</code> are deliberately <strong>not</strong> in the watch list. The 13 routine feeds are disabled by design (quarantine check passes), so a writer for them would be measuring a switched-off thing. When the feeds are switched back on, the generator should write its own row and L5 should declare it — that is the last piece of R1.</p>
+<h3 id="137-r5-closed--a-truncated-read-can-no-longer-pass-as-a-total">13.7 R5 closed — a truncated read can no longer pass as a total</h3>
+<p>The risk that quietly poisons a reconciliation is not a wrong count; it is a <em>silent</em> first page presented as the whole table. L7 and L10 now bind each query's <code>has_more</code> into their code and print, when true:</p>
+<blockquote>
+<p><code>NOTE: the findings table holds more than 100 rows; this pass read the first page only.</code></p>
+</blockquote>
+<p>Republished as v2 each (<code>99cc4fc2…</code> and <code>20b355a2…</code>), schedules unchanged (Mon 06:45, Wed 07:00). On today's data both flags are false — findings 9 rows, ledger 20, stores 10, satellites 10 — so the sentence stays absent because it would be untrue, not because it is unimplemented. Test runs after the change succeeded, which is also the proof the <code>has_more</code> bindings resolve: the code indexes them unconditionally.</p>
+<h3 id="138-the-probe-stops-duplicating-and-has-a-runbook">13.8 The probe stops duplicating, and has a runbook</h3>
+<p>Three manual probe runs in one minute had left duplicate ledger pairs. The probe now sends <code>external_id = &lt;check&gt;-&lt;YYYYMMDDTHH&gt;</code> (UTC), so a second run inside the same hour is answered <strong>409</strong> and recorded as <em>already written this hour</em> instead of adding a row. Verified: the 17:49 run wrote nothing because it was off-heartbeat and healthy, and the on-the-hour run keeps its single pair.</p>
+<p>Operating it is written down rather than remembered: <code>AgenticOS/runbooks/stack-probe.md</code> — job id, schedule, the two checks and their pass conditions, the credential source (named, never printed), how to run it by hand, why it cannot be a workflow, and the two failure shapes seen so far (tunnel down; a datetime without <code>Z</code>).</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
