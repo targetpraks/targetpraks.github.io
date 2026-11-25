@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 5)</title>
+<title>PRD — AgenticOS workflow programme (rev 6)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1116,9 +1116,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>unchanged by the agent (D5)</td>
 </tr>
 <tr>
-<td><strong>D6 — restore a writer for <code>maintenance_ledger</code>, or retire the ledger as the evidence surface</strong></td>
+<td><strong>D6 — restore a writer for <code>maintenance_ledger</code></strong></td>
 <td>Ricardo</td>
-<td><strong>open</strong> — nothing writes it since 2026-11-23 (§13.5)</td>
+<td><strong>DONE 2026-11-25 17:05</strong> — <code>adrianna/stack-probe</code> writes it every 30 minutes (§13.6)</td>
 </tr>
 <tr>
 <td>The 13 routine feeds are disabled (quarantine check passes)</td>
@@ -1141,5 +1141,36 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </blockquote>
 <p>A second defect was caught in the same pass: the cutoff was formatted in Africa/Johannesburg while the ledger timestamps are UTC, shifting the window by two hours. The node now formats in UTC and the output says so.</p>
 <p><strong>What this changes for the programme:</strong> the honest state of the estate is not "eight checks are silent" but "the evidence trail stopped on 23 November and nothing writes it". That is a different repair — either a writer for <code>maintenance_ledger</code> is restored, or the ledger is retired as the evidence surface and L5 with it. It is now decision <strong>D6</strong>.</p>
+<h3 id="136-d6-fixed--the-evidence-trail-has-a-writer-again">13.6 D6 fixed — the evidence trail has a writer again</h3>
+<p><code>maintenance_ledger</code> had gone silent because nothing wrote it. It now has a writer, in the only place that can measure the estate without inventing numbers: the Mac.</p>
+<p><strong><code>adrianna/stack-probe</code></strong> — <code>~/.hermes/scripts/agenticos-stack-probe.py</code>, Hermes cron <strong><code>e44896dddea9</code></strong>, every 30 minutes. Two checks per run, both measured:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>How it is measured</th>
+<th>Written when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>platform_health</code></td>
+<td><code>GET /api/v1/health/ready</code> through the Mac's SSH tunnel to the platform; records HTTP status, latency and the database/redis verdicts</td>
+<td>any non-ok result, plus one heartbeat pair per hour</td>
+</tr>
+<tr>
+<td><code>capacity_disk</code></td>
+<td><code>df -P /</code> on the platform host over ssh</td>
+<td>same</td>
+</tr>
+</tbody>
+</table></div>
+<p>First runs, verbatim from the cron output:</p>
+<pre><code>platform_health   HTTP 200 in 80 ms · database=healthy redis=healthy  -&gt; row 201
+capacity_disk     69% used, 23460016 free                             -&gt; row 201</code></pre>
+<p>The ledger went <strong>14 → 20 rows</strong>, newest at 2026-11-25T15:05:51Z. Liveness Watch v3 (<code>4cf8a593</code>) now declares exactly these two checks, and its test run <code>4f45b8f1</code> answered <em>"the evidence trail is current"</em> for the first time.</p>
+<p><strong>Why a script and not a workflow:</strong> a graph cannot run <code>df</code>, and the platform's own health endpoint is loopback-only — <code>http.request</code> refuses private addresses by design, while the public URL answers <strong>302</strong> from Cloudflare Access before it ever reaches the app (the very blindness F-20261121-01 describes). The Mac has the tunnel and the ssh route, so the Mac measures and the platform stores.</p>
+<p><strong>Known noise:</strong> three manual runs inside one minute left duplicate pairs (15:05:11, :43, :51). They are truthful measurements, so they stay; the hourly heartbeat plus on-change writes is the steady-state shape.</p>
+<p><strong>What is still unwritten:</strong> <code>feed_freshness</code> and <code>feed_generator</code> are deliberately <strong>not</strong> in the watch list. The 13 routine feeds are disabled by design (quarantine check passes), so a writer for them would be measuring a switched-off thing. When the feeds are switched back on, the generator should write its own row and L5 should declare it — that is the last piece of R1.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
