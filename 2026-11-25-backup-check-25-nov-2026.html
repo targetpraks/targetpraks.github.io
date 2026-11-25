@@ -267,6 +267,39 @@ Crossing the 14-day line in the next 7 days:
 <li><strong>Cosmetic.</strong> The Home Assistant lane logs its destination as <code>/AI-Drive/backups/…</code> (lowercase) while the real folder is <code>Backups</code>. Harmless on a case-insensitive volume, wrong on any other.</li>
 <li><strong>Note.</strong> <code>docker logs constellation-dev-pg</code> shows repeated <code>database system was not properly shut down; automatic recovery in progress</code> (11 Nov, 13 Nov, 16 Nov, 17 Nov, 19 Nov, 23 Nov) — the Colima VM is being hard-killed, not shut down. No corruption visible, but each of those is an unclean stop of the staff database.</li>
 </ul>
+<h2 id="history--this-is-the-third-report-on-the-same-lane-and-the-last-signal-was-switched-off">History — this is the third report on the same lane, and the last signal was switched off</h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Report</th>
+<th>What it said</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>18 Nov</td>
+<td><code>2026-11-18-backup-check-…-constellation-lane-dead-11-nights</code></td>
+<td>lane dead 11 nights, live DB empty; warned that the last valid dump <code>2026-11-06.sql.gz</code> would be deleted by the 21 Nov run</td>
+</tr>
+<tr>
+<td>24 Nov</td>
+<td><code>2026-11-24-backup-check-2026-11-24</code></td>
+<td>RED — dump refused by the 102,400 B floor; "<code>constellation_dev</code> has 0 staff rows, last real dump: 18 Nov, manual"</td>
+</tr>
+<tr>
+<td>24 Nov 21:11</td>
+<td>change to <code>backup.sh</code></td>
+<td>floor replaced by the structural check (≥ 2,048 B + <code>gzip -t</code> + header grep)</td>
+</tr>
+<tr>
+<td>25 Nov</td>
+<td>this report</td>
+<td>the same empty database now <strong>passes</strong> that check → "backups OK", exit 0</td>
+</tr>
+</tbody>
+</table>
+<p>The 18 Nov warning came true: <code>Backups/constellation/</code> today holds only <code>2026-11-25.sql.gz</code>. The <code>2026-11-06.sql.gz</code> recovery copy was deleted as predicted, and no one restored the data in between — so the nightly lane went from <em>loudly red</em> to <em>quietly green</em> while the condition it was reporting is unchanged. That is the part worth fixing first: the check must fail on an empty dump, or the next report is another green night over an empty database.</p>
 <h2 id="what-i-propose-ricardo-decides--i-changed-nothing">What I propose (Ricardo decides — I changed nothing)</h2>
 <ol type="1">
 <li><strong>Protect the last staff data today.</strong> Copy <code>constellation-prod/2026-11-18-manual.sql.gz</code> to a location the prune cannot reach, before the 2 December run.</li>
