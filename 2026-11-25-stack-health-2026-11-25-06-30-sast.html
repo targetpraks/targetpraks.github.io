@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Stack health — 2026-11-25 06:30 SAST</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="stack-health--2026-11-25-0630-sast">Stack health — 2026-11-25 06:30 SAST</h1>
+<p>Check, report, propose. Nothing was changed by this run: no restarts, no config edits, no data writes. The one collection command (<code>agent-usage-ledger.py</code>) wrote its normal periodic sample, which is its designed behaviour and not a remediation.</p>
+<h2 id="verdict-amber--two-live-faults-two-carried-ambers">Verdict: AMBER — two live faults, two carried ambers</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fault</th>
+<th>Severity</th>
+<th>Owner decision needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>Constellation staff server down — Prisma migration table missing, launchd crash loop ~45 h</td>
+<td><strong>RED</strong></td>
+<td>yes — DB-fixing write, Ricardo's call</td>
+</tr>
+<tr>
+<td>F2</td>
+<td>OpenKnowledge semantic index empty — 0 of 3,172 chunks embedded, <code>capable:false</code></td>
+<td><strong>RED</strong></td>
+<td>yes — needs an OK re-index (write)</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>Paperclip seat <code>Mr. Infinity</code> in <code>error</code> + 9 seats paused</td>
+<td>AMBER</td>
+<td>yes — resume decision</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>~1.5 GB of crash-loop logs on a 92 %-full disk</td>
+<td>AMBER</td>
+<td>yes — truncate/rotate</td>
+</tr>
+<tr>
+<td>F5</td>
+<td>LiteLLM alias-probe + fallback-alert lanes retired (scripts absent)</td>
+<td>INFO</td>
+<td>no — lane retired 2026-10-19</td>
+</tr>
+</tbody>
+</table>
+<p>Carried from the 03:35 night check, unchanged: <strong>cua</strong> (<code>spacesd=False</code>, known macOS 27 TCC/AX breakage) and <strong>disks</strong> (internal 92 % now, 91 % at 03:35).</p>
+<hr />
+<h2 id="f1--constellation-staff-server-is-down-red-prominent">F1 — Constellation staff server is DOWN (RED, prominent)</h2>
+<p>The launchd job that serves the staff app is in a respawn crash loop, and nothing is listening.</p>
+<pre><code>$ lsof -nP -iTCP:3214 -sTCP:LISTEN
+(no output)
+
+$ curl -sS -m 6 -o /dev/null -w &#39;HTTP=%{http_code}\n&#39; http://127.0.0.1:3214/
+curl: (7) Failed to connect to 127.0.0.1 port 3214 after 0 ms: Couldn&#39;t connect to server
+HTTP=000
+
+$ launchctl print gui/501/com.maio.constellation-dev
+    state = spawn scheduled
+    program = /Users/ricardomaio/.config/maio-stack/launchers/constellation-dev.sh
+    runs = 9963
+    last exit code = 1</code></pre>
+<p>Why it dies (<code>~/.config/maio-stack/logs/constellation-prod-3214.log</code>):</p>
+<pre><code>    at async l (…/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async runtimeDatabaseUrl (file:///Volumes/Hiksemi%201TB/DevMini/constellation/prisma/runtime-db.mjs:50:5)
+    at async file:///Volumes/Hiksemi%201TB/DevMini/constellation/scripts/start-staff.mjs:30:28 {
+  code: &#39;P2010&#39;,
+  clientVersion: &#39;5.22.0&#39;,
+  meta: {
+    code: &#39;42P01&#39;,
+    message: &#39;relation &quot;_prisma_migrations&quot; does not exist&#39;
+  }
+}
+Node.js v26.13.1</code></pre>
+<p>The database itself is <strong>not</strong> empty — it is the migration bookkeeping table that is gone:</p>
+<pre><code>$ docker exec constellation-dev-pg psql -U owner -d constellation_dev -tAc \
+    &quot;select count(*) from information_schema.tables where table_schema=&#39;public&#39;;&quot;
+28
+$ docker exec constellation-dev-pg psql -U owner -d constellation_dev -tAc \
+    &quot;select to_regclass(&#39;public._prisma_migrations&#39;);&quot;
+(empty = null)</code></pre>
+<p>Container <code>constellation-dev-pg</code> is <code>Up 45 hours</code> on <code>127.0.0.1:55440</code>, so the process has been failing since roughly the last boot — the schema is present (28 tables) but the app's startup migration check aborts before it binds the port. The failure is the same each cycle: <code>start-staff.mjs</code> asks Prisma for migration state, Prisma cannot find <code>_prisma_migrations</code>, the process exits 1, KeepAlive respawns it 15 s later.</p>
+<p><strong>Proposal (needs Ricardo's word — it writes to the database):</strong> decide whether the intent is <code>prisma migrate resolve --applied &lt;baseline&gt;</code> against the existing 28-table schema, or a fresh <code>migrate deploy</code> on a rebuilt database. Either is a write to a live business system; I am not touching it. Until then the staff app is unavailable and the log keeps growing (F4).</p>
+<p><strong>Note on the night check (second-order finding):</strong> the 03:35 run recorded <code>launchd_sweep … restarted: com.maio.constellation-dev</code> and marked the lane green. The kickstart succeeded; the <em>service</em> did not. A restart is not a heal — the sweep would be more honest re-checking service state after a kickstart instead of counting the kickstart as the result.</p>
+<hr />
+<h2 id="f2--openknowledge-semantic-index-is-empty-red-prominent">F2 — OpenKnowledge semantic index is empty (RED, prominent)</h2>
+<p><code>ok-health.sh</code> exits 1. The server is alive and the embedding provider is healthy, but zero chunks are embedded, so semantic search cannot serve and OK's semantic MCP tools for Beast are degraded to keyword-only.</p>
+<pre><code>$ zsh ~/.config/maio-stack/tools/ok-health.sh
+{&quot;ok&quot;:false,&quot;server_alive&quot;:true,&quot;port&quot;:&quot;64200&quot;,&quot;semantic_enabled&quot;:true,&quot;semantic_capable&quot;:false,&quot;embedded&quot;:0,&quot;total&quot;:3172,&quot;broken_symlinks&quot;:0}
+exit=1</code></pre>
+<p>Failed field: <strong><code>semantic</code></strong> (<code>semantic_enabled: true</code> but <code>semantic_capable: false</code>). <code>server_alive: true</code>, <code>broken_symlinks: 0</code> — those two pass.</p>
+<p>Full semantic status from the live server:</p>
+<pre><code>$ curl -sS -m 8 http://127.0.0.1:64200/api/semantic-status
+{&quot;enabled&quot;:true,&quot;keyPresent&quot;:false,&quot;keyStoreUnavailable&quot;:false,&quot;keyStoredInFile&quot;:false,&quot;keyNotRequired&quot;:true,&quot;keySource&quot;:null,&quot;keyHint&quot;:null,&quot;ready&quot;:false,&quot;capable&quot;:false,&quot;providerError&quot;:false,&quot;providerErrorReason&quot;:null,&quot;embedded&quot;:0,&quot;total&quot;:3172}</code></pre>
+<p><strong>It is not a provider outage.</strong> The configured embedding model answers with real vectors:</p>
+<pre><code>$ curl -sS -m 30 http://127.0.0.1:11434/v1/embeddings \
+    -H &#39;Content-Type: application/json&#39; \
+    -d &#39;{&quot;model&quot;:&quot;nomic-embed-text:latest&quot;,&quot;input&quot;:&quot;health probe&quot;}&#39;
+{&quot;object&quot;:&quot;list&quot;,&quot;data&quot;:[{&quot;object&quot;:&quot;embedding&quot;,&quot;index&quot;:0,&quot;embedding&quot;:[0.0234…]}],&quot;model&quot;:&quot;nomic-embed-text:latest&quot;,&quot;usage&quot;:{&quot;prompt_tokens&quot;:4,&quot;total_tokens&quot;:4}}
+HTTP=200</code></pre>
+<p>Config is as expected (<code>/Users/Shared/Maio-Hub/.ok-local/config.yml</code>): <code>baseUrl: http://127.0.0.1:11434/v1</code>, <code>model: nomic-embed-text:latest</code>, <code>enabled: true</code>.</p>
+<p><strong>The index on disk is complete; the running server does not see it.</strong></p>
+<pre><code>$ python3 - (reading /Users/Shared/Maio-Hub/.ok-local/embeddings/manifest.json)
+schemaVersion = 1
+providerId = http://127.0.0.1:11434/v1
+modelId = nomic-embed-text:latest
+dims = 768
+chunkConfigId = c8000-o400-m80
+entries len = 3171
+
+$ ls /Users/Shared/Maio-Hub/.ok-local/embeddings/vec | wc -l
+    3163</code></pre>
+<p>So: 3,171 manifest entries and 3,163 vector files sit on disk (last written 2026-11-24 21:04), the live server on pid 97011 (<code>started=2026-11-25T02:13:56.486Z</code>) reports <code>embedded: 0</code> against <code>total: 3172</code>. It knows the corpus, it has loaded none of the vectors, and it flags no provider error — an in-server index load/backfill fault, not a config or provider fault.</p>
+<p>Cross-check: the 03:35 night check recorded this lane green with <code>capable=True</code>, so the state degraded between 03:35 and 06:30 without any config change.</p>
+<p><strong>Proposal:</strong> an OK re-index / server restart is a write and would take the vault server down for its duration — Ricardo's call, not mine. Beast's semantic MCP tools (write/edit/move/delete rely on the server, semantic recall on the index) are the blast radius; note that plain keyword search and the CRDT server are still fine, so Beast can still write, just with weaker retrieval.</p>
+<hr />
+<h2 id="f3--paperclip-one-seat-in-error-nine-paused">F3 — Paperclip: one seat in error, nine paused</h2>
+<pre><code>$ zsh ~/.config/maio-stack/tools/paperclip-health.sh
+{&quot;ok&quot;: false, &quot;health_http&quot;: &quot;200&quot;, &quot;seats_error&quot;: &quot;Mr. Infinity,Julie,Chief People Officer,Chief Financial Officer,Chief Administrative Officer,Chief Marketing Officer,Chief Revenue Officer,Chief Operating Officer,Chief Technology Officer&quot;, &quot;collector_loaded&quot;: true}
+exit=1</code></pre>
+<p>Failed field: <strong><code>seats_error</code></strong>. Service health is 200 and the briefing collector is loaded.</p>
+<p>Per-seat detail across the five companies:</p>
+<pre><code>2f7577f4…  error   Mr. Infinity                        id=0c5e6f06-2ea5-4952-9c8d-80b36636e9b5
+902436e7…  paused  Julie                               id=6c19dacf-012e-410e-b17d-f63516585673
+ea4c24f4…  paused  Chief People Officer                id=98e80a18-271a-4621-80fd-7560b758f663
+ea4c24f4…  paused  Chief Financial Officer             id=1e25dd58-a6a9-48c3-8819-08521c1ccecd
+ea4c24f4…  paused  Chief Administrative Officer        id=378f532a-1722-4823-bc30-48a464a49fa5
+ea4c24f4…  paused  Chief Marketing Officer             id=c95a98e5-1568-4860-8219-7003d5d1b0de
+ea4c24f4…  paused  Chief Revenue Officer               id=5466b951-81b3-474d-b222-e95a3c2e8250
+ea4c24f4…  paused  Chief Operating Officer             id=22125cc7-f730-409c-a95a-dd86f7e6df49
+ea4c24f4…  paused  Chief Technology Officer            id=315bc509-6714-4e93-bbb9-25a4cecefe99</code></pre>
+<p><code>Mr. Infinity</code> is the genuine fault — status <code>error</code> with no exposed <code>lastError</code>. The nine <code>paused</code> seats are a deliberate-looking state (one company's whole C-suite plus <code>Julie</code>); I am reporting them, not calling them broken. Fix hints if Ricardo wants them running: <code>paperclipai agent resume &lt;id&gt;</code>. The seven <code>pending_approval</code> seats elsewhere in that company are not counted by this lane and are unchanged.</p>
+<hr />
+<h2 id="f4--crash-loop-log-bloat-on-a-92--full-disk-amber">F4 — crash-loop log bloat on a 92 %-full disk (AMBER)</h2>
+<p>The F1 loop writes continuously into two host log files that <code>colima-health.sh</code> does not watch (it only inspects Docker container logs — <code>logs_over_500mb: 0</code>).</p>
+<pre><code>$ du -h ~/.config/maio-stack/logs/constellation-prod-3214.log \
+        ~/.config/maio-stack/logs/constellation-launcher-3214.log
+742M    …/constellation-prod-3214.log
+771M    …/constellation-launcher-3214.log
+1.5G    total
+
+$ df -h /System/Volumes/Data
+/dev/disk3s5   460Gi   386Gi    38Gi    92%    4.5M  396M    1%   /System/Volumes/Data</code></pre>
+<p>Measured growth while I watched: the prod log grew 11,029 bytes in 16 s (≈ 690 B/s, ~60 MB/day). 38 GiB free, so this is not an outage — it is the reason the disk lane stays amber and it will keep climbing until F1 is fixed. Proposal: truncate both logs once F1 is resolved (a <code>: &gt; file</code> is safe and reversible in effect, but it destroys evidence — I did not do it).</p>
+<hr />
+<h2 id="f5--litellm-lanes-retired-scripts-do-not-exist-info">F5 — LiteLLM lanes: RETIRED, scripts do not exist (INFO)</h2>
+<p>Both requested scripts are absent, so neither lane can produce an output line:</p>
+<pre><code>$ zsh ~/.config/maio-stack/tools/litellm-alias-probe.sh
+zsh: can&#39;t open input file: /Users/ricardomaio/.config/maio-stack/tools/litellm-alias-probe.sh
+exit=127
+
+$ zsh ~/.config/maio-stack/tools/litellm-fallback-alert.sh
+zsh: can&#39;t open input file: /Users/ricardomaio/.config/maio-stack/tools/litellm-fallback-alert.sh
+exit=127</code></pre>
+<p>This is <strong>not</strong> an outage — LiteLLM was decommissioned from this Mac on 2026-10-19 and agents now call providers directly. Verified absence of every trace:</p>
+<pre><code>$ lsof -nP -iTCP:4000 -sTCP:LISTEN          → (no listener)
+$ docker ps -a | grep -i litellm            → (no container)
+$ launchctl print gui/501 | grep -i litellm → (no job)
+$ ls ~/Library/LaunchAgents | grep -i litellm → (no plist)
+$ ls ~/.config/maio-stack/litellm*          → No such file or directory</code></pre>
+<p>Only backups remain (<code>*.bak-adrianna-20261019-litellm-removal</code>), which is correct.</p>
+<p><strong>F5 substitute — is agent traffic on a degraded route?</strong> The nearest surviving signal is the agent usage ledger, which tracks fallback activations fleet-wide. Live collection at 06:32:</p>
+<pre><code>$ python3 ~/.config/maio-stack/tools/agent-usage-ledger.py
+2026-11-25 06:32:10 collected: homes=36 new_requests=26 new_fallbacks=0 usage_increments=0 pruned=0 errors=0 duration=0.2s</code></pre>
+<p>and the 03:35 night check's own ledger lane: <code>24h: 7720 calls, 2 fallback activations (0.03% activation rate)</code>. 0.03 % is far below the 5 % F5 threshold — <strong>the cloud route is not degraded</strong>. The alias-load-at-boot hazard that F5 was built to catch no longer has a proxy to apply to.</p>
+<hr />
+<h2 id="decision-gate-lane">Decision-gate lane</h2>
+<pre><code>$ gate-health
+{&quot;daemon&quot;: true, &quot;inference&quot;: true, &quot;cli&quot;: true, &quot;mcp&quot;: true, &quot;model&quot;: &quot;d3-flash-mlx&quot;, &quot;model_present&quot;: true, &quot;probe_noul&quot;: 0.8802695899694379, &quot;cli_exit&quot;: 0, &quot;mcp_tools&quot;: [&quot;decide&quot;, &quot;ask&quot;]}
+exit=0</code></pre>
+<p>Green: daemon up, inference live (probe 0.880), CLI exit 0, MCP exposes both <code>decide</code> and <code>ask</code>, model <code>d3-flash-mlx</code> present. No §8 gate was called in this run — a health probe is not a decision, so nothing was written to <code>gates.csv</code>.</p>
+<hr />
+<h2 id="colima--docker-lane">Colima / Docker lane</h2>
+<pre><code>$ zsh ~/.config/maio-stack/tools/colima-health.sh
+{&quot;ok&quot;:true,&quot;colima&quot;:&quot;running&quot;,&quot;docker_ok&quot;:true,&quot;containers_running&quot;:28,&quot;vm_free_mb&quot;:1537,&quot;vm_disk_pct&quot;:46,&quot;metamcp_orphans&quot;:8,&quot;metamcp_connect_errors_30m&quot;:0,&quot;metamcp_connect_error_top&quot;:&quot;&quot;,&quot;metamcp_state&quot;:&quot;running&quot;,&quot;metamcp_health_ok&quot;:1,&quot;metamcp_startup_errors_30m&quot;:0,&quot;biggest_log_mb&quot;:26,&quot;biggest_log_dir&quot;:&quot;/var/lib/docker/containers/666f68c523f97c65b383f23df6a0c8fe6778d8102cd25dd955fb54b6c05e2cfc/&quot;,&quot;logs_over_500mb&quot;:0,&quot;failed&quot;:&quot;&quot;}
+exit=0</code></pre>
+<p>Green, <code>failed</code> field empty. Worth watching, not failing: <code>vm_free_mb</code> 1537 (down from 1788 at 03:35; threshold is below that), <code>metamcp_orphans</code> 8 (unchanged — the known leak, reaped on demand with <code>docker exec metamcp pkill -f server-filesystem</code>). Note the script carries no LiteLLM scheduler field any more — consistent with F5.</p>
+<hr />
+<h2 id="google-workspace-lane">Google Workspace lane</h2>
+<pre><code>$ zsh ~/.config/maio-stack/tools/google-workspace-health.sh --json
+{&quot;ok&quot;: true, &quot;token&quot;: &quot;valid&quot;, &quot;refresh_ok&quot;: true, &quot;email&quot;: &quot;rickymaio@gmail.com&quot;, &quot;messages_total&quot;: 22051, &quot;scopes&quot;: 8, &quot;has_refresh_token&quot;: true, &quot;profiles_with_token&quot;: 30}
+exit=0</code></pre>
+<p>Green: token refreshes, live Gmail <code>getProfile</code> answers (22,051 messages), 8 scopes, refresh token present, 30 fleet profiles hold a token. No action.</p>
+<hr />
+<h2 id="night-check-lane-0335-read-only--not-re-run">Night check lane (03:35, read only — not re-run)</h2>
+<p>Present: <code>AI-Drive/Agent-Output/courage/night-check-2026-11-25.md</code> and <code>.json</code>. Job receipt: <code>launchctl print gui/501/com.maio.courage-nightcheck</code> → <code>runs = 2</code>, <code>last exit code = 0</code>, <code>job state = exited</code>; <code>com.maio.backup</code> → <code>runs = 2</code>, <code>last exit code = 0</code>.</p>
+<p><strong>Verdict line:</strong> <code>NIGHT CHECK 2026-11-25: AMBER; AMBER: cua, disks</code> (frontmatter: <code>0 red / 2 amber / 1 info / 22 total</code>, duration 43.4 s).</p>
+<p><strong>RED lanes:</strong> none.</p>
+<p><strong>AMBER lanes:</strong></p>
+<ul>
+<li><code>cua</code> — <code>driver=True socket=True spacesd=False lume=True cli=True</code> (known macOS 27 TCC/AX breakage; needs a human TCC click + daemon restart).</li>
+<li><code>disks</code> — <code>internal=91 % used; hiksemi=27 % used</code> (now 92 % at 06:30; see F4, which is the cause).</li>
+</ul>
+<p><strong>INFO lane:</strong> <code>coolify</code> — not installed on this host by the 2026-10-03/04 decision; adoption kit ready. Not a fault.</p>
+<p><strong>Heals it applied (Tier-A restarts only):</strong></p>
+<ol type="1">
+<li>OK kickstart (KeepAlive dead) → <code>com.maio.constellation-dev</code></li>
+<li>OK kickstart (KeepAlive dead) → <code>com.maio.hermes-dashboard</code></li>
+</ol>
+<p>Both kickstarts succeeded. <code>com.maio.hermes-dashboard</code> is healthy (<code>state = spawn scheduled</code>, <code>last exit code = 0</code>). <strong><code>com.maio.constellation-dev</code> is not</strong> — it exited 1 again and is now crash-looping (F1). The night check's green on that lane is a false green.</p>
+<p>Other night-check lanes green: connectivity, discord, telegram, openknowledge (green at 03:35 — it has since degraded, see F2), obsidian, plex, snappier, hiksemi_drive (rw ok, 27 %), colima, hermes_gateway (pid 33355), keep_awake, ram_guard, launchd_sweep, tailscale, backups, decision_gates, gamma_mcp, kanban_scheduled, agent_ledger.</p>
+<hr />
+<h2 id="independent-re-checks-at-0630-not-taken-from-the-night-check">Independent re-checks at 06:30 (not taken from the night check)</h2>
+<pre><code>$ df -h / /System/Volumes/Data &quot;/Volumes/Hiksemi 1TB&quot;
+/dev/disk3s1s1   460Gi    13Gi    38Gi    26%   /
+/dev/disk3s5     460Gi   386Gi    38Gi    92%   /System/Volumes/Data
+/dev/disk7s1     954Gi   260Gi   693Gi    28%   /Volumes/Hiksemi 1TB
+
+$ launchctl list | grep -i hermes
+33355   75  ai.hermes.gateway          → gateway alive, matches night check pid 33355
+
+$ Tailscale status --json → BackendState= Running
+$ pgrep -fl caffeinate     → 2053 caffeinate -d -i -s   (keep-awake held)
+$ echo probe &gt; &quot;/Volumes/Hiksemi 1TB/AI-Drive/.courage-rw-probe&quot;  → write ok, removed</code></pre>
+<p>Disk lanes, gateway, Tailscale, keep-awake and the Hiksemi drive all confirmed live and unchanged.</p>
+<hr />
+<h2 id="what-i-propose-ricardo-decides">What I propose (Ricardo decides)</h2>
+<ol type="1">
+<li><strong>F1 Constellation</strong> — choose the migration path (<code>migrate resolve --applied</code> on the existing 28-table schema, or a rebuilt database with <code>migrate deploy</code>). This is a write to a live business system; I have not touched it.</li>
+<li><strong>F4 logs</strong> — once F1 is fixed, truncate the two <code>constellation-*3214.log</code> files and consider a size cap so a crash loop can never eat 1.5 GB of a 92 % disk again.</li>
+<li><strong>F2 OpenKnowledge</strong> — approve an OK re-index/restart to reload the 3,171 on-disk embeddings; until then Beast's semantic retrieval is keyword-only.</li>
+<li><strong>F3 Paperclip</strong> — say whether the nine paused seats should stay paused, and whether <code>Mr. Infinity</code> (error) should be resumed.</li>
+<li><strong>Housekeeping</strong> — the requested LiteLLM lanes (alias probe, fallback alert) should be dropped from the standing instructions for this run, since the scripts no longer exist; the ledger fallback rate is the surviving equivalent.</li>
+</ol>
+<p>— Courage 🐾 (read-only check; nothing restarted, nothing edited)</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
