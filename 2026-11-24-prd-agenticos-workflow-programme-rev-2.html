@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 9)</title>
+<title>PRD — AgenticOS workflow programme (rev 10)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1204,5 +1204,19 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 </ul>
 <p><strong>The rule this teaches, now written into §5.5's spirit:</strong> a lane whose value is silence must prove it can be silent. Every future "only tell me if bad" lane gets a <code>logic.if</code> gate on its own verdict before publish, not after the first real run.</p>
 <p>The three spurious notifications from 25 November remain in the owner's inbox — they are a true record that the lane misbehaved, and deleting them would hide the evidence.</p>
+<h3 id="1311-the-weekly-measure-now-exists--the-board">13.11 The weekly measure now exists — the board</h3>
+<p>§9 said the owner should see reliability, action and cost every week. Nothing produced that view, so the contracts' measure was aspirational. It is now a page.</p>
+<p><strong><code>agenticos-programme-report.py</code></strong> (on the platform host, read-only, no model calls) reads the live platform and prints one self-contained HTML page: every published lane with its trigger state, next fire, last run and last line, the 7-day ok/fail count, the evidence trail's newest row per check, and what is waiting for a human. Published today as <a href="https://targetpraks.github.io/jump.html?vault=Maio%20Hub&amp;file=Work%2F2.Automations-Skills%2FReports%2F2026-11-25-agenticos-workflow-programme-the-board-2026-11-25&amp;doc=Work%2F2.Automations-Skills%2FReports%2F2026-11-25-agenticos-workflow-programme-the-board-2026-11-25&amp;t=AgenticOS%20workflow%20programme%20%E2%80%94%20the%20board%20(2026-11-25)&amp;h=https%3A%2F%2Ftargetpraks.github.io%2F2026-11-25-agenticos-workflow-programme-the-board-2026-11-25.html">the board (2026-11-25)</a>.</p>
+<p>A Hermes cron writes it every <strong>Monday 07:30</strong> (<code>agenticos-programme-board</code>, <code>6aea459ee848</code>) to <code>AI-Drive/Agent-Output/adrianna/agenticos-workflows-2026-11-24/board-&lt;date&gt;.html</code> — after the three Monday lanes have run, so it reports the week that just closed rather than the one about to start.</p>
+<p>First board, measured: <strong>7 published, 6 triggers active, 5 failed runs on record, 24 evidence rows.</strong></p>
+<h3 id="1312-the-first-write-path-failed-and-the-reason-matters">13.12 The first write path failed, and the reason matters</h3>
+<p>The parked Drawer Correction run (<code>586ea10c</code>) ended <strong>failed</strong> at 11:06 SAST — not approved, not rejected: it failed at <code>table.record.update</code> with <code>INVALID_BINDING</code>, <em>"a bound value does not satisfy this node's input schema"</em>.</p>
+<p>Cause: a <code>single_select</code> cell stores an <strong>option id</strong>, and the lane was handing it the option's <strong>label</strong> (<code>"EXCO / ADM"</code>). The create path had already taught me this — the probe passes option ids — and I did not carry the lesson into the update path.</p>
+<ul>
+<li><strong>Fixed in L9 rev 4</strong>: the lane carries the seven option ids and maps the chosen label to its id before the write. Re-run <code>12d2a08e</code> parks at <code>waiting_approval</code> with the fix in the graph.</li>
+<li><strong>Still unproven</strong>: the write itself. Only an approval can exercise it, and approving a record change is the owner's, not mine.</li>
+<li><strong>The failure was silent.</strong> It happened at 11:06, before the watchdog was wired at 14:40, so no notice was sent — the precise gap the watchdog closes from now on. It is also why the board's "5 failed runs" is not alarmism: four are test runs and one is this real failure.</li>
+</ul>
+<p><strong>Lesson, now part of the build discipline:</strong> a select column takes an option id on write and a label on read. Any lane that writes a select must carry the id map, and the first successful write is the only proof.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
