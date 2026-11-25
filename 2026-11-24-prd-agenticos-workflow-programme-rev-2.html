@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 10)</title>
+<title>PRD — AgenticOS workflow programme (rev 11)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1116,6 +1116,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>unchanged by the agent (D5)</td>
 </tr>
 <tr>
+<td><strong>D7 — every model step also emits "Ask a model finished a run"</strong></td>
+<td>Ricardo</td>
+<td><strong>open</strong> — two notifications per model lane; the only lever is turning <code>run_completed</code> off globally in notification preferences (§13.13)</td>
+</tr>
+<tr>
 <td><strong>D6 — restore a writer for <code>maintenance_ledger</code></strong></td>
 <td>Ricardo</td>
 <td><strong>DONE 2026-11-25 17:05</strong> — <code>adrianna/stack-probe</code> writes it every 30 minutes (§13.6)</td>
@@ -1218,5 +1223,43 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 <li><strong>The failure was silent.</strong> It happened at 11:06, before the watchdog was wired at 14:40, so no notice was sent — the precise gap the watchdog closes from now on. It is also why the board's "5 failed runs" is not alarmism: four are test runs and one is this real failure.</li>
 </ul>
 <p><strong>Lesson, now part of the build discipline:</strong> a select column takes an option id on write and a label on read. Any lane that writes a select must carry the id map, and the first successful write is the only proof.</p>
+<h3 id="1313-one-bug-three-more-lanes--and-the-rule-now-applied-everywhere">13.13 One bug, three more lanes — and the rule now applied everywhere</h3>
+<p>The false alarm found in L5 was not an L5 bug. It was a <strong>pattern</strong> I had repeated, and the sweep found it in two more places:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Was</th>
+<th>Is now</th>
+<th>Proof</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L8 Blocker Alert</strong></td>
+<td>notified on <em>any</em> edit of an open blocker — four false pages on 25 Nov</td>
+<td><code>logic.if</code> on <code>alert</code>, where alert also requires the event to be relevant (<code>created</code>, or <code>Severity</code>/<code>Closed at</code>/<code>Due date</code> in <code>changed</code>)</td>
+<td>edit touching only <code>Summary</code>: "no alert: … changed 1 column(s)", <strong>no notification</strong>; edit touching <code>Severity</code>: notification sent (<code>17:29:44</code>)</td>
+</tr>
+<tr>
+<td><strong>L3 Document Register Sweep</strong></td>
+<td>had <strong>no notification path at all</strong> — the memo was published to nobody</td>
+<td>gated page with a headline when the register needs work</td>
+<td><code>17:30:18</code> "Document register: 21 drawer(s) with blanks, 2 duplicate name(s), 21 drawers read"</td>
+</tr>
+<tr>
+<td><strong>L4 Open Findings Review</strong></td>
+<td>same — nobody was told</td>
+<td>same gate on <code>alert</code></td>
+<td>republished v2, schedule intact</td>
+</tr>
+</tbody>
+</table></div>
+<p>L3 and L4 had been running since the first build with a named reader in their contracts and no way for that reader to learn the memo existed. That is the "shelfware" risk the panel named, committed by omission.</p>
+<p><strong>And one more defect in L9, found the same way:</strong> the code returned <code>null</code> on the "drawer not found" path. Monty takes only a <strong>top-level final expression</strong> as a step's result — a dict returned from inside an <code>if/else</code> branch is not it. L9 now computes <code>out</code> in every branch and ends with <code>out</code>; the not-found path returns <em>"No drawer matches … nothing to change."</em> and the found path parks at <code>waiting_approval</code>.</p>
+<p><strong>A validator lesson worth keeping:</strong> a gate cannot sit <em>beside</em> the step whose output it wants. Binding the memo's text into the gate's branch returned <code>GRAPH_INVALID — this binding reads a node's output on a path where that node has not necessarily run</code>. The gate must hang <strong>downstream</strong> of the memo (<code>memo → gate</code>), not parallel to it. Both L3 and L4 were rebuilt that way.</p>
+<h3 id="1314-d7--the-model-steps-own-completion-notice">13.14 D7 — the model step's own completion notice</h3>
+<p>Each <code>ai.prompt</code> runs as its own agent run, and the platform notifies the owner that <em>"Ask a model finished a run"</em>. So every model-bearing lane produces <strong>two</strong> notices per run: its own (gated) one and the platform's.</p>
+<p>That is attention cost the contracts did not anticipate. The only lever available today is turning <code>run_completed</code> off for the owner in notification preferences — which would silence it for <strong>every</strong> agent run, not just workflow steps. That is a preference change to the owner's whole experience, so it is recorded as <strong>D7</strong> rather than made on his behalf. Until it is decided, the honest count is: a model lane speaks once by design and once by platform.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
