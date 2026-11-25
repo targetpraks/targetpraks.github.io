@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Building the internal catalogue — options, tested</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="building-the-internal-catalogue--the-options-tested">Building the internal catalogue — the options, tested</h1>
+<p><strong>Summary:</strong> A catalogue is a <em>data product</em>, not a document. The format (website, PDF, deck, Gamma) is an output; the thing that decides whether it works is the source of truth and the sign-off. Infinity Brands already owns the source — Zoho Inventory holds 839 items, 696 of them ACDC Express, with <strong>637 product photos</strong>, five category codes and 11 price lists. The best build is therefore not a website or a deck: it is a <strong>generator</strong> that turns that master into a frozen, numbered edition — searchable HTML for the screen, A4 PDF for print, one SHA-256 per edition for sign-off. Licence cost R0. Built and proven today, with a 343-item working edition.</p>
+<h2 id="1-what-we-already-own-measured-today-2026-11-25-1810">1. What we already own (measured today, 2026-11-25 18:10)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Number</th>
+<th>How it was measured</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Items in the master</td>
+<td>839</td>
+<td><code>GET /inventory/v1/items</code>, all pages</td>
+</tr>
+<tr>
+<td>ACDC Express (<code>EXP-</code>) items</td>
+<td>696 (505 active)</td>
+<td>SKU prefix</td>
+</tr>
+<tr>
+<td>EXP items with a product photo</td>
+<td>637 (487 active)</td>
+<td><code>image_document_id</code> populated</td>
+</tr>
+<tr>
+<td>Category codes in use</td>
+<td>6 — <code>UNI</code> 407, <code>PRO</code> 155, <code>INS</code> 58, <code>STA</code> 40, <code>GIF</code> 34, <code>ONL</code> 2</td>
+<td>SKU second segment</td>
+</tr>
+<tr>
+<td>Branded catalogue lines</td>
+<td>44 (11 × 4 brands)</td>
+<td><code>data/demo_catalogue_*.json</code></td>
+</tr>
+<tr>
+<td>Price lists</td>
+<td>11 (7 fixed-percentage + 4 per-item brand subsets)</td>
+<td><code>GET /inventory/v1/pricebooks</code></td>
+</tr>
+<tr>
+<td>Item categories in Zoho</td>
+<td>13 (6 canonical + <code>zz*</code> legacy + 2 empty duplicates + ACDC Store)</td>
+<td><code>GET /inventory/v1/categories</code></td>
+</tr>
+<tr>
+<td>SKU standardisation</td>
+<td><strong>618 / 618 renames live</strong></td>
+<td>plan vs live SKU set</td>
+</tr>
+</tbody>
+</table></div>
+<p>The expensive part of any catalogue — a photo, a name, a category and a price per item — is already in the master. Any tool that asks someone to <em>re-key</em> that is a second source of truth and will drift.</p>
+<p>Two limits found while measuring, both design constraints not blockers:</p>
+<ul>
+<li><strong>The image endpoint throttles hard.</strong> Six parallel image fetches triggered Zoho's per-minute block (<code>429 code 43</code>), which held for 15+ minutes even though the item API kept answering 200. Images must be fetched <strong>once into a cache</strong>, paced ≤ 1 request/second, and never re-fetched per edition.</li>
+<li><strong>The master moves.</strong> While this research ran, the pending 244 SKU renames were completed (17:23, 243 applied) and a second pass fixed 57 more (17:56); the EXP count went 640 → 696. An edition must be stamped with its read time and hash, because "the catalogue" is a moment, not a state. The earlier figure of 415 coded SKUs is superseded: <strong>696 of 696 are coded now.</strong></li>
+</ul>
+<h2 id="2-the-five-ways-to-do-it">2. The five ways to do it</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Option</th>
+<th>What it is</th>
+<th>First edition</th>
+<th>Running cost</th>
+<th>Sign-off &amp; audit</th>
+<th>Search + print</th>
+<th>Ordering</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A</strong></td>
+<td><strong>Generated editions</strong> (built today)</td>
+<td>Script reads Zoho → HTML + A4 PDF + <code>edition.json</code> hash</td>
+<td>~2 days (core done)</td>
+<td><strong>R0</strong> (hosting free)</td>
+<td>Hash per edition; approval sheet + signature</td>
+<td>Yes / yes</td>
+<td>No</td>
+<td><strong>Recommended</strong></td>
+</tr>
+<tr>
+<td>B</td>
+<td>Zoho Creator portal</td>
+<td>Low-code app with logins, catalogue and order form writing Sales Orders back to Inventory</td>
+<td>2–4 weeks</td>
+<td>$8/user/mo annual ($12 monthly) → ~$160/mo at 20 users</td>
+<td>Native records, approvals, audit</td>
+<td>Yes / limited print</td>
+<td><strong>Yes</strong></td>
+<td>Phase 2, when staff must <em>order</em></td>
+</tr>
+<tr>
+<td>C</td>
+<td>Zoho Commerce store</td>
+<td>Real webstore on Inventory</td>
+<td>3–6 weeks</td>
+<td>Subscription + payment fees</td>
+<td>Order records only</td>
+<td>Yes / no</td>
+<td>Yes (public)</td>
+<td>Wrong tool for internal</td>
+</tr>
+<tr>
+<td>D</td>
+<td>Gamma / PowerPoint / InDesign</td>
+<td>Design a PDF deck by hand</td>
+<td>1–2 days</td>
+<td>R0–R700/mo</td>
+<td>None beyond the file</td>
+<td>No / yes</td>
+<td>No</td>
+<td>Marketing collateral only</td>
+</tr>
+<tr>
+<td>E</td>
+<td>Paid PIM (Plytix, Akeneo)</td>
+<td>Product information system with feeds and brand portals</td>
+<td>4–8 weeks</td>
+<td>Plytix: free ≤100 SKUs, ~$49/mo at 500; Akeneo: enterprise quote</td>
+<td>Strong</td>
+<td>Yes / via feeds</td>
+<td>Via channels</td>
+<td>Only if we go multi-channel at retail scale</td>
+</tr>
+<tr>
+<td>F</td>
+<td>WorkDrive folder of PDFs/Excel</td>
+<td>Shared drive of exports</td>
+<td>1 day</td>
+<td>R0</td>
+<td>None</td>
+<td>No</td>
+<td>No</td>
+<td>Not a catalogue</td>
+</tr>
+</tbody>
+</table></div>
+<p>Why the obvious tools lose: Gamma, PowerPoint and InDesign are <strong>layout</strong> tools. They are excellent for a 12-page brand deck and wrong for 696 items that change weekly — every price change becomes a manual edit, and the deck silently becomes a second source of truth. A website built by hand has the same problem, plus hosting and code to maintain. The generated lane keeps the layout cheap and repeatable and puts the effort where it belongs: the data and the approval.</p>
+<p>Zoho Creator (option B) is the right <em>next</em> step, not the first: it adds logins and real ordering, but it does not solve the catalogue-of-record problem, costs per user, and needs its own build. Zoho's own customer portal does invoices and sales orders, <strong>not</strong> a browsable catalogue — verified in their documentation — so it is not an alternative.</p>
+<h2 id="3-the-recommended-lane">3. The recommended lane</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">Z</span>[<span class="st">&quot;Zoho Inventory</span><span class="sc">&lt;br/&gt;</span><span class="st">item master + price lists</span><span class="sc">&lt;br/&gt;</span><span class="st">839 items, 637 photos&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="st">&quot;Edition builder</span><span class="sc">&lt;br/&gt;</span><span class="st">build_catalogue.py&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;Image cache</span><span class="sc">&lt;br/&gt;</span><span class="st">paced, fetched once&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">H</span>[<span class="st">&quot;index.html</span><span class="sc">&lt;br/&gt;</span><span class="st">search, filters, detail&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">P</span>[<span class="st">&quot;A4 PDF</span><span class="sc">&lt;br/&gt;</span><span class="st">headless Chrome&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">J</span>[<span class="st">&quot;edition.json</span><span class="sc">&lt;br/&gt;</span><span class="st">items + SHA-256&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">J</span> <span class="pp">--&gt;</span> <span class="dt">D</span>[<span class="st">&quot;Diff vs previous edition</span><span class="sc">&lt;br/&gt;</span><span class="st">added / changed / removed&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">A</span>[<span class="st">&quot;Approval sheet</span><span class="sc">&lt;br/&gt;</span><span class="st">per-item lines&quot;</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">A</span> <span class="pp">--&gt;</span> <span class="dt">S</span>[<span class="st">&quot;Sign-off</span><span class="sc">&lt;br/&gt;</span><span class="st">Zoho Sign or ledger&quot;</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span> <span class="pp">--&gt;</span> <span class="dt">L</span>[<span class="st">&quot;Ledger + archive</span><span class="sc">&lt;br/&gt;</span><span class="st">edition id, hash, signer, date&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">H</span> <span class="pp">--&gt;</span> <span class="dt">U</span>[<span class="st">&quot;Staff: screen&quot;</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">P</span> <span class="pp">--&gt;</span> <span class="dt">U2</span>[<span class="st">&quot;Print / sales reps&quot;</span>]</span></code></pre></div>
+<p>Five rules make it a system rather than a script:</p>
+<ol type="1">
+<li><strong>The master is the only source.</strong> The catalogue is never edited; a change goes into Zoho, then a new edition is generated.</li>
+<li><strong>Prices come from price lists, not the page.</strong> The page shows what the list says at read time.</li>
+<li><strong>Every edition is frozen and named</strong>: <code>STA-UNI-20261125T180438</code>, with a SHA-256 over a canonical item payload (<code>sku, name, category, unit, rate, purchase_rate, status, image</code>), sorted by SKU.</li>
+<li><strong>Images are cached once</strong> and reused; only new items hit the API.</li>
+<li><strong>A signed edition is immutable.</strong> Any later change creates edition <em>n+1</em>; the signed one stays as it was.</li>
+</ol>
+<p>One property worth noting: the hash covers <strong>data only</strong>. Restyling the page changed the HTML and the PDF but left the hash identical (<code>b3d648ba…</code>) — so a design tweak never invalidates a signature, and a price change always does.</p>
+<h2 id="4-sign-off--what-actually-gets-approved">4. Sign-off — what actually gets approved</h2>
+<p>Three different things get signed, at three levels:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>What</th>
+<th>Who</th>
+<th>How</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Item change</strong> (new item, price, category, copy)</td>
+<td>Field owner — merchandising (category/copy), finance (price), warehouse (SKU/stock)</td>
+<td>Approved in Zoho before it becomes active</td>
+<td>Zoho audit log on the item</td>
+</tr>
+<tr>
+<td><strong>Edition</strong> (this month's catalogue as a whole)</td>
+<td>Brand owner + finance, Ricardo final</td>
+<td>Approval sheet of the diff, then signature</td>
+<td>Signed PDF + edition hash + ledger row</td>
+</tr>
+<tr>
+<td><strong>Customer-facing release</strong> (if ever)</td>
+<td>Ricardo</td>
+<td>Zoho Sign</td>
+<td>Certificate of completion</td>
+</tr>
+</tbody>
+</table></div>
+<p>The mechanism that makes this cheap and honest:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">sequenceDiagram</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">participant</span><span class="vs"> B</span><span class="kw"> as </span><span class="vs">Edition builder</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">participant</span><span class="vs"> R</span><span class="kw"> as </span><span class="vs">Reviewer (brand owner / finance)</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">participant</span><span class="vs"> S</span><span class="kw"> as </span><span class="vs">Zoho Sign</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">participant</span><span class="vs"> V</span><span class="kw"> as </span><span class="vs">Ledger + archive</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span><span class="pp">-&gt;&gt;</span><span class="dt">B</span><span class="at">:</span><span class="vs"> freeze edition.json + SHA-256</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span><span class="pp">-&gt;&gt;</span><span class="dt">R</span><span class="at">:</span><span class="vs"> approval sheet (diff only: added / changed / removed)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">R</span><span class="pp">-&gt;&gt;</span><span class="dt">B</span><span class="at">:</span><span class="vs"> approve or reject per line, with comments</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span><span class="pp">-&gt;&gt;</span><span class="dt">S</span><span class="at">:</span><span class="vs"> edition PDF + hash (Ricardo sends/signs)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span><span class="pp">-&gt;&gt;</span><span class="dt">V</span><span class="at">:</span><span class="vs"> signed PDF + certificate</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">V</span><span class="pp">-&gt;&gt;</span><span class="dt">V</span><span class="at">:</span><span class="vs"> ledger row — edition, hash, signer, date</span></span></code></pre></div>
+<ul>
+<li><strong>Reviewing only the diff</strong> is what makes sign-off fast: 340 unchanged lines are not re-read every month; the approver sees the 12 items that moved.</li>
+<li><strong>The hash is what is signed</strong>, so a signature can never be quietly attached to a different version. Anyone can re-run the build against the same items and get the same hash.</li>
+<li><strong>Two levels of rigour</strong>: an <em>approval ledger</em> (edition id, hash, approver, timestamp, comments — stored in the vault and WorkDrive) is enough for internal use. <strong>Zoho Sign</strong> adds legal-grade evidence at <strong>$0.50 per envelope</strong> pay-as-you-go (free plan: 5 documents/month). Per Ricardo's standing rule, the agent prepares; <strong>Ricardo sends and signs</strong>.</li>
+<li>Two adjacent review surfaces are already configured but unproven: the fleet holds a <strong>Filestage</strong> API token (visual proofing with versioned annotations — my probe reached their API but not a working endpoint map yet) and a <strong>Zoho Sign</strong> MCP endpoint is registered. Neither has been exercised end-to-end; each needs a short spike before it is relied on.</li>
+</ul>
+<h2 id="5-what-it-costs">5. What it costs</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Build</th>
+<th>Running</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A — generated editions</strong></td>
+<td>~2 days total; the generator, HTML, search, filters and A4 print are <strong>already built and working</strong>; remaining: approval sheet, ledger, brand styling</td>
+<td><strong>R0</strong> — runs on this Mac; Pages hosting free; Zoho Sign only when a formal signature is wanted ($0.50/envelope)</td>
+</tr>
+<tr>
+<td>B — Creator portal</td>
+<td>2–4 weeks build</td>
+<td>~$160/mo at 20 users</td>
+</tr>
+<tr>
+<td>E — Plytix / Akeneo</td>
+<td>4–8 weeks</td>
+<td>~$49/mo at 500 SKUs (Plytix, vendor-listed) / enterprise quote</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="6-proof--built-today-not-proposed">6. Proof — built today, not proposed</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Result</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>343-item edition generated from live Zoho</td>
+<td><code>edition.json</code> — 343 items, all active, ACDC Express, categories <code>STA</code> + <code>UNI</code></td>
+</tr>
+<tr>
+<td>213 product photos pulled and cached</td>
+<td><code>images/</code> — 213 JPEGs, downscaled to ≤560 px</td>
+</tr>
+<tr>
+<td>Search, category filters, detail drawer all work</td>
+<td>measured in a browser: search "golf" → 67, <code>STA</code> → 34, <code>UNI</code> → 309, <code>ALL</code> → 343</td>
+</tr>
+<tr>
+<td>Print-ready A4 PDF</td>
+<td>24 pages, 210 × 297 mm, 12 products per page, header on every page</td>
+</tr>
+<tr>
+<td>Edition hash stable across restyling</td>
+<td><code>b3d648baf45ff9d8cfe94502817281bac71548b5f8b83ab5acddc7fb2cfb6cfa</code></td>
+</tr>
+<tr>
+<td>Rate-limit behaviour characterised</td>
+<td>6 parallel image fetches → <code>429 code 43</code>, item API unaffected</td>
+</tr>
+</tbody>
+</table></div>
+<p>Files: <code>scripts/build_catalogue.py</code> (read-only against Zoho), edition at <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/adrianna/catalogue/edition-EXP-STA-UNI-20261125/</code> (<code>index.html</code>, <code>catalogue-print.pdf</code>, <code>edition.json</code>).</p>
+<p>What the prototype does <strong>not</strong> yet have: the 130 missing photos (blocked by the 429 window at build time — they fill in on the next paced run), an approval sheet, and the ledger.</p>
+<h2 id="7-risks-and-how-the-lane-handles-them">7. Risks and how the lane handles them</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zoho throttles the image endpoint</td>
+<td>Cache images once, paced; editions reuse the cache</td>
+</tr>
+<tr>
+<td>Master changes while a catalogue is being approved</td>
+<td>Edition hash + read timestamp; a change means a new edition</td>
+</tr>
+<tr>
+<td>Duplicate/legacy categories (<code>zzUniform</code>, <code>zzPromotional</code>, two empty <code>In-store</code>s)</td>
+<td>Fold into the six canonical codes; catalogue maps <code>zz*</code> to the canonical code</td>
+</tr>
+<tr>
+<td>Per-item price lists behave differently on transactions (unmeasured)</td>
+<td>Treat the catalogue as display, the transaction as truth; measure before quoting from a subset list</td>
+</tr>
+<tr>
+<td>Inactive items vanish from the catalogue</td>
+<td><code>--all</code> flag prints them marked; decide per edition</td>
+</tr>
+<tr>
+<td>A hand-made deck drifts from the master</td>
+<td>Only generated editions are the catalogue of record; decks are collateral</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="8-recommendation">8. Recommendation</h2>
+<p><strong>Adopt A now, and make B the roadmap item.</strong> Generated editions give Infinity Brands a single-source catalogue this week at zero licence cost, with a sign-off that names exactly what was approved. Zoho Creator earns its licence the day staff need to <em>order</em> from the catalogue rather than read it — then the same edition data feeds the portal. A paid PIM only becomes rational when the catalogue has to serve several external channels at once.</p>
+<h2 id="9-decisions-needed-from-ricardo">9. Decisions needed from Ricardo</h2>
+<ol type="1">
+<li><strong>Catalogue of record</strong> — approve the generated-edition lane (A) as the internal catalogue, with Gamma/decks demoted to collateral.</li>
+<li><strong>Sign-off weight</strong> — internal ledger only, or formal signature on each edition (Zoho Sign, $0.50/envelope, you send and sign)?</li>
+<li><strong>Edition 1 scope</strong> — ACDC Express stationery + clothing only (proven today), or all four brands and all five categories?</li>
+<li><strong>Approvers</strong> — who signs content (brand owner) and who signs prices (finance) alongside you?</li>
+</ol>
+<h2 id="sources">Sources</h2>
+<ul>
+<li>Zoho Inventory items, categories, pricebooks and item-image APIs — measured live against org 716443079, 2026-11-25.</li>
+<li>Zoho Inventory Customer Portal — invoices, orders and payments, not a browsable catalogue: <a href="https://www.zoho.com/inventory/help/client-portal/index.html">https://www.zoho.com/inventory/help/client-portal/index.html</a></li>
+<li>Zoho Creator product-catalogue and portal capability: <a href="https://zoho.com/creator/decode/build-a-custom-product-catalog-app-without-code">https://zoho.com/creator/decode/build-a-custom-product-catalog-app-without-code</a></li>
+<li>Zoho Creator pricing ($8/user/mo annual, $12 monthly): <a href="https://capterra.com/p/211755/Zoho-Creator/pricing">https://capterra.com/p/211755/Zoho-Creator/pricing</a></li>
+<li>Zoho Sign API ($0.50/envelope; free plan 5 documents/month): <a href="https://zoho.com/sign/pricing-api.html">https://zoho.com/sign/pricing-api.html</a></li>
+<li>Plytix pricing tiers (free ≤100 SKUs, ~$49/mo at 500): <a href="https://sellufy.com/blog/akeneo-alternatives">https://sellufy.com/blog/akeneo-alternatives</a></li>
+<li>Field-level ownership, role permissions and approval-before-publish: <a href="https://micropim.net/blog/product-data-governance-roles-permissions-approval-workflows">https://micropim.net/blog/product-data-governance-roles-permissions-approval-workflows</a></li>
+<li>ERP as authoritative source, PIM as the channel hub: <a href="https://www.atropim.com/en/blog/pim-implementation-best-practices">https://www.atropim.com/en/blog/pim-implementation-best-practices</a></li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
