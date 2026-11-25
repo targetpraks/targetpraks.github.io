@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD - Maio OS Capability Enhancements</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
+      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="maio-os---capability-enhancement-prd">Maio OS - Capability Enhancement PRD</h1>
+<h2 id="1-reading-of-the-request">1. Reading of the request</h2>
+<ul>
+<li>The subject is Maio OS, the cockpit served at <a href="https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel">https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel</a>, built in T3 Code (Nightly) from the repo above.</li>
+<li>The request is to enhance every capability the site has, not one section, and to assign the responsibility for that work to Google Neon.</li>
+<li>Google Neon is read here as the Gemini 4 Neon lane on the Google AI subscription through Antigravity, the lane already configured in this fleet as the hardest-reasoning seat. It is a model lane, not a company entity and not a cloud service the site depends on. If the intent was a different "Neon", say so and this document is re-pointed before any work starts.</li>
+<li>The enhancement details were not supplied by the requester. Where a target number, date, budget or scope decision is required and cannot be measured from the system, the field reads [unspecified].</li>
+</ul>
+<h2 id="2-product-in-five-lines">2. Product in five lines</h2>
+<ul>
+<li>What it is: a fixed-section household cockpit, one static shell plus a generated snapshot plus a loopback companion, with four folded apps behind the same origin.</li>
+<li>Who uses it: Ricardo, on this Mac and over the tailnet, to answer "what needs attention now, and where does a record live".</li>
+<li>What it is not: a public site, a multi-user service, a window desktop, or a React application. Those are non-goals inherited from v2 and not reopened here.</li>
+<li>What makes it work today: 18 visible sections, a live companion on the same origin, read-only vault access, and five gated fix actions with a cooldown and a log.</li>
+<li>What this PRD adds: twelve capability workstreams, each with a measured baseline, a stated enhancement, a runnable acceptance test, and Google Neon as the accountable owner.</li>
+</ul>
+<h2 id="3-evidence-register---measured-2026-11-25-1029-to-1036-sast">3. Evidence register - measured 2026-11-25, 10:29 to 10:36 SAST</h2>
+<p>Every baseline below was produced in this session. Numbers are snapshots of a live system and must be re-read on the day of implementation.</p>
+<ul>
+<li>E1 - Loopback page: <code>curl -o /dev/null -w '%{http_code} %{time_total}' http://127.0.0.1:9111/</code> - 200, 0.0847 s.</li>
+<li>E2 - Tailnet page: same probe against <code>https://ricardos-mac-mini.taile9f837.ts.net:9443/</code> - 200, 0.7386 s.</li>
+<li>E3 - Health: <code>curl</code> against <code>http://127.0.0.1:9111/health</code> - 200.</li>
+<li>E4 - Sections: 19 keys in <code>SECTIONS</code>, 1 hidden (<code>file</code>), 18 visible nav links rendered in the browser.</li>
+<li>E5 - Shell size on disk: <code>index.html</code> 227,843 B (3,025 lines), <code>data.js</code> 328,344 B, <code>assets/theme.css</code> 18,333 B, <code>assets/workspace.css</code> 36,738 B - 611,258 B in total.</li>
+<li>E6 - Browser load, <code>#wheel</code>: DOMContentLoaded 93 ms, load 319 ms, 18 nav links, no horizontal overflow at 756 px client width.</li>
+<li>E7 - Transferred resources on that load: <code>data.js</code> 49,655 B, <code>local.js?t=1795595590</code> 139,029 B, wheel frame 7,334 B. The live payload is cache-busted on every load and has no ETag reuse.</li>
+<li>E8 - Wheel frame: <code>/wheel</code> 200, frame renders with heading "Your life at a glance", 4 cards, scroll height 1,171 px. <code>/wheel/wheel</code>, <code>/wheel/goals</code>, <code>/wheel/ikigai</code>, <code>/wheel/thinking</code>, <code>/wheel/board</code>, <code>/wheel/settings</code> all return 200. <code>/astro</code> returns 308 to <code>/astro/</code>; <code>/top8/</code> returns 200.</li>
+<li>E9 - Cockpit exposes the Wheel as one frame and nothing else: <code>renderWheel()</code> returns <code>appFrame('/wheel', ...)</code>. No sub-route, no summary, no deep link into the six wheel pages.</li>
+<li>E10 - Companion API: <code>/openapi.json</code> lists 10 documented paths - <code>/api/fix</code>, <code>/api/fix/log</code>, <code>/api/top8/research</code>, <code>/api/top8/status</code>, <code>/api/vault/note</code>, <code>/api/vault/search</code>, <code>/files/{rel}</code>, <code>/health</code>, <code>/local.js</code>, <code>/openapi.json</code>.</li>
+<li>E11 - Gated actions: allowlist is <code>ollama-unload</code>, <code>ollama-stop</code>, <code>ollama-warm</code>, <code>service-restart</code>, <code>refresh-data</code>; a body whose <code>confirm</code> field is not <code>true</code> returns 400 <code>confirm-required</code>; cooldowns are 60 s per service and 5 min for refresh, held in memory only; fix log capped at 50 entries.</li>
+<li>E12 - Tests in repo: 13 cockpit tests (<code>tests/cockpit.test.mjs</code> 7, <code>tests/companion-api.test.mjs</code> 6), 81 wheel tests under <code>apps/wheel/src/tests</code>. No CI workflow exists; <code>sh ops/check.sh</code> is the local gate.</li>
+<li>E13 - Generator run at 09:41 today: total 103.4 s, <code>reports</code> step 64.06 s, <code>library</code> step 30.16 s, write 0.02 s.</li>
+<li>E14 - Snapshot mirror is stale by design when the checkout is dirty: <code>git status --porcelain</code> reports 1,222 paths on branch <code>feat/esoteric-zone</code>, so the refresh log ends with "commit deferred", and <code>data.js</code> is regenerated and live but not committed.</li>
+<li>E15 - No service worker anywhere: <code>grep -c serviceWorker index.html companion/server.mjs</code> - 0 and 0.</li>
+<li>E16 - No identity layer: trust is host allowlist plus origin guard plus optional <code>MAIO_FIX_TOKEN</code> for non-loopback calls. Vault and file routes are read-only by construction.</li>
+</ul>
+<h2 id="4-what-the-request-did-not-specify">4. What the request did not specify</h2>
+<p>These fields stay [unspecified] until Ricardo answers section 11.</p>
+<ul>
+<li>Release date for any stage - [unspecified].</li>
+<li>Budget, quota ceiling or hourly ceiling for the Google Neon lane - [unspecified].</li>
+<li>Which workstreams are in scope for the first release - [unspecified].</li>
+<li>Target payload size, target refresh duration, target frame latency - [unspecified]; the baselines above are the only fixed numbers in this document.</li>
+<li>Whether new top-level sections may be added - [unspecified].</li>
+<li>Whether the cockpit may read the Wheel database directly, read-only, or only link to the app - [unspecified].</li>
+<li>Visual direction changes beyond the standing light, cartoon-clean, sparing-accent rule - [unspecified].</li>
+</ul>
+<h2 id="5-capability-workstreams">5. Capability workstreams</h2>
+<p>Each workstream carries the same five fields: today, enhancement, acceptance test, owner, dependency. Owner is Google Neon for every workstream unless a row is a decision, and decisions belong to Ricardo.</p>
+<h3 id="c1---navigation-and-routing">C1 - Navigation and routing</h3>
+<ul>
+<li>Today: hash router with <code>parseHash</code> returning section, project, agent, file, report, almanac day, miss and invalid kinds; 18 visible sections; unknown or malformed fragments fall back to Overview; Back and Forward work across sections.</li>
+<li>Enhancement: one route manifest as the single source for the nav rail, the command palette and the router, so a new section cannot be added to one and missed by the others. Extend routing into the folded apps: <code>#wheel/&lt;page&gt;</code> for wheel, goals, ikigai, thinking, board and settings, and <code>#astro/&lt;view&gt;</code>, with the breadcrumb naming the app page rather than only the section.</li>
+<li>Acceptance test: <code>#wheel/goals</code> opens the Wheel section with the goals page in the frame; <code>#astro/&lt;view&gt;</code> does the same for astro; the nav rail still renders 18 links; <code>node --check</code> on the changed scripts exits 0; the router test file asserts every manifest entry resolves and every unknown fragment falls back to Overview.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: none.</li>
+</ul>
+<h3 id="c2---live-data-freshness-and-the-snapshot-mirror">C2 - Live data, freshness and the snapshot mirror</h3>
+<ul>
+<li>Today: one generated <code>data.js</code> at 328,344 B carries every domain; the companion recomputes a live payload of about 136 KB per load with a cache-busting timestamp; the snapshot commit is deferred whenever the checkout is dirty, so the git mirror can lag the running page (E14).</li>
+<li>Enhancement: split the snapshot into named shards written by the generator (<code>projects</code>, <code>roster</code>, <code>prds</code>, <code>stack</code>, <code>library</code>, <code>kanban</code>, <code>summary</code>), each with its own generation time and hash, plus a <code>manifest.json</code>. The page fetches a shard when its section opens and keeps <code>data.js</code> as the fallback when a shard is missing. Every section header shows the age of the data it is drawing and the source, snapshot or live.</li>
+<li>Acceptance test: <code>/data/manifest.json</code> returns 200 and lists every shard with <code>generated_at</code> and <code>sha256</code>; deleting one shard leaves its section rendering from <code>data.js</code> with a visible fallback note; the network panel shows one shard request per section open rather than the whole snapshot; <code>python3 -m py_compile generator/maio_os_gen.py</code> exits 0.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: C3 for the caching contract.</li>
+</ul>
+<h3 id="c3---performance-and-payload">C3 - Performance and payload</h3>
+<ul>
+<li>Today: 611 KB of shell and data on disk; about 189 KB transferred on the <code>#wheel</code> load, of which 139 KB is the cache-busted live payload (E5, E7); CSS is versioned by hand (<code>?v=v5c</code>, <code>?v=v5d</code>); no build step, no content hashes, no compression negotiation measured.</li>
+<li>Enhancement: content-hashed asset names produced by a small build step, immutable caching for hashed assets, ETag plus 304 handling for <code>local.js</code>, gzip or brotli on the companion for JSON and JS, and shard loading from C2 so the first paint stops waiting on the full snapshot.</li>
+<li>Acceptance test: second request for <code>/local.js</code> within ten seconds returns 304 with an empty body; <code>/assets/&lt;hashed&gt;.css</code> returns 200 with <code>cache-control: public, max-age=31536000, immutable</code>; a request for the previous hashed name returns 404; the <code>#wheel</code> load transfers less than the 189 KB baseline, with the measured figure printed in the delivery note. Target ceiling: [unspecified].</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: C2.</li>
+</ul>
+<h3 id="c4---work-surfaces-projects-kanban-agents">C4 - Work surfaces: Projects, Kanban, Agents</h3>
+<ul>
+<li>Today: the three sections render from the snapshot; project and agent detail views are addressable (<code>#project:&lt;name&gt;@&lt;n&gt;</code>, <code>#agent:&lt;name&gt;</code>), the kanban board shows fleet tasks, and counts are computed at generation time (kanban 1,991 in the 09:41 run).</li>
+<li>Enhancement: encode list state (filter, sort, page) in the hash so a filtered board is linkable; show per-project last activity and open pull requests where the repository is known; show per-agent last run, model and health on the agent detail; label every count with its generation time.</li>
+<li>Acceptance test: a filtered kanban URL reloads to the same filtered set and the count printed on screen equals <code>hermes kanban ls --json | jq length</code> filtered by the same predicate; <code>#project:&lt;name&gt;@2</code> still returns the second page; an unknown project name still renders the miss list rather than an error.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: C2.</li>
+</ul>
+<h3 id="c5---knowledge-library-prds-vault-search">C5 - Knowledge: Library, PRDs, Vault, Search</h3>
+<ul>
+<li>Today: Library shelves, a PRD list, read-only vault search and note endpoints, and a Search section with a command palette; the vault is read-only and Beast is the only writer.</li>
+<li>Enhancement: one search over sections, vault notes, PRDs and published files, with a provenance chip per result and a type filter; extract the PRD <code>status</code> field so PROPOSED, IN_PROGRESS and SHIPPED are visible and filterable; open HTML reports inside the existing File view rather than a new tab.</li>
+<li>Acceptance test: a query for "wheel" returns at least one result from each of vault, PRD and file sources, each with its provenance; a PRD with <code>status: PROPOSED</code> renders that label; <code>/api/vault/note</code> with a <code>.txt</code> path still returns 400 <code>ext-not-allowed</code>; no new write route appears in <code>/openapi.json</code>.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: none.</li>
+</ul>
+<h3 id="c6---life-surfaces-almanac-recordings-the-path-astro-top-8-accounts">C6 - Life surfaces: Almanac, Recordings, The Path, Astro, Top 8, Accounts</h3>
+<ul>
+<li>Today: Almanac renders the day's reading with a computed moon; Recordings lists voice notes; The Path renders the manual and grimoire; Astro and Top 8 are framed apps; Accounts reads the Firefly state from the companion and links out because Firefly sends <code>X-Frame-Options: deny</code>.</li>
+<li>Enhancement: a uniform date control on Almanac with the hash as the source of truth; a visible pipeline state on Recordings (recorded, transcribed, reported); program progress on The Path; a frame health chip that shows the last successful load time and a retry control when an app frame fails; an Accounts card that shows dump age and never restates a balance.</li>
+<li>Acceptance test: <code>#almanac:2026-10-23</code> and the date control produce the same reading and the same hash; killing the astro process shows a frame chip with a retry and the last good timestamp instead of a blank frame; the Accounts section contains no currency figure when the dump is older than its freshness window.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: none.</li>
+</ul>
+<h3 id="c7---wheel-of-life-the-route-named-in-the-request">C7 - Wheel of Life, the route named in the request</h3>
+<ul>
+<li>Today: the section is one iframe at <code>/wheel</code>; six sub-pages answer 200 (E8); the weekly engine and the import path shipped in PR 35 and PR 36; 81 unit tests cover the engine; the cockpit shows none of the wheel's content outside the frame (E9).</li>
+<li>Enhancement: a cockpit-side summary card computed read-only from the wheel store - current week, average, areas that moved, reviews due - with deep links into each of the six pages and a week selector carried in the hash. The app stays the only writer. The cockpit opens the database read-only and never writes.</li>
+<li>Acceptance test: the summary numbers equal the output of a read-only <code>prisma</code> query run on the same machine at the same minute; <code>#wheel/board</code> and <code>#wheel/goals</code> open the matching page in the frame; no HTTP write method reaches <code>/wheel/*</code> from the companion, proven by logging and by a grep for POST, PUT, PATCH and DELETE handlers on the proxy; <code>npx vitest run</code> in <code>apps/wheel</code> reports the same or a higher test count than the 81 baseline.</li>
+<li>Owner: Google Neon, with Splinter as domain owner of the practice and the scoring rules.</li>
+<li>Dependency: C1.</li>
+</ul>
+<h3 id="c8---system-surfaces-and-gated-actions">C8 - System surfaces and gated actions</h3>
+<ul>
+<li>Today: Machine, Stack and About render from the companion; five allowlisted actions run behind a two-click confirm, an origin and host guard, a cooldown of 60 s or 5 min, and a 50-entry in-memory log that a restart clears.</li>
+<li>Enhancement: persist the cooldowns and the fix log to disk so a restart cannot be used to reset them; add a dry-run preview to each action showing what will change; append a before and after reading to every receipt so the effect is visible instead of asserted; list the exact services each restart may touch.</li>
+<li>Acceptance test: restart the companion, then post <code>service-restart</code> inside 60 s and receive 429 with <code>retryInSec</code>; the fix log survives the restart and <code>GET /api/fix/log</code> returns the last 50 entries from disk; every receipt carries a before and after line; a non-allowlisted action still returns 400 <code>action-not-allowed</code>.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: none.</li>
+</ul>
+<h3 id="c9---accessibility-phone-and-keyboard">C9 - Accessibility, phone and keyboard</h3>
+<ul>
+<li>Today: v2 records a contrast sweep with 0 failures and a 44 px control floor on phones; that audit predates the current HEAD and was not re-run in this session; the browser measurement today found no horizontal overflow at 756 px.</li>
+<li>Enhancement: re-run the audit on the current build and keep it runnable; a keyboard path that reaches every nav link and every action without a trap; frame titles and landmarks so the folded apps announce themselves; reduced-motion support for the loading states.</li>
+<li>Acceptance test: a measured sweep at 1440x900 and 390x844 reports 0 contrast failures and 0 controls under 44 px, with the count printed; tab traversal reaches all 18 nav links and the command palette opens and closes on the Cmd-K shortcut with focus returning to the trigger; the sweep script exits non-zero on any failure.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: none.</li>
+</ul>
+<h3 id="c10---security-and-the-trust-boundary">C10 - Security and the trust boundary</h3>
+<ul>
+<li>Today: host allowlist plus origin guard plus an optional token for non-loopback calls; vault and file routes are read-only with extension allowlists and traversal rejection; there is no identity layer and the document said so honestly in v2.</li>
+<li>Enhancement: a Content-Security-Policy with <code>frame-ancestors 'self'</code>, <code>default-src 'self'</code> and no inline event handlers, after an audit of the inline script surface; deny-by-default registration for new companion routes so a route cannot be served before it appears in the OpenAPI document; logging of rejected origins and hosts.</li>
+<li>Acceptance test: response headers for <code>/</code> include <code>content-security-policy</code> with <code>frame-ancestors 'self'</code>; a request with a foreign <code>Origin</code> returns 403 and appears in the rejection log; a request to <code>/files/../../etc/passwd</code> returns 400 and <code>/files/.env</code> returns 400; every path in <code>/openapi.json</code> resolves and no undocumented path answers 200.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: C3, because the CSP must allow the hashed asset names and the frames.</li>
+</ul>
+<h3 id="c11---testing-evidence-and-the-local-gate">C11 - Testing, evidence and the local gate</h3>
+<ul>
+<li>Today: 13 cockpit tests and 81 wheel tests; <code>sh ops/check.sh</code> runs syntax checks, tests and whitespace; GitHub Actions is policy-blocked and stays blocked, because the standing rule forbids CI workflow changes.</li>
+<li>Enhancement: tests for the route manifest, shard fallback, frame health, search provenance and persisted cooldowns; <code>ops/check.sh</code> extended to run the new suites and to fail when a shard, a manifest entry or a documented route goes missing; a delivery note template that quotes command output rather than describing it.</li>
+<li>Acceptance test: <code>sh ops/check.sh</code> exits 0 and prints the total test count, which must be greater than the 13-test cockpit baseline; deleting a shard or a manifest entry makes the suite fail with a named test; the delivery note for each workstream carries the literal output of its acceptance command.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: C1, C2, C5, C8.</li>
+</ul>
+<h3 id="c12---deployment-and-the-container">C12 - Deployment and the container</h3>
+<ul>
+<li>Today: the root Dockerfile produces a snapshot-only image; the Wheel container has never been rehearsed against a copy of the real data volume, and that open item is recorded in PRD-PROGRESS.md.</li>
+<li>Enhancement: rehearse the wheel migration against a copy of the database and record row counts before and after; put <code>/health</code>, <code>/wheel</code> and <code>/astro/</code> into the container health check; document the restore path in <code>ops/CONTAINER.md</code>.</li>
+<li>Acceptance test: <code>docker build</code> exits 0; inside the container <code>/health</code> returns 200 and <code>/wheel</code> returns 200; the migration rehearsal on a copy exits 0 and prints row counts that match the source; the restore steps in <code>ops/CONTAINER.md</code> reproduce a working instance from the backup.</li>
+<li>Owner: Google Neon.</li>
+<li>Dependency: C2, C7.</li>
+</ul>
+<h2 id="6-responsibility-matrix">6. Responsibility matrix</h2>
+<ul>
+<li>Accountable for design and implementation of C1 to C12: Google Neon, on the Gemini 4 Neon lane through Antigravity.</li>
+<li>Approver and signatory for every stage, and sole decision maker on section 11: Ricardo Maio.</li>
+<li>Stack owner, evidence checker and handoff: Adrianna A. Verifies each acceptance test with its real output before a stage is called done, and reports a red test as red.</li>
+<li>Domain owner for the Wheel practice and its scoring rules: Splinter. Consulted on C7, never asked to write the app.</li>
+<li>Vault writer and steward: Beast. Any note that must land in the vault goes through Beast, because the vault is read-only to every other seat.</li>
+<li>Working rule for the lane: Gemini 4 Neon answers in 15 to 60 s per call on a shared daily quota. It is used for design, for the hard fixes and for review of the finished work, not for volume. Mechanical passes are batched into one call, and every acceptance figure is produced by the command itself, never by the model's description of it.</li>
+</ul>
+<h2 id="7-sequencing-by-dependency">7. Sequencing by dependency</h2>
+<p>The order below is engineering dependency, not priority. Which stages are in scope for the first release is [unspecified].</p>
+<ul>
+<li>Stage S1 - Routing, knowledge search and the frame-health work: C1, C5, C6. No data format changes, so it can ship on the current branch without touching the generator.</li>
+<li>Stage S2 - Data plane: C2, then C3, then C4. The shard split comes before the caching and the lazy loading, because both depend on it.</li>
+<li>Stage S3 - Trust and control: C10 after C3, then C8. Persisted cooldowns and the CSP land together with the new asset names.</li>
+<li>Stage S4 - Wheel integration and the container: C7 after C1, C12 after C2 and C7.</li>
+<li>Continuous - C9 and C11 run alongside every stage; no stage is called done without its acceptance output and without the accessibility sweep.</li>
+</ul>
+<h2 id="8-acceptance-criteria---the-runnable-set">8. Acceptance criteria - the runnable set</h2>
+<p>Each line is a command or observation with a pass condition. The baseline in brackets is today's measured value.</p>
+<ul>
+<li>A1 - Route manifest: the router test file asserts every manifest entry resolves and every unknown fragment falls back to Overview - exit 0. [today: no manifest]</li>
+<li>A2 - Wheel deep links: <code>#wheel/goals</code> and <code>#wheel/board</code> show the matching page in the frame - both render. [today: one frame, no sub-route]</li>
+<li>A3 - Shard manifest: <code>curl -s http://127.0.0.1:9111/data/manifest.json | jq -r '.shards|length'</code> prints a number equal to the shard list in the generator - exit 0. [today: no manifest]</li>
+<li>A4 - Shard fallback: remove one shard, reload its section, the section renders with a fallback note - visible note. [today: not applicable]</li>
+<li>A5 - Cache: second <code>curl -sI http://127.0.0.1:9111/local.js</code> within 10 s shows 304 - status 304. [today: 139,029 B transferred every load]</li>
+<li>A6 - Payload: the <code>#wheel</code> load transfers less than 189 KB - printed figure below the baseline. [today: about 189 KB]</li>
+<li>A7 - Counts: the kanban count on screen equals <code>hermes kanban ls --json | jq length</code> - equal integers. [today: generation-time count]</li>
+<li>A8 - Search provenance: query "wheel" returns vault, PRD and file results each carrying a source chip - at least one of each. [today: section search only]</li>
+<li>A9 - Frame health: stop the astro app, the frame shows a retry and the last good timestamp - both visible. [today: honest note only]</li>
+<li>A10 - Accounts: the section shows no currency figure when the dump is stale - zero currency matches. [today: link-out with age]</li>
+<li>A11 - Wheel summary: cockpit card equals a read-only query on the wheel store at the same minute - equal values. [today: no summary]</li>
+<li>A12 - Wheel writes: no POST, PUT, PATCH or DELETE handler exists for <code>/wheel/*</code> in the companion - grep count 0. [today: proxy is read-only]</li>
+<li>A13 - Cooldown persistence: restart the companion, post <code>service-restart</code> inside 60 s, receive 429 - status 429. [today: cooldown resets]</li>
+<li>A14 - Fix log persistence: <code>GET /api/fix/log</code> after a restart returns the last 50 entries from disk - 50 or the stored count.</li>
+<li>A15 - Accessibility: sweep at 1440x900 and 390x844 reports 0 contrast failures and 0 controls under 44 px - exit 0. [today: not re-run on this HEAD]</li>
+<li>A16 - Security headers: <code>curl -sI http://127.0.0.1:9111/</code> includes <code>content-security-policy: ... frame-ancestors 'self'</code> - present. [today: absent]</li>
+<li>A17 - Traversal: <code>/files/../../etc/passwd</code> returns 400 and <code>/files/.env</code> returns 400 - both 400. [today: rejected by the extension allowlist]</li>
+<li>A18 - Route coverage: every path in <code>/openapi.json</code> resolves and no undocumented path answers 200. [today: 10 documented paths]</li>
+<li>A19 - Local gate: <code>sh ops/check.sh</code> exits 0 and prints a test total above 13 cockpit tests. [today: 13]</li>
+<li>A20 - Refresh: the refresh log prints per-step milliseconds and the total, and the reports step is measured against the 64.06 s baseline. Target: [unspecified].</li>
+<li>A21 - Container: <code>docker build</code> exits 0, container <code>/health</code> 200, container <code>/wheel</code> 200. [today: snapshot image, no rehearsal]</li>
+<li>A22 - Migration rehearsal: migrate a copy of the wheel database, row counts match the source - exits 0 with equal counts. [today: never rehearsed]</li>
+</ul>
+<h2 id="9-risks">9. Risks</h2>
+<ul>
+<li>Google Neon is a shared daily quota. A twelve-workstream plan can exhaust it in one day if the lane is used for mechanical edits. Mitigation: design and review calls only, batched; the runner produces the evidence.</li>
+<li>The generator owns <code>data.js</code>, and the shard split changes that contract. A half-migrated generator can leave sections reading a shard that no run writes. Mitigation: the manifest is written last, and the page falls back whenever a shard is absent.</li>
+<li>The checkout already carries 1,222 dirty paths on a feature branch, so the snapshot mirror lags the running page. Any mirror-based acceptance check can pass or fail for the wrong reason. Mitigation: every criterion is run against the served page and the running generator, never against git.</li>
+<li>The Wheel app and the cockpit share an origin but not a data contract. A read-only summary must not turn into a second writer. Mitigation: open the store read-only, and prove with A12 that no write route exists.</li>
+<li>Accessibility and contrast figures in v2 predate this HEAD. Treating them as current would ship a false claim. Mitigation: A15 has to run before any stage is called done.</li>
+<li>CSP work can break the inline script surface, the icon sprite and the folded frames at once. Mitigation: stage S3 lands after the hashed assets, and the policy is tested on the loopback origin before the tailnet.</li>
+</ul>
+<h2 id="10-out-of-scope">10. Out of scope</h2>
+<ul>
+<li>A React or TypeScript rewrite of the cockpit. v2 set it as a non-goal and nothing measured today reopens it.</li>
+<li>A public build or GitHub Pages. Retired on 2026-10-22 by design.</li>
+<li>Accounts for other people, multi-user roles, OAuth or identities.</li>
+<li>Any write to the vault from the cockpit, the companion or Google Neon. Beast writes.</li>
+<li>GitHub Actions. The standing rule forbids CI workflow changes, and indirect workarounds are excluded.</li>
+<li>Any spend, purchase, refund, e-signature or terms acceptance as part of this work. Those remain Ricardo's acts.</li>
+</ul>
+<h2 id="11-open-questions-for-ricardo">11. Open questions for Ricardo</h2>
+<ul>
+<li>Q1 - Which stages are in the first release: S1 only, S1 with S2, or all four. [unspecified]</li>
+<li>Q2 - What ceiling applies to the Google Neon lane per day, and does it have to fit inside the existing shared quota. [unspecified]</li>
+<li>Q3 - Is Google Neon the implementer that writes code into this repo, or the reviewer that specifies and reviews while another lane writes. [unspecified]</li>
+<li>Q4 - May the cockpit read the Wheel database directly in read-only mode, or must it stay link-only. [unspecified]</li>
+<li>Q5 - Target numbers for payload, refresh duration and frame latency. [unspecified]</li>
+<li>Q6 - May new top-level sections be added, or does the 18-section shape hold. [unspecified]</li>
+<li>Q7 - Release date for any stage, and whether a stage ships on a branch or waits for a single landing window. [unspecified]</li>
+</ul>
+<h2 id="12-evidence-appendix">12. Evidence appendix</h2>
+<ul>
+<li><code>git rev-parse --abbrev-ref HEAD</code> - <code>feat/esoteric-zone</code>; <code>git rev-parse --short HEAD</code> - <code>146ca314</code>.</li>
+<li><code>git status --porcelain | wc -l</code> - 1,222.</li>
+<li><code>curl</code> loopback and tailnet, <code>/health</code>, <code>/wheel</code>, six wheel pages, <code>/astro</code>, <code>/top8/</code>, <code>/openapi.json</code> - codes recorded in E1 to E10.</li>
+<li>Browser, <code>http://127.0.0.1:9111/#wheel</code> - state ready, 18 nav links, DCL 93 ms, load 319 ms, no overflow at 756 px; resources <code>data.js</code> 49,655 B and <code>local.js?t=1795595590</code> 139,029 B; wheel frame heading "Your life at a glance", 4 cards, height 1,171 px.</li>
+<li><code>stat -f %z</code> on <code>index.html</code>, <code>data.js</code>, <code>assets/theme.css</code>, <code>assets/workspace.css</code> - sizes in E5.</li>
+<li><code>grep -cE '^\s*(it|test)\('</code> over <code>tests/*.mjs</code> and <code>apps/wheel/src/tests</code> - 13 and 81.</li>
+<li><code>ALLOWED_ACTIONS</code> in <code>companion/server.mjs</code> - five actions; <code>COOLDOWN_SERVICE_MS</code> 60,000; <code>COOLDOWN_REFRESH_MS</code> 300,000; <code>FIX_LOG_CAP</code> 50.</li>
+<li>Refresh log, 09:41 run - <code>timings: {'reports': 64.06, 'library': 30.16, ...} total 103.4</code>; <code>commit deferred - the checkout is on feat/esoteric-zone, not main</code>.</li>
+<li><code>grep -c serviceWorker index.html companion/server.mjs</code> - 0 and 0.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
