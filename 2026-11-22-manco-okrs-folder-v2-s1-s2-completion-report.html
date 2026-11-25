@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -145,7 +174,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">L1</span> <span class="pp">-.-</span> <span class="dt">X</span>[<span class="st">&quot;5 template lists archived</span><span class="sc">&lt;br/&gt;</span><span class="st">Template Guide · OKR Framework</span><span class="sc">&lt;br/&gt;</span><span class="st">OKR Planning · CY 2026 · CY 20XX&quot;</span>]</span></code></pre></div>
 <h2 id="1-what-changed">1. What changed</h2>
 <h3 id="lists--archived-5-reversible-no-task-deleted">Lists — archived (5), reversible, no task deleted</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -198,10 +227,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>PUT /list/{id}</code> <code>{"archived":true}</code> then a separate <code>GET</code> per list; all five read <code>archived: true</code> at 13:43. What each held: Template Guide — empty, stock onboarding content · OKR Framework — 23 demo objectives/KRs shipped with the ClickUp template (employee happiness, pipeline cover, NPS), not company commitments · OKR Planning — the four stock process steps (develop, rollout, monthly check-in, retrospective) · CY 2026 — stock calendar-year example OKRs for a year that has passed, superseded by the FY2027 rows in <code>1 · Objectives</code> · CY 20XX — placeholder tasks literally named <code>[Key Result 1]</code>. Nothing was deleted; each list is restored with one toggle. Receipts: <code>worker/archive-receipt.json</code>, <code>worker/verify-final.json → archived</code>.</p>
 <h3 id="lists--renamed-8-and-folder-renamed-1">Lists — renamed (8) and folder renamed (1)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -286,10 +315,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Receipts: <code>worker/renames.json</code>.</p>
 <h3 id="docs-created-pinned-to-the-folder-2">Docs created, pinned to the folder (2)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -318,10 +347,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Both re-read with <code>?content_format=text/md</code> and probe-matched on the required content (four words, seven gate conditions, 10,000 basis points, who verifies, day three, exception, "not yet decided"). Both derive from the policy task in <code>8 · Rules &amp; Change Log</code> plus PRD §2/§5/§6/§7; nothing invented — every silent point is listed as <strong>not yet decided</strong> in the document itself. Receipts: <code>worker/docs.json</code>, <code>worker/doc-framework.md</code>, <code>worker/doc-close-contract.md</code>.</p>
 <h3 id="views-on-1--objectives-3-filters-passed-at-creation">Views on <code>1 · Objectives</code> (3), filters passed at creation</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -358,10 +387,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>GET /list/1501000000002604/view</code> at 13:43 lists all three plus the pre-existing <code>FY2027 commitment review</code>. No filter was dropped. Evidence: <code>worker/views.json</code>, <code>worker/verify-final.json → views</code>.</p>
 <h3 id="tasks--due-dates-371-rows-of-371">Tasks — due dates (371 rows of 371)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -380,11 +409,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200 each, 0 non-200</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Histogram read back at 13:43: <strong>2027-03-31 → 107 · 2027-06-30 → 75 · 2027-09-30 → 73 · 2027-12-31 → 116</strong>; rows still on 2026-11-24: <strong>0</strong>; rows with no due date: <strong>0</strong>. Objective rows and year-long measures took 2027-12-31. One receipt per row (task id, old, new, HTTP) in <code>worker/ledger-duedates.jsonl</code>; the manifest is generated in code from <code>raw/all.json</code> (<code>worker/manifest-duedates.json</code>, 371 rows).</p>
 <h3 id="tasks--quarter-suffix-on-titles-301-of-320-written-19-already-carried-a-marker">Tasks — quarter suffix on titles (301 of 320 written; 19 already carried a marker)</h3>
 <p>The first 10 were the gated preview, the remaining 291 ran on the go-ahead. Every row was read back immediately after its write; 301 of 301 read-backs returned the intended name.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Batch</th>
@@ -410,11 +439,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200 each, 0 failed</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Independent read-back at 22:14 across all 371 rows: <strong>301</strong> key-result titles end in <code> — Qn</code> matching their <code>Quarter</code> field, <strong>19</strong> carry their own pre-existing marker, <strong>0</strong> key results are left with a bare title, <strong>0</strong> carry a suffix that disagrees with the field, and <strong>0</strong> objective (parent) rows were touched. Receipts per row: <code>worker/ledger-titles.jsonl</code> (10) and <code>worker/ledger-titles-bulk.jsonl</code> (291, every line with the before name, the after name, the HTTP status and the read-back).</p>
 <h3 id="tasks--the-four-fxs-rows-settled-by-the-moa-verdict-title-governs">Tasks — the four FXS rows, settled by the MoA verdict (title governs)</h3>
 <p><code>KR ID</code> was the guard on each write: the script refuses a row whose <code>KR ID</code> is not the one expected.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th><code>KR ID</code></th>
@@ -459,10 +488,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>120,000 unchanged</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The dropdown moved with <code>POST /task/{id}/field/{field_id}</code> (option UUID), the date with <code>PUT /task/{id}</code>; both read back 200. No title was edited — each already stated its quarter, so all four are excluded from the suffix pass and none carries a doubled marker. Weights stay 0.3333 each, so the block still sums to 1.00. The R100,000 → R40,000 step from Q1 to Q2 is recorded as-is and belongs to Pamela Fourie (CFO), not to this job. Receipt: <code>worker/fxs-quarters-fix.json</code>.</p>
 <h3 id="tasks--field-writes">Tasks — field writes</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -515,10 +544,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200 each</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Live at 13:43: <code>1 · Objectives</code> — KPI ID 320, Cadence 320, Verifier 0, Pillar 0, KPI Type 0; <code>4 · Measure Register</code> — 162 rows, KPI ID 162, Brand 130, Business Unit 15; 0 residual KR IDs containing a line break. Join rate <strong>320 of 320</strong> relations, 0 unmatched, 162 distinct KPI IDs. Receipts: <code>worker/kpiid-join.json</code>, <code>worker/ledger-kpiid.jsonl</code>, <code>worker/derive-2-5.json</code>, <code>worker/register-decisions.json</code>, <code>worker/register-writes.json</code>, <code>worker/defects.json</code>.</p>
 <h3 id="lists--seed-rows-created-21">Lists — seed rows created (21)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -547,7 +576,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>200</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>85 field writes, 0 due-date mismatches on read-back. No field was created anywhere in this job (no field is deletable by API in this workspace, so none was created). Receipts: <code>worker/seed.json</code>.</p>
 <h2 id="2-what-held">2. What held</h2>
 <p><strong>The due-date automation probe — HOLDS.</strong> Row <code>1an4v5wyvd7</code>, a Q1 key result. Written <code>2027-03-31</code> via <code>PUT /task/{id}</code> → 200; read back at t+5 s, t+35 s and t+95 s, all <code>2027-03-31T02:00:00Z</code>. ClickUp normalised the time-of-day to 02:00 Z — the same convention the other 370 rows already carried — but the calendar date held across 95 s. Verdict rests on calendar date, not epoch equality. <code>worker/probe-duedate.json</code>.</p>
@@ -568,7 +597,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>For Pamela Fourie (CFO), recorded not resolved:</strong> INF-FIN32 now stands at R100,000 in Q1 and the FXS block drops to R40,000 in Q2. The MoA verdict moved the quarters and the due dates, not the numbers; the step is flagged for her to confirm against the source spreadsheet (rows 28–31 of <code>okr_fy2027.xlsx</code>).</li>
 </ol>
 <h2 id="5-counts">5. Counts</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Measure</th>
@@ -645,7 +674,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>0</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Filed for the vault by Beast as <code>Work/2.Automations-Skills/Reports/2026-11-22-manco-okrs-folder-v2-s1-s2-completion-report.md</code>.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>

@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -136,7 +165,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">E</span> <span class="pp">--&gt;</span> <span class="dt">F</span></span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">F</span> <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="vs">PRD revised</span><span class="sc">&lt;br/&gt;</span><span class="vs">and re-published</span>]</span></code></pre></div>
 <h2 id="claim-table">Claim table</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Claim</th>
@@ -239,7 +268,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>source/prd.html §§9.2,11,14; reports/phase0-lane.json; reports/phase3-mapping.json</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="findings">Findings</h2>
 <h3 id="f1--blocker--asset-load-readiness">F1 — blocker — Asset load readiness</h3>
 <p>Claims: 10, 12. The proposed 42-card asset wave violates the PRD’s own Asset Library entry rule (“anything without a file link” never belongs there). Register entries and audit metrics are being treated as verified documents.</p>
@@ -315,7 +344,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>SEO + Keywords (5 pages): SEO Research &amp; Management is right. SEO Goals holds strategy, KW Research holds method and candidate terms, Optimization holds keyword/page work. The umbrella is broader than KW Research alone.</li>
 </ul>
 <p>Paid media is explicitly mapped to Campaigns; PR/events to Event Tracking. That is true of Appendix A. It is defensible for paid buying and dated events, with undated PR production in existing Creative Projects and final PR files in Asset Library. No page establishes a need for another list.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Page (source ID)</th>
@@ -662,12 +691,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Same existing list. Research source belongs in KW Research, with template terms quarantined from ACDC keyword decisions.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Evidence: source/prd.html §§11,14; reports/live-pages.json for each named page; reports/live-rows.json for its tables; reports/phase0-lane.json for existing list IDs. Verdicts are audit judgments from the source function, not claims that anything was moved.</p>
 <h2 id="load-plan-critique">Load-plan critique</h2>
 <p>The proposed total reconciles, but the full load is not ready. Counts are planned new cards, not existing work or usable deliverables.</p>
 <p>Wave 1: 26 Campaigns + 3 Seasonal Promotions + 8 Marketing Plan + 6 SEO Goals + 1 KW Research + 2 Projects = 46 across <strong>six</strong> lists. Wave 2: 41 collateral + 1 brand-audit card = 42 in Asset Library. Wave 3: 8 monthly numbers + 3 monthly optimisation + 6 quarterly + 1 annual = 18 in Recurring. Total: 46 + 42 + 18 = 106 across 6 + 1 + 1 = 8 lists; 19 − 8 = 11 intentionally unpopulated lists. PRD §13’s “five lists” is wrong.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Existing target / ID</th>
@@ -726,11 +755,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Name one owner per card, actual account/property/CRM report, evidence link, deadline rule/timezone and completion criterion. Use the existing native recurrence only if supported; do not introduce a new automation. Address the output destination conflict below.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Evidence: PRD §§9–13; live-pages.json / live-rows.json: grid-pRsJ1CLESk, grid-9fPzOvB7mL, grid-KMsMqSr_2e, grid-UtxGmThp3F, grid-pfKYowhMT1, grid-BCrvEtSB7B, grid-DRcDYg-lpD, grid-P6XYN_VFMZ, grid-utHwWlGNnv, grid-aQsuqzBZMY, grid-qSsdLJkc_k, grid-THwEKbIrRV. Existing completed tasks: live-clickup-checks.json.</p>
 <h2 id="recurring-coverage-outputs-and-gaps">Recurring coverage, outputs and gaps</h2>
 <p>Reporting table grid-C4rao1PAZK has <strong>1 Month + 10 reporting/output columns = 11 columns</strong>, not ten total. The eight proposed pack cards cover them as follows; Month is the row key and must be repaired rather than counted as another report.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Proposed recurring card</th>
@@ -849,7 +878,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Present. Needs exact deadline, owner, approved named events, corrected 14 SA dates, four specials and a decision on loyalty.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>No requested monthly social/SEO/AdWords/traffic surface is omitted, and website/channel/SEO/keyword/optimisation all appear quarterly. The gap is the execution contract: individual ownership, actual sources, verifiable outputs, remedial closure and a proven recurrence mechanism. The paragraph promising all 18 cards stay in Recurring conflicts with the monthly-optimisation table’s list paths (KW Research → Optimization / Optimization). Specify one location for the recurring trigger and one location for any resulting work, with links and no duplicated task population.</p>
 <p>UNVERIFIED: native recurrence availability/configuration, alleged four-day/Monday due-date automation, staff employment/current ownership, account access, actual WorkDrive/Filestage files and analytics content. These require authorised read access to the relevant configuration/roster/account/file; no test write was needed or performed. Accountable ownership and cadence choices are the owner’s decisions, not source facts to invent.</p>
 <h2 id="no-creation-constraint-and-risk-evidence">No-creation constraint and risk evidence</h2>
@@ -861,7 +890,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Section 17 says: <strong>“Every ClickUp call in this work was a GET.”</strong> This is the author's historical assertion, not an audit-log proof. This independent audit itself used only the two authorised wrappers; their code permits GET and the three allowed document reads. No load, live edit, deletion or configuration change was attempted. File writes are confined to reports/ and local Git metadata.</p>
 <p>No reviewed sentence requires a new folder/list/field/status/view/automation. Cadence labels, source approval states and source columns must remain description/checklist/reference data unless an existing field/status is intentionally used; they are not permission to create schema. Existing states observed from GET /space/901211093187 are Open, in progress, in review, waiting, blocked, completed (1 + 4 + 1 = 6); multiple_assignees is false.</p>
 <h2 id="risks-that-can-put-wrong-data-on-the-board">Risks that can put wrong data on the board</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Risk</th>
@@ -931,7 +960,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Keep account consoles/URLs as references; no credentials in cards/reports. No vault or secret file was read by the auditor; cu-get.sh alone reads its credential at runtime. No passwords/tokens reproduced.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Evidence authority: live page and returned-row reads match the snapshots (only null versus empty commentThreads representation differs). The empty-lane claim is disproved by a broader live task query, not demonstrated snapshot drift. Historical source edits or author actions were not independently audited.</p>
 <h2 id="open-questions-for-the-owner">Open questions for the owner</h2>
 <ol type="1">

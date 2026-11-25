@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -136,7 +165,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <p>[TOC]</p>
 <h2 id="1-what-i-read">1. What I read</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Source</th>
@@ -161,11 +190,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>referenced by link only; not opened by this review</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The document was read page by page and table by table over the Superhuman Docs MCP (server v38.0.3), not by eye from the browser: <code>content_read</code> on 22 pages, then <code>table_rows_read</code> on all 20 grids. The ClickUp side was read with <code>/space/</code>, <code>/space/{id}/list</code>, <code>/list/{id}/task?include_closed=true</code>, <code>/task/{id}</code> and <code>/task/{id}/comment</code>, plus <code>/api/v3/workspaces/4627083/docs</code> for a document count.</p>
 <h2 id="2-the-document-measured">2. The document, measured</h2>
 <p>68 statutory rows, 73 maintenance entries, 72 monthly utility rows and 4 lease rows. The structure is consistent and it is genuinely useful — it is the closest thing to a property record the business has.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Register</th>
@@ -195,13 +224,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>property, start, end, rent, escalation</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Money recorded: <strong>R528,206.58</strong> of repairs, maintenance and fit-out spend (R110,804.74 of it in 2026, and including R74 222.13 of Bloom paediatric fit-out quotes and payments) and <strong>R372,686.33</strong> of municipal bills for 2026, with 41 of 72 rows carrying a paid date and a proof of payment.</p>
 <h3 id="21-the-statutory-register-line-by-line">2.1 The statutory register, line by line</h3>
 <p>Every property page has the same shape, which is why this migrates cleanly. The colours are the doc's own status language, normalised into six values.</p>
 <p style="font-size:12px;color:#334155;margin:8px 0"><span style="background:#dcfce7;color:#14532d;padding:2px 7px;border-radius:3px">held</span> <span style="background:#fef3c7;color:#78350f;padding:2px 7px;border-radius:3px">held but defective</span> <span style="background:#fed7aa;color:#7c2d12;padding:2px 7px;border-radius:3px">link broken</span> <span style="background:#dbeafe;color:#1e3a8a;padding:2px 7px;border-radius:3px">in progress</span> <span style="background:#fecaca;color:#7f1d1d;padding:2px 7px;border-radius:3px">missing</span> <span style="background:#f1f5f9;color:#334155;padding:2px 7px;border-radius:3px">not applicable</span></p>
 
-<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0">
+<div class="tablewrap"><table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:14px 0">
 <thead><tr style="background:#1f2a37;color:#f8fafc">
 <th style="text-align:left;padding:7px 8px">Document line</th>
 <th style="padding:7px 6px;text-align:center;font-weight:600">Frances</th>
@@ -400,13 +429,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
 <td style="padding:5px 6px;text-align:center;background:#fafafa;color:#b91c1c;border-bottom:1px solid #e2e8f0;font-size:11.5px">not tracked</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 
 <p><strong>22 of 68</strong> lines are held and clean. <strong>17 are missing</strong>, <strong>7 are in progress</strong>, <strong>3 are held but defective</strong> (an unsigned solar COC, an expired compliance certificate, a fake COC) and <strong>3 point at a dead link</strong>. 16 do not apply.</p>
 <p>Bloom Peadiatric has a page but no statutory table: it is a tenancy inside 11B Riley Road, not a separate erf, so it belongs in the lease and fit-out registers rather than the document register.</p>
 <h3 id="22-six-sale-pack-lines-the-document-never-tracks">2.2 Six sale-pack lines the document never tracks</h3>
 <p>This is the gap that matters for the three sales. There is no column, row or note for any of these, on any property page:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Line the conveyancer will ask for</th>
@@ -446,10 +475,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>nothing records what has been handed over</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="23-where-the-document-contradicts-itself">2.3 Where the document contradicts itself</h3>
 <p>Three lease rows say the tenant is still in place when the notes say they have gone. A register that disagrees with its own notes cannot be trusted as the source of an answer:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Property</th>
@@ -474,10 +503,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>termination notice received 5 August for end of August 2026</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The rent roll is also short. Five leases are documented (Frances, Bushwillow, Samuel, Batavia, Bloom) but the portfolio table carries four rows — Batavia and Bloom appear only on their own pages — and one of those four, <em>INF Office Space</em> at R20 815, matches no documented lease at all. Bloom's lease is R14 650 a month. That row needs a name against it before anyone quotes a rent roll to a buyer.</p>
 <h2 id="3-the-clickup-space-measured">3. The ClickUp space, measured</h2>
-<table>
+<div class="tablewrap"><table>
 <tbody>
 <tr>
 <td>Lists</td>
@@ -504,11 +533,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>6: Ricardo Maio, Pamela Fourie, Thembi Butler, Ntombifuthi Nkambule, Sindiso Sibanda, Superman</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Two people are named as accountable on the cards and <strong>have no seat in the space</strong>, so the card says so instead of assigning them: <strong>Chiseke Phiri-Massiye</strong> (rates clearance, conveyancer packs, the document register) and <strong>Jaques Mulder</strong> (solar, electrical, electric fence, garage, electricity supply). Both exist in the workspace — IDs 105744006 and 105744011 — they are simply not members of this private space. That is a ten-second fix, and 16 cards name one of them in their notes while being unable to assign them.</p>
 <p>The two-status space is the deeper problem. A compliance document moves through <em>asked for → received → checked → filed</em>, and the document's free-text notes are exactly where those four states ended up. Moving the notes into ClickUp without splitting them into statuses just moves the fog.</p>
 <h2 id="4-the-finding-no-card-can-be-closed-from-the-document">4. The finding: no card can be closed from the document</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Verdict</th>
@@ -543,12 +572,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>nothing in the document is a certificate a conveyancer would accept</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>That last line is the point of this PRD. The document answers <em>where are we</em> very well — better than any of the cards — but it stores <strong>links and sentences</strong>, and a sale needs <strong>files</strong>. Every card on the board is right to stay open. What is wrong is that the answer to each one lives in a different place from the card.</p>
 <h2 id="5-card-by-card">5. Card by card</h2>
 <p>All 27 cards, grouped by what the document does for them. Owner and due date are the card's own.</p>
 <h3 id="large_blue_circle-doc-informs--14-cards">🔵 Doc informs — 14 cards</h3>
-<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<div class="tablewrap"><table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
 <thead><tr style="background:#1f2a37;color:#f8fafc">
 <th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
 <tr style="border-left:4px solid #2563eb">
@@ -635,10 +664,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The doc IS a per-house register - 6 property pages with an 11-13 line statutory table each (68 rows). But 6 of the 13 sale-pack lines do not exist in it at all.</td>
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Migrate it into ClickUp with the missing lines added; this is the card the PRD retires.</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 ### 🟠 Doc gap — 7 cards
 
-<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<div class="tablewrap"><table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
 <thead><tr style="background:#1f2a37;color:#f8fafc">
 <th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
 <tr style="border-left:4px solid #d97706">
@@ -683,10 +712,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">No plans line in the doc; the 15 Oct plans hunt is recorded only on the card.</td>
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Add the plans line; council request or retrospective approval path.</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 ### ⚪ History only — 4 cards
 
-<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<div class="tablewrap"><table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
 <thead><tr style="background:#1f2a37;color:#f8fafc">
 <th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
 <tr style="border-left:4px solid #64748b">
@@ -713,10 +742,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Maintenance log: 2025-10-10 &#x27;Garden Cleanup &amp; Pool Cleanup&#x27; R2 500. No deck quotes, no current condition.</td>
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Current clean and water test; the deck decision (quotes were only obtained 9 Nov).</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 ### 🟣 Process — 2 cards
 
-<table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
+<div class="tablewrap"><table style="width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0 22px">
 <thead><tr style="background:#1f2a37;color:#f8fafc">
 <th style="text-align:left;padding:7px 8px;width:24%">Card</th><th style="text-align:left;padding:7px 8px;width:13%">Owner</th><th style="text-align:left;padding:7px 8px;width:32%">What the doc gives you</th><th style="text-align:left;padding:7px 8px;width:31%">What still has to happen</th></tr></thead><tbody>
 <tr style="border-left:4px solid #7c3aed">
@@ -731,7 +760,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">Not a document task. The doc is the input to the stand-up: each of the 7 property pages carries the status called out in the note. Once the register lives in ClickUp, the note is a saved view, not a manual read of Coda.</td>
 <td style="padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#16233a">The four consecutive weekly notes in #EXCO NOVA PROP.</td>
 </tr>
-</tbody></table>
+</tbody></table></div>
 ### What the assessment changes on the board
 
 <p>Three corrections and one addition, all small:</p>
@@ -744,7 +773,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h2 id="6-the-three-sales-what-the-conveyancer-needs">6. The three sales: what the conveyancer needs</h2>
 <p>For each sale house, the line a transferring attorney will ask for, what exists today and where it is. Status comes from the document as classified in §2.1.</p>
 <h3 id="17-frances-street-dunvegan">17 Frances Street, Dunvegan</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Line</th>
@@ -834,9 +863,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>no row exists</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="128-wild-amandel-bushwillow-park">128 Wild Amandel, Bushwillow Park</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Line</th>
@@ -926,9 +955,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>no row exists</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="11-samuel-street-dunvegan">11 Samuel Street, Dunvegan</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Line</th>
@@ -1018,7 +1047,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>no row exists</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Read together:</strong> Frances is the most complete (title deed, gas COC, inspections, insurance all held) and is one signed solar COC and one occupational certificate away from a pack. Bushwillow is the most exposed — no gas COC, no occupational certificate, no plans, and the HOA certificate and levy clearance its card asks for appear nowhere in the document. Samuel is missing its title deed in the records, which is the only line that cannot be fixed by asking a supplier: it needs a deeds search.</p>
 <p>The document also shows its own drift. Frances' lease ended 30 September 2026 and its outgoing inspection was 'Scheduled for 01 October'. Both dates are seven weeks past and neither is recorded as done. That is the argument for the register being a system rather than a page: nobody was wrong, the page simply stopped being read.</p>
 <h2 id="7-what-to-build-in-clickup">7. What to build in ClickUp</h2>
@@ -1073,7 +1102,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>A certificate → a file attached to the row.</strong> Never a link to WorkDrive, never a sentence saying it exists. The document's worst habit is that <em>'Attached'</em> usually means <em>'a URL is in the cell'</em>.</li>
 </ul>
 <h3 id="72-the-six-lists">7.2 The six lists</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>List</th>
@@ -1120,10 +1149,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Bloom's quotes and payments, plus every open quote on the three houses</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The Document Register is deliberately <strong>one list, not seven</strong>. Seven copies of the same 15-line matrix is how the document drifted: each property page was edited on a different day by a different person. One list, filtered by property, means the <em>'what is missing across the portfolio'</em> question is a saved view instead of an afternoon.</p>
 <h3 id="73-the-six-documents">7.3 The six documents</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Document</th>
@@ -1163,7 +1192,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>the EXCO NOVA PROP note</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The dossier is the thing you hand over. It is also the answer to <em>'where is everything for this house'</em> — one page that embeds the live views, so it can never be stale the way the Coda page is.</p>
 <h3 id="74-statuses-fields-and-views">7.4 Statuses, fields and views</h3>
 <p><strong>Add five statuses</strong> to the space's existing two:</p>
@@ -1171,7 +1200,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><em>Requested</em> means we have asked a supplier or a council. <em>Received</em> means a file is on the card. <em>Verified</em> means Jaques or Pamela has checked that the certificate number, property address and issue date are correct. Those three states are exactly what the document's free-text notes are doing badly today.</p>
 <p><strong>Fields on the Document Register</strong> — the eight that carry the information the doc currently buries in prose: certificate number, issue date, expiry date, days to expiry (formula), issuing supplier, file, verified by, verified on. Plus two required to close: <strong>file</strong> and <strong>certificate number</strong>.</p>
 <p><strong>Five saved views</strong> do the work nobody is doing now:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>View</th>
@@ -1206,7 +1235,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>the three rows the doc admits are broken</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="75-the-closing-rule">7.5 The closing rule</h3>
 <p>The card <em>'Nova Property - stop closing compliance cards without the certificate attached'</em> asks for exactly this, and it is the only thing that stops the document's failure mode coming back:</p>
 <blockquote>
@@ -1214,7 +1243,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </blockquote>
 <p>ClickUp enforces it with a required custom field on the closing status (Business plan), or an automation that reverts the status. The document's own record shows why: a Riley compliance certificate marked <em>Expired</em>, a Trichardt electrical COC marked <em>'the attached COC is fake'</em>, and a Frances solar COC with <em>'no signatures'</em> were all sitting in a table that reads as if they were held.</p>
 <h2 id="8-the-migration-row-by-row">8. The migration, row by row</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>From the document</th>
@@ -1264,7 +1293,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Every migrated row keeps its source. The Document Register gets a <code>Source</code> field reading <code>Novas Prop doc · &lt;page&gt; · &lt;date read&gt;</code>, so any figure can be traced back to the Coda page it came from. Nothing is deleted from Coda: it becomes the read-only history, and the space guide says so.</p>
 <p>Two rows need a human decision before they migrate, and I will not guess them:</p>
 <ul>
@@ -1273,7 +1302,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <h2 id="9-how-it-gets-built">9. How it gets built</h2>
 <p>Four phases. Each one ends with something you can look at, and phase 2 is the only one that needs a go-ahead on a live-system change.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Phase</th>
@@ -1308,11 +1337,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>a read of one dossier to confirm the shape</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The card <em>'Nova Property - one document register per house with a fixed sale-readiness checklist'</em> is retired by this work: phase 3 is that card, done once, across all six properties instead of three folders.</p>
 <h2 id="10-decisions">10. Decisions</h2>
 <p>Each with the default I recommend. <strong>Reply 'go' and I take every recommended option.</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -1365,7 +1394,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>a dossier of empty views reads as done when it is not</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="11-how-we-will-know-it-worked">11. How we will know it worked</h2>
 <p>Checkable, in order, once each phase lands:</p>
 <ol type="1">
@@ -1377,7 +1406,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>A conveyancer can be handed one link per house and name nothing that is missing.</li>
 </ol>
 <h2 id="appendix--evidence-ledger">Appendix — evidence ledger</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Claim</th>
@@ -1418,7 +1447,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>GET /api/v2/team/4627083/plan</code> → <code>plan_name: Business</code> (Docs, dashboards, formulas, dependencies all in scope)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Supporting files, all under <code>AI Hub/tmp/nvp/</code>: <code>nvp_doc_clean.md</code> (the whole document as readable markdown), <code>nvp_statutory_classified.csv</code> (68 rows with status), <code>nvp_card_assessment.csv</code> (27 cards with verdicts), <code>nvp_normalised.json</code>, <code>nvp_tables.json</code>.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>

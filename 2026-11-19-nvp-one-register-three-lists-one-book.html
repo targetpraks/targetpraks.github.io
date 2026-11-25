@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -139,7 +168,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <p>You asked for one dense thing rather than many thin ones. That is the right call for six properties: the previous shape had a 71-row document list, seven dossiers and a five-column quotes list — four places to look for one answer. Now a property is a row, and everything about it hangs off that row.</p>
 <h2 id="2-what-gets-built">2. What gets built</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -180,7 +209,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>the readable record — six property sections and one tenancy section</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Folder: <strong>Property Records</strong>. The six existing lists (Briefed-In, Projects and the rest) are untouched — all 27 cards stay where they are and keep working.</p>
 <h3 id="21-property-register--six-rows-twenty-four-columns">2.1 Property Register — six rows, twenty-four columns</h3>
 <div style="border:1px solid #e8e9eb;border-radius:10px;overflow:hidden;background:#fff;margin:16px 0 22px">
@@ -194,7 +223,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <div style="padding:7px 13px;border-top:1px solid #e8e9eb;background:#fbfbfc;font-size:11.5px;color:#7c828d">Documents counts the property’s subtasks; spend and arrears are rollups off the two lists. <b>Next action</b> is written at the Monday review — no formula guesses it.</div>
 </div>
 
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Column group</th>
@@ -234,7 +263,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>typed</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Bloom Paediatric is <strong>not</strong> a seventh row: it is a tenancy inside 11B Riley Road, so it lives in the leases list and in its own section of the book. The register holds the six properties the company owns.</p>
 <h3 id="22-one-row-opened--the-documents-are-subtasks">2.2 One row, opened — the documents are subtasks</h3>
 <div style="border:1px solid #e8e9eb;border-radius:10px;background:#fff;margin:16px 0 22px;overflow:hidden">
@@ -280,7 +309,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <div style="padding:7px 13px;border-top:1px solid #e8e9eb;background:#fbfbfc;font-size:11.5px;color:#7c828d">Three leases ended before their recorded end date. Vacated is a separate field, so that can never happen silently again.</div>
 </div>
 
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Recurring task</th>
@@ -310,7 +339,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>the snag list, created the day it is needed</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The annual review carries a fixed date typed per property, because ClickUp cannot generate a recurrence from a date field. The monthly review is the safety net that catches a date that moved — which is precisely the failure that let three leases read as active after the tenants had left.</p>
 <p>Five leases are documented (Frances, Bushwillow, Samuel, Batavia, Bloom) and the old register carried four rows, one of which <em>— INF Office Space, R20 815 —</em> matches no lease at all. The fifth lease gets a row and the orphan row gets reconciled before migration: six lease rows, not four.</p>
 <h3 id="24-maintenance-log--three-quotes-one-award-one-approval">2.4 Maintenance Log — three quotes, one award, one approval</h3>
@@ -353,7 +382,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>A book of prose would go stale in a week, which is exactly what happened to the last one. Sections 3 and 4 are live views; only 1, 2, 5 and 6 are written.</p>
 <h2 id="4-what-the-audit-said-and-what-i-did-about-it">4. What the audit said, and what I did about it</h2>
 <p>I put the design to the council before building it. It came back hard, and three of its findings changed the plan:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Finding</th>
@@ -378,11 +407,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Bloom's 13 are inside the 73 maintenance rows; the 30 empty months are named in §2.5 rather than dropped</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The finding I did not take.</strong> The council's single most important change was to put the documents back into <strong>one flat register</strong> instead of subtasks, because a flat list answers <em>what is missing everywhere</em> more cheaply. It is technically right, and it is what you told me not to do. I kept the subtasks and answered the objection with a saved view instead — but you should know the trade: <strong>the flat view is a UI-built filter, so it will need a click-through check every month</strong>, and if this portfolio ever grows past a dozen properties the flat register becomes the better shape. At six, density wins.</p>
 <p>The council also flagged that the space's <strong>4-day due-date automation</strong> will stamp a due date on every row and every subtask created. It has to be scoped off these lists before migration, not after.</p>
 <h2 id="5-what-i-gave-up-and-what-guards-it">5. What I gave up, and what guards it</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Dropped</th>
@@ -407,13 +436,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>every quote is a slot on the job, with the approval beside it</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="6-what-the-review-of-the-document-still-says">6. What the review of the document still says</h2>
 <p>Nothing in this rebuild changes the finding: <strong>none of the 27 NVP cards can be closed from the Novas Prop document</strong>, because it stores links and sentences, not certificates. 22 of 68 statutory lines are held, 17 are missing, 7 are in progress and 3 are held but defective.</p>
 <p>Six lines the document never tracked are added as subtasks on the three sale houses: electric fence COC, approved plans, rates clearance, HOA compliance, levy clearance, and FICA with the conveyancer pack.</p>
 <p>Three corrections carry into the rows: <strong>Bushwillow is City of Johannesburg</strong>, not Ekurhuleni; <strong>Samuel has an electric fence</strong> (a COC, not a photo); and <strong>Frances' solar COC is unsigned</strong>, not missing.</p>
 <h2 id="7-cutover">7. Cutover</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>When</th>
@@ -448,12 +477,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>your call on deletion</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Counts to reconcile, both sides equal:</strong> 47 document lines + 21 lease and inspection lines + 73 maintenance + 72 bill rows + 4 lease rows = 217. Out: 71 document subtasks + 25 lease rows + 73 maintenance + 42 bills + 6 properties = 217. Every migrated row carries a <code>Source</code> field naming the page it came from.</p>
 <h2 id="8-what-the-api-builds-and-what-i-click">8. What the API builds, and what I click</h2>
 <p>Folders, the four lists, custom fields, relationships, rollups, the 71 subtasks and all migrated rows are API work. <strong>UI only:</strong> the recurring repeats, the two formulas, the subtask-filtered view, and the dashboard. Twenty minutes of clicking, which I drive and you watch.</p>
 <h2 id="9-decisions">9. Decisions</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -483,7 +512,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>yes</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="10-done-when">10. Done when</h2>
 <ol type="1">
 <li>Six property rows, 71 document subtasks, and a working folder link on every row.</li>
@@ -493,7 +522,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>The document has been read-only for fourteen days and nobody has asked for it.</li>
 </ol>
 <h2 id="appendix--evidence">Appendix — evidence</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Claim</th>
@@ -526,6 +555,6 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/adrianna/nvp-2026-11-19/</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>

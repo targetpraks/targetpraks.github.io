@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -129,7 +158,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Goal: remove pi, prime-agent, aider and the old OpenCode install; make OpenCode v2, Qwen Code and MiMo Code fully working — in the terminal, in Orca, and in T3 Code.</p>
 <hr />
 <h2 id="1-removed">1. Removed</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Target</th>
@@ -164,12 +193,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>which -a opencode</code> → only <code>/opt/homebrew/bin/opencode</code> (v2.1.4)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>npm uninstall -g</code> reported <strong>removed 225 packages</strong>. Disk reclaimed ≈ <strong>1.18 GB</strong>.</p>
 <p>Configs were archived before deletion (never destroyed): <code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/adrianna/agent-removals-2026-10-25/</code> (<code>pi-config.tgz</code>, <code>prime-config.tgz</code>, <code>opencode-legacy.tgz</code>, aider wrapper + conf, <code>qwen-settings.before.json</code>, <code>t3-settings.before.json</code>).</p>
 <p>Dead-tool skills retired: <code>aider</code>, <code>pi-agent</code>.</p>
 <h2 id="2-installed--upgraded">2. Installed / upgraded</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Tool</th>
@@ -194,7 +223,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>~/.mimocode/bin/mimo</code> behind <code>~/.local/bin/mimo</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="credentials--nothing-new-stored">Credentials — nothing new stored</h3>
 <p>Every lane reads <code>OLLAMA_API_KEY</code> at <strong>runtime</strong> from <code>~/.config/maio-stack/secrets.env</code> through a wrapper (<code>qwen-cloud</code>, <code>mimo-cloud</code>). Config files carry no key: <code>~/.config/mimocode/mimocode.json</code> uses <code>"apiKey": "{env:OLLAMA_API_KEY}"</code>, <code>~/.qwen/settings.json</code> has no key field (grep count 0).</p>
 <h2 id="3-wiring">3. Wiring</h2>
@@ -221,7 +250,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <p>Readiness cache after restart (<code>~/.t3/caches/&lt;instance&gt;.json</code>): all three <code>status: "ready"</code>.</p>
 <h2 id="4-evidence--real-turns-not-launches">4. Evidence — real turns, not launches</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Lane</th>
@@ -254,7 +283,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>T3_MIMO_OK</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Orca runs were real worktree launches (<code>orca worktree create --agent … --prompt …</code>) with the reply read out of each pane's on-disk scrollback (<code>terminal-history/&lt;repo&gt;::&lt;path&gt;@@&lt;id&gt;/output.log</code>); Qwen's pane also showed <code>API Key | deepseek-v4.1-flash:1017</code> and <code>YOLO mode</code>. T3 runs were <code>t3 thread start … --wait --json</code>, each returning <code>"status":"completed"</code> with the reply string.</p>
 <p>All smoke worktrees and the temporary T3 project were removed afterwards.</p>
 <h2 id="5-known-quirks-not-failures">5. Known quirks (not failures)</h2>

@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,13 +145,16 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
 
 <h1 id="infx-quotify--prd-revision-20-and-the-decisions-behind-it">Infx Quotify — PRD revision 2.0 and the decisions behind it</h1>
-<table>
+<div class="tablewrap"><table>
 <tbody>
 <tr>
 <td><strong>Date</strong></td>
@@ -148,7 +177,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>InfinityBrandsOrg/quote-program</code> — <code>/Volumes/Hiksemi 1TB/DevMini/quote-program</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="the-short-version">The short version</h2>
 <ul>
 <li><strong>The product is now Infx Quotify.</strong> The name is changed in the app title, sidebar, login screen, PO sheet, notification copy, README and PRD. Internal identifiers (<code>quorum.pb.js</code>, <code>/api/quorum/*</code>, <code>qp_*</code>, <code>q_*</code>) are unchanged so nothing breaks; a compatibility rename is a separate job.</li>
@@ -160,7 +189,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>Two gates before a live tender:</strong> the award must become a real server command (today it still depends on <code>QP_AWARD_EXECUTION=synthetic</code>), and the Books service/scope must be enabled with finance-confirmed tax rates. The live org <strong>is</strong> tax-registered (<code>is_tax_registered: true</code>) — the July audit's <code>false</code> was stale.</li>
 </ul>
 <h2 id="what-actually-changed-in-the-repo">What actually changed in the repo</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>File</th>
@@ -190,13 +219,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>npm run test:unit</code> → <strong>192 tests, 192 pass, 0 fail</strong>.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Nothing was pushed, no backend was started, no live Zoho call was made. The changes are on branch <code>docs/infx-quotify-prd-v2</code> and are uncommitted for review.</p>
 <h2 id="the-name-why-the-internals-stay">The name: why the internals stay</h2>
 <p>"Quorum" was hard to say and harder to remember. <strong>Infx Quotify</strong> says what it is and carries the INFX family name. The repo stays <code>quote-program</code>, the hook file stays <code>quorum.pb.js</code>, and the API stays <code>/api/quorum/*</code> because renaming a deployed route and a collection prefix is a migration, not a rebrand. The PRD records that decision (D1) so nobody "fixes" the inconsistency later without a plan.</p>
 <h2 id="zoho-books-or-zoho-inventory">Zoho Books or Zoho Inventory?</h2>
 <p><strong>Books.</strong> Not because Inventory is worse, but because the things this desk must prove are financial records:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>What the desk needs</th>
@@ -237,7 +266,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>Books</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Zoho's own integration documentation says items, contacts, purchase orders, bills and reports synchronise between Inventory and Books (<a href="https://www.zoho.com/us/inventory/kb/integrations/accounting-flow.html">accounting flow</a>). That is exactly why the desk must <strong>pick one origin per document</strong>: creating the same PO in both systems creates two numbers and two truths.</p>
 <p><strong>The rule in the PRD:</strong> Infx Quotify creates the PO in Books, sends its own <code>QX-YYYY-NNNN</code> as <code>reference_number</code>, and reads back the Books-issued <code>purchaseorder_number</code>. Stock receipts happen in Inventory and flow back. Books owns the official number (D12); Quotify never runs a second series.</p>
 <p><strong>The live VAT position (checked 9 November 2026).</strong> The Books API returns one organisation — Infinity Brands, <code>org_type: live</code>, ZAR, <code>is_tax_registered: true</code>, fiscal year starting in February. The July audit's <code>false</code> is stale and corrected in the PRD. Three gates remain:</p>
@@ -251,7 +280,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Zoho Creator does ship a Procurement application: purchase requisitions, purchase orders, goods received notes, budget management, multilevel approvals, vendor management, multi-currency, a central document repository, analytics and mobile access (<a href="https://www.zoho.com/creator/procurement/features.html">features</a>).</p>
 <p>What Infinity Brands actually has, per a live Creator API read on 9 November 2026: <strong>two applications</strong> — Content Review and Release Tracking, and Site Inspector — and <strong>no procurement app</strong>. The July audit listed five (Cleaning Schedule, IT Asset Register, GovPortal, Site Inspector, Content Review); whichever count is current, none is procurement. The Zoho Procurement service is disabled on the tenant. So there is nothing to "link" today.</p>
 <p><strong>Decision:</strong> do not deploy it as a second procurement system. It overlaps the desk at requisition and approval, but it does not provide the three-quote proof, the VAT-exclusive like-for-like matrix, the hash-chained audit trail or the advisory evidence record. Running both would create two queues and two truths. Borrow these patterns instead:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Creator pattern</th>
@@ -291,7 +320,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>WS-9</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>If it is ever adopted, the only coherent split is Creator as the intake front-end, Books as the ledger, Infx Quotify as the quote and decision record. That is an explicit decision (Q17), not a silent integration.</p>
 <h2 id="the-ai-decision-model-evidence-not-a-decision">The AI decision model: evidence, not a decision</h2>
 <p>Two layers, deliberately separated:</p>
@@ -312,7 +341,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>The model is a cited second opinion. It is not the decision, and it cannot satisfy the three-quote rule on the buyer's behalf.</p>
 <h2 id="item-for-item-same-or-not-the-same">Item-for-item: same, or not the same?</h2>
 <p>Every quote line gets one label, with evidence:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Label</th>
@@ -347,7 +376,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>No — a person must resolve before award</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The ladder is deterministic first: GTIN → MPN + brand → normalised identity → unit conversion → attribute comparison → fuzzy candidate finding → human. Fuzzy scores never produce <em>identical</em>, and an automatic label may never remove a quote from the counted set. <strong>Abstain is not different.</strong> The matcher abstains when the unit dimension differs, a pack size is missing, a numeric token differs, two candidates are within epsilon, or the text hits a character range the vendor normaliser refuses.</p>
 <h2 id="the-journey-ricardo-asked-for">The journey Ricardo asked for</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
@@ -381,7 +410,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>POPIA: POP and bid exports carry names, amounts and bank references. They are role-scoped, never in a general export, and never sent to a model, gate or chat.</li>
 </ul>
 <h2 id="the-moa-panel-what-the-three-reviewers-changed">The MoA panel: what the three reviewers changed</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Panel finding</th>
@@ -438,7 +467,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>§5 "Deferred from v1" — deferred, except the four-way match and budget stop, which I kept</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Where I did not take the panel's advice.</strong> Two cuts would break the thing Ricardo asked for. I kept the <strong>four-way match</strong>, because proof of payment is meaningless without it, and I kept the <strong>budget hard stop</strong>, because it is an accepted control — introduced in shadow mode first, not removed. I also kept the exception register: it is the evidence finance signs.</p>
 <p><strong>What is deferred from v1, not dropped:</strong> FX and multi-currency comparison, line discounts, savings verdicts, the GL coding matrix, retention automation, and the waiver chain (its approver role does not exist yet). Everything else the panel raised is in the PRD, with one of the two hard gates still owner/finance work.</p>
 <h2 id="what-ricardo-needs-to-decide">What Ricardo needs to decide</h2>

@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -133,7 +162,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>v2.0 answered <em>how to build a workspace</em>. v3.0 answers <em>your</em> list, and your list is a different brief: brand workspaces, OKRs, Monday meetings as an archive, chat that replaces Cliq, client SLA spaces, Coda retired. Five of those eleven requirements contradict the v2 design or the v2 cost model, so this version settles each one with current official evidence rather than carrying the older assumption forward. The single most expensive finding: <strong>ClickUp bills per Workspace</strong>, so "a workspace per brand" multiplies seats, not Spaces. The single most useful finding: your Monday meeting requirement is already a native ClickUp behaviour — AI Notetaker writes a Doc per meeting, and a Doc lives in a named place in the hierarchy, so years of minutes can archive themselves.</p>
 <h2 id="requirements-trace">Requirements trace</h2>
 <p>Eleven items as you wrote them. Verdict is either <strong>adopt</strong> (it becomes the build), <strong>reshape</strong> (keep the intent, move the mechanism), or <strong>decide</strong> (owner-only, and it changes the money or the operating model).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -222,10 +251,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>DEC-43-01</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="the-five-collisions">The five collisions</h2>
 <p>Your list is not a wish list on top of v2.0. In five places it replaces an instruction v2.0 gave the builder.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -266,11 +295,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Coda functions mapped one by one, gaps named. §42.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Two rules survive untouched from v2.0 and still bind the builder: external access is always a separately permissioned container, and no Zoho job, user or attachment is copied across.</p>
 <h2 id="key-facts">Key facts</h2>
 <p>Every figure here was read from the page linked beside it on 2 November 2026.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Fact</th>
@@ -365,12 +394,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><a href="https://help.clickup.com/hc/en-us/articles/29806883199127-Consolidate-Workspaces">Consolidate Workspaces</a></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="detail">Detail</h2>
 <h3 id="34-teams-sub-teams-or-the-larger-teams">34. Teams: sub-teams or the larger teams</h3>
 <p>You asked whether teams should follow the smaller sub-teams or the larger teams. The platform answer decides it for you before any preference does.</p>
 <p>Business allows <strong>ten Teams</strong>. Your functional structure is already nine Spaces plus EXCO: ten. So on Business the Teams feature is exactly full, with no room for a sub-team layer, and no Team-based sharing at all — sharing items with Teams is Business Plus and above, and sharing whole Spaces with Teams is Enterprise and Max only.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Option</th>
@@ -403,7 +432,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Fallback</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Ruling (proposed):</strong> the larger team is the permission boundary; the smaller sub-team is a <em>Team object</em> used for reporting, the org chart and workload — never for permission. That gives you both names without asking ClickUp to share by Team.</p>
 <blockquote>
 <p>[!note] The one number to hold in your head Business = 10 Teams, and you need 10 just for the functions. Any sub-team layer is a Business Plus decision, not a naming decision.</p>
@@ -412,7 +441,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h4 id="351-why-a-workspace-per-brand-is-a-money-decision-not-a-layout-decision">35.1 Why "a workspace per brand" is a money decision, not a layout decision</h4>
 <p>ClickUp bills per Workspace. Every Workspace carries its own seat count, even for the same person. The brands also do not talk to each other inside ClickUp: no cross-workspace reporting, no cross-workspace task links, and moving data between Workspaces is a ClickUp-operated migration with hours of downtime in a fixed Thursday window that permanently archives the source.</p>
 <p>Arithmetic on the 40-human planning scenario, Business at $17 user/mo billed yearly. A <em>seat-instance</em> is one person holding one seat in one Workspace.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Brand layout</th>
@@ -447,7 +476,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>$21,600</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Add the reporting cost that no invoice shows: a company OKR dashboard cannot span five Workspaces, so your R07 company dashboard would need five separate versions stitched together by hand.</p>
 <p><strong>Ruling (proposed):</strong> one Workspace. A brand is a required <code>Brand</code> field everywhere, and a private Folder inside a Space only where the brand needs its own container — an external audience, a franchisee, a legally separate entity, or a different billing relationship. Split into separate Workspaces only for a brand that must be isolated in law or in money, and only with the arithmetic above signed off.</p>
 <h4 id="352-the-hierarchy-one-axis">35.2 The hierarchy, one axis</h4>
@@ -465,7 +494,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F3</span> <span class="pp">--&gt;</span> <span class="dt">L1</span>[<span class="st">&quot;List — Always-On&quot;</span>]</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F3</span> <span class="pp">--&gt;</span> <span class="dt">L2</span>[<span class="st">&quot;List — Campaigns&quot;</span>]</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">F4</span> <span class="pp">--&gt;</span> <span class="dt">L3</span>[<span class="st">&quot;List — Deliverables&quot;</span>]</span></code></pre></div>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Axis</th>
@@ -495,14 +524,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>required dropdowns</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <blockquote>
 <p>[!note] Ten Spaces, not nine Your requirements add two: a Goals and OKRs Space, and a Meetings and Minutes Space. Both are argued in §36 and §37. Everything else keeps the v2 structure.</p>
 </blockquote>
 <h3 id="36-goals-and-okrs-company-quarter-team-person">36. Goals and OKRs: company, quarter, team, person</h3>
 <p>ClickUp Goals are a separate object from tasks. A Goal holds measurable Targets, and a Target is one of four types: a Number, a True/False checkbox, a Currency amount, or a Task (which tracks a task, subtask or whole List). Goals exist on every plan; goal <em>Folders</em> — the thing that groups a year or a quarter — need Business or above. That single fact decides the shape.</p>
 <p><strong>The cascade.</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Level</th>
@@ -543,10 +572,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>The person</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Why this order.</strong> ClickUp has no native "quarter" field and no native per-person goal assignment. The quarter is a Goal Folder plus a naming rule; the person is reached through a Task Target on real work, which is also the only version that cannot be gamed by ticking a box.</p>
 <p><strong>Build constants.</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Item</th>
@@ -583,12 +612,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Targets updated in the Monday meeting; the meeting Doc links the Goal</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>What this replaces.</strong> v2.0 §17 deferred goals outright. That line is now struck. The deferral was about scope, not capability, and your requirement settles the scope.</p>
 <h3 id="37-meetings-the-monday-standard-and-the-years-archive">37. Meetings: the Monday standard and the years archive</h3>
 <p>You asked the right question — own folder or own Space — and the answer is a Space, for a reason that is about permissions rather than tidiness.</p>
 <p><strong>Why a Space.</strong> Meeting minutes are the most sensitive routine documents you hold. EXCO minutes, a disciplinary conversation, a client escalation: different audiences. A Space is the only real permission boundary in ClickUp; a Folder inside a shared Space inherits too much. One Space, <code>11 Meetings &amp; Minutes</code>, private, with a Folder per team and a Doc per year inside each Folder, gives you one archive that is browsable, searchable and correctly closed.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Element</th>
@@ -629,14 +658,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Years of history stay as pages in one Doc per year — no yearly migration, no folder sprawl</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The mechanics that make it actually automatic.</strong> AI Notetaker works on SyncUps and on Zoom, Teams or Google Meet meetings once the Google or Outlook calendar is connected. Three notetaker types exist: Personal (only you see the notes), Shared (attendees see them), and Workspace (everyone sees them). Admins pick the default and can lock it. It writes a Doc, and a Doc can live as a view in a named hierarchy location — that is what lets each team's notes land in its own Folder without a human filing them.</p>
 <p><strong>Where it does not work, stated plainly.</strong> In-person meetings with no video link capture nothing. Breakout rooms are not supported. A meeting that moves after it starts yields notes for the original slot only.</p>
 <p><strong>The Monday format, per team.</strong> Fifteen minutes, same order every week: last week's actions, this week's numbers against target, blockers, decisions needed, then the Goal check. The Doc template enforces the order; the dashboard card (§39) supplies the numbers so nobody reads them aloud.</p>
 <h3 id="38-chat-replacing-cliq">38. Chat: replacing Cliq</h3>
 <p>Chat is real and included: Core and above give unlimited messages and unlimited history, Channels and direct messages, Posts, SyncUps for face-to-face, task creation straight from a message, Chat automations, and AI summaries. Your team would move from Cliq without buying anything extra.</p>
 <p>Four facts decide how far you can take it.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Fact</th>
@@ -661,14 +690,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Irrelevant here — the build is on a paid plan. Recorded so nobody tests on Free and gets a false answer.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Ruling (proposed):</strong> pilot Chat with two groups — EXCO plus one delivery team — for one operating month, in parallel with Cliq. Move a channel only when its work already lives in ClickUp, because the value is the task created from the message, not the message. Cliq goes read-only only after the export is signed off, and nobody announces a cut-over before the pilot passes.</p>
 <blockquote>
 <p>[!note] The honest risk Chat that replaces Cliq is a behaviour change, not a feature. The plan's success measure is not "messages sent" but "tasks created from Chat messages" — that is the only number that proves work moved.</p>
 </blockquote>
 <h3 id="39-dashboards-exco-manco-team-company-okr">39. Dashboards: EXCO, MANCO, team, company OKR</h3>
 <p>Four dashboard tiers, because four audiences ask four different questions. Dashboards are unlimited on Business, and the cards are free — the constraint that bites is scheduled reports: <strong>40 sends in total per Workspace on Business, and those uses never reset.</strong> So the design is "they open the dashboard", not "we email it".</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Dashboard</th>
@@ -703,7 +732,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Goals card by brand · Quarterly targets on/off track · Department goal list · Key targets table</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Design rules that keep these honest.</strong></p>
 <ul>
 <li>One card, one number, one owner. If nobody would act on a card, it comes off.</li>
@@ -714,7 +743,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <h3 id="40-work-type-recurring-once-off-requested">40. Work type: recurring, once off, requested</h3>
 <p>You asked for a folder or a Space per work type. Do not build it that way, and the reason is mechanical: a task has one home in the hierarchy. If recurring work lives in a Work-Type folder, then the Finance recurring task sits in <code>Recurring</code> and leaves <code>03 Finance</code>, and every function dashboard and permission rule silently loses it. The work type is a property of the task, not a place.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Need you expressed</th>
@@ -739,9 +768,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>One Everything view at Workspace level filtering <code>Work Type</code>, which no folder structure can give you</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Standard view set, identical in every Space: <code>00 Requests</code> · <code>01 This week</code> · <code>Recurring — Board</code> · <code>Once off — List</code> · <code>Everything</code>. Five views, same names, same order, everywhere. Predictability is the feature.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -770,10 +799,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>No</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="41-client-sla-spaces">41. Client SLA spaces</h3>
 <p>Clients get a container of their own, and the container is a Folder inside the delivering Space — not a Space, and not a Workspace. A client Folder can be shared with a guest while the Space it sits in stays private, which is exactly the boundary you want: the client sees their work, never the company's.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Element</th>
@@ -806,12 +835,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>One <code>Client SLA</code> dashboard filtered by Tier; the EXCO card counts breaches only</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>SLA field arithmetic.</strong> Response Due = created + tier allowance. SLA Status = a formula over First Response At and Response Due. Two limits from the platform, both verified: a formula cannot reference text fields, and a <code>TODAY()</code> formula cannot be sorted, filtered or grouped and cannot feed a calculated column. So the clock uses date fields, not text, and the breach state is stored, not derived from today's date at read time.</p>
 <p><strong>Guest arithmetic you will feel.</strong> View-only guests are free and unlimited. Permission-controlled guests cost the same as a member seat once you exceed the allowance that comes with your plan. Same-domain and SSO accounts cannot be guests at all — an Infinity Brands employee with an <code>@infinitybrands</code> address is a member, always. So the client guest count is a real cost line: budget it per client, not per project.</p>
 <h3 id="42-replacing-coda">42. Replacing Coda</h3>
 <p>Coda is a document-and-database hybrid: tables that reference each other, formula columns across rows, buttons that run actions, and Packs that talk to outside services. ClickUp covers most of that list, and fails in four specific places. Map the functions, keep the honest gaps.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Coda function</th>
@@ -876,12 +905,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Works</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The four gaps are real, and they change one habit.</strong> In Coda a column can sum its children. In ClickUp it cannot, so any rollup you rely on today must become either a Dashboard calculation card, an automation that writes a number field, or an agent that computes it nightly and writes back. Decide per rollup which of those three it becomes before the Coda form is retired, or the number quietly disappears.</p>
 <p><strong>Retirement order.</strong> Inventory every Coda doc and its functions → map each to the table above → build the mapped replacement → run both for one cycle → export the Coda doc to PDF or Markdown for the record → then freeze, and only then retire. No Coda doc is deleted, ever; freezing is enough.</p>
 <h3 id="43-the-document-library">43. The document library</h3>
 <p>Your last line broke off mid-sentence — "documents that capture a" — so this section specifies the library and leaves the final item for you in §47. A document that captures a decision, a standard, a client relationship or a week of work is a template plus a home, and nothing else.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Template</th>
@@ -934,11 +963,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>HR</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Docs are on every plan, guests can read them, pages nest, and a Doc can hold a live List view — so a brief in a Doc and its tasks in a List are one surface, not two. Protect Docs needs Business Plus; on Business, editing rights are held by Space privacy instead.</p>
 <h3 id="44-commercial-model-recut">44. Commercial model, recut</h3>
 <p>The v2.0 cost model assumed one Workspace and Business seats. Your requirements add three pressures: a possible Business Plus step for sub-teams and team sharing, a per-brand Workspace multiplier if R02 goes that way, and client guests.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Line</th>
@@ -1015,9 +1044,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A governance gap if it ever matters</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Three scenarios, 40 humans, yearly billing.</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Scenario</th>
@@ -1042,14 +1071,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>$11,220 – $12,240</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Add client guests: view-only is free, permission-controlled costs a member seat beyond the allowance. Ten active clients with two permission-controlled guests each is twenty seats of exposure unless the allowance covers them — check the allowance at provision time and record it.</p>
 <blockquote>
 <p>[!note] Owner-only Nothing here is purchased, quoted or accepted by any agent. The plan choice, the Workspace count and the guest budget are yours, and the numbers above are the decision paper, not an order.</p>
 </blockquote>
 <h3 id="45-tests-this-version-adds">45. Tests this version adds</h3>
 <p>v2.0 defined T01–T112 as a test index. These are the new ones, all written to be run by a person or an agent against the real Workspace and recorded PASS, FAIL or BLOCKED with evidence.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>ID</th>
@@ -1199,10 +1228,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Five views, same names, same order</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="46-build-order">46. Build order</h3>
 <p>Staged by dependency, not by calendar. Everything inside a stage runs in parallel. The first stage that can be seen is the first stage that ships.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Stage</th>
@@ -1262,9 +1291,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A person can find the template without asking</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="47-what-only-you-can-decide">47. What only you can decide</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>ID</th>
@@ -1317,7 +1346,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Named in the table in §43; add the missing one</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Open items carried from the evidence, not guessed.</strong></p>
 <ul>
 <li>Business Plus is described in ClickUp's help pages but not priced on the public pricing page. Its price needs a quote.</li>

@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -128,7 +157,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Date:</strong> 2026-11-08 <strong>PRD:</strong> <code>INFINITY-AGENT-PLATFORM-PRD.md</code> v1.0 (canonical, SHA-256 <code>9de6d55a…</code>) <strong>Upstream baseline:</strong> release <code>v1.56.3</code>, commit <code>e25389a7231f309c1629ba950eac6fb5737103cd</code> <strong>Stages reached:</strong> A (deployment contract) and B (isolated foundations) — synthetic, no live Zoho, no live staff data.</p>
 <h2 id="host">Host</h2>
 <p><code>macmini-inf</code> — Ubuntu 26.04.1 LTS, arm64, running as an Apple Virtualization guest on the Infinity Brands Mac mini (<code>systemd-detect-virt</code> = <code>apple</code>). Hostname is reachable only through the office SSH chain (<code>bastion</code> → <code>macserver</code>).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Fact</th>
@@ -169,10 +198,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>github.com 200, ollama.com 200, registry.ollama.ai reachable</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="installation">Installation</h2>
 <p>Deployment directory <code>~/agenticos</code> on <code>macserver</code>:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>File</th>
@@ -209,7 +238,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>operator runbook</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Nine production-checklist items from <code>docs/configuration.md</code>: seven set deliberately (<code>SECRET_KEY</code>, <code>API_KEY</code>, <code>VAULT_MASTER_KEY</code>, <code>ENVIRONMENT</code>, <code>DEBUG</code>, <code>POSTGRES_PASSWORD</code>, <code>CORS_ORIGINS</code>). Two recorded as deliberate deviations: <code>REDIS_PASSWORD</code> (the base compose file runs Valkey without auth on an unpublished internal network) and SMTP (unset, so invitations and resets send nothing).</p>
 <h2 id="stage-a--capacity-gate">Stage A — capacity gate</h2>
 <p><code>RAM_headroom = available_to_container_VM − selected_service_memory_budget − embedding_budget − operation_reserve</code></p>
@@ -223,7 +252,7 @@ RAM_headroom                                               +110 MB   PASS</code>
 <p>The upstream production ceilings (app 2560 + db 2048 + valkey 512 + worker 2560 = 7680 MB) exceed this VM's 7400 MB total, so a reduction is required for the gate to pass. The reduction is recorded in <code>docker-compose.instance.yml</code>; it is a configuration change, not a hidden default. Worker and database ceilings were rebalanced once against measured appetite (worker 961 MB idle of a 1024 MB ceiling → 1536 MB; database 78 MB of 768 MB → 512 MB).</p>
 <p>CPU compared separately: app 2.0, db 1.5, valkey 0.3, frontend 1.0 against 6 vCPU; worker keeps the default share because a <code>cpus</code> key conflicts with the upstream <code>deploy.resources</code> block.</p>
 <h2 id="stage-b--proof-of-isolated-foundations">Stage B — proof of isolated foundations</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Check</th>
@@ -296,7 +325,7 @@ RAM_headroom                                               +110 MB   PASS</code>
 <td><code>ssh -L 13000:127.0.0.1:3000</code> → sign-in page 200, API health 200</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Measured idle memory after start: app 610 MB, worker 961 MB, frontend 150 MB, db 78 MB, valkey 4 MB, ollama-embed 375 MB ≈ 2.2 GB, against 3520 MB of ceilings.</p>
 <p><code>agenticos cmd doctor</code> closes with <code>Everything this can check is working.</code> Its open lines are the ones this record already names: no model profile with an active key, no SMTP, no sandbox/browser endpoint, no private-network allowlist.</p>
 <h2 id="not-done--by-design">Not done — by design</h2>

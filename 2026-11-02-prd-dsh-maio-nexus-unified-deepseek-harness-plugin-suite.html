@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -139,7 +168,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>The one-sentence case.</strong> DSH is already installed here (0.2.1-rc.5, six profiles, zero third-party plugins) and it can already reach your local models; what it cannot do is see what your Hermes fleet knows, read the vault, or make a video. Those three gaps are the entire PRD.</p>
 <h2 id="what-changed-in-v5-v7-and-v8">What changed in v5, v7 and v8</h2>
 <p>v5 is not a rewrite of v4 for its own sake. Every row below is a claim v4 made that today's measurement contradicts, or a section v4 lacked.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -210,7 +239,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>"Working" becomes checkable.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>v9 removes a channel assumption that was never yours.</strong> v1–v8 drew Discord and Telegram into the architecture, with DSH terminating at the Router on every surface. That was wrong: DSH does not connect to any chat channel, holds no bot token and exposes no inbound webhook — Hermes keeps its channels, and continuity comes from the shared memory store, not from a transport (§3.4). The diagram, the dispatch contract, S6, the threat model and the out-of-scope list were all corrected.</p>
 <p><strong>v8 adds Workstream D — the chain that builds this.</strong> Ricardo's <code>app-plan</code> → <code>app-build</code> → <code>app-verify</code> skills (v1.0.0, Hermes and Claude) are now part of the plan rather than context I was carrying privately: they are how the suite gets built, they are the first workload a DSH super-agent must run, and their decision routing is the one DSH must not reinvent. §7 has the contracts, the artifact map and seven chain criteria (G1–G7).</p>
 <p><strong>v7 corrects §6 against the machine.</strong> Claude Code installed a complete free motion and video toolkit on this Mac at 12:06 today, and recorded it in the vault as <em>Motion/video toolkit — the free stack from four X tool lists</em>. v6's Workstream C called four of those pieces "absent" because it asked the wrong questions — <code>command -v hyperframes</code> cannot see an <code>npx</code>-only CLI pinned inside a project, and <code>import faster_whisper</code> in the document venv cannot see a package installed in <code>~/AI Hub/video-stack</code>. The lane is not missing. It is installed, it has rendered a clip, and it has a quality gate. §6 now says what is actually there, what the image lane is <em>not</em>, and what DSH must add rather than install.</p>
@@ -226,7 +255,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Solution.</strong> <code>dsh-maio-nexus</code> registers Cordis handlers that (a) feed the Router a compact shared memory + vault context, (b) let the Router package a scoped slice per Worker dispatch and record why, (c) give Workers a read-only <code>vault_recall</code> tool and a scoped memory query on the <strong>active</strong> provider, and (d) return durable facts from Workers to the Router — the only writer, through Hermes' memory tools. No second store. No cross-worker leakage. Plus a watchdog session outside the main system, which is the article's own control-loop pattern.</p>
 <h2 id="2-the-design-article-is-the-spec">2. The design article is the spec</h2>
 <p>The article is not marketing; it is a systems paper with numbers. Each primitive it names becomes a place a module must sit, and each becomes testable.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Article primitive</th>
@@ -297,7 +326,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>—</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Section numbers in the table above are the article's, not this document's</strong> — <code>§7.1</code> is the paper's cost experiment, <code>§8</code> its open problems, <code>§8.4</code> its security debate. Where this PRD cites itself it says so.</p>
 <p>Source: @DeepSeekHarness, <em>Exploring Super-agent Design: Towards a More Autonomous Agent System</em>, <a href="https://x.com/DeepSeekHarness/status/2116857257245987236">X post, 1 Nov 2026</a> — author Yujia Qiao. The prototype it describes is <code>dsh-superagent-prototype</code>, MIT, and the article's own words are "a prototype for validating the technical approach, not an official DeepSeek product".</p>
 <h2 id="3-architecture">3. Architecture</h2>
@@ -375,7 +404,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </figure>
 
 <h3 id="31-module-map">3.1 Module map</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Module</th>
@@ -430,7 +459,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>One bundle for <code>web</code>, <code>desktop</code>, <code>dshweb</code>, <code>headless</code>, <code>mini</code>, <code>acp</code>. <code>desktop</code> is app-owned: patch layer only, never hand-edited bundles.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="32-the-dispatch-decision">3.2 The dispatch decision</h3>
 <p>The prototype has <strong>no voting mechanism</strong>. Dispatch is rules-first, model-judged: deterministic code filters, the model judges only what remains. nexus makes that step explicit and auditable — the Router chooses the Worker type, assembles the scoped slice, and <strong>records why</strong>. If you want a literal multi-agent vote (N candidates scored, best chosen), that is a variant I can add; today's design is the decision step the article actually describes.</p>
 <h3 id="33-events-proactive-work-and-freshness">3.3 Events, proactive work and freshness</h3>
@@ -446,7 +475,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>What this buys, beyond simplicity:</strong> one less credential set on the machine (no bot tokens), one less inbound attack surface (nothing can post a prompt into a DSH session), and one less place for channel-specific formatting to leak into the dispatch contract.</p>
 <h2 id="4-workstream-a--the-suite">4. Workstream A — the suite</h2>
 <h3 id="41-acceptance-criteria-functional">4.1 Acceptance criteria (functional)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Id</th>
@@ -481,9 +510,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>ffprobe</code> output + <code>receipt.json</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="42-acceptance-criteria-super-agent">4.2 Acceptance criteria (super-agent)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Id</th>
@@ -528,7 +557,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>With the provider switched (Hindsight → any other), the adapter either works or fails loudly with a named error — never silently returns nothing</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="43-interface-contracts">4.3 Interface contracts</h3>
 <p><strong>4.3.1 Context packet</strong> (<code>nexus-context-packet</code> emits, the Worker receives)</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
@@ -558,7 +587,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a> <span class="dt">&quot;source_sha256&quot;</span><span class="fu">:</span> <span class="st">&quot;…&quot;</span><span class="fu">}</span></span></code></pre></div>
 <h2 id="5-workstream-b--ecosystem-adoption">5. Workstream B — ecosystem adoption</h2>
 <p>Ten plugins, each re-read from the GitHub API this afternoon. <strong>Adopt</strong> = stage, review, install after your sign-off. <strong>Evaluate</strong> = read-only study first. <strong>Reject</strong> = do not install. The constant: <strong>Hermes has exactly one active memory provider</strong>, so any plugin bringing its own store must interoperate with it or be rejected.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Plugin</th>
@@ -629,8 +658,8 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>2026-11-02</td>
 </tr>
 </tbody>
-</table>
-<table>
+</table></div>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Decision</th>
@@ -685,13 +714,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Prompt-swap / jailbreak red-team tool; patches local packages; supports rc.2 only; author posts legal warnings. It modifies the harness host layer — incompatible with "prepare, don't change live systems".</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>What "Adopt" is empty of, deliberately.</strong> No plugin in this list earns an adopt <em>before</em> phase 2 review, because each one runs third-party code with shell and filesystem permissions on the machine that holds your vault and your credentials. The suite in Workstream A is the adoption; Workstream B is due diligence.</p>
 <h2 id="6-workstream-c--code-rendered-video-and-stills">6. Workstream C — code-rendered video and stills</h2>
 <p><strong>Goal.</strong> One brief in, one MP4 out (and a poster from the same brief), rendered from code: HTML and React compositions, browser 3D, local captions, FFmpeg export. No stock library, no per-render fee, no studio.</p>
 <h3 id="60-what-already-runs-here--installed-this-morning-for-hermes-and-claude">6.0 What already runs here — installed this morning for Hermes and Claude</h3>
 <p>This is not a plan. It is on disk, it was installed on 2026-11-02 by Claude Code from four X tool lists, and I re-verified every row below at 18:05 today with the commands a reader can repeat.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Layer</th>
@@ -756,11 +785,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>file present; gate re-run today</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The gate, executed now, not quoted.</strong> <code>render-qc</code> on the proof clip at 18:05 returned: 180 frames scanned, <strong>0 black</strong>, <strong>0 frozen</strong>, integrated loudness <strong>−14.06 LUFS</strong>, peak −9.55 dBFS, <code>"pass": true</code>, <code>RESULT: PASS</code>, exit 0. The vault note that recorded the install had to carry that number from the installer's README; it is now an executed measurement.</p>
 <p><strong>Why the gate matters more than the renderer.</strong> HyperFrames' default <code>init</code> scaffold renders a static, silent title card. <code>hyperframes check</code> reports <strong>0 errors</strong> and the render "succeeds" — nothing moves and nothing plays. Only <code>render-qc</code> catches it. A lane without a gate produces confident, worthless MP4s, which is the exact failure mode this PRD exists to prevent.</p>
 <h3 id="61-the-twelve-repos-re-read-against-the-machine">6.1 The twelve repos, re-read against the machine</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -869,7 +898,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>installed</strong> — 9.0.2, <strong>0 <code>drawtext</code>/<code>subtitles</code> filters</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>FFmpeg's one hole.</strong> The Homebrew build has no <code>drawtext</code> and no <code>subtitles</code>, so text never goes through an FFmpeg filter on this Mac: it arrives as PNG cards, HTML overlays, or GSAP/Remotion type. A project that genuinely needs libass burn-in needs a custom build — a separate decision, not a plugin.</p>
 <p><strong>Deliberately absent, and why.</strong> Blender MCP (auto-mode blocked it; your word loads it), Motion2MixamoRig (needs SMPL-X, non-commercial — a licence decision), RIFE (CUDA-only releases; the ncnn build is the Mac route), OpenToonz (Gatekeeper-disabled cask), UniForge3D (CUDA), image-blaster (built on paid APIs — fails the free rule outright).</p>
 <h3 id="62-the-image-lane--what-is-not-there">6.2 The image lane — what is <em>not</em> there</h3>
@@ -881,7 +910,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>F5 (render):</strong> a brief produces a 1080×1920 MP4 of ≤30 s with no stock asset and no paid credit. <strong>F6 (text):</strong> all text arrives through cards, overlays or type — never an FFmpeg text filter. <strong>F7 (locality):</strong> every asset and render stays on this Mac; no paid or hosted call without separate approval. <strong>F8 (app):</strong> the DSH web app shows the last render, its size and its QC verdict without a terminal. <strong>F9 (CLI):</strong> <code>dsh &lt;profile&gt; "&lt;brief&gt;"</code> runs headless, prints a receipt path, and a second run of the same brief produces the same bytes. <strong>F10 (link):</strong> one durable token-free artefact link per render, resolving after a restart. <strong>F11 (reproducibility):</strong> same brief, same composition version, byte-comparable output. <strong>F12 (receipt):</strong> every render writes the receipt in §4.3.4 and the panel derives its link from that receipt. <strong>F13 (stills — new):</strong> a poster renders from the same brief through a free path (HTML/3D frame or local mflux) and the receipt records which path produced it. <strong>F14 (gate — new):</strong> no render counts as finished until <code>render-qc</code> passes; the receipt embeds the verdict, and only <code>--allow-static</code> and <code>--allow-silent</code> may waive a finding.</p>
 <h3 id="64-three-surfaces-three-contracts">6.4 Three surfaces, three contracts</h3>
 <p>Verified against the installed harness: <code>dsh --version</code> → <strong>0.2.1-rc.5</strong>; <code>dsh plugin --help</code> → <em>"manage a profile's plugins by forwarding the remaining arguments to pnpm"</em>; profiles present: <code>acp</code>, <code>desktop</code>, <code>dshweb</code>, <code>headless</code>, <code>mini</code>, <code>web</code>.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -911,7 +940,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Durable across restarts; safe to paste</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The app link is a credential — proven, not assumed.</strong> <code>curl -m 3 http://127.0.0.1:7788/</code> returns <strong>HTTP 401</strong>; the web app prints a <code>?token=</code> URL and that URL is a password. It never enters a document, a ticket, a chat message, the gate or a plugin config.</p>
 <p><strong>One lane, not three.</strong> Hermes, Claude and DSH must call the same <code>render-qc</code> and the same <code>video-stack</code> — not three copies with three sets of versions. That is why the pack <em>points</em> rather than copies: <code>~/.local/bin/render-qc</code> is already on the path for any harness on this Mac, and <code>motion-studio</code> is a pinned reference set, not a project.</p>
 <p><strong>CLI, four commands, no GUI:</strong></p>
@@ -926,7 +955,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h2 id="7-workstream-d--the-build-chain-app-plan--app-build--app-verify">7. Workstream D — the build chain: app-plan → app-build → app-verify</h2>
 <p><strong>Why this is in the PRD.</strong> dsh-maio-nexus is not going to be built on vibes. Ricardo built a three-skill chain with Hermes, and this very document is an output of the first link in it. Workstream D makes that chain explicit for two reasons: it is <strong>how</strong> the suite gets built, and it is the <strong>first real workload</strong> a DSH super-agent must be able to run. If a DSH session cannot execute the same chain that produced this PRD, then the PRD has failed its own test.</p>
 <h3 id="71-the-three-skills-as-installed">7.1 The three skills, as installed</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Skill</th>
@@ -951,7 +980,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>~/.hermes/skills/app-verify/</code> (4 KB)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>All three are <strong>v1.0.0, MIT, authored by Adrianna A</strong>, and all three are mirrored into the Claude seat at <code>~/.claude/skills/</code>, so either harness can run the same chain. Verified on disk today, in both trees.</p>
 <p><strong>The decision arbitration is the part DSH must not reinvent.</strong> Deliberative questions (architecture, contested design, "should we add this dependency") go to the council first; bounded questions (a pick from a shortlist, yes/no, a score) go to the local decision gate and are logged to <code>gates.csv</code>; <strong>money, legal, external publication, a live-system write and the final merge belong to Ricardo alone.</strong> Where the tools are absent — which is the normal case inside a DSH profile — the chain falls back to <code>decision-gates</code>' portable gate (<code>~/.hermes/skills/devops/decision-gates/scripts/portable-gate.py</code>, present) and 3–5 advisor Workers in place of the council.</p>
 <h3 id="72-this-prd-read-as-a-chain-artifact">7.2 This PRD, read as a chain artifact</h3>
@@ -961,7 +990,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>Phase 1 of §11 is <code>to-tickets</code>. Phase 4 is <code>app-verify</code>.</strong> The delivery plan is not modelled on the chain; it is the chain.</li>
 </ul>
 <h3 id="73-what-dsh-must-be-able-to-do-with-it">7.3 What DSH must be able to do with it</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Chain step</th>
@@ -991,9 +1020,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A fourth routing rule invented inside DSH would be a governance hole with no audit trail</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="74-the-artifact-map">7.4 The artifact map</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Artifact</th>
@@ -1040,9 +1069,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Router, panel (§6.4)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="75-chain-acceptance-criteria">7.5 Chain acceptance criteria</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Id</th>
@@ -1079,7 +1108,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>The verifier's independence is structural, not promised: a separate session, a separate worktree or no worktree at all, and no read access to the build's uncommitted state</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>What Workstream D does not change.</strong> The chain's guardrails bind DSH exactly as they bind me: no auto-merge, no push without your word, never weaken a product rule to green a test, never put a secret in a fixture, English only to you.</p>
 <h2 id="8-governance">8. Governance</h2>
 <ol type="1">
@@ -1095,7 +1124,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ol>
 <h2 id="9-security-and-privacy-threat-model">9. Security and privacy threat model</h2>
 <p>The article's §8.4 names the risk plainly: event-driven agents take in more untrusted input, and credentials that enter a model's context can leak through normal execution. Mapped to this Mac:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Threat</th>
@@ -1135,10 +1164,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Staged manifests, no bare npm names, licence reading, your sign-off, Safe Mode first run</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="10-metrics-and-slos">10. Metrics and SLOs</h2>
 <p>Targets are shaped by the article's own measurements, scaled to one Mac — not copied as promises.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Metric</th>
@@ -1193,9 +1222,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Fail-closed, not fail-stuck</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="11-delivery-plan">11. Delivery plan</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Phase</th>
@@ -1242,10 +1271,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>receipts + a monthly note</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Read the table through the chain.</strong> Phase 0 closes what <code>app-plan</code> leaves to build time; phase 1 <em>is</em> <code>to-tickets</code>; phase 2 is the chain's review gate; phase 3 is the owner-only install; phase 4 <em>is</em> <code>app-verify</code>, producing the scorecard at <code>docs/reviews/dsh-maio-nexus-acceptance.md</code>; phase 5 is the operational life the chain deliberately leaves to a human.</p>
 <h2 id="12-risks">12. Risks</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Risk</th>
@@ -1322,10 +1351,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Separate session and path, G2/G7 tested rather than promised, and the builder's brief forbids the acceptance directory</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="13-decision-register--settled-2026-11-02">13. Decision register — settled 2026-11-02</h2>
 <p>Your answers, exactly as given, and what each one locks. The rejected option stays on the page: if you change your mind, you should be able to see what you turned down and why it lost.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -1393,11 +1422,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A dated edition per revision. Four copies of one plan, and every link pointing at a different one.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Note carried from v7.</strong> Your answer 3 was given before I found that Claude had installed the whole video lane at 12:06. The order still holds, but it has become a <strong>wiring</strong> order: expose the installed lane to DSH, add stills (mflux) next, and leave Blender MCP as the deferred 3D door it is. No decision is re-opened — only its first step changed from <em>install</em> to <em>point at what exists</em>.</p>
 <p><strong>What this unlocks.</strong> Phase 0 (alignment) and phase 1 (staging) are mine and start now. Phase 2 is a manifest review, not another decision round: the only human gate left before anything runs is you reading the staged bundle and saying install. Phase 3 is your hands on the keyboard.</p>
 <h2 id="14-evidence-ledger--measured-2026-11-02-1720-and-1805-sast">14. Evidence ledger — measured 2026-11-02, 17:20 and 18:05 SAST</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Claim</th>
@@ -1542,7 +1571,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>present, 10,637 B — the fallback when council and gate are absent (G5)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="15-out-of-scope">15. Out of scope</h2>
 <p>Installing any plugin without your sign-off; writing to the vault from a plugin; sending credentials to any plugin, gate or sandbox; auto-merging upstream code; replacing Hindsight, Mnemosyne or Beast with a community store; building against a memory provider that is not active; pointing the prototype at a real repository without an allowlist and observe mode; paying for stock footage, render farms or hosted video models; adding a cloud Agent Loop or BYOM daemon (it would need its own threat model); <strong>connecting DSH to Discord or Telegram</strong> — no bot token, no gateway, no inbound webhook, at any phase.</p>
 <h2 id="16-implementation-status--v01-installed-2026-11-02">16. Implementation status — v0.1, installed 2026-11-02</h2>

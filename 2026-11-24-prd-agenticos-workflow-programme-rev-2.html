@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -166,7 +195,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="2-why-it-matters--evidence">2. Why it matters — evidence</h2>
 <p>Measured this session; literal outputs in <code>AI-Drive/Agent-Output/adrianna/agenticos-workflows-2026-11-24/PRD-EVIDENCE.md</code>.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>ID</th>
@@ -261,10 +290,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Projects v3 needs wider OAuth scopes; filing into Projects is not available yet</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="3-what-exists-today">3. What exists today</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Workflow</th>
@@ -304,7 +333,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>1 succeeded; 7 open / 4 blockers</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Each is 5–8 nodes, one or two model calls, under two minutes.</p>
 <p><strong>Constraints that shape every decision.</strong> A graph cannot discover a route mid-run — every branch is declared, and judgment belongs in <code>ai.classify</code>/<code>ai.extract</code> with a confidence floor. Python is arithmetic only (E15). Table reads page at 100 (E16). Publishing grants unattended authority, so the watchdog precedes every schedule. The unit bots already hold a routine fleet (E2). Workflows cannot write the vault.</p>
 <hr />
@@ -328,7 +357,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <p>Settled: <strong>the pattern is general, the data and the reader are specific.</strong> The two demo-easy lanes (L1 research, L2 intake) stay utilities, not the centre. A lane is only proposed when its register and its reader both exist.</p>
 <h3 id="52-lane-register">5.2 Lane register</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -463,7 +492,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>deferred — no readable unit source (§12.4)</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Build order: L5 → L6 → L7 → L8 → L9 → L10 → L11 → L12.</strong> L5 and L6 come first because everything else stands on inputs whose freshness is unknown (L5) and on schedules nobody is watching (L6). L7 and L10 are the first lanes that prove the programme changes a register rather than describing it.</p>
 <p><strong>Before L7 is built:</strong> confirm findings and ledger share a reliable typed key. If they do not, the key is the work — automating a fuzzy match is worse than no lane.</p>
 <p><strong>Explicit non-builds.</strong> No per-unit copies (§5.1). No customer chatbot. No third standalone Monday memo: L3 and L4 fold into one reading habit when L7 lands, rather than a fourth voice. No workflow that files into Zoho Projects until the Projects scope exists (P2). No new research variant until a unit brings a recurring question and a named consumer.</p>
@@ -502,7 +531,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>A lane that cannot fill this in is not ready to publish, however green its test run. This is the programme's governance spine: without it, the failure mode is many green workflows producing polished, unowned messages (§9 R2).</p>
 <hr />
 <h2 id="6-phases">6. Phases</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Phase</th>
@@ -547,7 +576,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A real read returns records without a scope error</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="7-acceptance-criteria">7. Acceptance criteria</h2>
 <p>Runnable against the live instance from the host (<code>ssh macserver</code>; token from <code>~/agenticos/owner-credentials.txt</code>). Each names its proving command and pass condition.</p>
@@ -600,7 +629,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="10-review-record--round-1">10. Review record — round 1</h2>
 <h3 id="lanes-run-and-what-actually-came-back">Lanes run, and what actually came back</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Reviewer</th>
@@ -635,10 +664,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Full six-part assessment, 6,625 bytes</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Three independent opinions, three different families. The MoA synthesis is missing and is not substituted for.</p>
 <h3 id="findings-adjudicated">Findings, adjudicated</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -755,7 +784,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>§5.1, and the build order puts four register lanes ahead of any research work</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="corrections-to-my-own-rev-1">Corrections to my own rev 1</h3>
 <ul>
 <li>The claim "all four MCP connections report zero cached tools" was wrong — my inventory read the JSON key <code>tools</code> instead of <code>last_tools</code>. Recorded as a correction in PRD-EVIDENCE.md, and the panel brief carried the error, which is why two reviewers reasoned from it.</li>
@@ -763,7 +792,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <hr />
 <h2 id="11-decisions--who-decides-what">11. Decisions — who decides what</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -810,12 +839,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>open</strong> — advisory; the agent does not change an environment gate</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Nothing here spends money, signs anything, or publishes a workflow. D1–D5 are the owner's.</p>
 <hr />
 <h2 id="12-implementation-record--what-shipped-at-2026-11-25-0010">12. Implementation record — what shipped at 2026-11-25 00:10</h2>
 <p>Twelve workflows exist (four from the first build, one connector probe, seven built tonight). Every one returns <code>graph_valid: true</code>; eleven have a succeeded test run and the twelfth parks at its approval by design. None is published. Contracts for all twelve are in <code>AgenticOS/contracts/</code> (§5.8).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Lane</th>
@@ -868,7 +897,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Returned live CRM module metadata (<code>api_name</code>, module ids) through <code>mcp.call</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="121-what-the-numbers-say-about-the-estate">12.1 What the numbers say about the estate</h3>
 <ul>
 <li>The ledger has not been written since <strong>2026-11-23 06:31</strong> — the checks that prove the platform is being watched are themselves unwatched. That is the single most important finding of the night.</li>
@@ -882,7 +911,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h3 id="124-deferred--l12-unit-research-pack">12.4 Deferred — L12 Unit Research Pack</h3>
 <p>L12 needs a unit's own knowledge base or registers as its internal source. No node can search a unit knowledge base (no knowledge-base route is exposed, and <code>knowledge.search</code> needs a collection id we do not have), and the Document Library Drawers register is an index of documents, not of knowledge. Building L12 now would be a research lane wearing a unit's name. It waits for a readable unit source — the same class of gap as §12.2.</p>
 <h3 id="125-deviations-from-the-plan-each-stated-rather-than-hidden">12.5 Deviations from the plan, each stated rather than hidden</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Plan</th>
@@ -912,9 +941,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>read</code> demands a service that exists in the map; "empty path" produced <code>Error executing tool read</code>. The lane now takes a real service and path and returned live CRM metadata</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="126-acceptance-criteria-re-run-against-the-implementation">12.6 Acceptance criteria, re-run against the implementation</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Criterion (§7)</th>
@@ -971,6 +1000,6 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>L5–L11 use 0 model calls; L1–L2 use 1</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>

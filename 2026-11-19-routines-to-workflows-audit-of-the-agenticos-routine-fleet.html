@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -132,7 +161,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>| | Count | <em>Routines in total</em> | <strong>132</strong> <em>Active</em> | <strong>93</strong> <em>Paused</em> | <strong>39</strong> <em>Distinct routine templates</em> | <strong>11</strong> <em>Unit bots carrying them</em> | <strong>13</strong> (ADM, DID, EXP, FIN, FXL, FXS, HRM, ITC, MKT, NVP, PPP, SAL, TLF) <em>Event-triggered routines</em> | <strong>0</strong> — all 132 are cron <em>Workflows before today</em> | <strong>0</strong> (no versions, no runs) <em>Routines that have ever fired</em> | <strong>4</strong> — FIN <code>Weekly SOP audit</code>, ITC <code>ClickUp overdue chase</code>, ITC <code>Friday stand-up pack</code>, ITC <code>Unassigned work triage</code>, all on 19 Nov during testing</p>
 <p>Every unit bot is <code>published</code>, carries 9–13 capabilities and <strong>zero MCP servers</strong>: they do not reach ClickUp, Zoho or anything else themselves. They read a dated snapshot that a nightly generator writes into a standing context document, <code>ROUTINE FEED — &lt;UNIT&gt;</code>. That is the whole data boundary, and it is the fact that decides the conversion plan below.</p>
 <h3 id="the-eleven-templates">The eleven templates</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Template</th>
@@ -221,7 +250,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>$1</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The staggering is deliberate — thirteen bots three minutes apart so the model lane and the ClickUp read are not hit at once. The one exception, <code>Weekly SOP audit</code>, puts all thirteen on the same minute, which is the one place a queue collision is possible.</p>
 <p>The three paused templates are the ones waiting on Zoho scopes that the organization does not have yet (Mail, People, WorkDrive).</p>
 <h3 id="three-things-the-audit-found-that-matter-more-than-the-conversion">Three things the audit found that matter more than the conversion</h3>
@@ -235,7 +264,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>A workflow buys a fixed route, a run record per step, retry from the step that failed, error routing, a per-run budget, and a draft you can test before it goes live. It costs you the model's freedom to decide the shape of the job — the shape is drawn, and changing it means republishing.</p>
 <p>That trade wins exactly when <strong>the job has a shape</strong>. Splitting the eleven on that test:</p>
 <p><strong>Convert — the job is a sequence with arithmetic in it (5 templates)</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Template</th>
@@ -264,7 +293,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>the inventory of what exists against what the unit actually works on</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Convert later (2)</strong> — <code>Context base drift</code> and <code>Tables base reconciliation</code>: the value is in the diff step, and a diff needs a machine-readable second side that does not exist today.</p>
 <p><strong>Do not convert (4)</strong> — <code>Weekly SOP audit</code> is a skill-driven judgement call with no fixed route; a workflow around it would add a wrapper and no determinism (and its <code>read_skill</code> approval parks either way). <code>Team Inbox zero</code>, <code>Weekly hours check</code> and <code>WorkDrive STS tidy</code> are paused for a <strong>missing data source</strong>, and a workflow cannot manufacture a source — converting them would produce 39 beautifully audited failures.</p>
 <hr />

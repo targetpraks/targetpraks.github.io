@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -149,7 +178,7 @@ paperclip backup: /Volumes/Hiksemi 1TB/AI-Drive/Backups/paperclip/paperclip-2026
 [2026-11-17 03:32:04] backups FAILED (2026-11-17) — constellation dump produced no valid file; every other lane completed</code></pre>
 <p>Script exit 9 by design after the Constellation failure. Paperclip and Hindsight both completed before it. (The <code>no matches found:</code> line is the cleanup glob finding nothing to delete — harmless, it fires every night.)</p>
 <h2 id="lanes">Lanes</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Lane</th>
@@ -208,7 +237,7 @@ paperclip backup: /Volumes/Hiksemi 1TB/AI-Drive/Backups/paperclip/paperclip-2026
 <td>see below</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="findings">Findings</h2>
 <h3 id="r1--constellation--11-nights-with-no-valid-dump-and-the-source-is-empty">R1 · Constellation — 11 nights with no valid dump, and the source is empty</h3>
 <p>Every run from <strong>2026-11-07 through 2026-11-17</strong> failed identically at the size floor (2026-11-16 produced no run at all — see A1) — the log's own verdict line is <code>backups FAILED (&lt;date&gt;) — constellation dump produced no valid file; every other lane completed</code>, and the per-night detail shows a partial of 5,652–5,658 bytes against a 102,400-byte floor:</p>
@@ -221,7 +250,7 @@ paperclip backup: /Volumes/Hiksemi 1TB/AI-Drive/Backups/paperclip/paperclip-2026
 <li>The container is healthy: <code>running restarts=0</code>, <code>pg_dump</code> exits 0 with empty stderr</li>
 </ul>
 <p>The last dump that still holds the real data is <strong><code>constellation/2026-11-06.sql.gz</code></strong> (1,830,344 B, <code>gzip -t</code> OK, 29 COPY blocks):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Table</th>
@@ -242,10 +271,10 @@ paperclip backup: /Volumes/Hiksemi 1TB/AI-Drive/Backups/paperclip/paperclip-2026
 <td>106</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>So the data disappeared from the live database between the 2026-11-06 03:30 run and the 2026-11-07 03:30 run. The dumps from 2026-11-03, 11-04, 11-05 also hold data (all ~1.83 MB). <strong>No other copy of Constellation data with rows exists on this Mac</strong> — a search of AI-Drive and <code>~/.config/maio-stack/backups</code> for files matching <code>*constellation*</code> over 100 KB returns no dump. I could not establish <em>why</em> the database was emptied from the logs available; what is certain is that it is empty now and the backup lane has been telling us so every night for 11 nights.</p>
 <p><strong>Urgent:</strong> the retention sweep in <code>backup.sh</code> ends every run with <code>find "$D" -type f -mtime +14 -delete</code>. Ages measured now:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Dump</th>
@@ -275,7 +304,7 @@ paperclip backup: /Volumes/Hiksemi 1TB/AI-Drive/Backups/paperclip/paperclip-2026
 <td><strong>2026-11-21 03:30</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>In <strong>four nights</strong> the only surviving copy of 43 staff records, 10,304 responses and 106 consents gets deleted as routine housekeeping.</p>
 <h3 id="r2--home-assistant--no-snapshot-has-ever-been-produced">R2 · Home Assistant — no snapshot has ever been produced</h3>
 <p><code>com.maio.home-assistant-backup</code> (daily 03:20, <code>/Volumes/Hiksemi 1TB/AI-Drive/backups/home-assistant</code>) ran today and exited 1. Its log contains only errors and never a single <code>backup ok</code> line:</p>
@@ -300,7 +329,7 @@ AI-Drive volume not responsive (probe failed/timeout) - aborting</code></pre>
 <p>Two aborts, nine minutes apart: the first hit the wedge signature (<code>Interrupted system call</code> on a plain <code>touch</code>), the second found the path gone entirely. The volume is healthy now (read/write OK, <code>gzip -t</code> clean on both of last night's archives, 25% used), and the 2026-11-17 run completed normally. The related night-check report for 2026-11-16 is also missing from <code>AI-Drive/Agent-Output/courage/</code> — the only gap in that series — which fits one and the same volume outage. This is the known Hiksemi wedge mode: the mount stays listed and reads hang or return EINTR instead of erroring, so only a hard probe catches it. The probe did its job; the consequence is a lost night that nobody was told about until now.</p>
 <h3 id="a2--the-14-day-sweep-caps-the-top-8s-own-8-week-retention">A2 · The 14-day sweep caps the Top 8's own 8-week retention</h3>
 <p><code>top8/tools/ops/backup.sh</code> keeps the newest <strong>8</strong> bundles. Only <strong>2</strong> exist, and the reason is the same blanket sweep:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Bundle</th>
@@ -320,7 +349,7 @@ AI-Drive volume not responsive (probe failed/timeout) - aborting</code></pre>
 <td>2026-11-30</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Top 8 is a git bundle, so this is a shorter history window than intended (≈2 weeks instead of ≈8), not data loss yet. Same mechanism as R1's deletion; one fix covers both.</p>
 <h3 id="i1--two-log-anomalies-noted-not-judged">I1 · Two log anomalies, noted not judged</h3>
 <ul>

@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -142,7 +171,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="kw">classDef</span> <span class="fu">good</span> <span class="at">fill:</span><span class="im">#123522</span>,<span class="at">stroke:</span><span class="im">#39d353</span>,<span class="at">color:</span><span class="im">#fff</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">class</span> <span class="dt">E</span>,<span class="dt">G</span>,<span class="dt">H</span>,<span class="dt">I</span>,<span class="dt">J</span>,<span class="dt">K</span> <span class="fu">bad</span></span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">class</span> <span class="dt">B</span>,<span class="dt">C</span>,<span class="dt">D</span>,<span class="dt">F</span> <span class="fu">good</span></span></code></pre></div>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Lane</th>
@@ -187,7 +216,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>empty dirs are correct — both decommissioned (2026-11-09 / 2026-10-19), lanes removed from <code>backup.sh</code> on purpose</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>find -type f -mtime +14 -delete</code> (the script's own prune) is the only thing that removed anything last night; it ran inside the 03:30 job.</p>
 <h2 id="finding-1--the-staff-assessment-database-is-empty-and-the-nightly-backup-hides-it">Finding 1 — the staff assessment database is empty, and the nightly "backup" hides it</h2>
 <p>The Constellation dump is a faithful copy of an <strong>empty</strong> database.</p>
@@ -212,7 +241,7 @@ pg_class.&quot;Staff&quot; relation file: 0 bytes, mtime 2026-11-06 19:35:45 UTC
 2026-11-25 03:53:53 :3214 still not healthy ~60s after start (nothing listening)</code></pre>
 <p>The schema today is also <strong>older than the data that was last dumped</strong>: 28 tables versus 32 on 18 Nov — <code>AssessmentProgrammeVersion</code>, <code>ProcessingRestriction</code>, <code>ProgrammeAssignment</code> and <code>_prisma_migrations</code> are all absent, and <code>_prisma_migrations</code> is exactly the table the app's startup bootstrap needs. So the current schema looks built by <code>prisma db push</code> rather than <code>migrate deploy</code>, on an older schema version than the app expects.</p>
 <h3 id="the-two-surviving-data-bearing-copies-both-outside-the-daily-lane">The two surviving data-bearing copies (both outside the daily lane)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Copy</th>
@@ -235,7 +264,7 @@ pg_class.&quot;Staff&quot; relation file: 0 bytes, mtime 2026-11-06 19:35:45 UTC
 <td>45 Staff, 43 User, 94 Consent, 1,316 Score, 25 tables</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The 18 Nov copy is the newest data on this machine. It is <strong>not</strong> protected from the prune.</p>
 <h3 id="why-the-nightly-check-said-green">Why the nightly check said green</h3>
 <p><code>backup.sh</code> promotes the dump when the file is ≥ 2,048 bytes, passes <code>gzip -t</code>, and the first 400 KB contain the string <code>PostgreSQL database dump</code>. A schema-only dump satisfies all three — an empty database dumps as a perfectly valid 5.6 KB gzip. (On 24 Nov the older 100 KB floor did reject the same empty dump; the floor was lowered to a structural check that night, so from 25 Nov the empty dump passes. The floor was not the real problem.)</p>
@@ -268,7 +297,7 @@ Crossing the 14-day line in the next 7 days:
 <li><strong>Note.</strong> <code>docker logs constellation-dev-pg</code> shows repeated <code>database system was not properly shut down; automatic recovery in progress</code> (11 Nov, 13 Nov, 16 Nov, 17 Nov, 19 Nov, 23 Nov) — the Colima VM is being hard-killed, not shut down. No corruption visible, but each of those is an unclean stop of the staff database.</li>
 </ul>
 <h2 id="history--this-is-the-third-report-on-the-same-lane-and-the-last-signal-was-switched-off">History — this is the third report on the same lane, and the last signal was switched off</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Date</th>
@@ -298,7 +327,7 @@ Crossing the 14-day line in the next 7 days:
 <td>the same empty database now <strong>passes</strong> that check → "backups OK", exit 0</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The 18 Nov warning came true: <code>Backups/constellation/</code> today holds only <code>2026-11-25.sql.gz</code>. The <code>2026-11-06.sql.gz</code> recovery copy was deleted as predicted, and no one restored the data in between — so the nightly lane went from <em>loudly red</em> to <em>quietly green</em> while the condition it was reporting is unchanged. That is the part worth fixing first: the check must fail on an empty dump, or the next report is another green night over an empty database.</p>
 <h2 id="what-i-propose-ricardo-decides--i-changed-nothing">What I propose (Ricardo decides — I changed nothing)</h2>
 <ol type="1">

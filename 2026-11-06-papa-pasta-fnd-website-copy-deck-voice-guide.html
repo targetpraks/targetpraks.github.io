@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -131,7 +160,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>This deck is the authority for every word on the eight pages of the section 4.1 inventory. A developer implements copy from here; if the build needs a string that is not here, the string comes back to this deck first — it does not get invented in code.</p>
 <p><strong>Key convention</strong> — <code>page.section.element</code> <code>page</code> = home, create, brand, interest, franchise, gallery, seasonal, legal. <code>section</code> = the spec component (hero, proof, model, card, form…). <code>element</code> = h1, sub, cta.primary, label, error, empty, meta.title.</p>
 <p><strong>Status vocabulary</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Status</th>
@@ -160,7 +189,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Awaiting approval (§2 claims or §5 legal review). Must not be deployed, even as a placeholder that looks final.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Evidence baseline.</strong> On 2026-11-06 the routes <code>/</code>, <code>/create</code>, <code>/brand</code>, <code>/interest</code>, <code>/gallery</code> returned HTTP 200 and their rendered copy was captured; <code>/franchise</code>, <code>/seasonal</code>, <code>/legal</code> returned HTTP 404. That is the five-of-eight gap this deck closes.</p>
 <p><strong>The deck at a glance</strong></p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
@@ -174,7 +203,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="1-voice-guide">1. Voice guide</h2>
 <h3 id="11-the-register-spec-23-operationalised">1.1 The register (spec §2.3, operationalised)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Context</th>
@@ -215,7 +244,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Would a regulator read this as a promise of income? If yes, rewrite.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>One voice at four volumes. The page never changes personality between sections: a confrontational hero is followed by a quiet, factual proof bar, not by a second shout.</p>
 <h3 id="12-sentence-mechanics">1.2 Sentence mechanics</h3>
 <ul>
@@ -245,7 +274,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>The spec's own hero sub-copy cannot publish as written.</strong> "2 crew. 40sqm. 11-month payback." contains one approved target (40sqm), one unverified operating claim (2 crew) and one prohibited earnings claim (11-month payback). See C-01, C-03, C-04.</li>
 </ol>
 <h3 id="15-micro-copy-rules-system-writing">1.5 Micro-copy rules (system writing)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Element</th>
@@ -305,7 +334,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>"See how the model works" — never "read more"</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="16-seo-and-metadata-spec-81">1.6 SEO and metadata (spec §8.1)</h3>
 <ul>
 <li>One H1 per page. Title ≤ 60 characters, meta description ≤ 155. Both keyed <code>meta.title</code> / <code>meta.description</code>.</li>
@@ -323,7 +352,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="2-claims-register--money-and-legal-gate">2. Claims register — money and legal gate</h2>
 <p>Every row below is a number or a promise that copy wants to make. Nothing in the <strong>LOCKED</strong> column publishes until the named approver signs, in writing, on PAP-1720 (§6).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>ID</th>
@@ -405,11 +434,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Keep the numbers, add "figures are public store counts" plus a source footnote (D-09)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Rule for the build:</strong> any string whose status is <code>LOCKED</code> renders an approved placeholder from the column above — never a blank, never a number pulled from an old deck.</p>
 <hr />
 <h2 id="3-page-inventory-and-build-status">3. Page inventory and build status</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -504,13 +533,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Legal / disclosure</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="4-page-decks">4. Page decks</h2>
 <h3 id="41-homepage---spec-42">4.1 Homepage — <code>/</code> (spec §4.2)</h3>
 <p>Flow: hero → proof bar → contrarian model → audience advantage → concept mockups → journey entry. Register: Hook, then Social proof, then CTA. Live strings transcribed; two hero strings are LOCKED.</p>
 <p><strong>Hero</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -551,9 +580,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>→ <code>/interest</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Social proof bar</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -588,9 +617,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Screen-reader equivalent of the bar</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Territory strip</strong> (live, under the hero)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -625,9 +654,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Not a count of anything real; reads as a data error beside the other three. <strong>Recommend deleting</strong> (D-02)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The contrarian model</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -710,9 +739,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>"Most powerful … in modern franchising" is a superlative — but it is an opinion about our own model, not a financial claim. <strong>Keep</strong>; noted for legal so it is a conscious decision</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The audience advantage</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -783,9 +812,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Numbering is typographic, not ordinal priority</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Concept mockups</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -832,9 +861,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Journey entry</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -869,9 +898,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Arrow is allowed on journey CTAs only</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Metadata</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -891,12 +920,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Choose your city's colour, build your Crest and see the Papa Pasta territories open for a compact, fresh-pasta store.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h3 id="42-crest-creator--create-spec-5156">4.2 Crest Creator — <code>/create</code> (spec §5.1–5.6)</h3>
 <p>UI-first: 100–200 words. Register: product claims (precise) and CTA (invitation). The live build carries the headline trio; the micro-copy below is new and is what makes the tool usable and compliant.</p>
 <p><strong>Entry</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -925,9 +954,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Three-region picker</strong> (spec §5.2)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -986,9 +1015,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Name and save</strong> (spec §5.4)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1041,9 +1070,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Live: "Crest export failed". System language → human language (§1.5)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The Realisation Moment™</strong> (spec §3.3, §5.5)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1096,9 +1125,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Same disclosure duty as the homepage</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Exit</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1121,9 +1150,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>→ <code>/gallery</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Metadata</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1143,12 +1172,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Choose three colours, name your Crest and see it on the bag, the cup and the window. No sign-up needed.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h3 id="43-brand-story--brand-spec-45">4.3 Brand Story — <code>/brand</code> (spec §4.5)</h3>
 <p>800–1,200 words. Register: product claims (precise, confident) with a hook opening. The live build frames the page as two obsessions rather than the spec's three acts — see D-05; the live framing is stronger and already shipped, so the deck adopts it and records the spec deviation.</p>
 <p><strong>Opening</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1177,9 +1206,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>"Franchise Applicant" capitalised per §1.3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Act structure</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1262,9 +1291,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>This is the honest description of the territory states (§3.2) — keep it word for word</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The craft system</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1347,9 +1376,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Colour and Territory</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1390,9 +1419,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>→ <code>/seasonal</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Metadata</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1412,12 +1441,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Why Papa Pasta makes pasta in-store at 6am and gives every Territory its own colour. The story behind the Crest.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h3 id="44-express-interest--interest-spec-43">4.4 Express Interest — <code>/interest</code> (spec §4.3)</h3>
 <p>300–400 words; the map does the talking. Register: social proof (factual), CTA (invitation), legal (consent). Live strings transcribed; the territory-card states and the form are where the copy must be exact, because each one changes what the visitor is told they are doing.</p>
 <p><strong>Entry</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1446,9 +1475,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>"Exclusive area" is a contract term; confirm with legal that exclusivity is as stated (C-13)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Map</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1549,9 +1578,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Spec §4.3 hover tooltip</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Territory detail card</strong> — the three states (spec §3.2)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1634,9 +1663,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Only shown on committed Territories</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Interest form</strong> (spec §4.3, POPIA consent)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1731,9 +1760,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>The last sentence is the point: it keeps the page honest about what an expression of interest is</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Metadata</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1753,11 +1782,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Browse open Papa Pasta franchise territories across all nine provinces, search your suburb and express interest in the one you want.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h3 id="45-community-gallery--gallery-spec-46">4.5 Community Gallery — <code>/gallery</code> (spec §4.6)</h3>
 <p>100–200 words; the Crests speak. Register: social proof, CTA.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1876,12 +1905,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h3 id="46-franchise-opportunities--franchise-spec-44">4.6 Franchise Opportunities — <code>/franchise</code> (spec §4.4)</h3>
 <p><strong>NEW PAGE — no live build.</strong> 600–800 words. Register: product claims (precise) + CTA (invitation) + legal (disclosure). Two strings are LOCKED on the money gate (C-01, C-02); the page is written so it converts without either.</p>
 <p><strong>Hero</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1922,9 +1951,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>→ <code>/interest</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The model</strong> (spec §4.4)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -1977,9 +2006,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>The same disclosure as the homepage, carried to the page where it matters most</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Investment</strong> (spec §12.1 item 7 — LOCKED)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2038,9 +2067,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Only publishes once C-02 is approved; the exclusion sentence is standard disclosure</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Payback</strong> (C-01)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2069,9 +2098,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>→ form</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Application form</strong> (spec §4.4)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2166,9 +2195,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>FAQ</strong> (short answers; the questions are the objections)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2238,9 +2267,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>All nine provinces are mapped. The open ones are on the Territory map.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Disclosure footer</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2257,9 +2286,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>The one paragraph that must be on the page in every state</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Metadata</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2279,11 +2308,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A ~40 sqm fresh-pasta store, a tight menu and your own Crest. See how a Papa Pasta franchise is built up, Territory by Territory.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h3 id="47-seasonal-drop--seasonal-spec-47">4.7 Seasonal Drop — <code>/seasonal</code> (spec §4.7)</h3>
 <p><strong>NEW PAGE.</strong> 200–300 words. Register: hook (bold), CTA (invitation). The page's whole job is freshness and a real deadline — so every urgency string is tied to a stored date, never to a timer that resets.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2396,13 +2425,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Urgency rules for this page (all copy):</strong> no "hurry", "last chance", "act now". The countdown states the fact; the register does not push. A rotating palette is genuinely time-bound — that is enough.</p>
 <hr />
 <h3 id="48-legal-and-privacy--legal-spec-41-82-122">4.8 Legal and Privacy — <code>/legal</code> (spec §4.1, §8.2, §12.2)</h3>
 <p><strong>NEW PAGE. LEGAL REVIEW REQUIRED — no clause text on this page is final and none of it publishes until a South African attorney has reviewed it.</strong> My job here is structure, plain-language summaries and the copy around the clauses. The page is also the one place where the "no earnings promises" rule (spec §2.3) becomes a legal instrument rather than a tone.</p>
 <p><strong>Page frame</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2467,9 +2496,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>1 · Who we are</strong> — <code>[LEGAL REVIEW]</code>, placeholders until the registered entity details exist (D-07)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2509,9 +2538,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Papa Pasta is a South African business. This site recruits franchise applicants; it does not sell food or take orders.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>2 · Terms of use</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2536,9 +2565,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Colours and names you choose in the Crest Creator are yours to keep and share. Using the Crest Creator does not grant a licence to the Papa Pasta name, the Living Crest™, or the marks of any Territory.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>3 · Privacy and POPIA</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2593,9 +2622,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>[ATTORNEY TEXT]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>4 · Cookies and consent banner</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2642,9 +2671,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>→ <code>/legal#cookies</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>5 · Franchise disclosure</strong> (CPA)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2669,9 +2698,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Any investment or performance figure we discuss with you is given in writing, for your site, on the date it is given. It is not a forecast of your results.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>6 · Gallery terms</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2691,9 +2720,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>[ATTORNEY TEXT — submission licence, moderation, removal, voting integrity]</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>7 · Contact and complaints</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2713,9 +2742,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Information Regulator of South Africa — complaints about how we handle your personal information.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Metadata</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Key</th>
@@ -2735,11 +2764,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Terms of use, POPIA privacy notice, cookie choices and franchise disclosure for the Papa Pasta franchise site.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="5-conflicts-gaps-and-decisions">5. Conflicts, gaps and decisions</h2>
 <p>Four secondary claims surfaced while writing the decks. None is a figure, so none sits in §2, but each needs a signature before it publishes.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>ID</th>
@@ -2779,9 +2808,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Ops to confirm the waitlist is ordered, or soften to "we'll let you know first"</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Decisions</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -2858,7 +2887,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>FIX strings are already in §4.2; implement as written</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="6-sign-off--what-ricardo-is-being-asked-for">6. Sign-off — what Ricardo is being asked for</h2>
 <p>Copy sign-off is one decision per line. Until a line is signed, the corresponding <code>LOCKED</code> strings stay off the site.</p>
@@ -2896,7 +2925,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="7-evidence-and-limits">7. Evidence and limits</h2>
 <p><strong>Route status, checked 2026-11-06:</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Route</th>
@@ -2946,7 +2975,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>None — deck §4.8</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>How the live copy was captured.</strong> Rendered page text returned by the page-extraction tool for each route, plus the page's own client bundle (<code>build/assets/&lt;page&gt;-*.js</code>) for strings the render does not expose — which is where the territory-card and creator error strings came from. Where a string appears only in the bundle, it is marked as transcribed but not visually verified; the build should treat the deck as authority and the transcript as a cross-check.</p>
 <p><strong>Source spec.</strong> Local export of <code>06.23 FND Sales Platform — Website Spec v3.0</code> (<code>AI-Space/Tools/Superhuman-Docs-Export/Papa Pasta Concept Build/096-06.08 …Website Spec v3.0.md</code>), sections 2.3, 3.1–3.3, 4.1–4.7, 5.1–5.6, 8.1–8.3, 12.1.</p>
 <p><strong>What this deck does not do.</strong></p>

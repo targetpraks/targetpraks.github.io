@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,14 +145,17 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
 
 <h1 id="the-three-quote-purchase-gate--prd">The Three-Quote Purchase Gate — PRD</h1>
 <p><strong>Every purchase needs three quotes, the PDFs on the record, and one approval — then buying carries on as normal. Built entirely inside Zoho Inventory.</strong></p>
-<table>
+<div class="tablewrap"><table>
 <tbody>
 <tr>
 <td>Status</td>
@@ -157,10 +186,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Anything outside Zoho Inventory — no Creator, no Flow, no external app</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="1-what-you-asked-for-and-where-each-piece-lands">1. What you asked for, and where each piece lands</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Your words</th>
@@ -185,7 +214,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>After approval the PO sends, receives and bills with no further gate on that purchase</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Nothing about this is vendor-specific. It applies to whatever a buyer is purchasing.</p>
 <hr />
 <h2 id="2-the-problem">2. The problem</h2>
@@ -232,7 +261,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--</span> <span class="vs">Reject </span><span class="pp">--&gt;</span> <span class="dt">B</span></span></code></pre></div>
 <h3 id="41-the-gate--what-already-exists-and-the-one-choice-left">4.1 The gate — what already exists, and the one choice left</h3>
 <p>Purchase order approval is already on in this org. What is not decided is <strong>who signs</strong>.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Option</th>
@@ -252,14 +281,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Buying waits on Ricardo; Anne and Jaques drop out of the loop</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The switch between Multi-Level and Custom Approval is <strong>UI-only</strong>: the API creates and edits custom rules (<code>POST /settings/approvals</code> → <code>201</code>), but it cannot make a rule the default (<code>is_default</code> comes back <code>false</code> on every write) or change the module's approval type. So Option B is one radio button in Settings → Purchases → Purchase Orders → Approvals, and it is Ricardo's call, because it moves who can authorise money.</p>
 <p>Whichever option is chosen, the gate behaves the same: <strong>send, receive, convert to bill are unavailable until approved.</strong> Verified: <code>can_send_in_mail: false</code> on a pending PO.</p>
 <h3 id="42-the-evidence--three-quotes-on-the-po">4.2 The evidence — three quotes on the PO</h3>
 <p>Two parts, both on the purchase order itself:</p>
 <p><strong>a. Attachments.</strong> The buyer attaches the three supplier PDFs to the PO before submitting. All three are visible to the approver on the same screen, and stay on the record.</p>
 <p><strong>b. Three quote fields.</strong> Add three custom fields to the Purchase Order form:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -294,13 +323,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Empty for a normal buy; see §4.4</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>These fields make the three-quote condition visible on the record the approver is already looking at, and they are what an auditor reads after the attachments have been buried.</p>
 <h3 id="43-the-optional-register-phase-2">4.3 The optional register (phase 2)</h3>
 <p>A Custom Module "Quotation Register" — one record per quote, with supplier, amount, currency, validity date, PO number and the PDF — gives a searchable quote history and a monthly view of what was compared against what.</p>
 <p>It is <strong>not</strong> the gate, and should not be sold as one: it cannot block a PO, and nothing can read it from outside the UI. If you want it, it comes after the gate is live, and it is loaded by the buyer as a second step. My recommendation: <strong>skip it for phase 1</strong> — the PO already carries the three quotes, and a register nobody fills is worse than no register.</p>
 <h3 id="44-exceptions-that-keep-the-rule-usable">4.4 Exceptions that keep the rule usable</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Case</th>
@@ -330,7 +359,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Out of scope of the rule</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The exception field is what makes this survivable: without it, staff invent workarounds; with it, exceptions are visible and countable at month end.</p>
 <h3 id="45-why-not-the-custom-module-as-the-gate">4.5 Why not the custom module as the gate</h3>
 <p>Because it cannot do the job, and the PRD should say so plainly:</p>
@@ -359,7 +388,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>The buyer's request template is the only thing missing from the paperwork, and it costs one paragraph to write. The evidence a monthly audit needs is still the three attachments and five fields on the PO, whoever the vendors were and however they were asked.</p>
 <hr />
 <h2 id="5-what-is-hard-and-what-is-soft">5. What is hard and what is soft</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Control</th>
@@ -399,7 +428,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Bills are not gated in phase 1 — see §8</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The honest sentence:</strong> the system guarantees <em>nothing is sent without an approval</em>; it makes <em>three quotes with PDFs</em> the condition of that approval, checked by a person, on evidence sitting on the same screen. That is the ceiling inside Zoho Inventory.</p>
 <hr />
 <h2 id="6-daily-flow">6. Daily flow</h2>
@@ -414,7 +443,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Rejected → the buyer edits and resubmits; every attempt stays in the approval history.</p>
 <hr />
 <h2 id="7-roles">7. Roles</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Permission</th>
@@ -439,11 +468,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Admins only — keep the admin list small</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Note: an admin can <em>Final Approve</em> any transaction, bypassing the levels. That is a Zoho capability, not a design choice; the control is keeping the admin group small and reviewing the approval history monthly.</p>
 <hr />
 <h2 id="8-risks-and-the-one-side-door">8. Risks and the one side door</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Risk</th>
@@ -472,7 +501,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Start at "all POs", add the R1,000 floor only if petty buying gets noisy</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="9-acceptance-tests">9. Acceptance tests</h2>
 <ol type="1">
@@ -487,7 +516,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ol>
 <hr />
 <h2 id="10-rollout">10. Rollout</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -534,7 +563,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>30 min</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>No support ticket needed, no early-access features, no new module. Everything above is standard Zoho Inventory on the current Zoho One Enterprise plan.</p>
 <hr />
 <h2 id="11-decisions-i-need-from-you">11. Decisions I need from you</h2>
@@ -568,7 +597,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <p><strong>Three-quote evidence — live</strong></p>
 <p>Five Purchase Order custom fields created and read back from the API (<code>GET /settings/customfields?entity_type=purchaseorder</code> returns exactly five, type <code>string</code>):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Field</th>
@@ -597,7 +626,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Text box (single line)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Usage 5/135 on the module. They are <strong>not mandatory</strong> — Zoho offers no conditional-mandatory rule for transaction custom fields, so the approver still makes the three-quote call. The PDFs themselves go on the PO's own Documents area, which has no count limit either.</p>
 <p><strong>How this was done</strong></p>
 <ul>
@@ -612,7 +641,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>The approver may approve a PO they created themselves; Zoho's "allow approvers to approve their own transactions" preference is untouched. Only matters for purchases Ricardo raises himself.</li>
 </ul>
 <p><strong>Acceptance status</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Test</th>
@@ -645,6 +674,6 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Pass by construction — the rule matches every PO with a total</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>

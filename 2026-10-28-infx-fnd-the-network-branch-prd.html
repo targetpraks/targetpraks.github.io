@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,14 +145,17 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
 
 <h1 id="infx-fnd--the-network-branch">INFX FND — the Network branch</h1>
 <p><strong>Franchise network development: territories, pipeline and plan, for three brands that draw a territory in three different ways.</strong></p>
-<table>
+<div class="tablewrap"><table>
 <tbody>
 <tr>
 <td>Version</td>
@@ -153,7 +182,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Ready to build — one open decision at the end</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="0-what-this-document-is">0. What this document is</h2>
 <p>Today INFX FND answers <em>"where is everyone?"</em>. It does not answer <em>"how do we build this network, in what order, for how much, and who owns which ground?"</em> That second question is the whole of franchise network development, and it is the question the three brands are now asking — each with a different answer.</p>
@@ -167,7 +196,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="1-what-exists-today--verified-not-assumed">1. What exists today — verified, not assumed</h2>
 <p>Everything below is in the repository at <code>DevMini/infx-fnd</code> and was exercised in the 0.4.0 verification run (5,073 locations, 61 brands, 135 zones).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Capability</th>
@@ -217,7 +246,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>D2: pins on, closed never default</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Two structural facts decide the design.</strong></p>
 <ul>
 <li><code>zone_set</code> is scoped to a <strong>tenant</strong>, not a <strong>brand</strong>. The 0.4.0 migration even inserts two honest empty sets — <code>the-local-farmer territories</code> and <code>acdc-express territories</code>, source <em>"Awaiting reviewed company boundaries"</em> — because the 135 Papa Pasta polygons must not be copied onto other brands.</li>
@@ -226,7 +255,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="2-the-gap-in-the-brands-own-numbers">2. The gap, in the brands' own numbers</h2>
 <h3 id="21-papa-pasta--three-schemes-one-map">2.1 Papa Pasta — three schemes, one map</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Scheme</th>
@@ -259,9 +288,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>R12,900,000 in territory fees</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The 135-zone set, by tier and priority (computed from the geojson, not estimated):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Dimension</th>
@@ -286,9 +315,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Gauteng 42 · Western Cape 23 · KwaZulu-Natal 21 · Eastern Cape 16 · Limpopo 8 · Free State 7 · Mpumalanga 7 · North West 6 · Northern Cape 5</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The 38-cluster plan, by tier:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Tier</th>
@@ -329,7 +358,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td style="text-align: right;"><strong>R12,900,000</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The arithmetic check that matters.</strong> In the source, <code>zone_roy</code> is <em>not</em> an annual figure, whatever the column name suggests. For cluster GT01: 3% × R7,833,913 target monthly sales = <strong>R235,017</strong> — the stored value, to the rand. Across all 38 clusters the 3% column sums to <strong>R5,377,861</strong> and the 2% column to <strong>R3,585,234</strong>, against R179,261,734 of target monthly sales. A build that labels that column "annual" overstates the zone's income twelvefold. <strong>The unit is a required field, not an inference.</strong></p>
 <blockquote>
 <p>Three schemes cannot be reconciled by choosing one. The 96-zone paper and the 38-cluster plan disagree about the size of a territory (2.8 stores vs 8.2), and the 135-zone set disagrees with both. The product's job is to hold all three as <strong>versions</strong>, let Ricardo compare them, and mark exactly one live per brand.</p>
@@ -345,7 +374,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <p>Twenty-five units at R144,420 is <strong>R3,610,500</strong> of franchisee setup — a number no one can see in the app today, because there is nowhere to put it.</p>
 <h3 id="23-acdc-express--countries-phases-and-a-six-million-rand-box">2.3 ACDC Express — countries, phases and a six-million-rand box</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Fact</th>
@@ -400,9 +429,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Mozambique franchise agreement terms</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The Namibian entry is a four-phase sequence with probabilities attached, from <code>ACDC-Dynamics-Namibia-Expansion-Strategy v2</code> (April 2026):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Phase</th>
@@ -437,13 +466,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Mall development milestone; anchor tenant rights</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>And the site studies that already hold the site-level answer — Springbok (three scored sites, 303 m² recommended at R35–42/m² on a 3+2 lease), Polokwane (two sites, 10/20/30 km drive-distance rings), Brits (536,110 catchment population), George with Knysna and Mossel Bay expansion pages, plus Mozambique and two Namibian franchisee files.</p>
 <p><strong>Seventeen candidate locations are in this PRD's data pack</strong> — 10 South African, 5 Namibian, 1 Mozambican, 1 Eswatini — every one with the document and page it came from.</p>
 <hr />
 <h2 id="3-the-product-decision">3. The product decision</h2>
 <p><strong>Network is a new top-level branch with three surfaces, one shared spine.</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -468,7 +497,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>new <code>network_plan</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Why a branch and not a tab inside Research: Research is organised by <em>evidence and workspaces</em> (one analyst's saved view, a snapshot, a brief). Network is organised by <em>commitments</em> — a territory sold, a site approved, a phase gated. They have different objects, different permissions (fees are money) and different verbs (approve, supersede, sequence). Burying the second inside the first makes both harder to explain.</p>
 <p>Why not a fourth product: every screen reads the same <code>location</code>, <code>brand</code> and <code>zone</code> rows. The map stays the map.</p>
 <hr />
@@ -558,7 +587,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>That shape is the fix for the <code>zone_roy</code> ambiguity in §2.1. A number in this product travels with its unit or it does not travel.</p>
 </blockquote>
 <h3 id="45-invariants--the-part-a-future-feature-cannot-quietly-break">4.5 Invariants — the part a future feature cannot quietly break</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -618,7 +647,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>field allow-list</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="5-the-arithmetic-worked">5. The arithmetic, worked</h2>
 <p>One pure function, <code>planTotals(plan, territories, assumptions)</code>, and three worked cases that become acceptance tests.</p>
@@ -643,7 +672,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="6-api-surface">6. API surface</h2>
 <p>Every endpoint follows the house conventions already in the repo: cursor pagination, <code>revision</code> checks on write, and authorisation decided in the repository layer.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Method and path</th>
@@ -703,7 +732,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>register a study document (no file upload in v1)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>GET /api/network/plans/:id/totals</code> returns the derivation, not just the answer:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span> <span class="dt">&quot;totals&quot;</span><span class="fu">:</span> <span class="fu">{</span> <span class="dt">&quot;territories&quot;</span><span class="fu">:</span> <span class="dv">38</span><span class="fu">,</span> <span class="dt">&quot;target_stores&quot;</span><span class="fu">:</span> <span class="dv">311</span><span class="fu">,</span> <span class="dt">&quot;fees&quot;</span><span class="fu">:</span> <span class="dv">12900000</span><span class="fu">,</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>              <span class="dt">&quot;target_monthly_sales&quot;</span><span class="fu">:</span> <span class="dv">179261734</span><span class="fu">,</span> <span class="dt">&quot;royalty_month&quot;</span><span class="fu">:</span> <span class="dv">8963087</span> <span class="fu">},</span></span>
@@ -731,7 +760,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="8-the-data-pack-this-prd-ships-with">8. The data pack this PRD ships with</h2>
 <p>Three files, in the repo, each carrying its provenance. They are the seed for the first import and the evidence for every number in §2.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>File</th>
@@ -756,12 +785,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>10 SA · 5 NA · 1 MZ · 1 SZ</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Known limitations, stated in the files themselves:</strong> the three Springbok sites share one street-level geocode (the study gives street addresses, not pins), the Polokwane pair share a city centroid, <code>Durbanville</code> is <code>confidence: unverified</code> because the report lives in Cliq and not yet in WorkDrive, and the Eswatini study folder is empty — an evidence gap, not a decision.</p>
 <hr />
 <h2 id="9-acceptance-tests">9. Acceptance tests</h2>
 <p>Each P0 test names the expected value, so "it works" is checkable.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>ID</th>
@@ -846,7 +875,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>identical to the cent (pure function, no clock or random input)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="10-build-order--stages-by-dependency-no-dates">10. Build order — stages by dependency, no dates</h2>
 <p><strong>Stage A — foundations.</strong> Migration for <code>zone_set.brand_id</code>, <code>zone</code> territory columns, <code>study_document</code>, <code>candidate_site</code> additions, <code>network_plan</code>. Backfill Papa Pasta. Exit: F1 passes and the app still renders 5,073 locations and 135 zones.</p>
@@ -857,7 +886,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>Stages A–E are sequential; inside a stage the work is parallel. The incumbent (Zoho Projects briefs, the spreadsheets) keeps running until Stage E ships — the plan is read-only evidence until then.</p>
 <hr />
 <h2 id="11-risks-and-failure-modes">11. Risks and failure modes</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Risk</th>
@@ -902,10 +931,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>§8</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="12-decisions-register">12. Decisions register</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -946,7 +975,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>An "active" plan that computes to zero reads as a bug to every user who sees it.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="13-evidence">13. Evidence</h2>
 <p>Documents, with the folder they live in. WorkDrive links are to the folder that holds the file named beside them.</p>

@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -144,7 +173,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">IB</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;3 forums</span><span class="sc">&lt;br/&gt;</span><span class="st">EXCO · MANCO · SNR EXCO&quot;</span>]</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">T</span>[<span class="st">&quot;tiers: HOF · ZOR · ZEE · COR&quot;</span>]</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">T</span></span></code></pre></div>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Kind</th>
@@ -174,10 +203,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>EXCO, MANCO, SNR EXCO — where the company is governed</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="2-the-map">2. The map</h2>
 <p>Every unit, brand and forum carries one code, one number and one name. This is the list; anything not on it is not in the house.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Code</th>
@@ -301,7 +330,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>AgenticOS Bot</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The code is for speech, the name for filing.</strong> Say FIN, TLF, NVP. File under the Space's own name.</p>
 <h3 id="the-space-is-the-structure">The Space is the structure</h3>
 <p>The sixteen Spaces in the map above <strong>are</strong> the company's structure — not a summary of it. Every number, code and name the company uses comes from them, and a Space is written exactly as ClickUp writes it: <code>BU 01 FIN - Finance</code>, not <code>BU 1 FIN</code>, and not <code>BU 1: Financial Management</code>.</p>
@@ -309,7 +338,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p>The single-digit prefixes still visible in Zoho Projects and in older folder names are that system's own labels. Do not copy them into new work, and do not "correct" them in place — they are pointers into live folders.</p>
 <h3 id="the-engagement-tiers">The engagement tiers</h3>
 <p>Every unit's work is cut by <strong>engagement tier</strong>, because head-office work, franchise-network work and client-facing work are different jobs with different owners:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Tier</th>
@@ -339,7 +368,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>FXS, FXL</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="3-what-each-unit-does--the-functions">3. What each unit does — the functions</h2>
 <p>The authority is <strong>INF Business Unit Functions and Roles 2026</strong> (the 2026 role reference). Where any other document disagrees with it about who does what, at what seniority, in which unit, the role reference wins.</p>
 <h3 id="fin--finance-bu-01">FIN — Finance (BU 01)</h3>
@@ -359,7 +388,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h3 id="the-brands">The brands</h3>
 <p>A brand's functions are its brand standards and its operating model, not the role reference. EXP, TLF, PPP, DID and NVP are covered by their own brand cards, which every brand seat carries.</p>
 <h2 id="4-the-brands">4. The brands</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Brand</th>
@@ -400,12 +429,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Brand folder</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>A brand is not a department and there is no layer between the two. Each of the five brands is a Space and an assistant of its own — BU 07 to BU 10, plus NVP — and brand work is filed in the brand's Space, never in a department's.</p>
 <h2 id="5-how-the-house-is-named--clickup-is-the-format">5. How the house is named — ClickUp is the format</h2>
 <p>The live ClickUp workspace is the reference for names, because it is where work is actually filed. It runs on <strong>two digits</strong>: <code>BU 01 FIN - Finance</code>. The platform's older single-digit forms (<code>BU 1 FIN</code>) are retired.</p>
 <p>Every unit, brand and forum appears on four surfaces, and the name says which you are looking at:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -435,7 +464,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>BU 01 FIN - Finance Knowledge</code> · <code>DID - Divorced Dads Knowledge</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Inside a BU Space, the folders carry the tier and the brand, and the lists carry the whole coordinate:</p>
 <pre><code>Space  BU 01 FIN - Finance
 ├── FIN HOF                     → FIN HOF Briefed-In · Recurring · Projects
@@ -463,7 +492,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <h2 id="7-the-seats--what-exists-and-who-each-one-serves">7. The seats — what exists, and who each one serves</h2>
 <p>Twenty-two seats, all in the Infinity Brands organization. Each answers only from its own unit's or brand's documents and its standing context.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Seat</th>
@@ -533,11 +562,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>platform administration across every environment</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>How to ask.</strong> Pick your unit's channel or Space and ask in plain words, the way you would ask a colleague — for a decision, a figure, a procedure, or where a document lives. <strong>What you get back:</strong> an answer, then the document it came from. <strong>If it cannot find it,</strong> it says so and names what is missing; that is the assistant working correctly, not failing. <strong>If it is wrong,</strong> say which document proves otherwise — the knowledge base is rebuilt from the register or folder you name, so a correction lands for everyone. <strong>Access</strong> is one account per person with a company email; ITC holds the sign-in.</p>
 <p><strong>Two more seats live outside the company, by design.</strong> The box carries a second organization, <code>Ricardo — Personal (scratch)</code>, holding <code>AgenticOS</code> and <code>Architect</code> — old drafts he keeps for himself. Staff never see them, they are not part of the twenty-two, and nothing needs doing about them. If a name ever looks duplicated, check which organization you are in before treating it as a fault.</p>
 <h2 id="8-where-the-truth-lives">8. Where the truth lives</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Question</th>
@@ -570,7 +599,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Part B</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <hr />
 <h1 id="part-b--the-platform">Part B — the platform</h1>
@@ -597,7 +626,7 @@ second door, Ricardo&#39;s tailnet only:
 ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → macserver:8080</code></pre>
 <p><strong>No office-LAN door.</strong> The gateway listens on <code>127.0.0.1:8080</code> only; app and frontend publish <code>127.0.0.1:8000</code> / <code>127.0.0.1:3000</code> only (the <code>192.168.88.226</code> bindings were removed on 17 November 2026). The public edge is the only internet path, and Cloudflare Access sits in front of it.</p>
 <h3 id="11-the-machines">1.1 The machines</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Name</th>
@@ -632,11 +661,11 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td><code>ssh ricardos-mac-mini</code> over the tailnet</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>macserver</code> also runs roughly twenty unrelated staging containers (Constellation prod/staging, signet-staging, infx media and peripherals, papa-pasta-bench, quote-program, …). They are not the platform's business: never stop or reconfigure them without being asked.</p>
 <p><strong>Memory discipline.</strong> <code>macserver</code>'s RAM is shared with those staging containers, so the AgenticOS ceilings are set explicitly in <code>~/agenticos/docker-compose.instance.yml</code>. Raising one ceiling without lowering another risks the whole VM.</p>
 <h3 id="12-paths-on-macserver">1.2 Paths on macserver</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Path</th>
@@ -689,9 +718,9 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td>the live cloudflared tunnel. Mode 700, owned by the <code>srv</code> user — <strong>not readable by us</strong>; the container is <code>restart: unless-stopped</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="13-the-public-door">1.3 The public door</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Fact</th>
@@ -724,7 +753,7 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td><code>FRONTEND_URL</code>, <code>PUBLIC_SITE_URL</code>, <code>PUBLIC_API_URL</code>, <code>PUBLIC_WS_URL</code> in <code>~/agenticos/.env</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The app must know its own name.</strong> When those four values lag behind, the page still loads, but canonical/OpenGraph links and the CSP <code>connect-src</code> point at a host the visitor cannot reach — sign-in and websockets fail with no obvious error. After changing them, <code>./agenticos.sh up</code> and check that the served HTML and its <code>content-security-policy</code> carry the public origin.</p>
 <p><strong>A 200 at the edge is the alarm, not a success:</strong> it means Access is off and the platform is open to the internet. The watchdog checks for exactly that, every ten minutes.</p>
 <p><strong>The company Cloudflare account is not ours to change</strong> — no API token with zone or Zero-Trust rights is held. The service token in the old Cliq document belongs to the <code>ricardo-staging-checks</code> app and does <strong>not</strong> pass this one.</p>
@@ -736,7 +765,7 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <li><strong>Rules:</strong> work on a branch, open a PR, never force-push <code>main</code>, never merge without Ricardo's "Yes merge". Never commit a key, token or <code>.env</code>.</li>
 </ul>
 <h3 id="15-the-other-services-and-where-their-credentials-live">1.5 The other services, and where their credentials live</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Service</th>
@@ -791,12 +820,12 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td>fleet secrets on the Mac mini</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The credential rule, everywhere:</strong> read a key at the moment of use from its source of truth. Never write it into a document, an agent instruction, a Git file, a chat message or an artifact. Never send one to the decision gate or to a sandbox. If you can see a value in a document, that document is already wrong.</p>
 <h2 id="2-the-application-as-deployed">2. The application, as deployed</h2>
 <h3 id="21-what-runs-and-where-it-listens">2.1 What runs, and where it listens</h3>
 <p><strong>Version 1.82.2</strong> — <code>agenticos-backend:1.82.2-browser</code>, <code>agenticos-frontend:1.82.2</code>, <code>agenticos-browser:1.82.2</code>, <code>sandboxd:0.2.39</code>, migration head <strong><code>0341_workflow_run_tested_step</code></strong> (all read on 19 November 2026).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Container</th>
@@ -891,10 +920,10 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td>—</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Thirteen long-running containers and one migration job. Everything is <code>restart: unless-stopped</code> except the migration job, which is <code>no</code> because it runs once and exits.</p>
 <p><strong>The memory ceilings</strong> in <code>docker-compose.instance.yml</code>, because this host is shared:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Service</th>
@@ -944,11 +973,11 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td>0.3</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>sandboxd</code>, <code>ollama-embed</code> and <code>image-bridge</code> carry their ceilings in their own compose files.</p>
 <h3 id="22-configuration--the-settings-that-matter">2.2 Configuration — the settings that matter</h3>
 <p><code>~/agenticos/.env</code>, mode 0600. By group, values never copied out:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Group</th>
@@ -993,10 +1022,10 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Edits are backed up beside the file as <code>.env.bak.*</code> and <code>.env.env.bak.*</code>.</p>
 <h3 id="23-the-database-in-the-tables-that-matter">2.3 The database, in the tables that matter</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Table</th>
@@ -1053,10 +1082,10 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td>sign-up mode, allowed domains, branding, retention</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="24-the-api--1270018000apiv1">2.4 The API — <code>127.0.0.1:8000/api/v1</code></h3>
 <p>Authenticate as the owner: <code>POST /auth/login</code> (form <code>username</code>, <code>password</code>) → <code>{"access_token"}</code>. The password is in <code>~/agenticos/owner-credentials.txt</code> on the host. Send <code>Authorization: Bearer ***</code> and, where the route is organization-scoped, <code>x-organization-id: 1581b3c8-ff31-4dce-9f81-2e4248bc9cb0</code>.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Move</th>
@@ -1109,11 +1138,11 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td><code>GET /health</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><code>validate</code> is not decoration: it is the same pass publish runs, and it catches a personal MCP binding that collides with an organization connection's name, a delegation loop, a missing model, and an unreachable collection.</p>
 <h3 id="25-the-census">2.5 The census</h3>
 <p>Read from the database on <strong>19 November 2026</strong> — the API's own lists hide some rows, so these are the true counts.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Object</th>
@@ -1158,7 +1187,7 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td>all on <code>https://ollama.com/v1</code>; one company key, rotated in place</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The knowledge bases, under the naming law:</strong> <code>BU 01 FIN - Finance Knowledge</code> … <code>BU 12 FXL - INFX Labs Knowledge</code>, then <code>DID - Divorced Dads Knowledge</code> (the number is missing), <code>NVP - Nova Property Knowledge</code>, the four desk libraries (<code>DASH</code>, <code>DECK</code>, <code>DOC</code>, <code>NUM</code>, <code>SOP</code>), the three forums (<code>EXCO</code>, <code>MANCO</code>, <code>SNR EXCO</code>), plus <code>Infinity Brands Company Knowledge</code> and <code>INF — Organisation, Roles &amp; KPIs Knowledge</code>. The two house-wide ones are the exception to the shape; everything else reads as <code>code — name Knowledge</code>.</p>
 <h2 id="3-operating-the-platform">3. Operating the platform</h2>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> macserver</span>
@@ -1180,7 +1209,7 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <h2 id="4-the-administration-procedure">4. The administration procedure</h2>
 <p>Owner: Ricardo. This governs every change to the platform: who may make it, when it runs, how it is recorded, and how it is undone.</p>
 <h3 id="41-who-may-change-what">4.1 Who may change what</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Person</th>
@@ -1210,7 +1239,7 @@ ricardos-mac-mini.taile9f837.ts.net:10030 → 127.0.0.1:18080 → ssh -L → mac
 <td>executes on instruction from the three above; writes the change record; never spends, signs, deletes or invites unless the instruction is logged as theirs</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Nobody outside the SUPER ADMIN channel changes setup. Reading is allowed wherever a channel grants it.</p>
 <h3 id="42-the-2000-window">4.2 The 20:00 window</h3>
 <p>Automation, audits and any bulk configuration change run at <strong>20:00 SAST</strong>, Monday to Friday. Nothing heavy runs in business hours: the platform serves staff 08:00–18:00 and a slow answer is worse than a late one. A routine added outside this window is a defect, not a preference.</p>

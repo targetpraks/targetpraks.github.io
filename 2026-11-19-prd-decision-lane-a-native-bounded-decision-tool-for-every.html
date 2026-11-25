@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -127,7 +156,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h1 id="decision-lane--a-native-bounded-decision-tool-for-every-agenticos-bot">Decision lane — a native bounded-decision tool for every AgenticOS bot</h1>
 <h2 id="what-v11-changes">What v1.1 changes</h2>
 <p>The external review returned v1.0 as <strong>not-ready</strong> with seven blocking findings. v1.0's central mistake was saying "reuse the engine, don't fork it" without checking whether the engine could run outside a workflow. It cannot, today. Every blocker is answered below:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -180,12 +209,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>§Decision log and §Rollout</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Also corrected: 22 knowledge bases of which <strong>15 hold documents (142 in total)</strong> — not 22 populated ones; <strong>four</strong> org model profiles of five database-wide; and the central constraint is stated accurately — the <em>current</em> company chat endpoint is unsupported, which is not the same claim as "configuration can never change that".</p>
 <h2 id="why-this-prd">Why this PRD</h2>
 <p>Ricardo's §8 gates run on his own Mac, at <code>127.0.0.1:8792</code>, for his own agents. That stays personal. What Infinity Brands needs is the same capability <strong>inside the work platform</strong> — a cheap, typed answer to a bounded question ("is this a work request or a personal one?", "does this credit note go to Finance or EXCO?") without spending a conversational turn on it.</p>
 <p>The platform already has most of it:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>File</th>
@@ -215,7 +244,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A rubric score</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The capability exists — <strong>only inside a workflow</strong>. A bot cannot call it mid-conversation, there is no org-level definition of what a gate is, and nothing is logged where an operator can read it.</p>
 <h2 id="product-in-five-lines">Product in five lines</h2>
 <ol type="1">
@@ -226,7 +255,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Every call is logged once, with cost settled, so the lane can be measured and tuned.</li>
 </ol>
 <h2 id="what-already-exists--evidence">What already exists — evidence</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Fact</th>
@@ -291,11 +320,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>E11</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="the-constraint-stated-accurately">The constraint, stated accurately</h2>
 <p><code>is_decision_api</code> (<code>app/agents/model_resolver.py:627</code>) is permissive metadata classification, not protocol probing, and the model-profile path requires a decision-capable provider before execution (<code>_decide.py:172</code>). <code>_build_decision_model</code> has <strong>no Ollama branch</strong>.</p>
 <p>Therefore: <strong>the current company chat endpoint cannot serve this lane.</strong> That is a statement about today's configuration and the installed transports — not a proof that no configuration could ever change.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Route</th>
@@ -325,7 +354,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>live and proved, 2026-11-19</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Decided in v1.4: Route D — <code>clef:cloud</code> (Clef 27B, native decision capability) over Ollama Cloud, through the platform's own <code>system-one</code> provider. No TypeSafe purchase, no OpenAI key, no self-hosted endpoint.</strong></p>
 <p>Route D was in front of us the whole time and v1.0–v1.3 missed it because this document treated "the company Ollama key" as one thing. It is two: <code>https://ollama.com/v1</code> is a chat API the decision lane refuses, while <code>https://ollama.com/v1/systemone</code> is a <strong>decision API</strong> the lane accepts, serving <code>clef:cloud</code> on the same company key. The platform already ships <code>system-one</code> as a first-class provider (<code>PROVIDERS</code> in <code>app/agents/model_resolver.py:260</code>, <code>keyless</code> and <code>requires_base_url</code>), and <code>SystemOneModel.decide</code> is exactly the shape <code>_decide.py</code> builds.</p>
 <p>Proof, run inside <code>agenticos-app-1</code> with the platform's own classes and the company key:</p>
@@ -386,7 +415,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ul>
 <h2 id="gate-registry">Gate registry</h2>
 <p>New table <code>decision_gates</code> (org-scoped, versioned):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Column</th>
@@ -435,7 +464,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>kill switch per gate</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <ul>
 <li><strong>Disabled or missing gate:</strong> the tool refuses with a typed error and logs it; it never falls back to a default gate.</li>
 <li><strong>Caller overrides:</strong> v1 forbids replacing gate labels. A caller may pass <code>options</code> <strong>only</strong> as a subset of the gate's approved labels, validated server-side.</li>
@@ -471,7 +500,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Monitoring → Decisions:</strong> per gate and per bot — volume, unsure rate (with the denominator stated), p50 and p95 latency, spend with partial-cost flags, and status breakdown. No reasons in v1.</p>
 <h2 id="acceptance-criteria">Acceptance criteria</h2>
 <p>Every state-changing case runs against an isolated fixture or fake provider. SELECT and source reads inspect the stored evidence; wrappers alone cannot prove external non-dispatch without instrumentation.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -520,7 +549,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Kill switch: disabling a gate refuses immediately with <code>disabled</code>; re-enabling restores service without a deploy. Rollback to the previous gate revision is exercised and the audit names the revision used.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="non-goals">Non-goals</h2>
 <ul>
 <li><strong>Not a memory.</strong> Nothing is written back as a fact; the knowledge bases are the memory.</li>
@@ -528,7 +557,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>Not connected to Ricardo's personal gate.</strong> Reaching <code>:8792</code>, or any personal fleet endpoint, is a defect.</li>
 </ul>
 <h2 id="failure-modes">Failure modes</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Failure</th>
@@ -568,7 +597,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>keep both profiles, switch by FK, no code change</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="security-permissions-audit">Security, permissions, audit</h2>
 <ul>
 <li>Server-derived attribution only; no identity accepted from model input.</li>
@@ -591,7 +620,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ol>
 <h2 id="decisions-register">Decisions register</h2>
 <p>Decided in v1.3 by the LLM council plus the local decision model, on long-term benefit to the company and its users. Ricardo retains veto; the vendor spend is his signature alone.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -656,7 +685,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>The model leaned to "allow with a rule" at only p≈0.64; with no caller today, the reversible choice is the closed door</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="evidence-appendix">Evidence appendix</h2>
 <ul>
 <li><strong>E1</strong> <code>ls /app/app/workflows/nodes/</code> → <code>decide_yes_no</code>, <code>decide_choose</code>, <code>decide_score</code>, <code>_decide.py</code> (326 lines).</li>

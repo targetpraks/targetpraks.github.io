@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -127,7 +156,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h1 id="verdict-material-gaps">Verdict: material gaps</h1>
 <p>Correct the operating contracts and work placement before treating the load as an executable framework. Resolve the named client register, campaign-to-plan links and recurrence; describe the 106-card load as reported, not independently verified.</p>
 <h2 id="ask-coverage">Ask coverage</h2>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Ricardo's ask</th>
@@ -172,7 +201,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>§13 states Ena's ID correctly, but §10 assigns the team and Ricardo/HOD ownership. Make Ena the sole assignee everywhere (C3); individual assignments cannot be independently verified from the supplied count-only snapshot (C1).</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="changes">Changes</h2>
 <h3 id="c1--document--replace-the-conflicting-execution-history-with-a-dated-evidence-ledger">C1 — <code>document</code> — Replace the conflicting execution history with a dated evidence ledger</h3>
 <p><strong>Change →</strong> Correct the cover, §0, §13 and §17 together. <strong>Why →</strong> An operator could reload completed waves or mistake historical cards for new work. <strong>Evidence →</strong> <code>source/lane-after-load.json</code>, read at <code>2026-11-21T20:10+02:00</code>, explicitly says the asset wave was pending. Its counts sum to <strong>75 = 64 new + 11 historical</strong>. Wave 1 is <strong>26+3+8+6+1+2=46</strong>; recurring is <strong>8+3+6+1=18</strong>; the asset proposal is <strong>2+40=42</strong>; all waves total <strong>106</strong>, or <strong>117 including the 11 historical cards</strong> if all were retained. The 64-card load spans seven lists, not the six stated in §13. The snapshot lists <strong>19 field names</strong>, not the implied 16 from “four added” plus “other twelve”. The cover says “No … field is created”, §0 says “no open work”, and §17 says “Unchanged … Every ClickUp call … GET”, contradicting §13's execution account. A permitted read, <code>scripts/cu-get.sh '/folder/1501000000001184/list?archived=false'</code>, returned <code>{"err":"Rate limit reached","ECODE":"APP_002"}</code>; no further live reads were attempted.</p>
@@ -185,7 +214,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Exact fix →</strong> Write: “Ena Marie O. Dizon (105744008) is the sole ClickUp assignee for every task created by this framework, including content children, audits and remediation. Contributors and approvers are named separately in the description after their roles are confirmed. Ricardo supplies Owners Comments; Ena requests and files them and never authors them on his behalf. Missing approval authority blocks release, not assignment to Ena.” Remove team membership and current-role assertions that have no verified roster evidence.</p>
 <h3 id="c4--clickup--route-the-40-proposed-briefs-by-function-not-by-missing-file-status">C4 — <code>clickup</code> — Route the 40 proposed briefs by function, not by missing-file status</h3>
 <p><strong>Change →</strong> Replace the blanket “40 … Creative Projects” allocation with the following routing. <strong>Why →</strong> A missing file does not turn strategy, copywriting or calendar setup into design work; the blanket rule violates §11's own “never holds … copywriting tasks”. <strong>Evidence →</strong> <code>source/table-data.json</code>, <code>tables/grid-DRcDYg-lpD</code>, the named collateral rows below; §§7.3, 11 and 13. These are <strong>proposed misfiles</strong>; whether the later asset load placed them this way is <strong>UNVERIFIED</strong> (C1).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Source collateral name</th>
@@ -230,7 +259,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Link the collateral specification to the existing brand-manual reference and its missing deliverables; do not commission a second manual without a documented gap.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Exact fix →</strong> Inspect any already-loaded card by these exact titles, correct its primary home/scope in the app, and link rather than duplicate related design work. Keep the remaining layout, print, video, advertising-creative and collateral-design briefs in Creative Projects; “Social Media Ad Sets” is a creative package there, while buying/targeting remains in Campaigns. Reflect the split in §§7.3, 11, 13 and the Marketing Collateral row of Appendix A. Recount after consolidation; 106 is the reported original load, not a required post-correction total. Remove §13's unsupported universal “No moves … no move endpoint” prohibition; this review neither tests nor requires an API move capability.</p>
 <h3 id="c5--clickup--turn-the-named-client-register-into-a-required-deliverable">C5 — <code>clickup</code> — Turn the named client register into a required deliverable</h3>
 <p><strong>Change →</strong> Add acceptance criteria to the existing Marketing Plan customer/profile completion work; stop leaving §7.2's options (a)/(b) undecided. <strong>Why →</strong> Personas and mailing-segment definitions do not satisfy the explicit client-list ask. The supplier/partner tables also describe categories and targets without proving current relationships. <strong>Evidence →</strong> §7.2 explicitly says there are “no company names, no store numbers, no franchisee records”; <code>grid-tJceJc1kcM</code> contains three customer segments, while <code>grid-5Hkw_AxoCr</code> names only franchising/legal supplier categories and <code>grid-jftYy7LXHD</code> contains partner segments.</p>
@@ -276,7 +305,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Exact fix →</strong> Restore those five named stakeholders' source roles and influence levels, labelled “source-recorded; current authority unverified”; do not infer an organisation from an email address. Write in §12: “Contacts page names two people; current role/availability and replacement routing are UNVERIFIED. Ena confirms the current roster and approval mandate before routing approvals.” Count five named stakeholder records plus one notes-only row, rather than treating six table occurrences as six people.</p>
 <h2 id="mapping-audit--all-19-existing-lists">Mapping audit — all 19 existing lists</h2>
 <p>Use the counts below as the <strong>20:10 snapshot</strong>, not as proof of the reported final load. Appendix A was checked against all <strong>56 distinct page titles</strong> in <code>inventory.json</code>: none is omitted; its page totals reconcile to <strong>78 table occurrences / 924 row occurrences</strong>. The page groups below account for all 56 once. Proposed cards cover <strong>26 campaigns + 3 seasonal + 8 profiles + 6 SEO disciplines + 1 keyword method + 2 projects + 18 recurring + 2 references + 40 briefs = 106</strong>; apply C4's routing and consolidation before treating those as 106 independent obligations. Final task-level placements remain UNVERIFIED because of APP_002; exact-title corrections above are instructions for an operator, not claims that live moves occurred.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Existing list (full ID)</th>
@@ -361,7 +390,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>10 = 2 new + 8 historical</strong>; retain setup ownership of <strong>Content &amp; Channel Planning, Master Content Calendar, Market Calendar Views, Channel Calendars Views, Calendar View, Master Table</strong>. One-off calendar and keyword builds fit; merge Campaign Calendar's setup scope into the existing build (C4). Historical duplicate-by-title claims are UNVERIFIED without task reads; compare IDs/deliverables before consolidating, and keep annual repetition in Recurring (C2, C16).</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="what-is-missing-entirely">What is missing entirely</h2>
 <ul>
 <li><strong>A required named direct-client/account register:</strong> add the C5 acceptance criterion; §7's segment lists and optional homes do not supply it.</li>

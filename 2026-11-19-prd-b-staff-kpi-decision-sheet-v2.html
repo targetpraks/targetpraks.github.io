@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -153,7 +182,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">G</span> <span class="pp">--</span> <span class="vs">fail </span><span class="pp">--&gt;</span> <span class="dt">I</span>[<span class="st">&quot;month re-runs · nothing scores&quot;</span>]</span></code></pre></div>
 <h2 id="2-the-measured-baseline-this-sheet-stands-on">2. The measured baseline this sheet stands on</h2>
 <p>Every figure is from PRD-B §2 and its evidence index, cross-checked against the tab dumps where a dump exists. The <strong>"re-derived"</strong> column says whether I re-computed it from the files or am quoting the document: where I could not check it, I say so.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Measure</th>
@@ -243,7 +272,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>PRD-A</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Two further baselines arrived with the audit. Neither is background.</p>
 <p><strong>§2.1 — the S&amp;M capture sheet</strong>, which is the pilot BU's own surface and is repaired, not replaced: 25 KPIs (3 Outcome, 22 Action — about 88% activity) · 300 capture rows a month · <strong>1,408 pre-seeded future rows holding 5,632 typed-zero cells</strong> · <strong>762 target-derived formulas sitting in input columns</strong> · 171 hardcoded monthly totals · 1,024 of 1,408 "proof attached" claims resolving to a real folder · 0 of 36 setup contacts filled · 2 owner cells containing <code>None</code> at <code>D42:D43</code> · dashboard <code>F5</code> showing <strong>273%</strong> · June split into 28 + 272 rows · November carrying 213 week numbers with sign-off blank · and <code>S606</code> reading <code>AD606</code>. I could not re-derive these — the capture sheet is a Zoho Sheet, not one of the 30 dumps — so they stand as the document states them.</p>
 <p><strong>§2.2 — the legacy audit</strong>, now the measured starting point rather than history: 574 lines · 45 people · 55 roles · <strong>404 Action rows (70%)</strong> against 170 Outcome · 404 activity-based defects · 112 vague definitions · 76 duplicates inside one role · 64 outcomes with no target.</p>
@@ -275,7 +304,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>Question.</strong> For a HOD who holds <strong>no</strong> EXCO accountability row, is the third bucket <strong>15% leadership</strong>, or <strong>10% leadership plus a 5% they cannot hold</strong>?</p>
 <p>The workbook states both. The two readings differ by five real points on every affected score, and — this is the part that must not be flattened — <strong>the weights alone do not settle it</strong>, because both models produce the same 0.50 personal total. What decides it is which roles hold the 5% EXCO row.</p>
 <p><strong>Where 50 / 35 / 15 is stated — five locations:</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Location</th>
@@ -300,9 +329,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>HOD scoring | 50% BU result + 35% HOD direct outcomes + 15% leadership drivers</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Where 50 / 35 / 10 + 5 is stated — ten locations:</strong></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Location</th>
@@ -323,10 +352,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>each reads <code>Score model: 50% &lt;BU&gt; result • 35% direct outcomes • 10% existing leadership • 5% EXCO accountability.</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><em>The PRD's own §4.3 table lists three 15-sites. There is a fourth — <code>11 Config.txt</code> line 17 — which is also the tab holding the 0.5 multiplier. Worth knowing before anyone edits that tab.</em></p>
 <p><strong>The arithmetic that decided the shape of this decision.</strong> I re-measured every role in the HOD master:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Roles</th>
@@ -349,7 +378,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>1.00</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Three conclusions, and the first two pull against each other — which is exactly why this is your decision and not a builder's:</p>
 <ol type="1">
 <li><strong>The 0.50 is real and must not be topped up.</strong> Filling those nine to 1.00 takes each to <strong>1.50</strong>. Weight repair therefore applies to the final composite, never to the personal rows. <em>(This also settles a claim I made in the first edition of this sheet: the nine roles are exactly as the PRD describes. My earlier count of two came from a parse that silently dropped seven executive roles; re-measured role by role, all nine read 0.50.)</em></li>
@@ -357,7 +386,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>Both models produce 0.50.</strong> <code>0.35 + 0.15</code> and <code>0.35 + 0.10 + 0.05</code> are the same number. So the weights cannot choose between them. What chooses is whether the nine hold a 5% EXCO row: <strong>nine rows at weight 0.05 exist and are <code>LOCKED</code></strong> — <code>CFO-EX01</code> for Pamela, <code>RHO-EX01</code> for Rhona, <code>LAU-EX01</code> for Lauren and six more, one per executive.</li>
 </ol>
 <p><strong>The business layer is not in play here.</strong> <code>01 Business KPIs</code> carries nine measures weighted 0.20 / 0.20 / 0.05 / 0.05 / 0.18 / 0.12 / 0.05 / 0.05 / 0.10 — the L0 vector — and their pillar sums are 0.40 / 0.30 / 0.30, matching <code>Config.txt</code> line 5. That is the 0.50 the nine inherit. Nobody re-weights those nine during this work, and the fact that they are editable at all is the strongest argument for §6.4's period lock.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Measure</th>
@@ -412,7 +441,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Cost &amp; Cash</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Options.</strong></p>
 <ul>
 <li><strong>A — One model, the 15% itemised.</strong> 50 / 35 / 15 everywhere. Where a role holds an EX-01 row, the 5% is a <em>named slice of the 15</em>; where it does not, the 15 is all leadership. No number in the workbook changes. The five 15-sites gain the itemisation wording; the eight unit banners stay true as written; <code>Config.txt:23</code>'s "not universal" rule survives intact.</li>
@@ -484,7 +513,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="4-the-four-pilot-decisions--the-release-gate">4. The four pilot decisions — the release gate</h2>
 <p>§11.1 is not a fifth decision; it is the gate these four open. One BU — <code>SAL</code> or <code>MKT</code>, one only — for <strong>one month</strong>, on <strong>read-only live files</strong>, the pilot writing to a copy, covering one full close cycle from capture to the WD4 disposition.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -519,9 +548,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>§7.6's whole timetable, and test 3's two-day clock</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>The four falsification tests, and the pass rule.</strong> Pass on at least three; <strong>none may be skipped</strong>.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Test</th>
@@ -551,12 +580,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>C07, C08, C09</strong> — nine parts, or the month is not locked</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>And one failure the tests do not cover: <strong>the pilot fails if the same three people do everything and none of them can explain the rule to a colleague.</strong> That is a transfer failure, and it is the most common one.</p>
 <hr />
 <h2 id="5-what-the-answers-unlock">5. What the answers unlock</h2>
 <p>Four batches. Nothing in a later batch can be built before its predecessor, and no batch shortens another. Every batch now ends at B8, which ends at §11.1.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Batch</th>
@@ -591,7 +620,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>A synthetic month closes <code>Verified</code>, <code>Unscored — disposition</code> and <code>Undismissed</code> under the right conditions (B5); the pilot passes ≥3 of 4 tests with none skipped; B8 signed</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="6-the-one-defect-that-would-corrupt-a-months-scores">6. The one defect that would corrupt a month's scores</h2>
 <p><strong><code>Evidence multiplier - Partial = 0.5</code>, <code>11 Config.txt</code> line 7.</strong></p>
@@ -602,7 +631,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <hr />
 <h2 id="7-corrections-to-the-first-edition-of-this-sheet">7. Corrections to the first edition of this sheet</h2>
 <p>Four readings in the first edition were wrong. Naming them is cheaper than letting a builder discover them later.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>#</th>
@@ -637,12 +666,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Column drift again</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>What still stands from the first edition: the fourteen-location HOD split, the 8-ID collision and its crosswalk, the 11 demonstration groups being positions rather than people, and the partial-multiplier defect.</p>
 <hr />
 <h2 id="8-where-the-audits-findings-land">8. Where the audit's findings land</h2>
 <p>The audit is authoritative, and its 4 contradictions, 10 loss groups and 2 fact fixes are applied in the document I am reading. Three have a live consequence for this sheet:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Finding</th>
@@ -671,7 +700,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>B keeps Appendix C (compact); §3.2 names A §5.1 canonical. My reconciliation plan resolves type strings to families, not to a second definition</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <h2 id="9-answer-sheet">9. Answer sheet</h2>
 <pre><code>D1 adopt V3 .............. A / B / C  →  ____

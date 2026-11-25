@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -146,7 +175,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <h2 id="1-live-platform-status-2026-11-23">1. Live platform status (2026-11-23)</h2>
 <p>Every supplier probed host-side with one real chat completion on <strong>2026-11-23</strong> (probe file written 05:04 SAST). "Latency" is wall-clock for a trivial prompt — a health signal, not a quality signal. <code>&lt;empty&gt;</code> means the lane answered <strong>200</strong> but the content came back blank because the 10-token budget was spent inside a reasoning block (<code>finish_reason: length</code>) — a probe artifact, not a failure.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Platform</th>
@@ -214,7 +243,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>local MLX builds + <code>-cloud</code> proxies</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Reading of the board.</strong> 13/24 cloud lanes answered, and 0/2 local chat models on the gateway. Gone permanently (<code>404</code>/<code>410</code>): OpenRouter <code>minimax-m3.1-flash:free</code>, OpenRouter <code>nemotron-3-super-120b-a12b:free</code>, OpenRouter <code>laguna-xs-2.1:free</code>, NVIDIA NIM <code>glm-5.3</code>, NVIDIA NIM <code>gpt-oss-20b</code>, NVIDIA NIM <code>llama-3.2-11b-vision-instruct</code>, NVIDIA NIM <code>kimi-k3</code>. Every claim in this table is a single probe from this run; a lane that failed here is a lane to re-test before it is treated as dead.</p>
 <!-- /bench:1 -->
 
@@ -223,7 +252,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <h2 id="2-benchmark-pull--source-inventory">2. Benchmark pull — source inventory</h2>
 <p><code>bench-pull --source all</code> on <strong>2026-11-23</strong>, generated 2026-11-23 05:03:49 SAST, 17/17 sources ok, 44.1 s summed across sources (they pull concurrently; the run's log closed at 77 lines).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Source</th>
@@ -336,7 +365,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>ok</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>No source failed this run</strong> — every one of them returned a parseable payload.</p>
 <!-- /bench:2 -->
 
@@ -351,7 +380,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <h3 id="31-cloud-models-we-can-actually-reach">3.1 Cloud models we can actually reach</h3>
 <p>"Accessible" = reachable today from a lane wired into the fleet. AA = Artificial Analysis Intelligence Index (pull of <strong>2026-11-23</strong>); Hermes = Hermes Index (cost-per-task in brackets); LB = LiveBench 2.0 <strong>release 2026-11-06</strong> coding / reasoning; LMArena rank (rating). <code>—</code> = the model has no row on that board this week.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Model</th>
@@ -516,13 +545,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>gateway <code>kimi-k3:cloud</code>, NVIDIA NIM (410)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Board leaders (context, not reachable on our lanes):</strong> AA #1 <strong>GPT-6.2 Astra — 61.56</strong>; Hermes #1 <strong>Claude Opus 5.5 — 63.31</strong> ($4.99/task); LB coding #1 <strong>gpt-6.2-astra — 91.9</strong>; LB reasoning #1 <strong>gemini-4-argon — 95.1</strong>; LMArena text #1 <strong>Gemini 4 Carbon (High) — 1527.0</strong>; LMArena code #1 <strong>Claude Fable 5.2 (xHigh) — 1823.6</strong>.</p>
 <!-- /bench:3.1 -->
 
 <h3 id="31a-flash-tier-on-artificial-analysis-v432--the-2026-10-19-evening-re-read-historical">3.1a Flash tier on Artificial Analysis v4.3.2 — the 2026-10-19 evening re-read (historical)</h3>
 <p><strong>Data-quality finding:</strong> the AA rows in §3.1 come from the OpenRouter benchmark feed (<code>openrouter_benchmarks.json</code>), which is now <strong>stale by one index version</strong>. AA's own live pages (v4.3.2) score the same models higher — <code>deepseek-v4.1-flash:1017</code> reads <strong>39.46</strong> in the feed but <strong>45</strong> on AA's site. Every flash-tier comparison below was re-read from AA's live model pages on 2026-10-19, and the fleet now uses those figures for allocation; the feed remains useful for coverage breadth, not for the headline index. (Fix for next week: add the AA model pages as source #18, or pin the index version in the feed parser.)</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Model</th>
@@ -581,11 +610,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>0.60 · 2.40</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Reading:</strong> the flash tier is now three-way tight on intelligence (45 / 42 / 42) and separated mainly by <strong>price per token and discipline</strong>. <code>deepseek-v4.1-flash:1017</code> keeps the crown and is the fastest of the three on our lane; <code>minimax-m3.1-flash</code> is the cheapest per AA task but is <strong>very verbose</strong> (180M tokens on the index) and has the worst hallucination discipline in the tier — AA measured a <strong>93% non-refusal rate</strong> (Omniscience index 16: when it is wrong it is confidently wrong rather than saying it does not know). <code>glm-5.3-flash</code> ties m3.1 on intelligence, costs 6 cents more per AA task, and is the slowest per AA's own API — but on OUR lane it is the faster of the two (2.3 s vs 5.5 s median) and it refuses instead of fabricating.</p>
 <h3 id="31b-our-own-orchestration-head-to-head-2026-10-19-live-on-ollama-cloud-historical">3.1b Our own orchestration head-to-head (2026-10-19, live on ollama-cloud) (historical)</h3>
 <p>Eight orchestration-shaped tasks (agent routing, JSON tool-call emission, constraint following, cost arithmetic, field extraction, plan formatting, refusal of a fake model, needle retrieval), <strong>2 runs each, temperature 0</strong>, auto-scored. Script + raw rows: <code>~/AI Hub/evals/orchestrator-flash-eval-2026-10-19.py</code>, <code>results-2026-10-19.jsonl</code>. Native tool-calling checked separately with a real <code>tools</code> payload.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Model</th>
@@ -638,12 +667,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>n/a</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The single m3.1 miss was an <strong>empty response</strong> on the refusal task (one of two runs) — it produced no content at all rather than a fabricated score. On short orchestration-shaped prompts all four models are competent; the separation is latency, verbosity and price, which is exactly what the allocation below reflects.</p>
 <!-- bench:3.2 -->
 
 <h3 id="32-local-models-on-device">3.2 Local models (on-device)</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Model</th>
@@ -720,7 +749,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>resident</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Local models have <strong>no public benchmark standing</strong> — they are judged on availability and speed, which is why they are the last net, never a primary. The gateway serves 25 model ids today: 4 local plus 21 <code>-cloud</code> proxies.</p>
 <!-- /bench:3.2 -->
 
@@ -733,7 +762,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <!-- /bench:4 -->
 
 <h3 id="41-free-pool--state-and-self-reported-scores">4.1 Free pool — state and self-reported scores</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Model</th>
@@ -878,10 +907,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>auto-router, not a model</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="42-free-previews-and-paid-previews-self-reported-only">4.2 Free previews and paid previews (self-reported only)</h3>
 <p>Previews have no standing on external boards (those need a stable release), so the OpenRouter profile feed is their only capability evidence. 15 paid previews carry scores this week; the ones that matter:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Preview</th>
@@ -934,14 +963,14 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>unproven</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Do not chain:</strong> inkling/inkling-small return <strong>403 "agentic harnesses only"</strong> on our key despite healthy endpoints; nemotron-3.5-super-vl is degraded (−2) despite the best free score. Neither is a wiring failure — they are gated or degraded upstream.</p>
 <hr />
 <!-- bench:5 -->
 
 <h2 id="5-role--model-allocation-live--verified-by-config-census-2026-11-23">5. Role → model allocation (LIVE — verified by config census 2026-11-23)</h2>
 <p><strong>Every home except the local-only one carries <code>deepseek-v4.1-flash:1017-cloud</code> as its primary.</strong> The 2026-10-29 harness consolidation put all model calls on the local Ollama gateway with pinned <code>-cloud</code> tags, and that standardisation is still in force on 2026-11-23: <strong>35 of 35 configs</strong> carry it, verified by parsing every file (not by reading the previous edition of this note). The role split below therefore describes <em>what each seat is for</em>, not four different model names — the gate has picked <code>deepseek-v4.1-flash:1017</code> for the orchestration, deep, worker, fast and reason seats on every run it has made, and the fleet now actually runs it everywhere — including <code>bigbrains</code>, the reason seat, which still carried <code>kimi-k3</code> in the 2026-10-26 edition of this document. Nothing in config waits on a decision for these seats any more.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Seat(s)</th>
@@ -958,9 +987,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>alfred</code>, <code>april</code>, <code>batman</code>, <code>batman-papa</code>, <code>baymax</code>, <code>beast</code> …</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>What each seat actually needs, and why one model now serves them all.</strong> The questions are the gate's own, verbatim from <code>gate-picks.py</code>; the pick column is today's run (§5.4).</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Seat</th>
@@ -1013,7 +1042,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>no</strong> — in no chain</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Fallback shapes actually present</strong> (whole chain, verified):</p>
 <ul>
 <li>12× <code>deepseek-v4.1-flash:1017-cloud</code> → <code>nvidia/nemotron-3.5-super-vl:free</code> → <code>nvidia/nemotron-3-ultra-550b-a55b:free</code> → <code>llama3.2-1b-mlx</code> → <code>openai/gpt-oss-20b</code></li>
@@ -1029,7 +1058,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <h3 id="51-bulk-re-allocation-applied-2026-10-19-1000-sast-ricardo-go">5.1 Bulk re-allocation APPLIED 2026-10-19 10:00 SAST (Ricardo GO)</h3>
 <p>Ricardo's instruction — <em>"keep the latest DeepSeek on all the main orchestrations … make sure we use the right model for the job"</em> — was applied as a bulk config change across all 32 homes. Backups: <code>config.yaml.bak-20261019-models-v2</code> next to every file. Verified: <strong>32/32 configs parse</strong>.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Change</th>
@@ -1070,12 +1099,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>✅ unchanged</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <!-- bench:5.2 -->
 
 <h3 id="52-fallback-chain-health-verified-hops-only">5.2 Fallback-chain health (verified hops only)</h3>
 <p>Computed from the live config census against today's probe. A hop marked <em>not probed today</em> is a blind spot in the runner's probe list, not a finding of death.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Chain hop</th>
@@ -1145,10 +1174,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>not probed today</strong> — no lane in this run covers it</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Dead hops still wired:</strong> <code>openai/gpt-oss-20b</code> — a bulk config change, so it waits for Ricardo's GO.</p>
 <p><strong>Status of the four config gaps this section listed on 2026-10-26</strong> (re-measured against the census):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Gap (2026-10-26 edition)</th>
@@ -1173,12 +1202,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>open</strong> — 34 home(s) still carry fewer than 4 distinct cloud suppliers: <code>alfred</code> (3: NVIDIA, Ollama Cloud, OpenRouter), <code>april</code> (3: NVIDIA, Ollama Cloud, OpenRouter), <code>batman-papa</code> (3: NVIDIA, Ollama Cloud, OpenRouter), <code>batman</code> (3: NVIDIA, Ollama Cloud, OpenRouter), <code>baymax</code> (3: Gemini, Ollama Cloud, OpenRouter), <code>beast</code> (3: Gemini, Ollama Cloud, OpenRouter), <code>bigbrains</code> (3: Gemini, NVIDIA, OpenRouter), <code>builder</code> (3: Gemini, Ollama Cloud, OpenRouter)</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <!-- /bench:5.2 -->
 
 <h3 id="53-m31-flash-revision--applied-2026-10-19-22552258-sast-ricardos-instruction-update-allocations-moa-and-council">5.3 M3.1 Flash revision — APPLIED 2026-10-19 22:55–22:58 SAST (Ricardo's instruction: "update allocations, MoA and council")</h3>
 <p>Announced on Ollama Cloud 2026-10-19 (US-hosted, zero data retention, 1M ctx, image understanding, tool calling). Verified on our account before touching any config: <code>GET /v1/models</code> lists it (23-model catalog), <code>POST /api/show</code> reports <code>capabilities: [completion, tools, thinking, vision]</code>, context 1,000,000, 428B params.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -1225,7 +1254,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>d3 <code>orch-pick</code> 0.973 — highest AA (45), fastest on our lane (1.8 s), 100% eval</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Verification:</strong> 32/32 configs parse; live MoA and council runs both engaged the new seat; <code>hermes -p beast chat</code> returns a real completion on the new worker model (<code>model=deepseek-v4.1-flash:1017 provider=ollama-cloud</code>, 2.6 s in <code>agent.log</code>). Census after the change: <strong>28 homes on deepseek-v4.1-flash:1017, 2 on gpt-oss:20b, 1 kimi-k3, 1 llama3.2:1b.</strong> Backups: <code>config.yaml.bak-20261019-m31</code> beside every config. Shadow deliberately untouched (local-only, no MoA, no OpenRouter hop).</p>
 <p><strong>The answer to Ricardo's question — which flash model gives the most bang for the buck:</strong> <strong><code>deepseek-v4.1-flash:1017</code></strong>. On AA v4.3.2 it is the smartest flash model we can reach (<strong>45</strong>) and, once verbosity is priced in, also the <strong>cheapest per completed task ($0.26)</strong> — cheaper than glm-5.3-flash (42 at $0.28) and only 4 cents above minimax-m3.1-flash (42 at $0.22) while scoring 3 points higher and running 3× faster on our lane. m3.1 wins only on raw token price for very short prompt-heavy calls (our eval: $0.00013 vs $0.00020 per task), and pays for it in latency and hallucination discipline. That is why m3.1 got the seats where its 1M context, vision and $0 price matter (MoA/council seat, free fallback hop) and not a primary.</p>
 <hr />
@@ -1233,7 +1262,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <h3 id="54-role-re-pick--2026-11-23-d3-gate-run">5.4 Role re-pick — 2026-11-23 d3 gate run</h3>
 <p>One automated pass — <code>gate-picks.py</code>, which builds a single scoreboard from today's pulls plus today's probe and asks every seat against it. <strong>28 rows dated 2026-11-23</strong> land in <code>gates.csv</code> (7 role questions + 0 pairwise confirmations); the log is append-only, so every re-run stays visible rather than being overwritten.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Role</th>
@@ -1286,7 +1315,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><strong>0.8781</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>What the run says.</strong> Every pick cleared 0.70 on the wide question alone.</p>
 <!-- /bench:5.4 -->
 
@@ -1294,7 +1323,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <h2 id="6-d3-decision-record-2026-11-23">6. d3 decision record (2026-11-23)</h2>
 <p>7 role questions, 0 of them confirmed with a pairwise and its mirror. Gate: <code>d3-flash-mlx</code> on the local Ollama gateway (<code>/v1/systemone</code> route), health checked by the run. Logged to <code>AI-Drive/Agent-Output/adrianna/gates.csv</code> — <strong>28 rows dated 2026-11-23</strong>.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Role</th>
@@ -1355,12 +1384,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>clean pick; next was <code>nvidia/nemotron-3.5-super-vl:free</code> at 0.0688</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Why nothing changed in config:</strong> the census (§5) already carries the winning model on every seat the gate re-picked.</p>
 <!-- /bench:6 -->
 
 <h3 id="61-previous-week-2026-10-19--audit-trail">6.1 Previous week (2026-10-19) — audit trail</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Role</th>
@@ -1442,7 +1471,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>The first pick was made without the 1017 per-task price; re-running with it reversed the result. Applied to the 10 worker homes at 22:58</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <hr />
 <hr />
 <!-- bench:7 -->
@@ -1503,7 +1532,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
 <h2 id="10-change-log--2026-10-19-1000-sast-re-allocation-ricardo-go">10. Change log — 2026-10-19 10:00 SAST re-allocation (Ricardo GO)</h2>
 <p>Applied in this session, verified live:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -1550,12 +1579,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>docker ps -a</code> empty, port 4000 free, no launchd job; archive <code>AI-Drive/Agent-Output/adrianna/litellm-removal-2026-10-19/</code></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Platform truth at 10:00 (live probes):</strong> Ollama Cloud <strong>all 200</strong> (0.6–1.2 s) · JoinGonka 200 (deepseek 6.5 s) · Dahl deepseek <strong>429</strong> concurrency · Mingles <strong>503</strong> · NVIDIA nemotron-ultra 1.3 s / gpt-oss 0.9 s (glm-5.3 timeout) · Gemini 3.7-flash 3.4 s / flash-lite 0.9 s · OpenRouter nemotron-ultra 7.4 s / lightning 0.5 s. <strong>Ollama Cloud is the load-bearing supplier; every primary rides it, every chain has an independent second supplier.</strong></p>
 <p><strong>Also repaired this session:</strong> Colima lost its <code>/Volumes</code> virtiofs share (every bind mount failed with <code>mkdir /Volumes/Hiksemi 1TB: file exists</code>). <code>colima restart</code> restored it; <code>~/.config/maio-stack/stack-up.sh</code> brought LiteLLM back with the correct <code>--env-file</code> (a bare <code>docker compose up</code> had recreated the DB with an empty password and the gateway crash-looped on auth).</p>
 <h2 id="10a-change-log--2026-10-19-2255-sast-m31-revision-ricardos-instruction">10a. Change log — 2026-10-19 22:55 SAST (M3.1 revision, Ricardo's instruction)</h2>
 <p>Trigger: Ollama shipped <strong>MiniMax M3.1 Flash</strong> (1M ctx, vision, tool calling, US-hosted, zero data retention) at $0.15/$0.60 per Mtok. Ricardo: <em>"update your benchmark report, your model allocations where needed, your moa and your council … for our main orchestration I just want to know which flash model will give our usage more bang for its buck."</em></p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -1608,10 +1637,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>this file</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="10b-change-log--2026-10-26-05000510-sast-weekly-benchmark-run-05dc60dd84d2">10b. Change log — 2026-10-26 05:00–05:10 SAST (weekly benchmark run 05dc60dd84d2)</h2>
 <p>Trigger: the scheduled Monday run. No instruction from Ricardo; no allocation changed.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -1652,12 +1681,12 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>this file</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>Correction carried into this edition:</strong> the 2026-10-19 edition of §7 stated that a partial sweep "no longer aborts the run". That was not true — the guard was in the wrong place and this week's 05:00 run died on it. §2 and §7 now describe what was actually fixed and how it was verified.</p>
 <p><strong>Open for Ricardo:</strong> one decision — approve the 31-file fallback-hop replacement (§5.2). Everything else in this run is observation and record-keeping.</p>
 <h2 id="10c-change-log--2026-11-02-edition-the-runs-own-data-and-the-updater-repair">10c. Change log — 2026-11-02 edition (the run's own data, and the updater repair)</h2>
 <p>Trigger: the scheduled Monday run. It pulled, probed and gated correctly, then <strong>re-dated only the §1 heading</strong> and left every other section on 2026-10-26 numbers — an edition claiming a freshness its body contradicted. The vault lane refused to file it (card <code>t_7bb0a516</code>), and this edition re-issues the same run's data through a repaired updater (card <code>t_7b1ed880</code>, repair executed by <strong>bigbrains</strong>). No instruction from Ricardo; no allocation was changed by this run.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Surface</th>
@@ -1722,7 +1751,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td><code>gates.csv</code> <strong>13 rows dated 2026-11-02</strong></td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p><strong>What changed in substance, not just in dates.</strong> Three of the last edition's claims were already false before today's run touched them: the fleet was no longer on four different primary models, the free-hop replacement the document called "prepared, NOT APPLIED" was in fact applied on 31 homes, and the cron job it named had been replaced. Those are now stated as measured.</p>
 <p><strong>Open for Ricardo:</strong> nothing that blocks anything. Two things worth his eye, neither an action taken here: the <strong>MoA reference seat</strong> is picked as <code>minimax-m3.1-flash</code> but no configured home and no probed lane serves that model today (§5.4), and <strong>gap 4</strong> above still leaves 31 homes one supplier short of the standing posture. Any config change remains his call.</p>
 <h2 id="related">Related</h2>

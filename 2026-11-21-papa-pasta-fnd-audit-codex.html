@@ -4,21 +4,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
-:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#6d675e;--line:#e3ddd0;
-      --ok:#2f7d5b;--bad:#b5453a;--warn:#b07d2b;--gold:#b8860b;--accent:#1a2744;--code:#efece4;
-      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da}
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
 /* The dark palette is only variables: every rule below reads them, so no base rule can
    out-order it. Explicit dark rules here used to be overridden by the base table rules
    further down the sheet, which painted cream rows under near-white text. */
 @media (prefers-color-scheme:dark){
-:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#a09a8e;--line:#2e313a;
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
       --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
-      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c}}
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
      -webkit-text-size-adjust:100%}
-main{max-width:740px;margin:0 auto;padding:38px 22px 88px}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (46rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:46rem;margin-left:auto;margin-right:auto}
 .hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
 .hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
@@ -40,8 +49,15 @@ code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;backgrou
 pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
      overflow-x:auto}
 pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
-table{width:100%;border-collapse:collapse;margin:1.3em 0;font-size:15px;display:block;
-      overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
 thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
          letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
          border-bottom:2px solid var(--th-line)}
@@ -51,6 +67,16 @@ tbody tr:last-child td{border-bottom:0}
 td:first-child{font-weight:600}
 td strong{font-weight:650}
 img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
 ul,ol{padding-left:1.3em} li{margin:.34em 0}
 /* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
    card, a results line or a small calculator. Every colour is a token, so they flip with the
@@ -119,7 +145,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 .foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
       font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
 @media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
-  table{margin-left:-6px;margin-right:-6px;width:calc(100% + 12px)}}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
 @media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
 </style></head>
 <body><main>
@@ -161,7 +190,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><strong>H</strong>: browser reads of the <a href="https://www.gov.za/about-sa/public-holidays">government holiday calendar</a>, <a href="https://www.gov.za/documents/public-holidays-act">Act landing page</a> and <a href="https://www.gov.za/sites/default/files/gcis_document/201409/act36of1994.pdf">Act PDF</a>, especially section 2(1) and Schedule 1; <code>R.calendar_inference</code> computes the Sundays and following Mondays. The calendar page itself omits the December observed Monday; the extra date below is an inference from the Act, explicitly distinguished from that page's printed list.</li>
 <li><strong>P</strong>: <code>cat docs/PRD-v2.md</code> followed by <code>sed -n</code> reads of §§05–09 to avoid output truncation. Section references below refer to this immutable PRD. <code>cat AGENTS.md</code>, <code>cat BRIEF.md</code>, and reads of both destination exports established the audit boundary and lane law.</li>
 </ul>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>F#</th>
@@ -383,10 +412,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Mark Meta capability/account access UNVERIFIED; require platform-specific read-only documentation/account evidence before treating this as an executable checklist. Keep the negative list in KW Research/M10 descriptions meanwhile.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="c--no-new-structure-test-pass">C — no-new-structure test: PASS</h3>
 <p>Every named destination resolves to <code>state/clickup/ppp-folders.json</code>; no fictitious named list is used. The twenty-list count is an inventory error (F13), not evidence of a required twentieth destination. A Campaign relationship field is optional in §12, with an explicit title/description fallback. The gap register's “none” entries describe missing data or an unresolved register convention, not a demonstrated need for another list. The following are capacity/routing judgements against the fifteen gap rows in P §07:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Need</th>
@@ -471,10 +500,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Fits, awaiting targets</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>The source SEO Builder includes an off-page/backlink workstream (R.selected_tables). An absent backlink inventory does not prevent future outreach work in existing Link Building; §07's claim that <em>any</em> filing there would be fabrication is overstated. Do not manufacture inventory records, but route actual backlink work there when briefed. Work Format remains an existing field, not a destination list.</p>
 <h3 id="e--load-time-risk-fail">E — load-time risk: FAIL</h3>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Risk</th>
@@ -534,10 +563,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Correct to defer assignment. Membership is not proof of role or sign-off authority (F21). Confirm owners and approver before configuring routines.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h3 id="f--unsupported-claims-fail">F — unsupported claims: FAIL</h3>
 <p>The exact quotations in F11–F28 above identify the contradicted or unsupported factual sentences. The following additional broad sentences require qualification; a proposal is allowed, but must not be presented as measured business state:</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Exact quotation from P</th>
@@ -590,10 +619,10 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Proposal volumes (25 moments, 8 promotions, 15 routines, 81 steps), incomplete calendar dates and the contradictory numerical claims above are not all measured source facts. Clearly distinguish calculated proposals from source inventory.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="3-reconciliation-table">3. Reconciliation table</h2>
 <p><strong>A FAIL.</strong> R is reproducible evidence for each exported count; S/L independently settle the disputed cells and the incomplete keyword row export. PASS means the stated number reconciles at the stated scope, not that those records are production-ready. Identifiers (document/list/field IDs), section numbers and version labels are not quantities; R.numeric_claim_lines records their appearances alongside all other digit-bearing PRD lines.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Number/claim</th>
@@ -853,9 +882,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>PASS count; FAIL “nowhere to live” interpretation</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Base-table row arithmetic by source page, including explanation tables (R; zeros are retained in <code>recount.json</code> and <code>tables.json</code>):</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Source page</th>
@@ -956,11 +985,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>400 / 6</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>All other pages contribute zero base rows. The base-table counts by these same groups sum to 71, and the nine views are excluded. Full per-page API block counts are retained in R.blocks.per_page; the branch arithmetic above follows outline parent IDs, not the PRD's visual indentation.</p>
 <h2 id="4-56-row-mapping-verdict-table">4. 56-row mapping verdict table</h2>
 <p><strong>B FAIL.</strong> Judgements use BRIEF law 1–5 and the actual tree in <code>outline.json</code>/<code>pages.json</code>; source views are identified by <code>sourceTableUri</code> in <code>tables.json</code>. Short labels Briefed-In, Recurring and Projects mean the existing prefixed PPP lists, not new lists. “AGREE” for an empty divider means no standalone task is needed, while its children's content still needs a payload. The PRD marks 12 structural +44 destination pages=56; the Targeted summary is not disposable. Master Table's routing/schema must survive even though it has no rows. Reporting &amp; Analytics belongs in Recurring provided it shares the single monthly-pack identity (F6). No view is an independent register.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Page</th>
@@ -1307,11 +1336,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Optimization for genuine keyword/page assignments. Six blank placeholder rows are not six finished mappings (F10).</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <p>Mapping arithmetic: 49 AGREE +7 DISAGREE=56 rows. The twelve PRD structural entries are Welcome &amp; Overview, Brand Manual &amp; Assets, Client Profile, Strategic Foundation, Targeted, Content &amp; Channel Planning, Master Content Calendar, Calendar View, Master Table, Market Calendar Views, Channel Calendars Views and SEO + Keywords. Eleven can remain without standalone tasks, with schema/view preservation where relevant; Targeted's four roll-ups need an explicit home. This is a preservation requirement, not another list.</p>
 <h2 id="5-coverage-table">5. Coverage table</h2>
 <p><strong>D FAIL: partly covered, not end to end.</strong> The owner's ten asks below come from BRIEF D; coverage is judged on the PRD's definitions and executable carry-over, not on whether an empty destination exists.</p>
-<table>
+<div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Owner's ask</th>
@@ -1371,7 +1400,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>P M7–M10 and Q2 cover intended scope; KW Research/Optimization exist. Website/account reality, Meta capability, recurrence and function-based follow-up routing require correction/verification.</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <h2 id="6-blocked-on-ricardo">6. Blocked on Ricardo</h2>
 <p>These are business decisions or missing business facts; they are separate from the author's verifiable errors in the findings table. The source for each requested decision is P §§02–06/12 and the blank/placeholder cells identified in R; no system was changed to settle them.</p>
 <ul>
