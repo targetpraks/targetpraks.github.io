@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 14)</title>
+<title>PRD — AgenticOS workflow programme (rev 15)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1117,8 +1117,8 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td><strong>D7 — every model step also emits "Ask a model finished a run"</strong></td>
-<td>Ricardo</td>
-<td><strong>open</strong> — two notifications per model lane; the only lever is turning <code>run_completed</code> off globally in notification preferences (§13.13)</td>
+<td>decision lane</td>
+<td><strong>DECIDED &amp; APPLIED 2026-11-25 19:59</strong> — silence it (p=0.968), §13.20</td>
 </tr>
 <tr>
 <td><strong>D6 — restore a writer for <code>maintenance_ledger</code></strong></td>
@@ -1397,5 +1397,54 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 </blockquote>
 <p>The first cut printed <strong>"0 blockers"</strong> while the Open Findings memo said four. The board was wrong: it compared each cell to the Severity <strong>column</strong> id instead of the <strong>blocker option</strong> id. A select cell holds an option id; the column id is never a value. Corrected before it was published, and now the board and the memo agree — which is the whole point of measuring both.</p>
 <p>The lesson joins the one in §13.12: <strong>read a select by label, write it by option id, and compare it only to an option id.</strong> Three mistakes in one evening came from that one distinction.</p>
+<h3 id="1320-two-open-decisions-taken-by-the-decision-lane">13.20 Two open decisions taken by the decision lane</h3>
+<p>Both were put to the local decision model (<code>gate</code>, d3-flash · Decision 3.0, routed <code>clef:cloud</code>) as custom choice ballots, logged to <code>AgenticDrive/Agent-Output/adrianna/agenticos-workflows-2026-11-24/gates.csv</code>.</p>
+<p><strong>D7 — silence the platform's per-run notice, or keep both?</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>silence_run_completed</strong></td>
+<td><strong>0.968</strong></td>
+</tr>
+<tr>
+<td>keep_both</td>
+<td>0.032</td>
+</tr>
+</tbody>
+</table></div>
+<p>Gate confidence 0.8775. <strong>Applied:</strong> <code>PATCH /notifications/preferences {event_type: run_completed, channel: in_app, enabled: false}</code>. Verified by running a model-bearing lane afterwards (Findings/Ledger, <code>17:59:49</code>): its own gated page appeared and <strong>no</strong> <code>run_completed</code> row followed. The two "Ask a model finished a run" rows at <code>17:56:31</code> and <code>17:56:53</code> are from before the change, and stay as the record. Reversible in one setting; email for that event was already off.</p>
+<p><strong>F-20261123-01 — schedule the <code>routine_deliveries</code> fix now, or defer to the release train?</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Probability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>schedule_now</strong></td>
+<td><strong>0.980</strong></td>
+</tr>
+<tr>
+<td>defer</td>
+<td>0.020</td>
+</tr>
+</tbody>
+</table></div>
+<p>Gate confidence 0.9225. <strong>Booked, not deployed.</strong> What the change needs, taken from the code rather than guessed:</p>
+<ul>
+<li><strong>Where the row should be written:</strong> the ordinary terminal write of a <code>trigger</code> run — the path every completed routine takes, which today calls nothing. The two existing call sites are <code>agent_runner.py:8561</code> (cancellation) and <code>:9282</code> (a resumed segment with deferred tool results).</li>
+<li><strong>What it must satisfy:</strong> <code>routine_delivery_repo.create()</code> inserts from a select restricted to <code>routine_kind='trigger'</code>, <code>parent_run_id IS NULL</code>, matching <code>organization_id</code> and <code>routine_origin_id</code>, and <code>AgentRun.user_id</code> must be non-null. A run missing any of those silently yields no row — which is exactly the current symptom, so the guard must be asserted in the test, not assumed.</li>
+<li><strong>The test to write:</strong> a scheduled trigger run with <code>answer_to=primary</code> and <code>result_mode=report</code> completes → exactly one <code>routine_deliveries</code> row with status <code>pending</code>, and the trigger's <code>last_delivery_status</code> then agrees with that row.</li>
+<li><strong>Deploy plan:</strong> image diff against the published 1.92.0 image (expect one file), staging rehearsal on the test DB, production swap with the existing 70-second stop-migrate-start and a rollback image ready.</li>
+</ul>
+<p>No diff was written tonight: patching a 9,000-line runner from reading alone would be guesswork dressed as work, and this estate's rule is evidence before a deploy. The decision is made and the brief is complete — the next build window executes it.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
