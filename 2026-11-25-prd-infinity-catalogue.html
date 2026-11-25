@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>PRD: Infinity Catalogue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd--infinity-catalogue">PRD — Infinity Catalogue</h1>
+<p><strong>The internal product catalogue and sign-off application for ACDC Express, The Local Farmer, Papa Pasta and Infinity Brands.</strong></p>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td>Version</td>
+<td>0.9 — for Ricardo's review</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>2026-11-25</td>
+</tr>
+<tr>
+<td>Owner</td>
+<td>Ricardo Da Costa Maio</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>Adrianna A, with the MoA (decision log §16)</td>
+</tr>
+<tr>
+<td>Source of truth for the numbers</td>
+<td>Zoho Inventory org 716443079, read live 2026-11-25 18:10 SAST</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Draft — build starts only on Ricardo's go</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="1-problem-and-vision">1. Problem and vision</h2>
+<h3 id="11-the-request-in-the-owners-words">1.1 The request, in the owner's words</h3>
+<blockquote>
+<p>"Goal is to build out a PRD for this catalogue. It needs to include absolutely everything for ACDC Express, Local Farmer, Papa Pasta, Infinity Brands. It needs to be able to toggle what is or needs to see what is always… always a product that has to be in stock, and it should show the minimums and maximums of that product. And then also, it should allow a manager to sign off on, maybe loading new products. So, when a new product comes in, it's got a section says 'Newly added', so that we can then sign off on the artwork, and that can be done in each kind of section. I need all of Infinity Brands team members to have access to this. So it needs to be hosted on a link that everyone will have access to… ClickUp login or Zoho login to the application so that you can sort out any form of authentication."</p>
+</blockquote>
+<h3 id="12-what-that-means-requirement-by-requirement">1.2 What that means, requirement by requirement</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Owner's words</th>
+<th>Requirement as written</th>
+<th>Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>"absolutely everything for ACDC Express, Local Farmer, Papa Pasta, Infinity Brands"</td>
+<td>Every active item in those four brands appears in the catalogue, grouped by brand then section</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>"toggle what is or needs to [be]… always a product that has to be in stock"</td>
+<td>A <strong>core-range flag</strong> per item plus a toggle that shows only core items; a second toggle for stock health (below min / within / above max)</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>"show the minimums and maximums of that product"</td>
+<td>Minimum and maximum stock level shown on every item, visible to all staff, editable by managers</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>"allow a manager to sign off on loading new products"</td>
+<td>A per-section approval queue; a new product cannot be shown as live until a manager approves it</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>"a section says 'Newly added', so that we can then sign off on the artwork"</td>
+<td>New items land in <strong>Newly added</strong> with their artwork image; approval is given on the item <em>and</em> its artwork, with a comment on rejection</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>"that can be done in each kind of section"</td>
+<td>The Newly added queue exists inside every brand and every section, plus one cross-brand queue for managers</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>"all of Infinity Brands team members to have access… hosted on a link"</td>
+<td>One HTTPS address; every team member signs in; no client install</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>"ClickUp login or Zoho login… sort out any form of authentication"</td>
+<td>Single sign-on through one of the company's existing identities; role (staff / manager) derived at sign-in</td>
+<td>P0</td>
+</tr>
+</tbody>
+</table></div>
+<p>One sentence of the request is ambiguous and is recorded as an open question (§17 Q1): <em>"toggle what is or needs to see what is always…"</em>. This PRD reads it as <strong>two separate toggles</strong> — "core range only" and "stock health" — because that is the only reading that gives the sentence a distinct meaning from R3.</p>
+<h3 id="13-vision">1.3 Vision</h3>
+<p>One link. Every product the group sells or gives away, with its photo, its price, its stock and its limits. Every new product lands in a queue that a named manager must clear before staff ever see it as approved. Zoho Inventory stays the single source of the item; this application is the place people <em>decide</em> about it.</p>
+<h3 id="14-success-measures">1.4 Success measures</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Team members who can sign in</td>
+<td>39 of 39 ClickUp members (or 100% of the chosen IdP's directory)</td>
+</tr>
+<tr>
+<td>Items visible in the catalogue</td>
+<td>729 of 729 in-scope items — 696 ACDC, 11 TLF, 11 PPP, 11 INF</td>
+</tr>
+<tr>
+<td>Items with a min set</td>
+<td>0 today → 100% of core-range items within 60 days</td>
+</tr>
+<tr>
+<td>New item time-to-approval</td>
+<td>≤ 2 working days from appearing in Newly added</td>
+</tr>
+<tr>
+<td>Pages that need a manual edit to change a price</td>
+<td>0 — the app reads Zoho</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="2-users-and-jobs">2. Users and jobs</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Who</th>
+<th>Job to be done</th>
+<th>Sees</th>
+<th>Can do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Staff</strong></td>
+<td>All ~39 team members</td>
+<td>"What do we sell, what does it look like, what does it cost, what must never run out?"</td>
+<td>All four brands, all sections, prices, stock, min/max</td>
+<td>Browse, search, filter, open an item, download/print</td>
+</tr>
+<tr>
+<td><strong>Section manager</strong></td>
+<td>One named manager per brand-section (e.g. ACDC Uniform)</td>
+<td>"Approve what goes live and keep the limits honest"</td>
+<td>Their sections + the Newly added queue</td>
+<td>Approve/reject items and artwork, set min/max, set core flag</td>
+</tr>
+<tr>
+<td><strong>Brand owner</strong></td>
+<td>Brand lead per brand (and Ricardo)</td>
+<td>"The brand's range is right and the artwork is on-brand"</td>
+<td>One brand, all its sections</td>
+<td>Everything a section manager can do, across that brand</td>
+</tr>
+<tr>
+<td><strong>Admin</strong></td>
+<td>Ricardo; one delegate</td>
+<td>"The system is healthy and the roles are right"</td>
+<td>Everything</td>
+<td>Roles, sync, settings, export, audit</td>
+</tr>
+</tbody>
+</table></div>
+<p>Deliberate restraint: <strong>staff cannot edit anything</strong>. Every write is a manager action with a named actor and a timestamp.</p>
+<hr />
+<h2 id="3-scope">3. Scope</h2>
+<h3 id="31-in-scope-measured-2026-11-25-1810">3.1 In scope (measured 2026-11-25 18:10)</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Brand</th>
+<th>SKU prefix</th>
+<th>Items</th>
+<th>Active</th>
+<th>Photos</th>
+<th>Stock-tracked</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ACDC Express</td>
+<td><code>EXP-</code></td>
+<td>696</td>
+<td>505</td>
+<td>637</td>
+<td>676</td>
+<td>The real stocked range: Uniform 407, Promotional 155, In-store 58, Stationery 40, Gifts 34, Online Marketing 2</td>
+</tr>
+<tr>
+<td>The Local Farmer</td>
+<td><code>TLF-</code></td>
+<td>11</td>
+<td>11</td>
+<td>0</td>
+<td>0</td>
+<td>Catalogue lines only (desk pad, pen, gazebo, golf shirts)</td>
+</tr>
+<tr>
+<td>Papa Pasta</td>
+<td><code>PPP-</code></td>
+<td>11</td>
+<td>11</td>
+<td>0</td>
+<td>0</td>
+<td>Same 11-line catalogue</td>
+</tr>
+<tr>
+<td>Infinity Brands</td>
+<td><code>INF-</code></td>
+<td>11</td>
+<td>11</td>
+<td>0</td>
+<td>0</td>
+<td>Same 11-line catalogue</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>729</strong></td>
+<td><strong>538</strong></td>
+<td><strong>637</strong></td>
+<td><strong>676</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Supporting structures already live in Zoho: <strong>6 category codes</strong> (UNI, PRO, INS, STA, GIF, ONL), <strong>11 price lists</strong> (7 fixed-percentage brand lists at 20%, 4 per-item brand subsets), <strong>7 locations</strong> (Head Office + six brand locations), <strong>1 item custom field</strong>.</p>
+<h3 id="32-out-of-scope-for-v1">3.2 Out of scope for v1</h3>
+<ul>
+<li><strong>Titan Electrical (<code>TIE-</code>, 30 items), 26 <code>FRA-</code> items (frame stock) and 10 INFX items</strong> — other brands or unregistered prefixes in the same org; they join when the owner says so (Q5).</li>
+<li>The 54 items carrying no prefix at all — cleaned up in Zoho, not in this app. Together these are 110 of the org's 839 items.</li>
+<li>Ordering, quoting, invoicing, purchase orders — P2, and only if v1 earns it.</li>
+<li>Customer-facing availability. This is an internal tool; nothing here is published publicly.</li>
+</ul>
+<hr />
+<h2 id="4-source-of-truth-and-data-model">4. Source of truth and data model</h2>
+<h3 id="41-the-rule">4.1 The rule</h3>
+<p><strong>Zoho Inventory owns the item.</strong> Name, SKU, brand, category, price, photo, stock, <em>minimum</em> and — by the MoA's ruling — the <strong>maximum and core-range flag</strong> as item custom fields, so the item master stays the one place a product is described. The app adds only the approval record and its own audit, plus a read mirror of the limits for fast filtering.</p>
+<h3 id="42-entities">4.2 Entities</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Owner</th>
+<th>Key fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Item</strong> (synced, read-mostly)</td>
+<td>Zoho</td>
+<td><code>item_id</code>, <code>sku</code>, <code>name</code>, <code>brand</code>, <code>category_code</code>, <code>unit</code>, <code>rate</code>, <code>purchase_rate</code>, <code>status</code>, <code>image</code>, <code>stock_on_hand</code>, <code>min_level</code> (Zoho <code>reorder_level</code>), <code>track_inventory</code></td>
+</tr>
+<tr>
+<td><strong>Section</strong></td>
+<td>App</td>
+<td><code>brand</code> + <code>category_code</code> + display order + manager</td>
+</tr>
+<tr>
+<td><strong>CatalogueEntry</strong></td>
+<td>App</td>
+<td><code>item_id</code>, <code>section</code>, <code>state</code> (new / approved / rejected / retired), <code>artwork_state</code> (missing / pending / approved / changes_requested), <code>approved_by</code>, <code>approved_at</code>, <code>snapshot_hash</code></td>
+</tr>
+<tr>
+<td><strong>Approval</strong> (append-only)</td>
+<td>App</td>
+<td><code>entry_id</code>, <code>action</code>, <code>actor</code>, <code>role</code>, <code>comment</code>, <code>snapshot_hash</code>, <code>created_at</code></td>
+</tr>
+<tr>
+<td><strong>ItemLimit</strong></td>
+<td>Zoho (custom fields), mirrored read-only in the app</td>
+<td><code>item_id</code>, <code>max_level</code>, <code>core_range</code> (bool) — written to Zoho as <code>Maximum Level</code> and <code>Core Range</code>; <code>updated_by</code>, <code>updated_at</code> kept in the app</td>
+</tr>
+<tr>
+<td><strong>UserRole</strong></td>
+<td>App</td>
+<td><code>idp_subject</code>, <code>email</code>, <code>display_name</code>, <code>role</code>, <code>brand_scope</code>, <code>section_scope</code></td>
+</tr>
+<tr>
+<td><strong>SyncRun</strong></td>
+<td>App</td>
+<td><code>started_at</code>, <code>finished_at</code>, <code>items_read</code>, <code>items_changed</code>, <code>errors</code></td>
+</tr>
+<tr>
+<td><strong>AuditEvent</strong></td>
+<td>App</td>
+<td><code>actor</code>, <code>action</code>, <code>object</code>, <code>before</code>, <code>after</code>, <code>at</code></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="43-the-snapshot-hash--carried-over-from-the-generator">4.3 The snapshot hash — carried over from the generator</h3>
+<p>The static catalogue already proves this pattern works (<code>b3d648ba…</code>): a SHA-256 over the canonical item payload. The app keeps it per approval, so "what the manager approved" is provable even after the item changes: re-hashing the item as it stood produces the same value. Artwork is included in the hash by its image id and byte length, not its bytes.</p>
+<h3 id="44-state-machine">4.4 State machine</h3>
+<pre><code>Zoho item created ──► NEW (Newly added)
+                        │  manager reviews artwork + fields
+        ┌───────────────┼────────────────┐
+        ▼               ▼                ▼
+   APPROVED        CHANGES REQUESTED   REJECTED
+   (live to staff)  (back to the        (hidden, reason kept)
+                     submitter)
+        │
+        ▼
+    RETIRED (item deactivated in Zoho)</code></pre>
+<p>Rules: an item with <strong>no artwork cannot be approved</strong> (R5). A rejected item stays visible to managers with its reason. Retiring in Zoho retires it here on the next sync, never deletes the approval history.</p>
+<hr />
+<h2 id="5-features">5. Features</h2>
+<h3 id="51-p0--the-app-that-ships-first">5.1 P0 — the app that ships first</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Feature</th>
+<th>Acceptance criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>F1</strong></td>
+<td><strong>Single sign-on</strong> through the chosen identity provider</td>
+<td>Every member of the directory can sign in with no account created by us. A first-time user reaches the catalogue in ≤ 3 clicks. Sign-out clears the session. Unauthenticated requests never see item data.</td>
+</tr>
+<tr>
+<td><strong>F2</strong></td>
+<td><strong>Brand and section browsing</strong></td>
+<td>Home shows the four brands with item counts. Opening a brand lists its sections with counts. Opening a section shows a card grid: photo, name, SKU, price, min/max, stock. Every in-scope item appears in exactly one section — a count check against Zoho returns 729.</td>
+</tr>
+<tr>
+<td><strong>F3</strong></td>
+<td><strong>Search and toggles</strong></td>
+<td>Free-text search over name and SKU returns in &lt; 300 ms at 729 items. Toggles: <strong>Core range only</strong>, <strong>Stock health</strong> (below min / within / above max), <strong>Status</strong> (new / approved). Filter state survives a page refresh (URL query).</td>
+</tr>
+<tr>
+<td><strong>F4</strong></td>
+<td><strong>Item detail</strong></td>
+<td>Photo, description, SKU, brand, section, unit, list price (ex-VAT), purchase price to managers only, stock on hand, min, max, core flag, and approval history. Blank limits read "Not set", never 0.</td>
+</tr>
+<tr>
+<td><strong>F5</strong></td>
+<td><strong>Newly added queue per section</strong></td>
+<td>Each brand and section shows a Newly added count. The queue lists items in NEW state with artwork thumbnail, submitted date and the fields a manager must check. A cross-brand queue exists for brand owners.</td>
+</tr>
+<tr>
+<td><strong>F6</strong></td>
+<td><strong>Approve / reject with artwork</strong></td>
+<td>Approve requires the artwork image to have loaded and a confirmation click; it records actor, time, role and snapshot hash. Reject requires a comment (≥ 10 characters). An approved item becomes visible to staff immediately (≤ 2 s). Approving an item with no image is impossible.</td>
+</tr>
+<tr>
+<td><strong>F7</strong></td>
+<td><strong>Roles and scoping</strong></td>
+<td>Server-side enforcement, not just hidden buttons: staff get read-only; a section manager can act only inside their sections; a brand owner only inside their brand. A direct API call outside scope returns 403.</td>
+</tr>
+<tr>
+<td><strong>F8</strong></td>
+<td><strong>Sync with visible health</strong></td>
+<td>Nightly full sync + on-demand refresh by an admin. Sync writes a SyncRun row with counts and errors. If Zoho fails or throttles, the app keeps serving the last good data and shows "last synced 6h ago" rather than an empty catalogue.</td>
+</tr>
+<tr>
+<td><strong>F9</strong></td>
+<td><strong>Audit trail</strong></td>
+<td>Every approval, rejection, role change and limit change is an immutable row: who, what, before, after, when. Exportable to CSV by an admin.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="52-p1--after-launch-one-quarter">5.2 P1 — after launch, one quarter</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Feature</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F10</td>
+<td>Edit min/max and the core flag in the app, with change history</td>
+<td>Today those live in Zoho; managers should not need Zoho to set a limit</td>
+</tr>
+<tr>
+<td>F11</td>
+<td>Notifications (Cliq or email) when an item needs sign-off, and a daily digest to managers</td>
+<td>Approval without a nudge stalls</td>
+</tr>
+<tr>
+<td>F12</td>
+<td>Export a section or brand to CSV/Excel</td>
+<td>Buying, quoting, stock takes</td>
+</tr>
+<tr>
+<td>F13</td>
+<td>Generate the print edition from the app (reuse the existing generator)</td>
+<td>One data set, screen + print</td>
+</tr>
+<tr>
+<td>F14</td>
+<td>Stock health dashboard: how many items are below min, per brand</td>
+<td>Turns the min/max data into a decision</td>
+</tr>
+<tr>
+<td>F15</td>
+<td>Bulk approve with per-item records</td>
+<td>40 new items in a week should not be 40 modal dialogs</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="53-p2--only-if-v1-is-adopted">5.3 P2 — only if v1 is adopted</h3>
+<p>F16 ordering/replenishment into Zoho (sales orders for brands, purchase requests for stock), F17 per-location min/max, F18 artwork versioning through WorkDrive, F19 supplier lead times and reorder cadence.</p>
+<hr />
+<h2 id="6-application-structure">6. Application structure</h2>
+<h3 id="61-architecture">6.1 Architecture</h3>
+<figure>
+<svg viewBox="0 0 940 470" width="100%" role="img" aria-label="Architecture: identity provider to Cloudflare Access to the catalogue app, its database and the Zoho Inventory API">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6770"/>
+    </marker>
+  </defs>
+
+  <rect x="14" y="26" width="170" height="70" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
+  <text x="28" y="52" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Team member</text>
+  <text x="28" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">browser, phone, desktop</text>
+  <text x="28" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">~39 people</text>
+
+  <rect x="232" y="26" width="190" height="70" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
+  <text x="246" y="52" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Identity provider</text>
+  <text x="246" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">ClickUp or Zoho login</text>
+  <text x="246" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">role claim at sign-in</text>
+
+  <rect x="470" y="26" width="210" height="70" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
+  <text x="484" y="52" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Cloudflare Access</text>
+  <text x="484" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">policy per app, HTTPS</text>
+  <text x="484" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">audit of every sign-in</text>
+
+  <path d="M184,61 L228,61" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
+  <path d="M422,61 L466,61" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
+
+  <rect x="250" y="170" width="440" height="120" rx="12" fill="#ffffff" stroke="#e2001a" stroke-width="1.6"/>
+  <text x="268" y="196" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Catalogue app (Infinity staging server)</text>
+  <text x="268" y="216" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">browse · search · toggles · item detail</text>
+  <text x="268" y="233" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Newly added queue · approve / reject · roles</text>
+  <text x="268" y="250" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">API routes enforce scope server-side</text>
+  <text x="268" y="272" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">container on staging-ingress, no host ports</text>
+
+  <path d="M575,96 L520,166" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
+
+  <rect x="740" y="170" width="186" height="120" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
+  <text x="754" y="196" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">App database</text>
+  <text x="754" y="214" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Postgres</text>
+  <text x="754" y="231" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">entries · approvals ·</text>
+  <text x="754" y="247" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">limits mirror · roles · audit</text>
+  <text x="754" y="269" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">nightly dump</text>
+  <path d="M690,230 L736,230" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
+
+  <rect x="250" y="340" width="210" height="100" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
+  <text x="264" y="366" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Zoho Inventory</text>
+  <text x="264" y="384" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">items, photos, stock,</text>
+  <text x="264" y="400" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">price lists, reorder level,</text>
+  <text x="264" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">max + core custom fields</text>
+
+  <rect x="500" y="340" width="190" height="100" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
+  <text x="514" y="366" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Image cache</text>
+  <text x="514" y="384" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">photos fetched once,</text>
+  <text x="514" y="400" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">paced (429 measured)</text>
+  <text x="514" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">served from disk</text>
+
+  <rect x="730" y="340" width="196" height="100" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
+  <text x="744" y="366" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Print edition</text>
+  <text x="744" y="384" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">same data to A4 PDF</text>
+  <text x="744" y="400" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">edition hash for sign-off</text>
+  <text x="744" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Mac mini generator</text>
+
+  <path d="M420,290 L370,336" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
+  <path d="M470,290 L540,336" stroke="#b6bfc7" stroke-width="1.1" fill="none" stroke-dasharray="5 4" marker-end="url(#a)"/>
+  <path d="M600,290 L790,336" stroke="#b6bfc7" stroke-width="1.1" fill="none" stroke-dasharray="5 4" marker-end="url(#a)"/>
+
+<p><text x="26" y="200" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Read path:</text> <text x="26" y="218" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">everything staff see</text> <text x="26" y="235" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">comes from the app,</text> <text x="26" y="252" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">never live from Zoho.</text> <text x="26" y="276" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Write path:</text> <text x="26" y="293" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">approvals live in the app,</text> <text x="26" y="310" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">limits are written to Zoho</text> <text x="26" y="327" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">and mirrored back.</text> </svg></p>
+<figcaption>One sign-in, one app, one database; Zoho Inventory stays the master of the item and the print edition is generated from the same data.</figcaption>
+</figure>
+
+<h3 id="62-screens">6.2 Screens</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Screen</th>
+<th>Route</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Sign-in</td>
+<td><code>/</code></td>
+<td>Provider button, then straight to the catalogue</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Home</td>
+<td><code>/</code></td>
+<td>Four brand cards with counts, plus "Your sections" for managers, plus Newly added badge</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Brand</td>
+<td><code>/b/:brand</code></td>
+<td>Section cards with counts and pending approvals</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Section</td>
+<td><code>/b/:brand/s/:section</code></td>
+<td>Card grid + search + toggles (Core only, Stock health, Status)</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>Item</td>
+<td><code>/item/:id</code> (drawer over S4)</td>
+<td>Photo, fields, limits, stock, history, manager actions</td>
+</tr>
+<tr>
+<td>S6</td>
+<td>Newly added</td>
+<td><code>/new</code> (global) and in-section</td>
+<td>Queue with artwork, approve / reject</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>Limits</td>
+<td><code>/limits</code> (manager)</td>
+<td>Table of items with min/max/core, filter "not set"</td>
+</tr>
+<tr>
+<td>S8</td>
+<td>Settings</td>
+<td><code>/settings</code> (admin)</td>
+<td>Sections, managers, sync, exports, audit</td>
+</tr>
+</tbody>
+</table></div>
+<p>Mobile: S4 and S6 are the two screens that must work on a phone; the grid becomes one column, the drawer becomes a full screen.</p>
+<h3 id="63-navigation-rules">6.3 Navigation rules</h3>
+<p>Brand → section → item is the only hierarchy; search and Newly added are global shortcuts. No nested menus deeper than that — staff should never be more than two taps from an item.</p>
+<hr />
+<h2 id="7-flows">7. Flows</h2>
+<h3 id="71-sign-in">7.1 Sign-in</h3>
+<p>Identity provider → Cloudflare Access → app session. The app maps the IdP email to a UserRole row. An email with no role row lands as <strong>Staff</strong> (read-only) and an admin sees them in Settings → Users to promote. No one is ever locked out by a missing role.</p>
+<h3 id="72-browse-and-find">7.2 Browse and find</h3>
+<p>Home → brand → section → card. Or type a SKU anywhere and press enter. Toggles live in the URL so a manager can send "ACDC Uniform, core only, below min" as a link.</p>
+<h3 id="73-a-new-product-arrives">7.3 A new product arrives</h3>
+<ol type="1">
+<li>An item is created in Zoho (by whoever loads products today), with a photo attached.</li>
+<li>Nightly sync (or an admin's refresh) creates a CatalogueEntry in <strong>NEW</strong> and it appears in Newly added for its section.</li>
+<li>The section manager opens it: artwork large, fields beside it, "check these" list (name, category, price, unit).</li>
+<li><strong>Approve</strong> → entry becomes APPROVED, snapshot hash recorded, item visible to staff. <strong>Reject</strong> → comment required, entry REJECTED, the person who loaded it is named in the comment thread.</li>
+<li>The history stays forever; a later edit to the item in Zoho creates a "changed since approval" flag rather than silently replacing what was signed off.</li>
+</ol>
+<h3 id="74-setting-a-limit">7.4 Setting a limit</h3>
+<p>Manager opens Limits → filters "not set" → sets min and max → saves. Change is audited. If a max is set below the min, the form refuses with a plain sentence. Zoho's <code>reorder_level</code> takes the min; the max and the core flag are written to the two item custom fields.</p>
+<h3 id="75-rejection-and-re-submission">7.5 Rejection and re-submission</h3>
+<p>A rejected item stays in Newly added for managers with the reason; once the artwork is replaced in Zoho and the sync runs, the manager sees the new image beside the old one and can approve.</p>
+<hr />
+<h2 id="8-ui-design-system">8. UI design system</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Type</td>
+<td>System stack (SF Pro on Mac, Inter fallback), 14 px base, 1.45 line height</td>
+</tr>
+<tr>
+<td>Colour</td>
+<td>Ink <code>#11161c</code>, muted <code>#5b6770</code>, line <code>#e2e7ec</code>, surface <code>#ffffff</code>, canvas <code>#f6f7f8</code>; brand accent per brand: ACDC <code>#e2001a</code>, TLF <code>#2f6b3a</code>, PPP <code>#c2410c</code>, INF <code>#1e3a8a</code></td>
+</tr>
+<tr>
+<td>Status colours</td>
+<td>New <code>#b45309</code>, approved <code>#0d8a4f</code>, rejected <code>#b91c1c</code>, retired <code>#6b7280</code></td>
+</tr>
+<tr>
+<td>Radius</td>
+<td>12 px cards, 999 px pills, 10 px inputs</td>
+</tr>
+<tr>
+<td>Density</td>
+<td>4-column card grid on desktop, 1 column on phone; card = image 1:1, name 2 lines max, SKU mono, price bold</td>
+</tr>
+<tr>
+<td>Motion</td>
+<td>≤ 150 ms, no animation on data load beyond a skeleton</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>WCAG 2.1 AA contrast, keyboard reachable, focus rings, labels on every control, no colour-only status (icon + text)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The static catalogue already proves this visual language with 343 items; the app reuses it rather than inventing a second one.</p>
+<hr />
+<h2 id="9-authentication-and-hosting">9. Authentication and hosting</h2>
+<h3 id="91-the-choice">9.1 The choice</h3>
+<p>Three viable lanes, with the evidence that decides it:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Coverage today</th>
+<th>New accounts</th>
+<th>Role model</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ClickUp login (OAuth)</strong></td>
+<td>39 members in workspace 4627083, verified live</td>
+<td>None — the team is already there</td>
+<td>ClickUp member + app-side role table</td>
+<td>R0 (Business plan already paid)</td>
+</tr>
+<tr>
+<td><strong>Zoho login (OAuth / Zoho Directory)</strong></td>
+<td>26 Inventory users, 12 active</td>
+<td>None for Zoho users; staff without a Zoho seat need one</td>
+<td>Zoho roles exist (8 job roles built 2026-11-24)</td>
+<td>Zoho seats</td>
+</tr>
+<tr>
+<td><strong>Cloudflare Access email PIN</strong></td>
+<td>Any company email</td>
+<td>None</td>
+<td>App-side role table</td>
+<td>R0 (Access included)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The MoA chose <strong>Zoho login</strong>, and its reason is sound: the same OAuth token can read Inventory, and staff already live in Zoho Mail, Projects and WorkDrive. But the premise behind the vote — "every staffer already has a Zoho One account" — is <strong>unverified</strong>, and the one number we can measure points the other way: Inventory holds 26 users with 12 active, while ClickUp holds 39 members. Zoho's directory may be larger than its Inventory seats (a seat is not a login), but until that is counted, the safe reading is:</p>
+<ul>
+<li><strong>Primary — Zoho login</strong>, <em>if</em> the Zoho Directory (or Zoho One user list) is confirmed to contain all 39 team members. That is a five-minute check in the Zoho admin console, and it is Q2.</li>
+<li><strong>Fallback — ClickUp OAuth</strong>, which provably covers the team today (39 of 39, verified).</li>
+<li><strong>In both cases Cloudflare Access stays in front</strong> as the edge gate and the sign-in audit, so an unauthenticated request never reaches the app even if the app's own auth has a bug.</li>
+</ul>
+<h3 id="92-hosting">9.2 Hosting</h3>
+<p>The Infinity staging server already publishes internal apps behind Cloudflare Access in one command, verified live:</p>
+<ul>
+<li><code>staging-host register catalogue --port &lt;port&gt; --access emails --allow @infinitybrands.co.za</code></li>
+<li>HTTPS name: <code>https://catalogue-staging.infinityapps.co.za</code> (or a production-style name on Ricardo's instruction)</li>
+<li>Container on <code>staging-ingress</code>, no host ports; database on the app's private network</li>
+</ul>
+<p>That gives a real link, real authentication and real audit of sign-ins without buying a product. If the MoA instead picked Zoho Creator, hosting moves to Zoho and this section becomes a configuration task rather than a build.</p>
+<h3 id="93-sessions">9.3 Sessions</h3>
+<p>HttpOnly, Secure, SameSite=Lax cookie; 8-hour session; server-side role check on every API call; no item data in the browser's local storage.</p>
+<hr />
+<h2 id="10-sync-and-integrations">10. Sync and integrations</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Integration</th>
+<th>Direction</th>
+<th>Frequency</th>
+<th>Failure behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zoho Inventory items + stock + images</td>
+<td>read</td>
+<td>nightly 02:00 + admin on demand</td>
+<td>keep last good data, show staleness, alert</td>
+</tr>
+<tr>
+<td>Zoho <code>reorder_level</code> (min)</td>
+<td>write</td>
+<td>on manager save</td>
+<td>retry with backoff; if it fails, the app value stands and the row is flagged "pending Zoho"</td>
+</tr>
+<tr>
+<td>Zoho item custom fields (max, core)</td>
+<td>write</td>
+<td>on manager save</td>
+<td>same</td>
+</tr>
+<tr>
+<td>IdP directory</td>
+<td>read</td>
+<td>on sign-in</td>
+<td>deny with a plain message</td>
+</tr>
+<tr>
+<td>Cliq / email notifications (P1)</td>
+<td>write</td>
+<td>on NEW items</td>
+<td>queue and retry</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two item custom fields must be created in Zoho before the limits feature ships: <strong><code>Maximum Level</code></strong> (number) and <strong><code>Core Range</code></strong> (checkbox). The minimum uses the native <code>reorder_level</code>, which exists on every item today and is set on none.</p>
+<p>Measured constraint: Zoho throttles at roughly 100 requests/minute and the image endpoint blocks for 15+ minutes after a burst — the sync must pace at ≤ 1 request/second for images, cache them, and never re-fetch an unchanged photo.</p>
+<hr />
+<h2 id="11-non-functional-requirements">11. Non-functional requirements</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Performance</td>
+<td>Section page p95 &lt; 1.5 s on the office LAN with 729 items; search &lt; 300 ms; image grid lazy-loads</td>
+</tr>
+<tr>
+<td>Availability</td>
+<td>07:00–18:00 SAST target 99%; a Zoho outage must not blank the catalogue</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>SSO only, RBAC enforced server-side, CSRF tokens, rate-limited API, dependency scanning, no secrets in the bundle</td>
+</tr>
+<tr>
+<td>Privacy (POPIA)</td>
+<td>Store work email and display name only — no ID numbers, no home addresses, no health data. Staff data lives in the IdP; the app keeps a role row and nothing else</td>
+</tr>
+<tr>
+<td>Audit</td>
+<td>Approvals and limit changes append-only, retained 3 years, exportable</td>
+</tr>
+<tr>
+<td>Backup</td>
+<td>Nightly database dump, 30-day retention, quarterly restore drill</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>WCAG 2.1 AA; usable keyboard-only; tested with VoiceOver on the core flow</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>Sync log in-app; error alert to the admin's Cliq; uptime check every 5 minutes</td>
+</tr>
+<tr>
+<td>Browser support</td>
+<td>Current Chrome, Safari, Edge; iOS Safari and Android Chrome</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="12-testing-strategy">12. Testing strategy</h2>
+<ul>
+<li><strong>Unit:</strong> state machine (NEW → APPROVED/REJECTED → RETIRED), scope checks, limit validation, hash canonicalisation.</li>
+<li><strong>Contract:</strong> a recorded Zoho read fixture so sync tests never hit the live org; one live read-only smoke test per release.</li>
+<li><strong>End-to-end:</strong> sign-in → find a section → open an item → approve as manager → verify it appears for staff; reject → verify hidden with reason; scope denial → 403.</li>
+<li><strong>Acceptance:</strong> each P0 feature's criteria in §5.1 becomes a test case; the count check (729 items, one section each) runs on every deploy.</li>
+<li><strong>UAT:</strong> three real managers (one per brand, ACDC split in two) clear five seeded new items before launch.</li>
+<li><strong>Evidence rule:</strong> a feature is done when the test output is quoted, not when it "should work".</li>
+</ul>
+<hr />
+<h2 id="13-rollout">13. Rollout</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What</th>
+<th>Exit criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 · Decisions</td>
+<td>Ricardo answers §17; IdP confirmed; managers named</td>
+<td>Signed decision log</td>
+</tr>
+<tr>
+<td>1 · Read-only pilot (week 1–2)</td>
+<td>Sync + browse + search + item detail, staff role only, one brand (ACDC)</td>
+<td>696 items, counts match Zoho, p95 within budget</td>
+</tr>
+<tr>
+<td>2 · Approvals (week 3)</td>
+<td>Newly added, approve/reject, artwork, roles, audit</td>
+<td>Five seeded items approved and rejected correctly; 403 outside scope</td>
+</tr>
+<tr>
+<td>3 · All brands (week 4)</td>
+<td>TLF, PPP, INF sections; brand owners scoped</td>
+<td>729 items live; each brand owner sees only their brand</td>
+</tr>
+<tr>
+<td>4 · Launch (week 5)</td>
+<td>All 39 staff, training note, Cliq announcement</td>
+<td>Sign-ins from every department; no role tickets in week one</td>
+</tr>
+<tr>
+<td>5 · Limits (week 6–8)</td>
+<td>Managers set min/max and core flags; stock health view</td>
+<td>100% of core items have a min and a max</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="14-risks">14. Risks</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td><strong>Min/max are greenfield</strong> — 0 of 839 items carry a reorder level today</td>
+<td>Certain</td>
+<td>High</td>
+<td>Bulk template per section, defaults discussed per brand, "Not set" is visible rather than hidden, 60-day target</td>
+</tr>
+<tr>
+<td>R2</td>
+<td><strong>Approval bottleneck</strong> — one manager per section</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Brand-owner fallback, P1 bulk approve, daily digest, time-to-approve measured</td>
+</tr>
+<tr>
+<td>R3</td>
+<td><strong>Two sources of truth</strong> for min/max and core</td>
+<td>Medium</td>
+<td>High</td>
+<td>Zoho owns min (<code>reorder_level</code>); app owns max and core and mirrors them to Zoho custom fields; one named owner per field in §4</td>
+</tr>
+<tr>
+<td>R4</td>
+<td><strong>Zoho API throttling</strong> (measured 429 lockout)</td>
+<td>High</td>
+<td>Medium</td>
+<td>Paced sync, image cache, backoff, keep serving last good data</td>
+</tr>
+<tr>
+<td>R5</td>
+<td><strong>Auth coverage gap</strong> — only 12 active Inventory users vs 39 team members</td>
+<td>High if Zoho chosen</td>
+<td>High</td>
+<td>Choose the IdP by directory coverage (§9), verify every member signs in during pilot</td>
+</tr>
+<tr>
+<td>R6</td>
+<td><strong>Data quality</strong> — duplicate categories (<code>zzUniform</code>, <code>zzPromotional</code>), 54 unprefixed items, 26 unregistered <code>FRA-</code> items</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Fold to the six canonical codes in the app; fix in Zoho separately; out-of-scope items listed</td>
+</tr>
+<tr>
+<td>R7</td>
+<td><strong>Approval without legal weight</strong> — an in-app click is not a signature</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Snapshot hash per approval; Zoho Sign only if the owner wants formal signatures (Q4)</td>
+</tr>
+<tr>
+<td>R8</td>
+<td><strong>Scope creep into ordering</strong></td>
+<td>Medium</td>
+<td>Medium</td>
+<td>P2 is explicitly gated on v1 adoption</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="15-out-of-scope-assumptions">15. Out of scope, assumptions</h2>
+<p><strong>Out of scope:</strong> ordering and invoicing; customer-facing storefront; Titan Electrical and INFX; per-location limits in v1; artwork editing (the app reviews artwork, it does not create it).</p>
+<p><strong>Assumptions:</strong> Zoho Inventory keeps its current shape; the team stays on ClickUp (39 seats) or Zoho One; the staging server remains available for internal apps; the owner wants approvals by click, not e-signature, unless Q4 says otherwise.</p>
+<hr />
+<h2 id="16-decision-log">16. Decision log</h2>
+<p>The four architecture questions went to the MoA as one ballot. The <code>council_deliberate</code> tool failed with an internal error (<code>too many values to unpack</code>), so the identical brief ran on the MoA lane — recorded here with the seats that actually answered, read from the trace file, not the config.</p>
+<h3 id="161-the-run">16.1 The run</h3>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td>Ballot</td>
+<td><code>AI-Drive/Agent-Output/adrianna/catalogue-prd-2026-11-25/moa-ballot.md</code></td>
+</tr>
+<tr>
+<td>Lane</td>
+<td>MoA (<code>hermes chat --provider moa</code>), session <code>local-f74948e6…</code></td>
+</tr>
+<tr>
+<td>Seats that answered</td>
+<td><code>glm-5.3:cloud</code>, <code>kimi-k3.1-pro:cloud</code>, <code>hy4:cloud</code></td>
+</tr>
+<tr>
+<td>Aggregator</td>
+<td><code>nemotron-3-ultra:cloud</code></td>
+</tr>
+<tr>
+<td>Trace</td>
+<td><code>~/.hermes/moa-traces/local-f74948e6….jsonl</code></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="162-verdicts-and-adjudication">16.2 Verdicts and adjudication</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>MoA call (vote)</th>
+<th>Adjudication</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Application layer</td>
+<td><strong>(b) Custom web app on the Infinity staging server</strong> (2–1 over the static-plus-service option)</td>
+<td><strong>Adopted.</strong> Approvals, roles and audit need server state; the static generator survives as the print output</td>
+<td>staging-host verified live; approvals cannot live in a static file</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Authentication</td>
+<td><strong>Zoho login</strong> (2–1 over Cloudflare Access email PIN)</td>
+<td><strong>Adopted with a correction.</strong> The premise "every staffer already has Zoho One" is unverified and contradicted by the Inventory seat count: 26 users, 12 active, against 39 ClickUp members. Adopted <em>subject to</em> verifying the Zoho directory covers all 39; if it does not, ClickUp OAuth is the only lane that provably covers the team</td>
+<td><code>/inventory/v1/users</code> 26/12; ClickUp <code>GET /api/v2/team</code> 39</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Where min / max / core live</td>
+<td><strong>Zoho Inventory item custom fields; Zoho named as owner</strong> (2 votes Zoho; 1 app DB; 1 both)</td>
+<td><strong>Adopted.</strong> Zoho owns min (<code>reorder_level</code>) and the new max/core custom fields; the app keeps a read mirror for fast filtering and never becomes a second master</td>
+<td>measured: 1 item custom field exists, <code>reorder_level</code> on 0 items</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Sign-off</td>
+<td><strong>Recorded in the app only</strong> (3–0)</td>
+<td><strong>Adopted, with the snapshot hash added.</strong> An in-app click with actor, role, timestamp and a SHA-256 of the reviewed item and artwork; no per-item Zoho Sign friction</td>
+<td>the generator already proved the hash pattern (<code>b3d648ba…</code>)</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Biggest risk</td>
+<td>All three seats independently: <strong>the limits are greenfield — 0 of 839 items carry a min, max or core flag, so someone must define and backfill them before the app is useful</strong></td>
+<td><strong>Adopted</strong> as risk R1, with a 60-day backfill target and a per-section template</td>
+<td>measured: <code>reorder_level</code> set on 0 items</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two dissents are worth keeping on the record: one seat preferred the generated static catalogue plus a small approvals service (cheaper, but still a service to run), and one preferred Cloudflare Access email PIN for authentication (simpler, but it gives no role or name). Neither beat the majority, and both are recoverable later — the app reads the same data, and the Access gate stays in front either way.</p>
+<hr />
+<h2 id="17-open-questions-for-ricardo">17. Open questions for Ricardo</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Why it matters</th>
+<th>Default if unanswered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>Does "toggle what is or needs to see what is always in stock" mean <strong>two toggles</strong> (core range + stock health), as §1.2 reads it?</td>
+<td>Shapes F3</td>
+<td>Two toggles</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>Which identity provider is authoritative for staff: ClickUp (39 members) or Zoho (26 users, 12 active)?</td>
+<td>Coverage of "all team members"</td>
+<td>ClickUp, per MoA</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>Who are the section managers per brand and section — names, not roles?</td>
+<td>F5/F6 cannot ship without them</td>
+<td>Brand owner acts as manager until named</td>
+</tr>
+<tr>
+<td>Q4</td>
+<td>Is a click approval enough, or must a brand owner's sign-off carry a Zoho Sign signature?</td>
+<td>Audit strength vs friction</td>
+<td>Click + snapshot hash</td>
+</tr>
+<tr>
+<td>Q5</td>
+<td>Do Titan Electrical (30 items) and INFX (10) join now or later?</td>
+<td>Scope</td>
+<td>Later</td>
+</tr>
+<tr>
+<td>Q6</td>
+<td>Are minimums per <strong>item</strong> or per <strong>item per location</strong>?</td>
+<td>Data model</td>
+<td>Per item in v1</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="18-what-done-looks-like">18. What "done" looks like</h2>
+<p>A person in the warehouse opens one link on their phone, signs in with the account they already have, finds any of the 729 products, sees its photo, price, stock, minimum and maximum, and can tell at a glance which products must never run out. A manager opens Newly added, looks at a new product's artwork, and approves or rejects it with a comment that will still be there in three years. Nobody edits a spreadsheet to publish a catalogue.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
