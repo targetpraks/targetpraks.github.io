@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 4, live)</title>
+<title>PRD — AgenticOS workflow programme (rev 5)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1115,7 +1115,31 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Ricardo</td>
 <td>unchanged by the agent (D5)</td>
 </tr>
+<tr>
+<td><strong>D6 — restore a writer for <code>maintenance_ledger</code>, or retire the ledger as the evidence surface</strong></td>
+<td>Ricardo</td>
+<td><strong>open</strong> — nothing writes it since 2026-11-23 (§13.5)</td>
+</tr>
+<tr>
+<td>The 13 routine feeds are disabled (quarantine check passes)</td>
+<td>Ricardo</td>
+<td>open by design — not a fault (§13.5)</td>
+</tr>
 </tbody>
 </table></div>
+<h3 id="135-correction-found-by-verifying-the-clocks--l5-was-watching-rows-nobody-writes">13.5 Correction found by verifying the clocks — L5 was watching rows nobody writes</h3>
+<p>After publishing, I checked that the schedules were actually armed (they are: <code>next_fire_at</code> <code>2026-11-25T16:15Z</code> for Liveness Watch, plus four Monday/Wednesday slots, all honouring Africa/Johannesburg). Then I checked something the publish did not ask: <strong>who writes the rows L5 watches.</strong></p>
+<ul>
+<li><code>maintenance_ledger</code> holds <strong>14 rows, all from 2026-11-23</strong>, written by a one-off P0 probe.</li>
+<li><code>grep</code> across <code>~/agenticos</code> on the host finds <strong>no script that writes that table</strong>. No cron, no lane, no routine.</li>
+<li>So the eight "checks" the first build watched (<code>feed_freshness</code>, <code>capacity_disk</code>, <code>delivery_rows</code>, …) are probe artefacts, not recurring writers. L5 v1 would have reported eight silent checks every run, forever, with no way for anyone to make it quiet — a false-alarm machine built from my own misreading of the data.</li>
+<li>Separately, the feed generator's cron <code>a7a1d7e253a6</code> is a <strong>quarantine check</strong>, not a generator run, and it reports "13 private disabled routine feeds" — the feeds are disabled by design right now, not broken.</li>
+</ul>
+<p><strong>Fixed and republished as L5 v2</strong> (<code>32042d03</code>, exposure re-pointed, <code>next_fire_at</code> unchanged): the lane now watches the evidence trail itself — <em>has anything been written to the ledger in 36 hours</em> — with a declared watch list that is deliberately <strong>empty</strong> until a check has a proven recurring writer. Test run <code>c225363b</code>:</p>
+<blockquote>
+<p>Evidence trail watch / rows read: 14 / newest row 2026-11-23T08:43 / cutoff 2026-11-24T02:50 UTC / <strong>ALERT: nothing has been written to the maintenance ledger since 2026-11-23T08:43.</strong></p>
+</blockquote>
+<p>A second defect was caught in the same pass: the cutoff was formatted in Africa/Johannesburg while the ledger timestamps are UTC, shifting the window by two hours. The node now formats in UTC and the output says so.</p>
+<p><strong>What this changes for the programme:</strong> the honest state of the estate is not "eight checks are silent" but "the evidence trail stopped on 23 November and nothing writes it". That is a different repair — either a writer for <code>maintenance_ledger</code> is restored, or the ledger is retired as the evidence surface and L5 with it. It is now decision <strong>D6</strong>.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
