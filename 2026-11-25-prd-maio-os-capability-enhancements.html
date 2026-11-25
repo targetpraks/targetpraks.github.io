@@ -189,7 +189,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>E16 - No identity layer: trust is host allowlist plus origin guard plus optional <code>MAIO_FIX_TOKEN</code> for non-loopback calls. Vault and file routes are read-only by construction.</li>
 </ul>
 <h2 id="4-what-the-request-did-not-specify">4. What the request did not specify</h2>
-<p>These fields stay [unspecified] until Ricardo answers section 11.</p>
+<p>Every field this section lists is now either decided in section 11 (Q1, Q3, Q4, Q5, Q6, Q7) or deliberately Ricardo-only (Q2); the list below stands as the record of what the original request specified.</p>
 <ul>
 <li>Release date for any stage - [unspecified].</li>
 <li>Budget, quota ceiling or hourly ceiling for the Google Neon lane - [unspecified].</li>
@@ -221,7 +221,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <ul>
 <li>Today: 611 KB of shell and data on disk; about 189 KB transferred on the <code>#wheel</code> load, of which 139 KB is the cache-busted live payload (E5, E7); CSS is versioned by hand (<code>?v=v5c</code>, <code>?v=v5d</code>); no build step, no content hashes, no compression negotiation measured.</li>
 <li>Enhancement: content-hashed asset names produced by a small build step, immutable caching for hashed assets, ETag plus 304 handling for <code>local.js</code>, gzip or brotli on the companion for JSON and JS, and shard loading from C2 so the first paint stops waiting on the full snapshot.</li>
-<li>Acceptance test: second request for <code>/local.js</code> within ten seconds returns 304 with an empty body; <code>/assets/&lt;hashed&gt;.css</code> returns 200 with <code>cache-control: public, max-age=31536000, immutable</code>; a request for the previous hashed name returns 404; the <code>#wheel</code> load transfers less than the 189 KB baseline, with the measured figure printed in the delivery note. Target ceiling: [unspecified].</li>
+<li>Acceptance test: second request for <code>/local.js</code> within ten seconds returns 304 with an empty body; <code>/assets/&lt;hashed&gt;.css</code> returns 200 with <code>cache-control: public, max-age=31536000, immutable</code>; a request for the previous hashed name returns 404; the <code>#wheel</code> load transfers less than the 189 KB baseline, with the measured figure printed in the delivery note. Target ceiling: the measured baseline (157.1 KB first paint, Q5).</li>
 <li>Owner: Google Neon.</li>
 <li>Dependency: C2.</li>
 </ul>
@@ -307,7 +307,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Working rule for the lane: Gemini 4 Neon answers in 15 to 60 s per call on a shared daily quota. It is used for design, for the hard fixes and for review of the finished work, not for volume. Mechanical passes are batched into one call, and every acceptance figure is produced by the command itself, never by the model's description of it.</li>
 </ul>
 <h2 id="7-sequencing-by-dependency">7. Sequencing by dependency</h2>
-<p>The order below is engineering dependency, not priority. Which stages are in scope for the first release is [unspecified].</p>
+<p>The order below is engineering dependency, not priority. First release scope is decided in section 11 (Q1: S1+S2 with the C8/C9 fixes; the landing window itself is Q7 and Ricardo's).</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S1</span>[<span class="st">&quot;S1 - C1 routing, C5 search, C6 life surfaces&quot;</span>]</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">S2a</span>[<span class="st">&quot;S2a - C2 data shards&quot;</span>]</span>
@@ -351,7 +351,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>A17 - Traversal: <code>/files/../../etc/passwd</code> returns 400 and <code>/files/.env</code> returns 400 - both 400. [today: rejected by the extension allowlist]</li>
 <li>A18 - Route coverage: every path in <code>/openapi.json</code> resolves and no undocumented path answers 200. [today: 10 documented paths]</li>
 <li>A19 - Local gate: <code>sh ops/check.sh</code> exits 0 and prints a test total above 13 cockpit tests. [today: 13]</li>
-<li>A20 - Refresh: the refresh log prints per-step milliseconds and the total, and the reports step is measured against the 64.06 s baseline. Target: [unspecified].</li>
+<li>A20 - Refresh: the refresh log prints per-step milliseconds and the total, and the reports step is measured against the 64.06 s baseline. Target: stay at or under the measured 103.4 s pipeline baseline (Q5).</li>
 <li>A21 - Container: <code>docker build</code> exits 0, container <code>/health</code> 200, container <code>/wheel</code> 200. [today: snapshot image, no rehearsal]</li>
 <li>A22 - Migration rehearsal: migrate a copy of the wheel database, row counts match the source - exits 0 with equal counts. [today: never rehearsed]</li>
 </ul>
@@ -373,15 +373,16 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>GitHub Actions. The standing rule forbids CI workflow changes, and indirect workarounds are excluded.</li>
 <li>Any spend, purchase, refund, e-signature or terms acceptance as part of this work. Those remain Ricardo's acts.</li>
 </ul>
-<h2 id="11-open-questions-for-ricardo">11. Open questions for Ricardo</h2>
+<h2 id="11-open-questions---decided-through-the-decision-gate-on-2026-11-25">11. Open questions - decided through the decision gate on 2026-11-25</h2>
+<p>Routed through the maio-gate <code>ask</code> lane (the §8 custom decisions tool; the lane itself verified end-to-end by <code>gate-health.py</code> - daemon/inference/cli/mcp all true, probe p=0.88; one omp-side mount warning against the live 8792 server was transport-scoped, not a service fault). Q2 stays Ricardo-only: budgets are not bounded gate questions.</p>
 <ul>
-<li>Q1 - Which stages are in the first release: S1 only, S1 with S2, or all four. [unspecified]</li>
-<li>Q2 - What ceiling applies to the Google Neon lane per day, and does it have to fit inside the existing shared quota. [unspecified]</li>
-<li>Q3 - Is Google Neon the implementer that writes code into this repo, or the reviewer that specifies and reviews while another lane writes. [unspecified]</li>
-<li>Q4 - May the cockpit read the Wheel database directly in read-only mode, or must it stay link-only. [unspecified]</li>
-<li>Q5 - Target numbers for payload, refresh duration and frame latency. [unspecified]</li>
-<li>Q6 - May new top-level sections be added, or does the 18-section shape hold. [unspecified]</li>
-<li>Q7 - Release date for any stage, and whether a stage ships on a branch or waits for a single landing window. [unspecified]</li>
+<li>Q1 - Which stages are in the first release - <strong>S1+S2 with the C8/C9 fixes</strong> (probabilities 0.79/0.15/0.06 against S1-only and everything-built). Since everything built sits on one local branch and Q7 hands the landing itself to Ricardo, this scope answer says the wheel card and later C-work do not hold the first release hostage.</li>
+<li>Q2 - The Google Neon quota ceiling - <strong>Ricardo-only by design</strong> (a spend preference; the gate lane answers bounded decisions, not budgets). [unspecified by choice]</li>
+<li>Q3 - Google Neon's role - <strong>specifies and reviews, p=0.9912</strong>; not a writer lane. The local runner implements and measures.</li>
+<li>Q4 - May the cockpit read the Wheel database read-only - <strong>yes, p=0.9155</strong>, with the app as the sole writer (A12 asserted, the read-only handle unit-tested at step time). C7 built on this.</li>
+<li>Q5 - Target numbers - <strong>measured baselines, p=0.88</strong>: first paint 157.1 KB transferred, refresh pipeline 103.4 s, the slim poll 3.4 KB. No pre-invented numbers.</li>
+<li>Q6 - New top-level sections - the gate came back <strong>unsure</strong> (noul 0.2598, far from its usual margins), so the conservative default holds: the 18-section shape stays, additions go inside existing sections, pending Ricardo's word.</li>
+<li>Q7 - Release date and landing - <strong>one attended landing window with Ricardo present, p=0.9916</strong>; per-slice merges rejected at 0.0084. The window is an appointment, not an agent act.</li>
 </ul>
 <h2 id="12-evidence-appendix">12. Evidence appendix</h2>
 <ul>
@@ -414,7 +415,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>S3a, commit b9945389 - C4's first piece. A filtered board is now a route: <code>#kanban:&lt;query&gt;</code> filters by title, assignee or status, typing commits the filter to the URL after 400 ms (Enter at once), and reloading that URL restores the input and the same set. Measured on the real companion: 2,002 tasks, filter "blocked" gave 1 match, the hash read <code>#kanban:blocked</code>, and a reload reproduced the input value and the single match. A7's count check is done by hand and shows the expected drift: the board drew 2,002 from the snapshot while <code>hermes kanban ls --json | jq length</code> read 2,041, and the live payload on 9111 carried 2,040 across its statuses with 80 task rows.</li>
 <li>A second honesty fix - when the live board fails, the badge now says <code>live board unavailable · showing snapshot</code> and the note carries the collector's own error, instead of leaving the reader to guess which copy is on screen. It was found because the QA instance's <code>hermes kanban</code> failed with <code>1Password: secrets.onepassword.enabled is true but the env: map is empty</code>, which is an environment fact for that process, not a code defect; the live companion on 9111 collects the board normally.</li>
 <li>C4 status - shipped in full on 2026-11-25, commits 39a2bf9e and 83331bb3: the filtered-board route, the honest badge, the per-agent profile/model/health join, per-project open PRs, snapshot-stamped counts and full-copy age stamps on the joined rows. Tests are 35 of 35.</li>
-<li>Not started: C7, C10's CSP, C11's route-coverage guard, C12, plus the open halves of C3 (a cheap validator so the poll stops re-downloading) and the cockpit remains link-only on the wheel store pending Q4. The QA harness used for the S1 browser evidence is <code>~/.hermes/cache/scratch/maio-s1-qa.py</code>: it serves the worktree shell and forwards <code>/local.js</code>, <code>/wheel</code>, <code>/astro</code> and <code>/top8</code> to the live companion on 9111, with an optional list of paths answered 502. S2 evidence ran on the real companion (<code>MAIO_OS_ROOT</code> at the worktree, <code>MAIO_OS_APPS=off</code>, port 9122), not the harness.</li>
+<li>Not started: C10's CSP, C11's route-coverage guard, C12, plus the open half of C3 (a cheap validator so the poll stops re-downloading). The wheel store decision (Q4) and the card are in; the QA harness used for the S1 browser evidence is <code>~/.hermes/cache/scratch/maio-s1-qa.py</code>: it serves the worktree shell and forwards <code>/local.js</code>, <code>/wheel</code>, <code>/astro</code> and <code>/top8</code> to the live companion on 9111, with an optional list of paths answered 502. S2 evidence ran on the real companion (<code>MAIO_OS_ROOT</code> at the worktree, <code>MAIO_OS_APPS=off</code>, port 9122), not the harness.</li>
 <li>S2b, commit 8384e184 - the caching half of C3 and the persistence half of C8. <code>/local.js</code> now answers <code>ETag</code> plus <code>Cache-Control: no-cache</code>, and a matching <code>If-None-Match</code> returns 304 with no body: measured 304 and 0 bytes downloaded, against 160,239 B gzipped and 681,588 B plain for a full body. Assets referenced with <code>?v=</code> are served <code>public, max-age=31536000, immutable</code> (measured on <code>workspace.css?v=v5g</code>), while an unversioned asset still revalidates with <code>no-cache</code>.</li>
 <li>The honest limit on that - the live payload is not byte-stable between collects (two bodies three seconds apart hashed differently), so a 30 s poll usually still receives a 200 and the full 160 KB. The ETag pays off on reload and whenever nothing moved. The real fix is a cheap validator the shell can poll (a HEAD or a version endpoint) and fetch the body only when the tag changes; that is still open in C3.</li>
 <li>C8 partly shipped - the fix-lane cooldowns are written to <code>~/.config/maio-stack/logs/maio-os-local-cooldowns.json</code> after an accepted action and read at boot, so a restart no longer clears the 60 s service and 5 min refresh floors. Evidence: a seeded cooldown file produced <code>429 cooldown, retryInSec 286</code> on a fresh boot, and after killing and restarting the companion the same request still answered <code>429, retryInSec 273</code>. The fix log was already file-backed and capped at 50 entries. The write path (<code>saveCooldowns</code> after an accepted action) was not exercised, because that requires running a real restart or refresh.</li>
