@@ -47,8 +47,8 @@ eleven-page benchmark of 25 November &middot; every claim below is a command tha
     <div class="d">0.9B &middot; Apache-2.0 &middot; 1.2% character error &middot; 100% table cells</div></div>
   <div class="card f"><div class="k">Failover</div><div class="v">OCRia-1 4B</div>
     <div class="d">via Ollama &middot; Apache-2.0 &middot; 1.3% error &middot; shares no runtime with the primary</div></div>
-  <div class="card"><div class="k">Installed for</div><div class="v">17 agents</div>
-    <div class="d">9 personal profiles + 8 Infinity Brands seats, plus the AgenticOS host</div></div>
+  <div class="card"><div class="k">Installed &amp; registered</div><div class="v">17 agents + AgenticOS</div>
+    <div class="d">9 personal profiles, 8 Infinity Brands seats, and a live MCP tool in AgenticOS</div></div>
   <div class="card"><div class="k">Cost</div><div class="v">R0 per page</div>
     <div class="d">everything local, no API keys, no per-page billing</div></div>
 </div>
@@ -79,7 +79,7 @@ against Surya both ways round.</p></div>
 <p>Not "installed" — each line is a command that ran and what it returned.</p>
 <div class="panel"><table>
 <thead><tr><th>Where</th><th>Engine that answered</th><th>Time</th><th>Result</th></tr></thead>
-<tbody><tr><td>scribe (personal crew)</td><td>Tesseract</td><td class='num'>7 s</td><td class='d'>invoice total read back correctly</td></tr><tr><td>cfo (Infinity Brands)</td><td>PaddleOCR-VL</td><td class='num'>53.9 s</td><td class='d'>invoice total read back correctly</td></tr><tr><td>macserver CLI</td><td>Tesseract</td><td class='num'>0.3 s</td><td class='d'>same invoice, correct total</td></tr><tr><td>macserver failover</td><td>RapidOCR</td><td class='num'>1.6 s</td><td class='d'>574 MB RSS, correct total</td></tr><tr><td>MCP · Mac mini</td><td>PaddleOCR-VL</td><td class='num'>49.1 s</td><td class='d'>tools/call returned correct text</td></tr><tr><td>MCP · macserver</td><td>Tesseract</td><td class='num'>0.4 s</td><td class='d'>tools/call returned correct text</td></tr></tbody></table></div>
+<tbody><tr><td>scribe (personal crew)</td><td>Tesseract</td><td class='num'>7 s</td><td class='d'>invoice total read back correctly</td></tr><tr><td>cfo (Infinity Brands)</td><td>PaddleOCR-VL</td><td class='num'>53.9 s</td><td class='d'>invoice total read back correctly</td></tr><tr><td>macserver CLI</td><td>Tesseract</td><td class='num'>0.3 s</td><td class='d'>same invoice, correct total</td></tr><tr><td>macserver failover</td><td>RapidOCR</td><td class='num'>1.6 s</td><td class='d'>574 MB RSS, correct total</td></tr><tr><td>MCP · Mac mini</td><td>PaddleOCR-VL</td><td class='num'>49.1 s</td><td class='d'>tools/call returned correct text</td></tr><tr><td>MCP · macserver</td><td>Tesseract</td><td class='num'>0.4 s</td><td class='d'>tools/call returned correct text</td></tr><tr><td>AgenticOS backend container</td><td>Tesseract</td><td class='num'>0.4 s</td><td class='d'>platform reachability probe: 2 tools found</td></tr><tr><td>AgenticOS worker container</td><td>Tesseract</td><td class='num'>0.5 s</td><td class='d'>tools/call returned correct text</td></tr></tbody></table></div>
 <p class="d">The two agent rows are real Hermes sessions (<code>hermes -p scribe</code>,
 <code>hermes -p cfo</code>) that read their skill, called the CLI and reported the invoice total.
 The MCP rows are <code>tools/call</code> handshakes against the MCP server on each host.</p>
@@ -97,15 +97,20 @@ keeps the stack lean.</p></div>
 <h3>3 — AgenticOS on macserver</h3>
 <p>The host now has a working <code>ocr</code> on <b>Tesseract 5.5</b> with <b>RapidOCR</b> behind it,
 both installed user-local with no root, plus <code>ocr-mcp.py</code> exposing the same stack as MCP
-tools <code>ocr_extract</code> and <code>ocr_engines</code> — handshake and a live call verified on
-the host itself. <b>Registering that tool inside your live AgenticOS platform is a write to a company
-system, so it is prepared and waiting for your go.</b></p>
+tools <code>ocr_extract</code> and <code>ocr_engines</code>.</p>
+<p><b>Registered.</b> The connection <code>ocr</code> is live for the Infinity Brands organization
+(scope <code>org</code>, bearer auth, tools narrowed to those two). It was written through the
+platform's own <code>McpConnectionService.create_for_org</code>, so the token is sealed by their vault
+and the URL passed their SSRF check — the same path the console takes. Their own reachability probe
+then answered <b>reachable, 2 tools discovered, <code>last_status: ok</code></b>, and both the backend
+and worker containers completed a real extraction through it. A five-minute cron keepalive restarts
+the endpoint if it ever stops; the table was dumped to <code>backups/</code> before the write.</p>
 
 <h2>What did not work there, and why the VM gets a weaker engine</h2>
 <p>Measured on that host, not assumed:</p>
 <div class="panel"><table>
 <thead><tr><th>Attempt</th><th>Outcome</th><th>Detail</th></tr></thead>
-<tbody><tr><td>PaddleOCR-VL 0.9B on macserver</td><td class='bad'>OOM-killed</td><td class='d'>exit 137 at 5.66 GB RSS; the VM has ~3.4 GB free</td></tr><tr><td>PaddleOCR PP-OCRv5 on macserver</td><td class='bad'>segfault</td><td class='d'>paddle faults in that VM on arm64</td></tr><tr><td>OCRia-1 on macserver</td><td class='bad'>not possible</td><td class='d'>no Ollama daemon on the host, only an embed container</td></tr><tr><td>opencv on macserver</td><td class='bad'>fixed</td><td class='d'>paddlex pins opencv-contrib; libGL extracted from .debs to ~/libs</td></tr><tr><td>Tesseract on macserver</td><td class='bad'>fixed</td><td class='d'>installed user-local from 20 .debs into ~/tess — no root needed</td></tr></tbody></table>
+<tbody><tr><td>PaddleOCR-VL 0.9B on macserver</td><td class='bad'>OOM-killed</td><td class='d'>exit 137 at 5.66 GB RSS (5.7 GB peak); the VM has ~3.4 GB free</td></tr><tr><td>PaddleOCR PP-OCRv5 on macserver</td><td class='bad'>segfault</td><td class='d'>paddle faults in that VM on arm64</td></tr><tr><td>OCRia-1 on macserver</td><td class='bad'>not possible</td><td class='d'>no Ollama daemon on the host, only an embed container</td></tr><tr><td>opencv on macserver</td><td class='bad'>fixed</td><td class='d'>paddlex pins opencv-contrib; libGL extracted from .debs to ~/libs</td></tr><tr><td>Tesseract on macserver</td><td class='bad'>fixed</td><td class='d'>installed user-local from 20 .debs into ~/tess — no root needed</td></tr></tbody></table>
 <p class="d" style="margin-top:10px">The honest consequence: documents read by AgenticOS are
 transcribed by Tesseract, which is reliable on clean text and <b>destroys table structure</b>. For an
 invoice whose columns matter, have that work done on the Mac mini stack instead, or give the VM
@@ -148,5 +153,6 @@ gate transcripts: <code>AI-Drive/Agent-Output/splinter/ocr-deployment</code>.</l
 
 <footer>Deployment completed 25 November 2026. Every engine row above was
 executed on the named host; the two AgenticOS failures are the loader and OOM output, not estimates.
-Nothing was registered in the live AgenticOS platform and nothing was pulled from it.</footer>
+The one write to the live platform was the <code>ocr</code> MCP connection, sealed by the platform's own
+vault, with <code>mcp_connections</code> dumped beforehand.</footer>
 </div></body></html>
