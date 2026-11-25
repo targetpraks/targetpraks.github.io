@@ -342,6 +342,22 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>C8's dry-run previews and before/after readings on every receipt; cooldowns are already on disk, the fix log already survives restarts.</li>
 <li>Swap sits at 6.68 of 8 GB. Trim RAM is the allowlisted remedy and it unloads local models - none are loaded right now (ollama ps empty), so running it would free nothing. It is a condition of what is running (a 3.49 GB VM among the top consumers), not of the cockpit.</li>
 </ul>
+<p>NINTH STEP - C3 ASSET HASHING AND C8 GUARDED ACTIONS</p>
+<p>C3 - hashed assets, immutable caching, no build step.</p>
+<ul>
+<li>The shell is rewritten at serve time: every assets/<name>.<ext> becomes assets/<name>.<sha8>.<ext>, and those names are served with "public, max-age=31536000, immutable". A name whose hash no longer matches the file on disk is a 404, so an old edition cannot be served under a new name. index.html stays the source; nothing generated is committed.</li>
+<li>Live: the page references assets/theme.eca27f20.css, assets/workspace.da6a842d.css, assets/icons.c34df9eb.svg, assets/glyph.b25cc495.svg, assets/favicon.ec3a7d43.svg; the workspace stylesheet answers 200 with the immutable header; assets/workspace.deadbeef.css answers 404. Verified in a browser that the hashed shell still renders its styles and resolves its icons (assets/icons.c34df9eb.svg#i-desk).</li>
+<li>Measured transfer, cold load with gzip: shell 85,121 bytes, theme 5,314, workspace 9,599, icons 2,044, glyph 646, data.js 50,740, local.js 168,832 - about 322 KB. Warm revalidation: /local.js 304 with 0 bytes, and data.js and the shell carry ETags too.</li>
+<li>NOT claimed: the PRD's "under 189 KB" acceptance for a cold load. It does not hold, because both the shell (+123 lines today) and the payload grew; the figure above is the real one. The next honest lever is that local.js carries a library catalogue that the /shards/library.json shard already serves - removing that duplication is the change that would move the number, and it touches the shelf code, so it is named rather than half-done.</li>
+</ul>
+<p>C8 - guards that survive a restart, and a preview before an action.</p>
+<ul>
+<li>Cooldowns persist to ~/.config/maio-stack/logs/maio-os-local-cooldowns.json and are reloaded at startup; the fix log was already JSONL on disk.</li>
+<li>Acceptance run live: a cooldown seeded 24 s old, companion restarted, then POST service-restart answered 429 with retryInSec 36 - the restart did not clear the guard. File removed and companion restarted again; health 200.</li>
+<li>A gated action now accepts dryRun and answers without running: {"ok":true,"dryRun":true,"action":"service-restart","target":"com.maio.gate-mcp","would":"kickstart gui/501/com.maio.gate-mcp (Gate MCP on :8792); launchd relaunches it"}. No cooldown is taken and nothing is logged as run.</li>
+<li>Still open in C8: a before/after reading inside every receipt (the ollama actions already carry beforeUsedPct/afterUsedPct; service restarts and refresh carry their own fields instead).</li>
+</ul>
+<p>Commits: b06a39bd, 38fb233e, 3a912043, 7ee37c89. Deployed build 7ee37c89, pid 95614. Tests 44 of 44 on the deployed tree.</p>
 <p>END OF RECORD</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
