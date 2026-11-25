@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 7)</title>
+<title>PRD — AgenticOS workflow programme (rev 8)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1108,7 +1108,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td>Liveness Watch's first clock run</td>
 <td>—</td>
-<td>expected 18:15 SAST; check <code>GET /workflow-runs?workflow_id=a84c941f…</code></td>
+<td><strong>DONE 18:15:02 SAST</strong> — <code>mode=real</code>, succeeded, "the evidence trail is current" (§13.9)</td>
 </tr>
 <tr>
 <td><code>ZOHO_ALLOW_WRITES=1</code></td>
@@ -1181,5 +1181,18 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 <h3 id="138-the-probe-stops-duplicating-and-has-a-runbook">13.8 The probe stops duplicating, and has a runbook</h3>
 <p>Three manual probe runs in one minute had left duplicate ledger pairs. The probe now sends <code>external_id = &lt;check&gt;-&lt;YYYYMMDDTHH&gt;</code> (UTC), so a second run inside the same hour is answered <strong>409</strong> and recorded as <em>already written this hour</em> instead of adding a row. Verified: the 17:49 run wrote nothing because it was off-heartbeat and healthy, and the on-the-hour run keeps its single pair.</p>
 <p>Operating it is written down rather than remembered: <code>AgenticOS/runbooks/stack-probe.md</code> — job id, schedule, the two checks and their pass conditions, the credential source (named, never printed), how to run it by hand, why it cannot be a workflow, and the two failure shapes seen so far (tunnel down; a datetime without <code>Z</code>).</p>
+<h3 id="139-the-clock-fired-unattended-on-time">13.9 The clock fired, unattended, on time</h3>
+<p>The last thing the programme could not prove was the clock itself: a published schedule lane cannot be started through the API (<code>409 WORKFLOW_TRIGGER_MISMATCH</code>), so only the scheduler could demonstrate it.</p>
+<p>At <strong>2026-11-25T16:15:02Z (18:15:02 SAST)</strong> Liveness Watch ran with <code>mode=real</code> and <code>status=succeeded</code>:</p>
+<blockquote>
+<p>Evidence trail watch / rows read: 22 / newest row 2026-11-25T16:00 / cutoff 2026-11-24T04:15 UTC / <strong>the evidence trail is current.</strong> / distinct checks seen: 15</p>
+</blockquote>
+<p>Three things are now true together, which is the whole point of the programme:</p>
+<ol type="1">
+<li>the platform's scheduler admits a workflow on its cron, in the workflow's timezone, with no human in the loop;</li>
+<li>the lane's evidence comes from a writer that measures rather than asserts (<code>adrianna/stack-probe</code>, whose 16:00 heartbeat is the "newest row" above);</li>
+<li>a healthy result is <strong>silent</strong> — no notification was sent, because the lane only speaks when the trail goes quiet.</li>
+</ol>
+<p>The next scheduled proofs are Monday 06:30, 06:45 and 07:00, and Wednesday 07:00 — the first week where the owner sees the whole set run on its own.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
