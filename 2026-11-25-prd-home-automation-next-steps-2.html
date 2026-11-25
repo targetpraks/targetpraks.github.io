@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRD — Home Automation Next Steps</title>
+<style>
+  :root{
+    --paper:#f7f4ec; --ink:#1e1c19; --ink-soft:#4a463f; --rule:#d8d2c4;
+    --gold:#b8862b; --blue:#2f5d8a; --green:#3d6b4f; --red:#9c3b2e;
+    --mono:"SFMono-Regular",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--serif);line-height:1.55;font-size:17px}
+  .wrap{max-width:980px;margin:0 auto;padding:48px 28px 80px}
+  header.doc{border-bottom:3px double var(--rule);padding-bottom:22px;margin-bottom:28px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+  h1{font-size:38px;line-height:1.15;margin:.35em 0 .3em;font-weight:600}
+  .meta{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+  h2{font-size:24px;margin:44px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--rule);font-weight:600}
+  h3{font-size:18px;margin:26px 0 8px;font-weight:600}
+  p{margin:.7em 0}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+  .stat{background:var(--paper);padding:16px 14px}
+  .stat .num{font-family:var(--mono);font-size:30px;font-weight:700;display:block;line-height:1.1}
+  .stat .lbl{font-size:12.5px;color:var(--ink-soft);display:block;margin-top:4px}
+  .stat.bad .num{color:var(--red)}
+  .stat.good .num{color:var(--green)}
+  .callout{border-left:4px solid var(--gold);background:#fdf9ee;padding:16px 20px;margin:26px 0}
+  .callout .ctitle{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:6px}
+  table{width:100%;border-collapse:collapse;margin:14px 0 20px;font-size:15px}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);border-bottom:2px solid var(--rule);padding:8px 10px}
+  td{border-bottom:1px solid var(--rule);padding:9px 10px;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  code{font-family:var(--mono);font-size:13px;background:#efeadd;padding:1px 5px;border-radius:3px}
+  pre{font-family:var(--mono);font-size:12.5px;background:#20201d;color:#ece7da;padding:16px 18px;overflow-x:auto;border-radius:4px;line-height:1.6}
+  pre .c{color:#9aa08f}
+  a{color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(47,93,138,.35)}
+  a:hover{border-bottom-color:var(--blue)}
+  figure{margin:26px 0;padding:18px;background:#fffdf7;border:1px solid var(--rule)}
+  figcaption{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:10px;text-align:center}
+  ul{margin:.6em 0 .9em;padding-left:22px}
+  li{margin:.35em 0}
+  .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--rule);border-radius:2px;color:var(--ink-soft)}
+  .tag.block{color:var(--red);border-color:#e0c3bd}
+  .tag.ok{color:var(--green);border-color:#c3d6c8}
+  footer.doc{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+  @media (max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:29px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="doc">
+  <span class="kicker">Product requirements · AI-Space · 3.PRD/Active</span>
+  <h1>Home Automation Next Steps: Apple Home, Google Home and real device coverage</h1>
+  <div class="meta">Draft for approval · 25 November 2026 · Adrianna A · status: draft-for-approval</div>
+</header>
+
+<div class="stats">
+  <div class="stat good"><span class="num">68</span> <span class="lbl">entities in Home Assistant</span></div>
+  <div class="stat bad"><span class="num">45</span> <span class="lbl">of them unavailable today</span></div>
+  <div class="stat"><span class="num">39</span> <span class="lbl">live hosts on the LAN</span></div>
+  <div class="stat"><span class="num">0</span> <span class="lbl">automations configured</span></div>
+</div>
+
+<div class="callout">
+  <span class="ctitle">The one-sentence version</span>
+  The hub is installed, supervised, backed up and on the LAN; it cannot see a single device because one
+  macOS privacy toggle is still off, and it cannot reach Apple or Google until that same gap is closed
+  and a public endpoint decision is made.
+</div>
+
+<h2>Decision</h2>
+<p>Finish the two links that make the system worth having, and stop adding plumbing until they work.</p>
+<p>
+  Concretely: clear the macOS <strong>Local Network</strong> gate so Home Assistant can reach the house, pair
+  Apple Home to the HomeKit bridge that already exists and is advertising-ready, pick one route for Google
+  Home — a <a href="https://www.nabucasa.com/pricing/">Nabu Casa</a> subscription or a public hostname of
+  our own — and only then widen device coverage (the Sonos S1 speaker, the Midea aircons, the RTSP camera).
+  The hub is installed, supervised, backed up and reachable on the LAN; what is missing is permission,
+  pairing and purpose.
+</p>
+
+<h2>Summary</h2>
+<p>
+  Home Assistant runs natively on the Mac mini under launchd, holds 68 entities across 16 integrations,
+  takes a verified daily backup and answers on the local network. Yet 45 of those 68 entities are
+  <code>unavailable</code>, the HomeKit bridge exposes nothing, and no Google Home link exists at all.
+</p>
+<p>
+  Every one of those three symptoms traces to one of two causes: a macOS privacy grant that was never
+  given, or a missing public HTTPS endpoint. Neither is a code problem. Both need Ricardo. This PRD sets
+  out seven workstreams in the order that produces a working system fastest, with acceptance written as
+  commands so “done” is provable.
+</p>
+
+<h2>Problem</h2>
+<p>The house has real devices and no automation engine in the loop:</p>
+<ul>
+  <li><strong>Nothing can be controlled from Home Assistant right now.</strong> All five Sonos renderers, both Cast players, all four Android TVs and the Brother printer report <code>unavailable</code> with <code>supported_features=0</code>.</li>
+  <li><strong>Apple Home cannot see the hub.</strong> The <a href="https://www.home-assistant.io/integrations/homekit/">HomeKit bridge</a> entry exists on port 21063 with a filter, but with zero valid accessories it never advertises <code>_hap._tcp</code>.</li>
+  <li><strong>Google Home has no path to Home Assistant.</strong> The <a href="https://www.home-assistant.io/integrations/google_assistant/">Google Assistant integration</a> is not configured, and the manual route needs an externally reachable HTTPS URL this Mac does not have.</li>
+  <li><strong>There is no automation.</strong> <code>automations.yaml</code> is <code>[]</code>, scripts and scenes are empty, and the only dashboard is the default Overview. The house is instrumented, not automated.</li>
+</ul>
+
+<h2>Current state — measured 25 November 2026</h2>
+<table>
+  <thead><tr><th>Area</th><th>Value</th><th>How it was measured</th></tr></thead>
+  <tbody>
+    <tr><td>Home Assistant</td><td>Core 2026.10.4, native, launchd <code>com.maio.home-assistant-native</code> (KeepAlive)</td><td><code>launchctl print</code>, <code>--version</code></td></tr>
+    <tr><td>Reachability</td><td>loopback 200 · LAN <code>192.168.0.157:8123</code> 200</td><td><code>curl -w '%{http_code}'</code></td></tr>
+    <tr><td>Entities</td><td>68 total · <strong>45 unavailable</strong></td><td><code>/api/states</code></td></tr>
+    <tr><td>Integrations</td><td>18 config entries: 16 loaded, <code>bluetooth</code> disabled, <code>ipp</code> setup_retry</td><td><code>ha_entry.py list</code></td></tr>
+    <tr><td>Automations</td><td>0 automations · 0 scripts · 0 scenes</td><td>config files</td></tr>
+    <tr><td>Backups</td><td>3.0 MB · 300 entries · local and AI-Drive copies identical</td><td><code>backup.sh --ship</code>, <code>stat</code></td></tr>
+    <tr><td>LAN inventory</td><td>39 live hosts on <code>192.168.0.0/24</code></td><td>ping sweep + port scan</td></tr>
+    <tr><td>Hub update</td><td>2026.10.4 installed · <strong>2026.11.3</strong> available</td><td>PyPI JSON</td></tr>
+    <tr><td>Sonos</td><td>3 × <code>97.2-81220</code> (S2) · 1 × <code>86.10-81100</code> (S1)</td><td><code>device_description.xml</code></td></tr>
+    <tr><td>Google Cast</td><td>3 devices · each reports <code>has_update=false</code></td><td><code>eureka_info</code></td></tr>
+    <tr><td>Brother printer</td><td>MFC-J3530DW · firmware <code>Y</code> = current release</td><td>SNMP + vendor page</td></tr>
+  </tbody>
+</table>
+
+<h2>Blocker map</h2>
+<table>
+  <thead><tr><th>#</th><th>Blocker</th><th>Who clears it</th><th>Cost</th></tr></thead>
+  <tbody>
+    <tr><td>B1</td><td>macOS <strong>Local Network</strong> privacy grant missing for HA's Python</td><td>Ricardo — one toggle</td><td>15 seconds</td></tr>
+    <tr><td>B2</td><td>Apple Home pairing not done</td><td>Ricardo — Home app on iPhone</td><td>2 minutes</td></tr>
+    <tr><td>B3</td><td>No public HTTPS endpoint for Google Home</td><td>Ricardo — decision, money or domain</td><td>decision</td></tr>
+    <tr><td>B4</td><td>Camera serves no anonymous RTSP stream</td><td>Ricardo — vendor app credentials</td><td>unknown</td></tr>
+    <tr><td>B5</td><td>Midea aircons silent on 6445 / 20086</td><td>depends on B1, then discovery</td><td>10 minutes</td></tr>
+  </tbody>
+</table>
+
+<figure>
+  <svg viewBox="0 0 900 300" width="100%" height="auto" role="img" aria-label="Flow: LAN reaches Home Assistant only through the macOS Local Network grant; HA feeds Apple Home through the HomeKit bridge and Google Home only through a public HTTPS endpoint.">
+    <defs>
+      <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L7,3 z" fill="#4a463f"/>
+      </marker>
+    </defs>
+    <style>
+      .bx{fill:#fffdf7;stroke:#d8d2c4;stroke-width:1.5}
+      .bx-red{fill:#fbf1ef;stroke:#c98a7f;stroke-width:1.5}
+      .bx-green{fill:#f1f6f2;stroke:#8fb49a;stroke-width:1.5}
+      .lb{font-family:"SFMono-Regular",Menlo,monospace;font-size:12px;fill:#1e1c19}
+      .lbm{font-family:"SFMono-Regular",Menlo,monospace;font-size:10.5px;fill:#4a463f}
+      .ln{stroke:#4a463f;stroke-width:1.4;fill:none;marker-end:url(#ar)}
+    </style>
+    <rect class="bx" x="8" y="120" width="150" height="56" rx="4"/>
+    <text class="lb" x="24" y="145">Physical LAN</text>
+    <text class="lbm" x="24" y="163">192.168.0.0/24 · 39 hosts</text>
+
+    <rect class="bx-red" x="205" y="112" width="160" height="72" rx="4"/>
+    <text class="lb" x="222" y="136">macOS Local</text>
+    <text class="lb" x="222" y="152">Network grant</text>
+    <text class="lbm" x="222" y="170">denied → island</text>
+
+    <rect class="bx-green" x="415" y="104" width="176" height="88" rx="4"/>
+    <text class="lb" x="432" y="128">Home Assistant</text>
+    <text class="lbm" x="432" y="146">2026.10.4 · launchd</text>
+    <text class="lbm" x="432" y="162">68 entities</text>
+    <text class="lbm" x="432" y="178">45 unavailable</text>
+
+    <rect class="bx" x="640" y="40" width="230" height="64" rx="4"/>
+    <text class="lb" x="656" y="64">HomeKit bridge :21063</text>
+    <text class="lbm" x="656" y="82">→ Apple Home on iPhone</text>
+
+    <rect class="bx" x="640" y="192" width="230" height="64" rx="4"/>
+    <text class="lb" x="656" y="216">Public HTTPS?</text>
+    <text class="lbm" x="656" y="234">none → Google unlinked</text>
+
+    <path class="ln" d="M158,148 L203,148"/>
+    <path class="ln" d="M365,148 L413,148"/>
+    <path class="ln" d="M591,132 L636,80"/>
+    <path class="ln" d="M591,164 L636,216"/>
+    <text class="lbm" x="600" y="108">WS2</text>
+    <text class="lbm" x="600" y="196">WS3</text>
+  </svg>
+  <figcaption>Figure 1 — One permission sits between the house and the hub; Google needs a second, separate door.</figcaption>
+</figure>
+
+<h2>Proposal — seven workstreams</h2>
+
+<h3>WS1 · Clear the LAN gate <span class="tag block">blocks everything</span></h3>
+<p>Grant local-network access, then prove it from Home Assistant's own process rather than from a shell.</p>
+<p><strong>Acceptance:</strong> every Sonos, Cast and Android-TV entity reports a real state with <code>supported_features &gt; 0</code>; the Brother ink sensors report levels.</p>
+
+<h3>WS2 · Apple Home pairing</h3>
+<p>
+  The bridge already carries a tight filter — <code>media_player</code>, <code>climate</code>, <code>light</code>,
+  <code>cover</code>, <code>lock</code>, <code>camera</code> — and excludes the off-network Kitchen Play:1.
+  Once WS1 lands, reload HomeKit, read the live pairing code from the persistent notification, and pair.
+</p>
+<p><strong>Acceptance:</strong> <code>dns-sd -B _hap._tcp local</code> shows <code>Maio Home &lt;setup-id&gt;</code>; the iPhone shows the rooms; changing volume from the Home app changes <code>media_player</code> state in HA.</p>
+<p><strong>Watch-out:</strong> the PIN regenerates whenever the bridge restarts — read it at pairing time, never from an earlier message.</p>
+
+<h3>WS3 · Google Home — one decision, then a fixed runbook</h3>
+<p>Google's cloud must reach HA over HTTPS. The free shortcuts are gone: Tailscale Funnel allows only 443 / 8443 / 10000 and all three are occupied (8443 proxies an office tunnel to <code>macserver</code>), there is no Cloudflare zone, and cloudflared is not installed.</p>
+<table>
+  <thead><tr><th>Option</th><th>Monthly</th><th>Effort</th><th>Exposure</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://www.nabucasa.com/pricing/">Nabu Casa</a> trial then subscription</td><td>~$6.50</td><td>~10 minutes</td><td>none — cloud relay</td></tr>
+    <tr><td>Own domain + Cloudflare tunnel</td><td>domain cost</td><td>~1 hour</td><td>HA gets a public hostname</td></tr>
+    <tr><td>Local Matter bridge (third party)</td><td>0</td><td>~2 hours</td><td>none, but fragile</td></tr>
+  </tbody>
+</table>
+<p><strong>Recommendation:</strong> Nabu Casa — the only route that is permanent, needs no exposure, and turns the Google link into two toggles instead of a cloud-project walk.</p>
+<p><strong>Acceptance:</strong> the Google Home app lists the house's HA entities; a voice command changes a <code>media_player</code> state that HA logs.</p>
+
+<h3>WS4 · Device coverage</h3>
+<table>
+  <thead><tr><th>Device</th><th>State</th><th>Next step</th></tr></thead>
+  <tbody>
+    <tr><td>Sonos Kitchen Play:1</td><td><code>86.10-81100</code>; <a href="https://support.sonos.com/en-us/article/release-notes-sonos-system-updates">S1 current</a> is <code>86.11-82170</code></td><td>update in the Sonos app (S1 system)</td></tr>
+    <tr><td>Midea aircons</td><td><code>midea_ac_lan</code> installed, unconfigured</td><td>discovery after WS1</td></tr>
+    <tr><td>Camera <code>192.168.0.169</code></td><td>RTSP 554, Rhio/NALI server, no anonymous stream</td><td>app credentials, then <code>generic</code> camera + go2rtc</td></tr>
+    <tr><td>Android TVs ×4</td><td>integrated but unreachable</td><td>reachable after WS1; decide if HA should drive them</td></tr>
+    <tr><td>Ajax system (7 hosts)</td><td>not in HA at all</td><td>out of scope until a supported API is chosen</td></tr>
+  </tbody>
+</table>
+
+<h3>WS5 · Make it an automation engine, not a dashboard</h3>
+<p>The point of HA is behaviour: things that react. Today there are zero automations. First three once WS1 is green: (1) all speakers off at 23:00, (2) TV volume down when the bedroom speaker plays, (3) a printer-ink alert to the phone.</p>
+
+<h3>WS6 · Reliability and hygiene</h3>
+<table>
+  <thead><tr><th>Item</th><th>Now</th><th>Target</th></tr></thead>
+  <tbody>
+    <tr><td>HA version</td><td>2026.10.4</td><td>2026.11.3 — backed up, rollback is <code>pip 2026.10.4</code></td></tr>
+    <tr><td>Restore test</td><td>never performed</td><td>one restore into a scratch config dir, proven</td></tr>
+    <tr><td>Backup chain</td><td>verified daily, shipped 03:30</td><td>unchanged, plus a monthly restore check</td></tr>
+    <tr><td>Monitoring</td><td>none</td><td>alert if the bridge advertisement or LAN 302 disappears for 15 minutes</td></tr>
+  </tbody>
+</table>
+
+<h3>WS7 · Fleet access for agents</h3>
+<p><code>ha-mcp</code> exposes 77 tools to the agent fleet through <code>host.docker.internal:8123</code>, full access by design. Two guardrails to add: an allowlist for destructive services, and a standing rule that agents never accept terms or start paid services inside HA.</p>
+
+<h2>Sequence</h2>
+<table>
+  <thead><tr><th>Phase</th><th>Content</th><th>Effort</th><th>Gate</th></tr></thead>
+  <tbody>
+    <tr><td>0</td><td>WS1 + WS2</td><td>15 min of Ricardo, 10 min of agent work</td><td>Apple Home working</td></tr>
+    <tr><td>1</td><td>WS3 decision + link</td><td>10–60 min</td><td>Google Home working</td></tr>
+    <tr><td>2</td><td>WS4 coverage</td><td>2–3 hours</td><td>real devices in HA</td></tr>
+    <tr><td>3</td><td>WS5 automations + WS6 restore test</td><td>4–6 hours</td><td>the house reacts by itself</td></tr>
+  </tbody>
+</table>
+
+<h2>Decisions needed from Ricardo</h2>
+<table>
+  <thead><tr><th>Decision</th><th>Why it is his</th><th>Default if silent</th></tr></thead>
+  <tbody>
+    <tr><td>Local Network toggle</td><td>a privacy permission belongs to the user</td><td>nothing works</td></tr>
+    <tr><td>Nabu Casa or own domain</td><td>money and exposure</td><td>Google Home stays unlinked</td></tr>
+    <tr><td>Camera credentials</td><td>only he has the vendor app</td><td>camera stays out of HA</td></tr>
+    <tr><td>Which automations matter</td><td>his house, his routines</td><td>I propose three and stop</td></tr>
+  </tbody>
+</table>
+
+<h2>Acceptance criteria</h2>
+<pre><span class="c"># WS1 — permission granted</span>
+curl -s -H "Authorization: Bearer $HA_TOKEN" http://127.0.0.1:8123/api/states \
+  | python3 -c 'import sys,json; s=json.load(sys.stdin); print(sum(1 for e in s if e["state"]=="unavailable"), "unavailable")'
+
+<span class="c"># WS2 — bridge advertising</span>
+timeout 8 dns-sd -B _hap._tcp local | grep -c "Maio Home"
+
+<span class="c"># WS3 — public endpoint answers (after the link)</span>
+curl -s -o /dev/null -w '%{http_code}\n' https://&lt;public-host&gt;/api/
+
+<span class="c"># WS6 — backup integrity</span>
+/bin/zsh ~/.config/maio-stack/home-assistant/backup.sh --ship | tail -1</pre>
+
+<h2>Risks</h2>
+<ul>
+  <li><strong>Router, NAS and Ajax firmware are out of scope for me.</strong> Flashing those can drop the network or brick hardware; each needs Ricardo's explicit go, one device at a time.</li>
+  <li><strong>One toggle unlocks 45 entities at once.</strong> If the grant lands while an automation is half-written, expect surprise behaviour — write automations after WS1 is verified.</li>
+  <li><strong>Nabu Casa creates a recurring charge.</strong> Nothing is started until Ricardo says so.</li>
+</ul>
+
+<h2>Evidence</h2>
+<pre>launchctl print gui/501/com.maio.home-assistant-native   → state = running
+curl -w '%{http_code}' http://192.168.0.157:8123/        → 200
+/api/states                                              → 68 entities · 45 unavailable · media players f=0
+dns-sd -B _hap._tcp local                                → no "Maio Home" instance
+pypi homeassistant                                       → latest 2026.11.3 · installed 2026.10.4
+Sonos device_description.xml                             → 97.2-81220 ×3 · 86.10-81100 ×1
+Cast eureka_info                                         → has_update=false ×3
+SNMP 1.3.6.1.2.1.1.0 @ 192.168.0.181                    → Brother NC-390w, Firmware Ver.Y
+ping sweep + port scan                                   → 39 live hosts
+tailscale serve status                                   → funnel 443/8443/10000 all mapped; 8443 → 18080
+backup.sh --ship                                         → backup ok: 3.0M , 300 entries</pre>
+
+<footer class="doc">
+  Sources: <a href="https://www.home-assistant.io/integrations/homekit/">HA HomeKit bridge</a> ·
+  <a href="https://www.home-assistant.io/integrations/google_assistant/">HA Google Assistant</a> ·
+  <a href="https://www.nabucasa.com/pricing/">Nabu Casa</a> ·
+  <a href="https://support.sonos.com/en-us/article/release-notes-sonos-system-updates">Sonos release notes</a> ·
+  <a href="https://support.brother.com/g/b/downloadtop.aspx?c=eu_ot&amp;lang=en&amp;prod=mfcj3530dw_eu_as_cn">Brother MFC-J3530DW</a>
+  <br>Vault setup note: AI-Space/1.Setup-Config/Systems/Home-Assistant-Setup.md
+</footer>
+
+</div>
+</body>
+</html>
