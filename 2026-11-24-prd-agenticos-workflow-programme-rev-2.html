@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 8)</title>
+<title>PRD — AgenticOS workflow programme (rev 9)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1194,5 +1194,15 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 <li>a healthy result is <strong>silent</strong> — no notification was sent, because the lane only speaks when the trail goes quiet.</li>
 </ol>
 <p>The next scheduled proofs are Monday 06:30, 06:45 and 07:00, and Wednesday 07:00 — the first week where the owner sees the whole set run on its own.</p>
+<h3 id="1310-the-first-real-run-exposed-a-false-alarm--now-gated">13.10 The first real run exposed a false alarm — now gated</h3>
+<p>The 18:15 run succeeded and reported <em>"the evidence trail is current"</em>. It also sent a notification whose subject read <em>"Evidence trail: nothing written to the ledger"</em>. <strong>Both happened, and the notification was wrong</strong> — the lane notified unconditionally, because the first three versions wired <code>code → notification.send</code> with no condition at all. Two test runs the same afternoon had already put the same false alarm in the owner's inbox.</p>
+<p>That is the failure mode this PRD exists to prevent, committed by the PRD's own author, so it is recorded here rather than quietly patched:</p>
+<ul>
+<li><strong>v4</strong> (<code>36c08777</code>'s graph) puts the notification behind <code>logic.if</code> with the JMESPath condition <code>value.quiet</code>. Output is produced on every run; the owner is told <strong>only</strong> when the trail is actually quiet.</li>
+<li>Verified by running it: run succeeded, reported current, and the notification count did <strong>not</strong> move (newest notification still 16:15:03, the spurious one).</li>
+<li>Republished as <strong>v4</strong>, trigger active, next fire <strong>2026-11-26T04:15Z = 06:15 SAST tomorrow</strong> (today's 18:15 slot had already passed).</li>
+</ul>
+<p><strong>The rule this teaches, now written into §5.5's spirit:</strong> a lane whose value is silence must prove it can be silent. Every future "only tell me if bad" lane gets a <code>logic.if</code> gate on its own verdict before publish, not after the first real run.</p>
+<p>The three spurious notifications from 25 November remain in the owner's inbox — they are a true record that the lane misbehaved, and deleting them would hide the evidence.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
