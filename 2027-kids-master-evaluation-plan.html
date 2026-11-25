@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2027 Kids Master Plan &amp; Evaluation Workbench — Donatello &amp; Gianna</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{
+  --bg:#f8f6f1; --surface:#ffffff; --surface-2:#f3efe6; --ink:#171c20; --ink-2:#434a52; --muted:#6e757d;
+  --border:#e2dcd0; --border-strong:#cfc7b8;
+  --accent:#1a6b58; --accent-soft:#e6f3ef; --accent-ink:#114a3d;
+  --body-bg:#e6f3ef; --body-fg:#115041; --body-bd:#c2e2d8;
+  --mind-bg:#e8eef9; --mind-fg:#25427a; --mind-bd:#c4d4f0;
+  --soul-bg:#f5eaf3; --soul-fg:#68295c; --soul-bd:#e2c6dd;
+  --ok-bg:#e7f5ec; --ok-fg:#145a32; --ok-bd:#bce3ca;
+  --warn-bg:#fef4e4; --warn-fg:#8a4b08; --warn-bd:#f5d5a3;
+  --bad-bg:#fdeceb; --bad-fg:#991b1b; --bad-bd:#f5c2bf;
+  --shadow:0 1px 3px rgba(20,25,30,.05), 0 6px 20px rgba(20,25,30,.04);
+  --radius:12px;
+  --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#121518; --surface:#1a1f24; --surface-2:#222830; --ink:#eef1f4; --ink-2:#c4ccd4; --muted:#8f99a3;
+  --border:#2c343d; --border-strong:#3d4753;
+  --accent:#3db89a; --accent-soft:#16332c; --accent-ink:#8ee3cd;
+  --body-bg:#14322a; --body-fg:#7ce0c6; --body-bd:#215446;
+  --mind-bg:#192842; --mind-fg:#95b8f7; --mind-bd:#29406b;
+  --soul-bg:#331c30; --soul-fg:#e6a3da; --soul-bd:#542c4f;
+  --ok-bg:#133321; --ok-fg:#7ee0a3; --ok-bd:#215437;
+  --warn-bg:#382810; --warn-fg:#f7c572; --warn-bd:#5c421a;
+  --bad-bg:#3b1818; --bad-fg:#f89b9b; --bad-bd:#632626;
+  --shadow:0 2px 10px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;margin:0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+header.hero{background:var(--surface);border-bottom:1px solid var(--border);padding:24px 0 18px}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.kicker{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px}
+h1{font-size:clamp(25px,3.2vw,35px);line-height:1.12;margin-bottom:8px}
+.lede{color:var(--ink-2);max-width:76ch;margin:0;font-size:14.5px}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;border:1px solid var(--border-strong);background:var(--surface);color:var(--ink);font:600 13px/1.2 var(--sans);cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{opacity:.92;color:#fff}
+.btn.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.chip{font-size:12px;padding:4px 10px;border-radius:999px;font-weight:600;border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2)}
+.chip.ok{background:var(--ok-bg);color:var(--ok-fg);border-color:var(--ok-bd)}
+.chip.warn{background:var(--warn-bg);color:var(--warn-fg);border-color:var(--warn-bd)}
+.chip.bad{background:var(--bad-bg);color:var(--bad-fg);border-color:var(--bad-bd)}
+
+.hud-bar{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--surface) 95%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.hud-inner{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;padding:12px 0}
+.hud-card{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:9px 12px}
+.hud-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:4px}
+.hud-val{font-size:17px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hud-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.pill{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+.pill.body{background:var(--body-bg);color:var(--body-fg);border-color:var(--body-bd)}
+.pill.mind{background:var(--mind-bg);color:var(--mind-fg);border-color:var(--mind-bd)}
+.pill.soul{background:var(--soul-bg);color:var(--soul-fg);border-color:var(--soul-bd)}
+.pill.sec{background:transparent;font-weight:600;opacity:.88}
+.pill.ok{background:var(--ok-bg);color:var(--ok-fg);border-color:var(--ok-bd)}
+.pill.warn{background:var(--warn-bg);color:var(--warn-fg);border-color:var(--warn-bd)}
+.pill.bad{background:var(--bad-bg);color:var(--bad-fg);border-color:var(--bad-bd)}
+.pill.neutral{background:var(--surface-2);color:var(--ink-2);border-color:var(--border)}
+
+.controls-strip{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 0 11px;border-top:1px solid var(--border)}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{padding:7px 12px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--ink-2);font:600 13px/1.2 var(--sans);cursor:pointer}
+.tab:hover{background:var(--surface-2);color:var(--ink)}
+.tab.active{background:var(--accent);color:#fff}
+.presets{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:2px}
+.seg button{border:0;background:transparent;color:var(--ink-2);padding:5px 9px;border-radius:6px;font:600 12px var(--sans);cursor:pointer}
+.seg button.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+main{padding:24px 0 64px}
+.panel{display:none}
+.panel.active{display:block}
+.show-all .panel{display:block;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.sec-head h2{font-size:24px}
+.sec-head p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:74ch}
+
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:18px;margin-bottom:18px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;margin-bottom:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card h3{font-size:18px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.card h4{font-size:15px;margin-bottom:6px}
+.callout{border-radius:10px;padding:12px 15px;margin-bottom:14px;font-size:13.5px;border:1px solid var(--border);background:var(--surface-2)}
+.callout.warn{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn-fg)}
+.callout.bad{background:var(--bad-bg);border-color:var(--bad-bd);color:var(--bad-fg)}
+.callout.ok{background:var(--ok-bg);border-color:var(--ok-bd);color:var(--ok-fg)}
+
+.mbs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 12px}
+.mbs-box{border-radius:9px;padding:8px 8px;border:1px solid var(--border);text-align:center}
+.mbs-box.body{background:var(--body-bg);border-color:var(--body-bd);color:var(--body-fg)}
+.mbs-box.mind{background:var(--mind-bg);border-color:var(--mind-bd);color:var(--mind-fg)}
+.mbs-box.soul{background:var(--soul-bg);border-color:var(--soul-bd);color:var(--soul-fg)}
+.mbs-box.creat{background:var(--ok-bg);border-color:var(--ok-bd);color:var(--ok-fg)}
+.mbs-box.zero{background:var(--bad-bg);border-color:var(--bad-bd);color:var(--bad-fg)}
+.mbs-n{font-size:18px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.mbs-l{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.mbs-s{font-size:10px;opacity:.82;margin-top:1px}
+
+.meter-row{margin:10px 0 4px}
+.meter-lbl{display:flex;justify-content:space-between;font-size:12.5px;font-weight:600;margin-bottom:4px;gap:8px;flex-wrap:wrap}
+.meter-track{height:9px;border-radius:999px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.meter-fill{height:100%;border-radius:999px;transition:width .25s}
+.meter-fill.ok{background:#1e8e5a}
+.meter-fill.warn{background:#d98218}
+.meter-fill.bad{background:#c9342b}
+
+.act-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.act-row{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:start;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);transition:.15s;cursor:pointer}
+.act-row:hover{border-color:var(--accent)}
+.act-row.selected{background:color-mix(in srgb,var(--accent-soft) 55%,var(--surface));border-color:var(--accent)}
+.act-row.fixed{background:var(--surface-2);border-style:dashed;cursor:default}
+.act-row.clash-row{border-color:#c9342b;box-shadow:inset 3px 0 0 #c9342b}
+.act-row input[type="checkbox"]{width:17px;height:17px;margin:2px 0 0;accent-color:var(--accent);cursor:pointer}
+.act-title{font-weight:700;font-size:14px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.act-meta{font-size:12px;color:var(--ink-2);margin-top:3px;display:flex;flex-wrap:wrap;gap:5px 11px}
+.act-note{font-size:12px;color:var(--muted);margin-top:3px}
+.act-right{text-align:right;min-width:86px}
+.act-price{font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
+.fit-badge{display:inline-block;margin-top:4px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;font-variant-numeric:tabular-nums}
+.fit-hi{background:var(--ok-bg);color:var(--ok-fg)}
+.fit-mid{background:var(--warn-bg);color:var(--warn-fg)}
+.fit-lo{background:var(--surface-2);color:var(--muted)}
+.filter-bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+
+.tt-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--border)}
+thead th{background:var(--surface-2);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border-strong)}
+.tt-grid{display:grid;grid-template-columns:repeat(6,minmax(160px,1fr));gap:10px;margin-top:10px}
+.day-col{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;min-height:195px;display:flex;flex-direction:column;gap:6px}
+.day-col.has-clash{border-color:#c9342b;background:color-mix(in srgb,var(--bad-bg) 28%,var(--surface))}
+.day-head{font-family:var(--serif);font-weight:700;font-size:15px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.slot{border-radius:7px;padding:6px 8px;font-size:12px;line-height:1.35;border:1px solid var(--border);background:var(--surface-2)}
+.slot.fixed{border-style:dashed;color:var(--ink-2)}
+.slot.support{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn-fg)}
+.slot.body{background:var(--body-bg);border-color:var(--body-bd);color:var(--body-fg)}
+.slot.mind{background:var(--mind-bg);border-color:var(--mind-bd);color:var(--mind-fg)}
+.slot.soul{background:var(--soul-bg);border-color:var(--soul-bd);color:var(--soul-fg)}
+.slot.clash{border:2px solid #c9342b}
+.slot-time{font-weight:700;font-size:11px;opacity:.85;font-variant-numeric:tabular-nums}
+.slot-free{margin-top:auto;font-size:11.5px;color:var(--ok-fg);background:var(--ok-bg);border:1px dashed var(--ok-bd);border-radius:6px;padding:5px 7px;text-align:center}
+
+#map{height:440px;border-radius:10px;border:1px solid var(--border-strong);margin-bottom:12px;z-index:1}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-2);margin-bottom:14px}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.num{font-variant-numeric:tabular-nums;font-weight:700}
+
+.todo-row{display:grid;grid-template-columns:22px 130px 1fr;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:start}
+.todo-row.done{opacity:.55;text-decoration:line-through}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:.2s;z-index:99}
+.toast.show{opacity:1}
+
+footer{padding:24px 0 48px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--border)}
+@media (max-width:780px){
+  .grid-2{grid-template-columns:1fr}
+  .mbs-grid{grid-template-columns:repeat(2,1fr)}
+  .tt-grid{grid-template-columns:repeat(2,minmax(145px,1fr))}
+  .todo-row{grid-template-columns:22px 1fr}
+}
+@media print{
+  .hud-bar .controls-strip,.hero-actions,.filter-bar,.btn{display:none!important}
+  .panel{display:block!important;page-break-inside:avoid}
+  body{background:#fff;color:#000}
+  #map{height:300px}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-top">
+      <div>
+        <div class="kicker">2027 Master Plan &amp; Evaluation Workbench · Donatello (Gr 4) &amp; Gianna (Gr 2) · Updated 25 Nov 2026</div>
+        <h1>The 2027 Plan — Dual-Pillar Balance, Load &amp; Best Fit</h1>
+        <p class="lede">Updated with your locked decisions: <strong>30-min Panashe homework slot</strong> on sport days, <strong>no OT/Speech</strong>, <strong>Tina Cowley Reading 2×/wk for both kids</strong> (Eversdal, joint trips), <strong>Donatello Football (Winter)</strong>, <strong>Gianna Swim Squad (Confirmed)</strong>, and <strong>dual-pillar Mind / Body / Soul + Creativity</strong> scoring.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn" id="btn-theme">🌓 Theme</button>
+        <button class="btn" id="btn-all">📄 Show All</button>
+        <button class="btn primary" id="btn-copy">📋 Copy Chosen Plan</button>
+      </div>
+    </div>
+    <div class="chips">
+      <span class="chip ok">✅ Panashe Homework: 30m (14:00–14:30) on sport days</span>
+      <span class="chip ok">✅ No OT / Speech · Tina Cowley 2×/wk Both Kids</span>
+      <span class="chip ok">✅ Donatello Winter: Football Locked</span>
+      <span class="chip ok">✅ Gianna: Swim Squad Confirmed</span>
+      <span class="chip bad">⚠ Books Coupon Expires Fri 27 Nov (2 Days!)</span>
+    </div>
+  </div>
+</header>
+
+<div class="hud-bar">
+  <div class="wrap">
+    <div class="hud-inner" id="hud"></div>
+    <div class="controls-strip">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="evaluate">1. Evaluate &amp; Toggle</button>
+        <button class="tab" data-tab="timetable">2. Weekly Grid &amp; Load</button>
+        <button class="tab" data-tab="gaps">3. Balance, Gaps &amp; Risks</button>
+        <button class="tab" data-tab="maptab">4. Map &amp; Venues</button>
+        <button class="tab" data-tab="school">5. School &amp; Budget</button>
+        <button class="tab" data-tab="actions">6. Deadlines</button>
+      </div>
+      <div class="presets">
+        <div class="seg" id="season-seg">
+          <button class="active" data-season="summer">☀ Summer (T1/T4)</button>
+          <button data-season="winter">❄ Winter (T2/T3)</button>
+        </div>
+        <div class="seg" id="tc-seg" title="How to schedule Tina Cowley 2×/wk">
+          <button class="active" data-tc="separate">📖 TC: Free Days</button>
+          <button data-tc="double">📖 TC: 1 Sport Day 16:00</button>
+        </div>
+        <div class="seg" id="driver-seg">
+          <button class="active" data-driver="ricardo">🚗 Welgemoed</button>
+          <button data-driver="lauren">🚗 Valmary</button>
+        </div>
+        <button class="btn active" data-preset="recommended">★ Recommended 2027</button>
+        <button class="btn" data-preset="plusbjj">🥋 + BJJ &amp; Riding</button>
+        <button class="btn" data-preset="allwishes">🔥 All Kid Wishes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="main-wrap">
+
+  <!-- TAB 1 -->
+  <section class="panel active" id="tab-evaluate">
+    <div class="sec-head">
+      <div>
+        <h2>Interactive Dual-Pillar Plan Evaluator</h2>
+        <p>Activities now credit <strong>both Primary &amp; Secondary pillars</strong> (e.g., Piano = Mind + Soul, Coding/LEGO = Mind + Soul, BJJ = Body + Mind, Drama = Soul + Mind) plus <strong>Creativity</strong>. Toggle anything below to test whether the week is breathable or overloaded once Tina Cowley 2×/wk is in.</p>
+      </div>
+      <div class="filter-bar" id="filter-bar">
+        <button class="btn active" data-filter="all">All</button>
+        <button class="btn" data-filter="selected">In Plan</button>
+        <button class="btn" data-filter="Body">Body</button>
+        <button class="btn" data-filter="Mind">Mind</button>
+        <button class="btn" data-filter="Soul">Soul</button>
+        <button class="btn" data-filter="creative">🎨 Creative</button>
+      </div>
+    </div>
+
+    <div id="live-verdict-banner"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>
+          <span>Donatello · Grade 4 (turns 10 Feb)</span>
+          <span id="don-status-pill"></span>
+        </h3>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px">
+          Fixed base: Reddam 08:00–14:00 · Barton 1:1 (4×45m in-school) · Panashe 30m homework (14:00–14:30) on sport days · <strong>Tina Cowley 2×/wk</strong> · Winter sport: <strong>Football</strong>.
+        </div>
+        <div class="mbs-grid" id="don-mbs"></div>
+        <div class="meter-row">
+          <div class="meter-lbl"><span>Weekday Busy Days (incl. Tina Cowley 2×/wk)</span><span id="don-load-txt"></span></div>
+          <div class="meter-track"><div class="meter-fill" id="don-load-bar"></div></div>
+        </div>
+        <div id="don-alerts" style="margin-top:10px"></div>
+        <div class="act-list" id="don-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>
+          <span>Gianna · Grade 2 (turns 8 Feb)</span>
+          <span id="gia-status-pill"></span>
+        </h3>
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px">
+          Fixed base: Reddam 08:00–14:00 · Compulsory Sports Hour (Mon/Tue 13:00–14:00) · <strong>Swim Squad Confirmed (Wed 13:30–14:15)</strong> · <strong>Tina Cowley 2×/wk</strong>.
+        </div>
+        <div class="mbs-grid" id="gia-mbs"></div>
+        <div class="meter-row">
+          <div class="meter-lbl"><span>Weekday Busy Days (incl. Tina Cowley 2×/wk)</span><span id="gia-load-txt"></span></div>
+          <div class="meter-track"><div class="meter-fill" id="gia-load-bar"></div></div>
+        </div>
+        <div id="gia-alerts" style="margin-top:10px"></div>
+        <div class="act-list" id="gia-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 2 -->
+  <section class="panel" id="tab-timetable">
+    <div class="sec-head">
+      <div>
+        <h2>Weekly Timetable &amp; Real Load — <span id="tt-season-label">Summer (Terms 1 &amp; 4)</span></h2>
+        <p>Notice how <strong>3 school-sport afternoons + 2 Tina Cowley sessions</strong> shapes Donatello's week. Toggle <strong>"TC: Free Days" vs "TC: 1 Sport Day 16:00"</strong> in the top bar to see how doubling Tina Cowley once on a practice day (Eversdal is 8 min from Reddam) unlocks a completely free afternoon!</p>
+      </div>
+    </div>
+
+    <div class="callout ok">
+      <strong>✅ Homework Clash Resolved:</strong> Panashe runs <strong>14:00–14:30 (30 min)</strong> homework on Donatello's 3 sport days before 14:30 warm-up, and full <strong>14:00–15:00</strong> on clear afternoons. Zero overlap with Cricket (Summer) or Football (Winter).
+    </div>
+
+    <div id="clash-summary-box"></div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h3>Donatello — Mon to Sat (<span class="tt-s-lbl">Summer</span>)</h3>
+      <div class="tt-wrap"><div class="tt-grid" id="tt-don"></div></div>
+    </div>
+
+    <div class="card">
+      <h3>Gianna — Mon to Sat (<span class="tt-s-lbl">Summer</span>)</h3>
+      <div class="tt-wrap"><div class="tt-grid" id="tt-gia"></div></div>
+    </div>
+  </section>
+
+  <!-- TAB 3 -->
+  <section class="panel" id="tab-gaps">
+    <div class="sec-head">
+      <div>
+        <h2>Dual-Pillar Coverage, Overload Reality &amp; Risk Audit</h2>
+        <p>Why single-tag buckets undersold your plan, the real weekday load math with Tina Cowley 2×/wk, and every resolved overlap.</p>
+      </div>
+    </div>
+
+    <div id="dynamic-gap-cards" class="grid-3"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>How Dual-Pillar &amp; Creativity Coverage Works</h3>
+        <p style="font-size:13.5px;color:var(--muted);margin:0 0 10px">Yes — strong activities legitimately feed two pillars at once, and creativity doesn't have to mean drawing:</p>
+        <table>
+          <thead><tr><th>Activity</th><th>Primary</th><th>Secondary</th><th>Creative?</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Piano (RDMS)</strong></td><td><span class="pill mind">Mind</span></td><td><span class="pill soul sec">+ Soul</span></td><td>🎨 Yes (music)</td></tr>
+            <tr><td><strong>Drums (RDMS)</strong></td><td><span class="pill soul">Soul</span></td><td><span class="pill body sec">+ Body</span></td><td>🎨 Yes (rhythm)</td></tr>
+            <tr><td><strong>Coding / Robotics (Sheen)</strong></td><td><span class="pill mind">Mind</span></td><td><span class="pill soul sec">+ Soul</span></td><td>🎨 Yes (engineering)</td></tr>
+            <tr><td><strong>Drama (Redd Raconteurs)</strong></td><td><span class="pill soul">Soul</span></td><td><span class="pill mind sec">+ Mind</span></td><td>🎨 Yes (stage/story)</td></tr>
+            <tr><td><strong>Hip Hop / Ballet (RDDA)</strong></td><td><span class="pill body">Body</span></td><td><span class="pill soul sec">+ Soul</span></td><td>🎨 Yes (movement)</td></tr>
+            <tr><td><strong>Jiu-jitsu (BJJ — Iron Grip)</strong></td><td><span class="pill body">Body</span></td><td><span class="pill mind sec">+ Mind</span></td><td>Problem-solving</td></tr>
+            <tr><td><strong>Climbing (CityROCK)</strong></td><td><span class="pill body">Body</span></td><td><span class="pill mind sec">+ Mind</span></td><td>Spatial puzzle</td></tr>
+            <tr><td><strong>Football / Cricket (School)</strong></td><td><span class="pill body">Body</span></td><td><span class="pill soul sec">+ Soul</span></td><td>Team belonging</td></tr>
+            <tr><td><strong>Horse Riding (Cadence)</strong></td><td><span class="pill body">Body</span></td><td><span class="pill soul sec">+ Soul</span></td><td>Animal connection</td></tr>
+            <tr><td><strong>Cubs (1st Durbanville)</strong></td><td><span class="pill soul">Soul</span></td><td><span class="pill body sec">+ Body</span></td><td>Outdoors &amp; craft</td></tr>
+            <tr><td><strong>Tina Cowley Reading (2×/wk)</strong></td><td><span class="pill mind">Mind</span></td><td>—</td><td>Reading engine</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>The Core Conversation: Is It Too Much?</h3>
+        <div class="callout warn">
+          <strong>Donatello's Real Math (Mon–Fri):</strong> Cricket (Summer: Mon/Tue/Wed) or <strong>Football (Winter: Mon/Wed/Fri)</strong> = <strong>3 afternoons</strong>. Add <strong>Tina Cowley (2×/wk)</strong> = <strong>5 out of 5 weekdays touched</strong> unless 1 Tina Cowley session sits at 16:00 after a practice day!
+        </div>
+        <p style="font-size:13.5px;color:var(--ink-2)"><strong>What that means for extra outside activities (BJJ, Sheen, Cubs, CityROCK):</strong></p>
+        <ul style="margin:6px 0 12px 18px;padding:0;font-size:13.5px;color:var(--ink-2);line-height:1.55">
+          <li><strong>Drums (RDMS) is a free lunch on time:</strong> 30m in school hours = zero after-school load, zero driving, covers Soul + Creativity + Body.</li>
+          <li><strong>Sheen Coding/Robotics (Sat AM):</strong> Zero weekday clash, covers Mind + Creativity + Engineering. One shared Saturday trip if Gianna ever joins.</li>
+          <li><strong>If adding BJJ (Iron Grip, Fit 95):</strong> Use the <em>"TC: 1 Sport Day 16:00"</em> mode (e.g., Wed 16:00 after practice) so Donatello gets a clean afternoon for 1×/wk BJJ without doing 6 days of grind.</li>
+          <li><strong>Gianna's Reality:</strong> Sports Hour (Mon/Tue) ends at 14:00, Swim (Wed) ends at 14:15, Drama (Fri) ends at 14:00, Piano is in-school. Even with Hip Hop (Tue/Thu) + Tina Cowley 2×/wk, she is home early most days and has <strong>Saturday &amp; Sunday 100% open</strong> (plenty of room for Horse Riding or CityROCK if she wants!).</li>
+        </ul>
+        <div class="callout" style="margin-bottom:0">
+          <strong>Tina Cowley Reporting Note (from 3 Nov Audit):</strong> Across 12 months of statements, Tina Cowley Eversdal issued only 1 reading profile (8 Sep 2026: 58 wpm vs 138 norm, 100% comprehension). Ask Rene Theunissen for a <strong>quarterly wpm/reading-age check</strong> to align with your 26 Mar &amp; mid-year reviews — and confirm why Nov jumped from R680 to R1 400/mo!
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Contact-Sport Ladder &amp; Resolved Overlaps</h3>
+      <table>
+        <thead><tr><th>Decision</th><th>Choice</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Donatello Winter Sport</strong></td><td><span class="pill ok">Football Locked</span></td><td>His favourite sport + continuity with U9 Stags (Mon/Wed/Fri). Pairs cleanly with Tina Cowley on Tue &amp; Thu!</td></tr>
+          <tr><td><strong>Coding &amp; Robotics</strong></td><td><span class="pill ok">Sheen Academy</span></td><td>DCJ removed. Confirmed Century City venue, 15–20m drive, Saturday morning, FIRST LEGO League pathway.</td></tr>
+          <tr><td><strong>Contact Sport Order</strong></td><td><span class="pill ok">BJJ → Pads → Rugby</span></td><td>1st: Iron Grip BJJ (Fit 95, zero head strikes, free trial). 2nd: Tricore pads/bag (no head sparring &lt;12). 3rd: Rugby held to 2028.</td></tr>
+          <tr><td><strong>Gianna Swim Squad</strong></td><td><span class="pill ok">Wed Only Confirmed</span></td><td>Letter permits Wed and/or Thu. Wed keeps Thu clear for Hip Hop L2; confirm 13:30 early class release.</td></tr>
+          <tr><td><strong>Gianna Dance &amp; Drama</strong></td><td><span class="pill ok">RDDA + Raconteurs</span></td><td>Both at Reddam (zero extra driving). Keep Piano now; phase Singing to Term 3 so she doesn't burn out on 2 instruments.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAB 4 -->
+  <section class="panel" id="tab-maptab">
+    <div class="sec-head">
+      <div>
+        <h2>Map, Venues &amp; Dual-Home Drive Times</h2>
+        <p>Now includes <strong>Tina Cowley Reading Centre (49 Steppingstones St, Eversdal)</strong> — ~7 min from Welgemoed and ~6 min from Valmary Park, right between both homes and Reddam.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+      <div id="map"></div>
+      <div class="legend">
+        <span><i style="background:#1a6b58"></i>At Reddam School</span>
+        <span><i style="background:#2563eb"></i>Body / Sport</span>
+        <span><i style="background:#7c3aed"></i>Mind (incl. Tina Cowley &amp; Sheen)</span>
+        <span><i style="background:#be185d"></i>Soul</span>
+        <span><i style="background:#dc2626"></i>Welgemoed &amp; Valmary Park</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Venue Comparison (Dual-Pillar Tags &amp; Both Homes)</h3>
+      <div class="tt-wrap">
+        <table>
+          <thead><tr><th>Activity</th><th>Feeds</th><th>Venue</th><th>Published Price</th><th>From Welgemoed</th><th>From Valmary Park</th><th>Map</th></tr></thead>
+          <tbody id="venues-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5 -->
+  <section class="panel" id="tab-school">
+    <div class="sec-head">
+      <div>
+        <h2>Full 2027 Financial Reality &amp; School Contingency</h2>
+        <p><strong>OT (R24 000/yr) &amp; Speech Therapy removed.</strong> Replaced by <strong>Tina Cowley 2×/wk for both children</strong> (estimated at Nov '26 R1 400/mo rate each = R33 600/yr combined — confirm 2027 sibling/2× rate with Rene Theunissen).</p>
+      </div>
+    </div>
+
+    <div class="grid-3" id="budget-cards"></div>
+
+    <div class="card" style="margin-bottom:18px">
+      <h3>Complete 2027 Cost Breakdown (Live With Your Toggles)</h3>
+      <div class="tt-wrap">
+        <table>
+          <thead><tr><th>Category / Line</th><th>Child</th><th>Basis</th><th>Per Year</th><th>Per Month (÷12)</th><th>Status</th></tr></thead>
+          <tbody id="budget-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>School Contingency — Term 1 Review Gate: Friday 26 March 2027</h3>
+      <div class="tt-wrap">
+        <table>
+          <thead><tr><th>Dimension</th><th>Reddam Durbanville (Plan of Record)</th><th>Curro Uitzicht (Alt #1 · Gr 3 Repeat)</th><th>Tate International (Alt #2 · Gr 4)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Status</strong></td><td><span class="pill ok">Confirmed in writing</span></td><td><span class="pill ok">Live offer (3 Nov)</span></td><td><span class="pill warn">Conditional on 3-day visit</span></td></tr>
+            <tr><td><strong>Support Stack</strong></td><td>Panashe (07:30–15:00, 30m hw sport days), Barton 4×45m, RocketPen, 25% extra time, clinics + Tina Cowley 2×/wk</td><td>Class of ~9; OT, learning-support &amp; counsellor on staff</td><td>In-class teacher adaptation only — no extra staff</td></tr>
+            <tr><td><strong>Sport Offer</strong></td><td>Strongest: Cricket, Football, Swim Squad, RDDA, Raconteurs</td><td>Small school; teams depend on numbers</td><td>Optional; 4–5 fixtures/term</td></tr>
+            <tr><td><strong>Annual Cost (Don)</strong></td><td>~R127k–R140k tuition (2026) + <strong>R110k Panashe</strong></td><td><strong>R101 520</strong> (2027 confirmed)</td><td><strong>R91 800</strong> + R5 700 admit + R980/yr</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 6 -->
+  <section class="panel" id="tab-actions">
+    <div class="sec-head">
+      <div>
+        <h2>Action Checklist — Ordered By Deadline</h2>
+        <p>Today is <strong>Wednesday 25 November 2026</strong>. Check items off as completed (saved in browser).</p>
+      </div>
+    </div>
+    <div class="card" id="todo-list"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    2027 Kids Master Evaluation Workbench · Updated 25 Nov 2026 with Ricardo's locked decisions (30m Panashe homework slot, no OT/Speech, Tina Cowley 2×/wk both kids, Donatello Football winter, Gianna Swim Squad confirmed, dual-pillar Mind/Body/Soul + Creativity scoring).
+  </div>
+</footer>
+
+<div class="toast" id="toast">Copied to clipboard!</div>
+
+<script>
+const ACTIVITIES = [
+  // DONATELLO
+  {id:"don_tc", child:"don", name:"Tina Cowley Reading (2×/wk · Eversdal)", feeds:"Mind", sec:null, creative:false, season:"all", where:"outside", venue:"tinacowley",
+   when:"2×/wk flexible after-hours (joint with Gianna)",
+   slotsSepSum:[{d:3,s:16,e:17,l:"Tina Cowley (Joint)"},{d:4,s:14.75,e:15.75,l:"Tina Cowley (Joint)"}],
+   slotsSepWin:[{d:1,s:16,e:17,l:"Tina Cowley (Joint)"},{d:3,s:16,e:17,l:"Tina Cowley (Joint)"}],
+   slotsDblSum:[{d:2,s:16,e:17,l:"Tina Cowley (after Cricket)"},{d:4,s:14.75,e:15.75,l:"Tina Cowley (Joint)"}],
+   slotsDblWin:[{d:1,s:16,e:17,l:"Tina Cowley (Joint)"},{d:2,s:16.25,e:17.25,l:"Tina Cowley (after Football)"}],
+   priceTxt:"~R1 400/mo (confirm)", annual:16800, priced:false, est:true, fit:90, fixed:true, tier1:false, loadDays:2, early:0,
+   note:"Locked in (replaces OT & Speech). 49 Steppingstones St, Eversdal (7m you / 6m Lauren). Ask Rene for 2027 2×/wk rate + quarterly wpm reports."},
+  {id:"don_cricket", child:"don", name:"Cricket — School (Tier 1)", feeds:"Body", sec:"Soul", creative:false, season:"summer", where:"school", venue:"reddam",
+   when:"Mon match · Tue & Wed 14:30–15:30", slots:[{d:0,s:14.5,e:16,l:"Cricket Match"},{d:1,s:14.5,e:15.5,l:"Cricket Practice"},{d:2,s:14.5,e:15.5,l:"Cricket Practice"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:83, tier1:true, loadDays:3, early:0,
+   note:"Summer team sport (Body + Soul team belonging). Satisfies compulsory Tier 1. 30m Panashe homework runs 14:00–14:30."},
+  {id:"don_football", child:"don", name:"Football — School (Tier 1 · Locked Winter)", feeds:"Body", sec:"Soul", creative:false, season:"winter", where:"school", venue:"reddam",
+   when:"Mon 14:30 · Wed match · Fri 14:30", slots:[{d:0,s:14.5,e:15.5,l:"Football Practice"},{d:2,s:14.5,e:16,l:"Football Match"},{d:4,s:14.5,e:15.5,l:"Football Practice"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:84, tier1:true, loadDays:3, early:0,
+   note:"Locked winter choice (his favourite + U9 Stags continuity). Pairs cleanly with Tina Cowley on Tue & Thu!"},
+  {id:"don_hockey", child:"don", name:"Hockey — School (Winter Alt)", feeds:"Body", sec:"Soul", creative:false, season:"winter", where:"school", venue:"reddam",
+   when:"Tue 14:30 · Thu match · Fri 13:30", slots:[{d:1,s:14.5,e:15.5,l:"Hockey Practice"},{d:3,s:14.5,e:16,l:"Hockey Match"},{d:4,s:13.5,e:14.5,l:"Hockey Session"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:85, tier1:true, loadDays:3, early:0,
+   note:"Bench backup to Football — no contact, earlier Friday finish."},
+  {id:"don_drums", child:"don", name:"Drums — RDMS (In school hours)", feeds:"Soul", sec:"Body", creative:true, season:"all", where:"school", venue:"reddam",
+   when:"1× 30 min in class time", slots:[{d:2,s:10.5,e:11,l:"Drums (in-school)"}],
+   priceTxt:"R2 325/term", annual:9300, priced:true, fit:75, tier1:false, loadDays:0, early:0,
+   note:"He asked for it! Zero after-school load, zero driving. Covers Soul + Creativity + bilateral coordination."},
+  {id:"don_sheen", child:"don", name:"Coding & Robotics — Sheen Academy", feeds:"Mind", sec:"Soul", creative:true, season:"all", where:"outside", venue:"sheen",
+   when:"Saturday morning (Century City)", slots:[{d:5,s:9.5,e:11,l:"Sheen Coding & Robotics"}],
+   priceTxt:"R1 120/mo", annual:13440, priced:true, fit:77, tier1:false, loadDays:0, weekend:1, early:0,
+   note:"DCJ removed. Ages 9–11, FIRST LEGO League route. Covers Mind + Creative Engineering with zero weekday clash!"},
+  {id:"don_bjj", child:"don", name:"Jiu-jitsu (BJJ) — Iron Grip", feeds:"Body", sec:"Mind", creative:false, season:"all", where:"outside", venue:"irongrip",
+   when:"Mon–Thu 16:00 (pick 1d free — Thu sum / Wed or Mon win)",
+   slots:[{d:3,s:16,e:16.75,l:"BJJ Iron Grip"}], slotsWinter:[{d:3,s:16,e:16.75,l:"BJJ Iron Grip"}],
+   priceTxt:"Enquiry · 1st free", annual:0, priced:false, fit:95, tier1:false, loadDays:1, early:0,
+   note:"Fit 95! Physical chess (Body + Mind), zero head strikes, leverage over size. Switch Tina Cowley to '1 Sport Day 16:00' mode so Thu stays open!"},
+  {id:"don_climbing", child:"don", name:"Climbing — CityROCK", feeds:"Body", sec:"Mind", creative:false, season:"all", where:"outside", venue:"cityrock",
+   when:"Flexible / Weekend", slots:[{d:5,s:14,e:15.5,l:"CityROCK Climbing"}],
+   priceTxt:"R390/mo (+R470)", annual:4680, priced:true, fit:89, tier1:false, loadDays:0, weekend:1, early:0,
+   note:"Body + spatial problem-solving. Flexible weekend option (great alternative if weekdays feel full)."},
+  {id:"don_cubs", child:"don", name:"Cubs — 1st Durbanville Scouts", feeds:"Soul", sec:"Body", creative:true, season:"all", where:"outside", venue:"scouts",
+   when:"Fri 17:00–18:30", slots:[{d:4,s:17,e:18.5,l:"Cubs (1st D'ville)"}],
+   priceTxt:"On enquiry", annual:0, priced:false, fit:69, tier1:false, loadDays:1, early:0,
+   note:"Belonging, outdoor craft & badges. Shared Friday trip if Gianna joins — watch Fri fatigue in Winter after Football 15:30!"},
+  {id:"don_boxing", child:"don", name:"Boxing / Kickboxing — Tricore", feeds:"Body", sec:"Mind", creative:false, season:"all", where:"outside", venue:"tricore",
+   when:"Mon + Wed 17:00", slots:[{d:0,s:17,e:18,l:"Tricore Kickboxing"},{d:2,s:17,e:18,l:"Tricore BJJ/Box"}],
+   priceTxt:"R490/mo (+R400)", annual:5880, priced:true, fit:86, tier1:false, loadDays:2, early:0,
+   note:"Alternates BJJ & kickboxing. Keep pads/bag only (no head sparring <12). Heavy after Mon/Wed matches."},
+  {id:"don_tennis", child:"don", name:"Tennis — School (Trials)", feeds:"Body", sec:"Mind", creative:false, season:"summer", where:"school", venue:"reddam",
+   when:"Mon 14:30 · Wed match · Fri 07:00", slots:[{d:0,s:14.5,e:15.5,l:"Tennis"},{d:2,s:14.5,e:16,l:"Tennis Match"},{d:4,s:7,e:7.7,l:"Tennis 07:00"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:89, tier1:true, loadDays:2, early:1,
+   note:"Clashes Mon & Wed with Cricket + early Fri 07:00 start."},
+  {id:"don_swim", child:"don", name:"Squad Swimming — School", feeds:"Body", sec:null, creative:false, season:"summer", where:"school", venue:"reddam",
+   when:"Tue 14:30 · Wed & Thu 07:00", slots:[{d:1,s:14.5,e:15.5,l:"Swim Squad"},{d:2,s:7,e:7.7,l:"Swim 07:00"},{d:3,s:7,e:7.7,l:"Swim 07:00"}],
+   priceTxt:"On enquiry", annual:0, priced:false, fit:85, tier1:true, loadDays:1, early:2,
+   note:"Rowing feeder from age 13 — clashes Tue with Cricket + 2 early starts. Hold for Term 4 or 2028."},
+  {id:"don_chess", child:"don", name:"Chess — School (Tier 1)", feeds:"Mind", sec:null, creative:false, season:"all", where:"school", venue:"reddam",
+   when:"Mon & Tue 14:30 · Fri 13:30", slots:[{d:0,s:14.5,e:15.5,l:"Chess"},{d:1,s:14.5,e:15.5,l:"Chess"},{d:4,s:13.5,e:14.5,l:"Chess"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:20, tier1:true, loadDays:2, early:0,
+   note:"Clashes Mon/Tue with Cricket & Mon/Fri with Football. Use African Chess Lounge (R100/mo) if he wants chess later."},
+  {id:"don_rugby", child:"don", name:"Rugby — Durbell / Excel Skills", feeds:"Body", sec:"Soul", creative:false, season:"winter", where:"outside", venue:"dfc",
+   when:"Tue skills / Sat winter matches", slots:[{d:1,s:16.5,e:17.5,l:"Excel Rugby"},{d:5,s:9,e:10.5,l:"Club Rugby"}],
+   priceTxt:"On enquiry", annual:0, priced:false, fit:0, tier1:false, loadDays:1, weekend:1, early:0,
+   note:"Full contact = hold until 2028 after a season of BJJ."},
+
+  // GIANNA
+  {id:"gia_sh", child:"gia", name:"Sports Hour — School (Compulsory)", feeds:"Body", sec:"Soul", creative:false, season:"all", where:"school", venue:"reddam",
+   when:"Mon & Tue 13:00–14:00 (Fixed)", slots:[{d:0,s:13,e:14,l:"Sports Hour (Fixed)"},{d:1,s:13,e:14,l:"Sports Hour (Fixed)"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:100, fixed:true, loadDays:0, early:0,
+   note:"Compulsory for all Grade 2 learners inside school hours."},
+  {id:"gia_swim", child:"gia", name:"Swim Squad — School (Confirmed ✅)", feeds:"Body", sec:null, creative:false, season:"all", where:"school", venue:"reddam",
+   when:"Wed 13:30–14:15 (Fri galas)", slots:[{d:2,s:13.5,e:14.25,l:"Swim Squad (Confirmed)"}],
+   priceTxt:"On enquiry", annual:0, priced:false, fit:68, fixed:true, loadDays:1, early:0,
+   note:"Confirmed! Wednesday only keeps Thursday clear for Hip Hop. Confirm 13:30 early class release with office."},
+  {id:"gia_tc", child:"gia", name:"Tina Cowley Reading (2×/wk · Eversdal)", feeds:"Mind", sec:null, creative:false, season:"all", where:"outside", venue:"tinacowley",
+   when:"2×/wk flexible after-hours (joint with Donatello)",
+   slotsSepSum:[{d:3,s:16,e:17,l:"Tina Cowley (Joint)"},{d:4,s:14.75,e:15.75,l:"Tina Cowley (Joint)"}],
+   slotsSepWin:[{d:1,s:16,e:17,l:"Tina Cowley (Joint)"},{d:3,s:16,e:17,l:"Tina Cowley (Joint)"}],
+   slotsDblSum:[{d:2,s:16,e:17,l:"Tina Cowley (Joint)"},{d:4,s:14.75,e:15.75,l:"Tina Cowley (Joint)"}],
+   slotsDblWin:[{d:1,s:16,e:17,l:"Tina Cowley (Joint)"},{d:2,s:16.25,e:17.25,l:"Tina Cowley (Joint)"}],
+   priceTxt:"~R1 400/mo (confirm)", annual:16800, priced:false, est:true, fit:90, fixed:true, loadDays:2, early:0,
+   note:"Locked in — shares the exact same 7-min Eversdal trip with Donatello! Carries her Mind foundation."},
+  {id:"gia_hiphop", child:"gia", name:"Hip Hop Level 2 — RDDA (School)", feeds:"Body", sec:"Soul", creative:true, season:"all", where:"school", venue:"reddam",
+   when:"Tue 14:15–15:00 · Thu 14:45–15:30", slots:[{d:1,s:14.25,e:15,l:"RDDA Hip Hop L2"},{d:3,s:14.75,e:15.5,l:"RDDA Hip Hop L2"}],
+   priceTxt:"R1 480/term", annual:5920, priced:true, fit:54, loadDays:2, early:0,
+   note:"Her dance since 2025, right at school. Covers Body + Soul + Creativity. Finishes 15:00 Tue / 15:30 Thu (in time for 16:00 Tina Cowley!)."},
+  {id:"gia_drama", child:"gia", name:"Drama — Redd Raconteurs (School)", feeds:"Soul", sec:"Mind", creative:true, season:"all", where:"school", venue:"reddam",
+   when:"Fri 13:00–14:00", slots:[{d:4,s:13,e:14,l:"Redd Raconteurs Drama"}],
+   priceTxt:"R2 125/term", annual:8500, priced:true, fit:93, loadDays:1, early:0,
+   note:"Her #1 score (93)! Soul + Mind + Creativity. At school, done at 14:00 — leaves plenty of time before Fri 14:45 Tina Cowley."},
+  {id:"gia_piano", child:"gia", name:"Piano — RDMS (In school hours)", feeds:"Mind", sec:"Soul", creative:true, season:"all", where:"school", venue:"reddam",
+   when:"1× 30 min in class time", slots:[{d:2,s:10,e:10.5,l:"Piano (in-school)"}],
+   priceTxt:"R2 325/term", annual:9300, priced:true, fit:57, loadDays:0, early:0,
+   note:"Zero after-school load! Covers Mind + Soul + Music Creativity. (Re-check 2027 rate: nearly doubled from R1 200.)"},
+  {id:"gia_singing", child:"gia", name:"Singing — RDMS (In school hours)", feeds:"Soul", sec:"Mind", creative:true, season:"all", where:"school", venue:"reddam",
+   when:"1× 30 min in class time", slots:[{d:3,s:10,e:10.5,l:"Singing (in-school)"}],
+   priceTxt:"R2 325/term", annual:9300, priced:true, fit:57, loadDays:0, early:0,
+   note:"Second RDMS fee (+R9 300/yr). Best to phase to Term 3 if she still asks — two instruments at age 7 risks quitting both."},
+  {id:"gia_riding", child:"gia", name:"Horse Riding — Cadence Equestria ★", feeds:"Body", sec:"Soul", creative:false, season:"all", where:"outside", venue:"cadence",
+   when:"Weekend / by arrangement (D'ville Hills)", slots:[{d:5,s:11.5,e:12.5,l:"Horse Riding (Cadence)"}],
+   priceTxt:"On enquiry", annual:0, priced:false, fit:91, loadDays:0, weekend:1, early:0,
+   note:"Fit 91 (#2 highest!). Body + Soul, 15m from Welgemoed / 13m from Lauren. Zero weekday load!"},
+  {id:"gia_cubs", child:"gia", name:"Cubs — 1st Durbanville Scouts ★", feeds:"Soul", sec:"Body", creative:true, season:"all", where:"outside", venue:"scouts",
+   when:"Fri 17:00–18:30", slots:[{d:4,s:17,e:18.5,l:"Cubs (1st D'ville)"}],
+   priceTxt:"On enquiry", annual:0, priced:false, fit:86, loadDays:1, early:0,
+   note:"Fit 86! Shared Friday trip if Donatello joins (11m / 4m Lauren). Watch Friday load if Drama + Tina Cowley also run Fri."},
+  {id:"gia_climbing", child:"gia", name:"Climbing — CityROCK (Sibling R330) ★", feeds:"Body", sec:"Mind", creative:false, season:"all", where:"outside", venue:"cityrock",
+   when:"Flexible / Weekend", slots:[{d:5,s:14,e:15.5,l:"CityROCK Climbing"}],
+   priceTxt:"R330/mo (2nd kid)", annual:3960, priced:true, fit:84, loadDays:0, weekend:1, early:0,
+   note:"Fit 84, sibling rate R330/mo! Both kids climb together on weekends."},
+  {id:"gia_sheen", child:"gia", name:"Coding & Robotics — Sheen Academy", feeds:"Mind", sec:"Soul", creative:true, season:"all", where:"outside", venue:"sheen",
+   when:"Saturday morning (Century City)", slots:[{d:5,s:9.5,e:11,l:"Sheen Coding (6–8)"}],
+   priceTxt:"R1 120/mo", annual:13440, priced:true, fit:51, loadDays:0, weekend:1, early:0,
+   note:"Same Saturday trip as Donatello (ages 6–8). Mind + Creative Engineering — though R13 440/yr is steep at age 7."},
+  {id:"gia_netball", child:"gia", name:"Netball Matches — School (Winter)", feeds:"Body", sec:"Soul", creative:false, season:"winter", where:"school", venue:"reddam",
+   when:"Wed Competitive Sports Hour", slots:[{d:2,s:14,e:15,l:"Netball Match (Winter)"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:68, loadDays:0, early:0,
+   note:"Free winter matches — check overlap with Wed 13:30–14:15 Swim Squad."},
+  {id:"gia_hockey", child:"gia", name:"Hockey Matches — School (Winter)", feeds:"Body", sec:"Soul", creative:false, season:"winter", where:"school", venue:"reddam",
+   when:"Thu Competitive Sports Hour", slots:[{d:3,s:14,e:15,l:"Hockey Match (Winter)"}],
+   priceTxt:"In fees", annual:0, priced:true, fit:58, loadDays:0, early:0,
+   note:"Free winter matches — watch overlap with Thu 14:45 Hip Hop L2."},
+  {id:"gia_dsd", child:"gia", name:"Dance — D'ville School of Dancing", feeds:"Body", sec:"Soul", creative:true, season:"all", where:"outside", venue:"dsd",
+   when:"Weekday afternoons (alt to RDDA)", slots:[{d:0,s:15.5,e:16.5,l:"D'ville Dance Studio"}],
+   priceTxt:"On enquiry", annual:0, priced:false, fit:82, loadDays:1, early:0,
+   note:"Outside studio alternative to RDDA — adds driving and a separate fee."}
+];
+
+const VENUES = [
+  {key:"reddam", name:"Reddam House Durbanville", kind:"school", col:"#1a6b58", lat:-33.81469, lon:18.63081, dR:{m:12,km:7.9}, dL:{m:8,km:5.6}, what:"Cricket · football · hockey · swim · RDMS · RDDA · Raconteurs"},
+  {key:"tinacowley", name:"Tina Cowley Reading Centre — Eversdal", kind:"mind", col:"#7c3aed", lat:-33.85480, lon:18.64220, dR:{m:7,km:4.2}, dL:{m:6,km:3.5}, what:"49 Steppingstones St, Eversdal · 2×/wk BOTH kids · ~8 min from Reddam"},
+  {key:"irongrip", name:"Iron Grip — BJJ (Pinehurst)", kind:"sport", col:"#2563eb", lat:-33.82667, lon:18.70270, dR:{m:16,km:15.1}, dL:{m:11,km:7.5}, what:"Jiu-jitsu ages 5–17 · 1st class free"},
+  {key:"rio", name:"Rio Grappling — Durbanville", kind:"sport", col:"#2563eb", lat:-33.86050, lon:18.68951, dR:{m:12,km:12.6}, dL:{m:7,km:5.2}, what:"BJJ alternative (approx pin)"},
+  {key:"tricore", name:"Tricore MMA — Windsor Park", kind:"sport", col:"#2563eb", lat:-33.84806, lon:18.70444, dR:{m:12,km:12.8}, dL:{m:9,km:7.1}, what:"Kids 6–12 BJJ/Kickboxing · R490/mo"},
+  {key:"otr", name:"OTR Boxing — Bellville", kind:"sport", col:"#2563eb", lat:-33.88974, lon:18.63154, dR:{m:8,km:4.5}, dL:{m:9,km:6.1}, what:"Boxing (junior on enquiry)"},
+  {key:"cityrock", name:"CityROCK — Paarden Eiland", kind:"sport", col:"#2563eb", lat:-33.91405, lon:18.47119, dR:{m:16,km:18.3}, dL:{m:21,km:23.5}, what:"Indoor climbing · R390/mo (2nd kid R330)"},
+  {key:"norval", name:"Durbanville Tennis Club (Norval)", kind:"sport", col:"#2563eb", lat:-33.82850, lon:18.64768, dR:{m:10,km:7.4}, dL:{m:5,km:3.4}, what:"Group tennis coaching · R400/mo"},
+  {key:"dcc", name:"Durbanville Cricket Club", kind:"sport", col:"#2563eb", lat:-33.83361, lon:18.66141, dR:{m:11,km:8.0}, dL:{m:5,km:3.0}, what:"Junior club cricket · R2 000/yr"},
+  {key:"dfc", name:"Durbanville FC / Durbell Rugby", kind:"sport", col:"#2563eb", lat:-33.84028, lon:18.64944, dR:{m:9,km:6.4}, dL:{m:3,km:1.8}, what:"Club football & rugby (approx pin)"},
+  {key:"sheen", name:"Sheen Academy — Century City", kind:"mind", col:"#7c3aed", lat:-33.88905, lon:18.51196, dR:{m:15,km:15.4}, dL:{m:20,km:20.6}, what:"Coding & robotics · Sat · R1 120/mo"},
+  {key:"chess", name:"African Chess Lounge — D'ville", kind:"mind", col:"#7c3aed", lat:-33.82983, lon:18.64494, dR:{m:10,km:7.1}, dL:{m:5,km:3.2}, what:"Club chess · R100/mo"},
+  {key:"scouts", name:"1st Durbanville Scout Hall", kind:"soul", col:"#be185d", lat:-33.83682, lon:18.65737, dR:{m:11,km:7.3}, dL:{m:4,km:2.3}, what:"Cubs (7–10) · Fri 17:00–18:30"},
+  {key:"dsd", name:"Durbanville Dance Centre", kind:"soul", col:"#be185d", lat:-33.84028, lon:18.64944, dR:{m:9,km:6.4}, dL:{m:3,km:1.8}, what:"D'ville School of Dancing / Dance a Licious"},
+  {key:"cadence", name:"Cadence Equestria — D'ville Hills", kind:"soul", col:"#be185d", lat:-33.82491, lon:18.56590, dR:{m:15,km:11.8}, dL:{m:13,km:10.6}, what:"Closest horse riding school (approx pin)"},
+  {key:"lane", name:"Lane Stables — Constantia", kind:"sport", col:"#2563eb", lat:-34.02833, lon:18.41556, dR:{m:34,km:34.3}, dL:{m:39,km:39.5}, what:"Riding lessons · R5 500/term"},
+  {key:"home", name:"Your Home Area — Welgemoed", kind:"home", col:"#dc2626", lat:-33.87315, lon:18.61921, dR:{m:0,km:0}, dL:{m:9,km:6.6}, what:"Suburb pin"},
+  {key:"lauren", name:"Lauren's Area — Valmary Park", kind:"home", col:"#dc2626", lat:-33.84583, lon:18.65093, dR:{m:9,km:6.6}, dL:{m:0,km:0}, what:"Suburb pin"}
+];
+
+const VENUE_OPTIONS = [
+  ["Reading (2×/wk Both)","Mind",null,"Tina Cowley — 49 Steppingstones St, Eversdal","tinacowley","~R1 400/mo each (confirm)"],
+  ["Football (Locked Win)","Body","Soul","Reddam School (Don U10)","reddam","In fees"],
+  ["Cricket (Summer)","Body","Soul","Reddam School (Don U10)","reddam","In fees"],
+  ["Swimming (Confirmed)","Body",null,"Reddam School Squad (Gia Wed)","reddam","On enquiry"],
+  ["Jiu-jitsu (BJJ)","Body","Mind","Iron Grip — Pinehurst","irongrip","On enquiry · 1st free"],
+  ["Jiu-jitsu (BJJ)","Body","Mind","Tricore kids — Windsor Park","tricore","R490/mo"],
+  ["Boxing","Body","Mind","Tricore kids — Windsor Park","tricore","R490/mo"],
+  ["Climbing","Body","Mind","CityROCK — Paarden Eiland","cityrock","R390/mo (2nd kid R330)"],
+  ["Coding & Robotics","Mind","Soul","Sheen Academy — Century City (DCJ off)","sheen","R1 120/mo"],
+  ["Music — Piano","Mind","Soul","RDMS at Reddam (in school hours)","reddam","R2 325/term"],
+  ["Music — Drums","Soul","Body","RDMS at Reddam (in school hours)","reddam","R2 325/term"],
+  ["Drama","Soul","Mind","Redd Raconteurs — Reddam","reddam","R2 125/term"],
+  ["Dance","Body","Soul","RDDA Hip Hop L2 — Reddam","reddam","R1 480/term"],
+  ["Dance","Body","Soul","Durbanville School of Dancing","dsd","On enquiry"],
+  ["Cubs (7–10)","Soul","Body","1st Durbanville Scouts","scouts","On enquiry"],
+  ["Horse Riding","Body","Soul","Cadence Equestria — Durbanville Hills","cadence","On enquiry"],
+  ["Tennis","Body","Mind","Reddam / Durbanville Tennis Club","norval","In fees / R400/mo"],
+  ["Chess","Mind",null,"Reddam / African Chess Lounge","chess","In fees / R100/mo"]
+];
+
+const TODOS = [
+  {id:"t1", when:"By Fri 27 Nov", badge:"bad", title:"Order Grade 4 & Grade 2 books + stationery (R5 790.54)", why:"Caxton free-shipping coupon expires in 2 days!"},
+  {id:"t2", when:"This week", badge:"warn", title:"Confirm Gianna's 2027 Swim Squad — Wednesday only", why:"Confirm Wed-only slot + ask school office how 13:30 early class release works."},
+  {id:"t3", when:"This week", badge:"warn", title:"Submit Reddam Gr 4–7 & Gr 2 activity forms", why:"Donatello: Cricket (summer) + Football (winter) + Drums. Gianna: Hip Hop L2 + Piano + Drama. Ask Katelynn Langdon for 2027 sport levies."},
+  {id:"t4", when:"This week", badge:"warn", title:"Email Rene Theunissen (Tina Cowley Eversdal) — 2027 2×/wk slots & rate", why:"Lock joint afternoon slots for both kids, confirm the 2027 2×/wk fee (Nov jumped to R1 400), and request quarterly wpm/reading-age checks."},
+  {id:"t5", when:"Before 13 Jan", badge:"ok", title:"Finalize Panashe Mbiva agreement (with 30-min sport-day homework clause)", why:"Signed contract (07:30–15:00; 14:00–14:30 homework on sport days), HURU/SAPS check, SACE number, school induction."},
+  {id:"t6", when:"Before 13 Jan", badge:"ok", title:"Book 1 free trial at Iron Grip BJJ (Don) + enquire Cadence Riding (Gia)", why:"Test energy levels and get real quotes before committing to any extra weekday/weekend activity."},
+  {id:"t7", when:"11–31 Jan 2027", badge:"neutral", title:"Donatello blazer fitting (15% discount: R993.65)", why:"Check pre-loved shop first; 15% discount closes 31 Jan."},
+  {id:"t8", when:"Fri 26 Mar 2027", badge:"bad", title:"Hard Term 1 Reading & Facilitator Review Gate", why:"Panashe written review 19 Mar + Tina Cowley Q1 reading check → decides T2–T4 and Curro/Tate contingency."}
+];
+
+const PRESETS = {
+  recommended: [
+    "don_tc","don_cricket","don_football","don_drums","don_sheen",
+    "gia_sh","gia_swim","gia_tc","gia_hiphop","gia_drama","gia_piano"
+  ],
+  plusbjj: [
+    "don_tc","don_cricket","don_football","don_drums","don_sheen","don_bjj",
+    "gia_sh","gia_swim","gia_tc","gia_hiphop","gia_drama","gia_piano","gia_riding"
+  ],
+  allwishes: [
+    "don_tc","don_cricket","don_football","don_tennis","don_chess","don_drums","don_bjj","don_climbing","don_boxing","don_sheen","don_cubs","don_rugby",
+    "gia_sh","gia_swim","gia_tc","gia_hiphop","gia_drama","gia_piano","gia_singing","gia_netball","gia_hockey","gia_sheen","gia_dsd"
+  ]
+};
+
+let state = {
+  selected: new Set(PRESETS.recommended),
+  season: "summer",
+  tcMode: "separate",
+  driver: "ricardo",
+  filter: "all",
+  tab: "evaluate",
+  preset: "recommended",
+  showAll: false,
+  todosDone: new Set()
+};
+
+const fmtR = n => "R" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
+const getVenue = k => VENUES.find(v => v.key === k) || VENUES[0];
+const driveTxt = (k, who) => { const v = getVenue(k), d = who==="lauren"?v.dL:v.dR; return `${d.m}m · ${d.km.toFixed(1).replace(".",",")}km`; };
+const activeForSeason = (a, season) => a.season === "all" || a.season === season;
+function getSlots(a, season) {
+  if (a.slotsSepSum) {
+    if (state.tcMode === "double") return season === "winter" ? a.slotsDblWin : a.slotsDblSum;
+    return season === "winter" ? a.slotsSepWin : a.slotsSepSum;
+  }
+  return (season === "winter" && a.slotsWinter) ? a.slotsWinter : a.slots;
+}
+
+function detectClashes(child, season) {
+  const acts = ACTIVITIES.filter(a => a.child === child && state.selected.has(a.id) && activeForSeason(a, season));
+  const clashes = [], slotMap = [];
+  acts.forEach(a => getSlots(a, season).forEach(sl => slotMap.push({...sl, id:a.id, name:a.name, where:a.where})));
+  for (let i=0;i<slotMap.length;i++) for (let j=i+1;j<slotMap.length;j++){
+    const A = slotMap[i], B = slotMap[j];
+    if (A.d === B.d && A.s < B.e && B.s < A.e) {
+      clashes.push({day:A.d, ids:[A.id, B.id], msg:`${["Mon","Tue","Wed","Thu","Fri","Sat"][A.d]}: ${A.l} overlaps ${B.l}`});
+    }
+  }
+  return clashes;
+}
+
+function childMetrics(child, season) {
+  const allSel = ACTIVITIES.filter(a => a.child === child && state.selected.has(a.id));
+  const seasSel = allSel.filter(a => activeForSeason(a, season));
+  const pri = {Body:0, Mind:0, Soul:0}, sec = {Body:0, Mind:0, Soul:0};
+  let creativeCount = 0;
+  seasSel.forEach(a => {
+    pri[a.feeds]++;
+    if (a.sec) sec[a.sec]++;
+    if (a.creative) creativeCount++;
+  });
+  const totP = k => pri[k] + sec[k];
+  // Compute unique weekday after-school days busy (Mon-Fri, slots starting >= 13:00 excluding fixed Sports Hour 13-14)
+  const busyWeekdays = new Set();
+  const dayCounts = [0,0,0,0,0,0];
+  seasSel.forEach(a => {
+    if (a.id === "gia_sh") return; // inside school day
+    getSlots(a, season).forEach(sl => {
+      if (sl.d < 5 && sl.s >= 13) { busyWeekdays.add(sl.d); dayCounts[sl.d]++; }
+      if (sl.d === 5) dayCounts[5]++;
+    });
+  });
+  const weekdayDays = busyWeekdays.size;
+  const doubledDays = dayCounts.slice(0,5).filter(x => x >= 2).length;
+  const weekendCount = dayCounts[5];
+  const earlyStarts = seasSel.reduce((s,a) => s + (a.early || 0), 0);
+  const annualConfirmed = allSel.filter(a => a.priced).reduce((s,a) => s + a.annual, 0);
+  const annualEst = allSel.filter(a => a.est).reduce((s,a) => s + a.annual, 0);
+  const unpriced = allSel.filter(a => !a.priced && !a.est).length;
+  const hasTier1 = child === "don" ? seasSel.some(a => a.tier1) : true;
+  const clashes = detectClashes(child, season);
+
+  let status = "ok", label = "Balanced";
+  if (clashes.length > 0 || !hasTier1 || doubledDays >= 3 || (weekdayDays >= 5 && weekendCount >= 2)) {
+    status = "bad"; label = !hasTier1 ? "No Tier 1!" : (clashes.length ? `${clashes.length} Clash${clashes.length>1?"es":""}` : "Overloaded");
+  } else if (doubledDays >= 2 || weekdayDays >= 5 || totP("Body")===0 || totP("Mind")===0 || totP("Soul")===0 || earlyStarts > 0) {
+    status = "warn"; label = (totP("Body")===0||totP("Mind")===0||totP("Soul")===0) ? "Pillar Gap" : (weekdayDays===5 && doubledDays===0 ? "Full 5d (0 free)" : "Busy Week");
+  }
+  return {allSel, seasSel, pri, sec, totP, creativeCount, weekdayDays, doubledDays, weekendCount, earlyStarts, annualConfirmed, annualEst, unpriced, hasTier1, clashes, status, label};
+}
+
+function renderHUD() {
+  const dm = childMetrics("don", state.season);
+  const gm = childMetrics("gia", state.season);
+  const extrasY = dm.annualConfirmed + gm.annualConfirmed;
+  const tcEstY = dm.annualEst + gm.annualEst; // ~R33 600
+  const fixedReddamY = 244886;
+  const fixedPanasheY = 110000;
+  const allInY = fixedReddamY + fixedPanasheY + tcEstY + extrasY;
+  const totalClashes = dm.clashes.length + gm.clashes.length;
+
+  const outTrips = new Set();
+  [...dm.seasSel, ...gm.seasSel].filter(a => a.where === "outside").forEach(a => {
+    getSlots(a, state.season).forEach(sl => outTrips.add(a.venue + "_" + sl.d));
+  });
+  let driveMin = 0;
+  outTrips.forEach(tag => {
+    const v = getVenue(tag.split("_")[0]);
+    driveMin += (state.driver === "lauren" ? v.dL.m : v.dR.m) * 2;
+  });
+
+  document.getElementById("hud").innerHTML = `
+    <div class="hud-card">
+      <div class="hud-lbl"><span>Donatello (${state.season})</span><span class="pill ${dm.status}">${dm.label}</span></div>
+      <div class="hud-val">${dm.weekdayDays}/5 wkdy · ${dm.weekendCount} wknd</div>
+      <div class="hud-sub">${dm.doubledDays} doubled day${dm.doubledDays===1?"":"s"} · 🎨 ${dm.creativeCount} creative</div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-lbl"><span>Gianna (${state.season})</span><span class="pill ${gm.status}">${gm.label}</span></div>
+      <div class="hud-val">${gm.weekdayDays}/5 wkdy · ${gm.weekendCount} wknd</div>
+      <div class="hud-sub">${gm.doubledDays} doubled day${gm.doubledDays===1?"":"s"} · 🎨 ${gm.creativeCount} creative</div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-lbl"><span>Schedule Clashes</span><span class="pill ${totalClashes?"bad":"ok"}">${totalClashes?"Fix Needed":"Clean"}</span></div>
+      <div class="hud-val">${totalClashes} active</div>
+      <div class="hud-sub">Panashe 30m hw resolved ✅</div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-lbl"><span>Activities + TC</span><span class="pill neutral">${dm.unpriced+gm.unpriced} TBC</span></div>
+      <div class="hud-val">${fmtR(extrasY + tcEstY)}<span style="font-size:12px;font-weight:600;color:var(--muted)">/yr</span></div>
+      <div class="hud-sub">All-in 2027: ~${fmtR(allInY/12)}/mo (OT/Speech off)</div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-lbl"><span>Outside Driving</span><span class="pill ${driveMin>95?"warn":"ok"}">${outTrips.size} trips/wk</span></div>
+      <div class="hud-val">${driveMin} min<span style="font-size:12px;font-weight:600;color:var(--muted)">/wk</span></div>
+      <div class="hud-sub">Shared TC trips · ${state.driver==="lauren"?"Valmary":"Welgemoed"}</div>
+    </div>
+  `;
+}
+
+function renderChildPanel(child) {
+  const m = childMetrics(child, state.season);
+  const clashIds = new Set(m.clashes.flatMap(c => c.ids));
+  document.getElementById(`${child}-status-pill`).innerHTML = `<span class="pill ${m.status}">${m.label}</span>`;
+
+  document.getElementById(`${child}-mbs`).innerHTML = ["Body","Mind","Soul"].map(k => {
+    const t = m.totP(k);
+    return `<div class="mbs-box ${t===0?"zero":k.toLowerCase()}">
+      <div class="mbs-n">${t}</div>
+      <div class="mbs-l">${k}</div>
+      <div class="mbs-s">${m.pri[k]} pri · +${m.sec[k]} sec</div>
+    </div>`;
+  }).join("") + `<div class="mbs-box ${m.creativeCount?"creat":"zero"}">
+    <div class="mbs-n">${m.creativeCount}</div>
+    <div class="mbs-l">Creative</div>
+    <div class="mbs-s">${m.creativeCount?"Covered ✅":"None"}</div>
+  </div>`;
+
+  const pct = Math.min(100, Math.round((m.weekdayDays / 5) * 100));
+  const barCls = m.doubledDays >= 3 || m.clashes.length ? "bad" : (m.weekdayDays >= 5 || m.doubledDays >= 2 ? "warn" : "ok");
+  document.getElementById(`${child}-load-txt`).textContent = `${m.weekdayDays} of 5 weekdays (${5-m.weekdayDays} free) · ${m.doubledDays} doubled · ${m.weekendCount} wknd`;
+  const bar = document.getElementById(`${child}-load-bar`);
+  bar.style.width = `${Math.max(10, pct)}%`;
+  bar.className = `meter-fill ${barCls}`;
+
+  const alerts = [];
+  if (!m.hasTier1) alerts.push(`<div class="callout bad"><strong>Missing Compulsory Tier 1!</strong> Reddam Grade 4 requires ≥1 Tier 1 sport/activity each term.</div>`);
+  m.clashes.forEach(c => alerts.push(`<div class="callout bad"><strong>Clash:</strong> ${c.msg}</div>`));
+  if (child === "don" && m.weekdayDays === 5 && m.doubledDays === 0) {
+    alerts.push(`<div class="callout warn"><strong>5/5 Weekdays Touched (Zero Open Weekday):</strong> 3 sport days + 2 Tina Cowley days fills Mon–Fri. Click <strong>"📖 TC: 1 Sport Day 16:00"</strong> above to see how doubling once unlocks a full free weekday!</div>`);
+  }
+  if (m.doubledDays >= 2) {
+    alerts.push(`<div class="callout warn"><strong>${m.doubledDays} Doubled Afternoons:</strong> Two after-school activities on the same afternoon. Watch energy and dinner/bedtime rhythm.</div>`);
+  }
+  document.getElementById(`${child}-alerts`).innerHTML = alerts.join("");
+
+  const items = ACTIVITIES.filter(a => a.child === child).filter(a => {
+    if (state.filter === "selected") return state.selected.has(a.id);
+    if (["Body","Mind","Soul"].includes(state.filter)) return a.feeds === state.filter || a.sec === state.filter;
+    if (state.filter === "creative") return a.creative;
+    return true;
+  });
+
+  document.getElementById(`${child}-list`).innerHTML = items.map(a => {
+    const sel = state.selected.has(a.id);
+    const inSeason = activeForSeason(a, state.season);
+    const isClash = sel && inSeason && clashIds.has(a.id);
+    const fitCls = a.fit >= 80 ? "fit-hi" : (a.fit >= 60 ? "fit-mid" : "fit-lo");
+    const seasTag = a.season === "all" ? "All year" : (a.season === "summer" ? "☀ Summer" : "❄ Winter");
+    const locTag = a.where === "school" ? "At School" : `Outside (${driveTxt(a.venue, state.driver)})`;
+    return `
+      <label class="act-row ${sel?"selected":""} ${a.fixed?"fixed":""} ${isClash?"clash-row":""}" style="${!inSeason?"opacity:.52":""}">
+        <input type="checkbox" data-id="${a.id}" ${sel?"checked":""} ${a.fixed?"disabled":""}>
+        <div>
+          <div class="act-title">
+            <span>${a.name}</span>
+            <span class="pill ${a.feeds.toLowerCase()}">${a.feeds}</span>
+            ${a.sec ? `<span class="pill ${a.sec.toLowerCase()} sec">+ ${a.sec}</span>` : ""}
+            ${a.creative ? `<span class="pill ok">🎨</span>` : ""}
+            <span class="pill neutral">${seasTag}</span>
+            ${isClash ? `<span class="pill bad">Clash</span>` : ""}
+          </div>
+          <div class="act-meta">
+            <span>📍 ${locTag}</span>
+            <span>🕒 ${a.when}</span>
+          </div>
+          <div class="act-note">${a.note}</div>
+        </div>
+        <div class="act-right">
+          <div class="act-price">${a.annual > 0 ? (a.est?"~":"") + fmtR(a.annual)+"/yr" : a.priceTxt}</div>
+          <div style="font-size:11px;color:var(--muted)">${a.annual > 0 ? a.priceTxt : (a.priced?"In fees":"Unpriced")}</div>
+          <span class="fit-badge ${fitCls}">Fit ${a.fit}</span>
+        </div>
+      </label>
+    `;
+  }).join("");
+}
+
+function renderVerdictBanner() {
+  const dm = childMetrics("don", state.season);
+  const gm = childMetrics("gia", state.season);
+  const cl = dm.clashes.length + gm.clashes.length;
+  const el = document.getElementById("live-verdict-banner");
+  if (cl === 0 && dm.totP("Body") && dm.totP("Mind") && dm.totP("Soul") && gm.totP("Body") && gm.totP("Mind") && gm.totP("Soul") && dm.creativeCount && gm.creativeCount && dm.doubledDays <= 1 && gm.doubledDays <= 1) {
+    el.innerHTML = `<div class="callout ok"><strong>✅ Strong ${state.season.toUpperCase()} Plan:</strong> Both kids cover <strong>Body, Mind, Soul &amp; Creativity</strong> with <strong>0 clashes</strong>, Tina Cowley 2×/wk shared trips built in, and Sunday 100% open. ${dm.weekdayDays===5?"Tip: try <strong>TC: 1 Sport Day 16:00</strong> to give Donatello a completely open weekday afternoon.":"Both kids also keep at least 1 completely free weekday afternoon!"}</div>`;
+  } else {
+    el.innerHTML = `<div class="callout warn"><strong>⚠ Load / Clash Check (${state.season.toUpperCase()}):</strong> Donatello (${dm.label}: ${dm.weekdayDays}/5 wkdy, ${dm.doubledDays} doubled) · Gianna (${gm.label}: ${gm.weekdayDays}/5 wkdy, ${gm.doubledDays} doubled) · ${cl} clash(es). Switch Tina Cowley mode or toggle activities below to test the sweet spot.</div>`;
+  }
+}
+
+function renderTimetable() {
+  const sLbl = state.season === "summer" ? "Summer (Terms 1 & 4)" : "Winter (Terms 2 & 3)";
+  document.getElementById("tt-season-label").textContent = sLbl;
+  document.querySelectorAll(".tt-s-lbl").forEach(e => e.textContent = state.season === "summer" ? "Summer" : "Winter");
+  const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const dm = childMetrics("don", state.season), gm = childMetrics("gia", state.season);
+  const allClashes = [...dm.clashes.map(c=>"Donatello — "+c.msg), ...gm.clashes.map(c=>"Gianna — "+c.msg)];
+  document.getElementById("clash-summary-box").innerHTML = allClashes.length
+    ? `<div class="callout bad"><strong>${allClashes.length} Active Clash${allClashes.length>1?"es":""}:</strong> ${allClashes.join(" · ")}</div>`
+    : `<div class="callout ok"><strong>Zero schedule clashes</strong> in ${sLbl} (Tina Cowley mode: <strong>${state.tcMode==="double"?"1 Sport Day 16:00 + 1 Free Day":"Separate Free Days"}</strong>).</div>`;
+
+  ["don","gia"].forEach(child => {
+    const m = child === "don" ? dm : gm;
+    const clashDays = new Set(m.clashes.map(c => c.day));
+    const clashIds = new Set(m.clashes.flatMap(c => c.ids));
+    const cols = days.map((dayName, dIdx) => {
+      const blocks = [];
+      const hasSchoolSportToday = child === "don" && m.seasSel.some(a => a.tier1 && getSlots(a, state.season).some(sl => sl.d === dIdx && sl.s >= 13.5));
+      if (dIdx < 5) {
+        blocks.push({t: dIdx===4?"08:00–13:15":"08:00–14:00", txt:"School" + (child==="don"&&dIdx<4?" + Barton 45m":""), cls:"fixed"});
+        if (child === "don") {
+          blocks.push({
+            t: dIdx===4 ? (hasSchoolSportToday?"13:15–13:45":"13:15–14:15") : (hasSchoolSportToday?"14:00–14:30":"14:00–15:00"),
+            txt: hasSchoolSportToday ? "Panashe Homework (30m ✅)" : "Panashe Homework (60m)",
+            cls:"support"
+          });
+        }
+      }
+      m.seasSel.forEach(a => {
+        getSlots(a, state.season).filter(sl => sl.d === dIdx).forEach(sl => {
+          const fmtT = h => `${String(Math.floor(h)).padStart(2,"0")}:${String(Math.round((h%1)*60)).padStart(2,"0")}`;
+          blocks.push({
+            t: `${fmtT(sl.s)}–${fmtT(sl.e)}`,
+            txt: sl.l + (a.where==="outside" ? ` (${driveTxt(a.venue, state.driver)})` : ""),
+            cls: a.id==="gia_sh" ? "fixed" : a.feeds.toLowerCase() + (clashIds.has(a.id) && clashDays.has(dIdx) ? " clash" : "")
+          });
+        });
+      });
+      const busy = m.seasSel.some(a => a.id!=="gia_sh" && getSlots(a, state.season).some(sl => sl.d === dIdx && sl.s >= 13));
+      const freeBox = (!busy && dIdx < 5) ? `<div class="slot-free">Completely Free Afternoon ✨</div>`
+        : (!busy && dIdx === 5 ? `<div class="slot-free">Open Saturday</div>` : "");
+      return `<div class="day-col ${clashDays.has(dIdx)?"has-clash":""}">
+        <div class="day-head"><span>${dayName}</span>${clashDays.has(dIdx)?`<span class="pill bad">Clash</span>`:""}</div>
+        ${blocks.map(b => `<div class="slot ${b.cls}"><div class="slot-time">${b.t}</div><div>${b.txt}</div></div>`).join("")}
+        ${freeBox}
+      </div>`;
+    });
+    document.getElementById(`tt-${child}`).innerHTML = cols.join("");
+  });
+}
+
+function renderDynamicGaps() {
+  const dm = childMetrics("don", state.season), gm = childMetrics("gia", state.season);
+  document.getElementById("dynamic-gap-cards").innerHTML = `
+    <div class="card"><h4>1. Dual-Pillar &amp; Creativity Check</h4>
+      <p style="font-size:13.5px;color:var(--ink-2)"><strong>Donatello:</strong> B:${dm.totP("Body")} · M:${dm.totP("Mind")} · S:${dm.totP("Soul")} · 🎨 ${dm.creativeCount} creative.<br>
+      <strong>Gianna:</strong> B:${gm.totP("Body")} · M:${gm.totP("Mind")} · S:${gm.totP("Soul")} · 🎨 ${gm.creativeCount} creative.</p>
+      <p style="font-size:12px;color:var(--muted);margin:0">Music (Piano/Drums), Drama &amp; LEGO/Coding Robotics all count toward Creativity.</p>
+    </div>
+    <div class="card"><h4>2. Weekday Breathability</h4>
+      <p style="font-size:13.5px;color:var(--ink-2)"><strong>Donatello:</strong> ${dm.weekdayDays}/5 weekdays busy (${5-dm.weekdayDays} free) · ${dm.doubledDays} doubled · ${dm.weekendCount} Sat.<br>
+      <strong>Gianna:</strong> ${gm.weekdayDays}/5 weekdays busy (${5-gm.weekdayDays} free) · ${gm.doubledDays} doubled · ${gm.weekendCount} Sat.</p>
+      <p style="font-size:12px;color:var(--muted);margin:0">Sunday stays 100% open for family recovery.</p>
+    </div>
+    <div class="card"><h4>3. Shared-Trip Wins</h4>
+      <p style="font-size:13.5px;color:var(--ink-2)">✅ <strong>Tina Cowley (2×/wk):</strong> Both kids ride together (7m Welgemoed / 6m Valmary Park).<br>
+      ${state.selected.has("don_sheen")&&state.selected.has("gia_sheen")?"✅ Sheen Sat shared!<br>":""}
+      ${state.selected.has("don_cubs")&&state.selected.has("gia_cubs")?"✅ Cubs Fri shared!<br>":""}
+      ${state.selected.has("don_climbing")&&state.selected.has("gia_climbing")?"✅ CityROCK sibling rate R330!<br>":""}
+      All Reddam activities = zero extra driving.</p>
+    </div>
+  `;
+}
+
+function renderVenuesTable() {
+  let last = "";
+  document.getElementById("venues-tbody").innerHTML = VENUE_OPTIONS.map(([act, pri, sec, label, key, price]) => {
+    const v = getVenue(key);
+    const isNew = act !== last; last = act;
+    const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${v.lat.toFixed(5)},${v.lon.toFixed(5)}`;
+    return `<tr style="${isNew?"border-top:2px solid var(--border-strong)":""}">
+      <td>${isNew?`<strong>${act}</strong>`:""}</td>
+      <td><span class="pill ${pri.toLowerCase()}">${pri}</span>${sec?` <span class="pill ${sec.toLowerCase()} sec">+${sec}</span>`:""}</td>
+      <td>${label}</td>
+      <td class="num" style="font-weight:500">${price}</td>
+      <td class="num">${v.dR.m} min <span style="font-weight:400;color:var(--muted)">(${v.dR.km.toFixed(1).replace(".",",")} km)</span></td>
+      <td class="num">${v.dL.m} min <span style="font-weight:400;color:var(--muted)">(${v.dL.km.toFixed(1).replace(".",",")} km)</span></td>
+      <td><a href="${gmaps}" target="_blank" rel="noopener">Directions →</a></td>
+    </tr>`;
+  }).join("");
+}
+
+function renderBudget() {
+  const dm = childMetrics("don", state.season), gm = childMetrics("gia", state.season);
+  const extrasY = dm.annualConfirmed + gm.annualConfirmed;
+  const tcEstY = dm.annualEst + gm.annualEst;
+  const reddamBaseY = 244886, panasheY = 110000;
+  const grandY = reddamBaseY + panasheY + tcEstY + extrasY;
+
+  document.getElementById("budget-cards").innerHTML = `
+    <div class="card"><h4>Selected Activities + Tina Cowley</h4><div style="font:700 27px/1.1 var(--serif);margin:6px 0">${fmtR(extrasY + tcEstY)}<span style="font-size:14px;color:var(--muted)">/yr</span></div><p style="font-size:13px;color:var(--ink-2);margin:0">Activities ${fmtR(extrasY)} + Tina Cowley est. ${fmtR(tcEstY)} · <strong>${dm.unpriced+gm.unpriced} TBC</strong> items outside total.</p></div>
+    <div class="card"><h4>Fixed School &amp; Panashe</h4><div style="font:700 27px/1.1 var(--serif);margin:6px 0">${fmtR(reddamBaseY + panasheY)}<span style="font-size:14px;color:var(--muted)">/yr</span></div><p style="font-size:13px;color:var(--ink-2);margin:0">Reddam 2026 baseline (${fmtR(reddamBaseY)}) + Panashe (${fmtR(110000)}). <strong>OT (-R24k) &amp; Speech removed ✅</strong>.</p></div>
+    <div class="card"><h4>All-In Projected 2027 Run Rate</h4><div style="font:700 27px/1.1 var(--serif);margin:6px 0;color:var(--accent)">${fmtR(grandY/12)}<span style="font-size:14px;color:var(--muted)">/mo</span></div><p style="font-size:13px;color:var(--ink-2);margin:0">${fmtR(grandY)}/yr combined + <strong>R6 784</strong> once-off (books R5 791 + blazer R994).</p></div>
+  `;
+
+  const rows = [
+    ["Reddam Tuition + Tech + Base Dance (2026 rate)","Both","R20 407/mo × 12",reddamBaseY,"2027 TBC"],
+    ["Panashe Mbiva — Classroom Facilitator","Donatello","R10 000/mo × 11 (Jan–Nov)",110000,"Contracted (T1 guaranteed)"],
+    ...ACTIVITIES.filter(a => state.selected.has(a.id) && a.id !== "gia_sh").map(a => [
+      a.name, a.child==="don"?"Donatello":"Gianna", a.priceTxt,
+      (a.priced || a.est) ? a.annual : null,
+      a.est ? "Est. — confirm 2027" : (a.priced ? (a.annual===0?"In fees":"Selected") : "On enquiry")
+    ])
+  ];
+
+  document.getElementById("budget-tbody").innerHTML = rows.map(([name,kid,basis,yr,st]) => `
+    <tr>
+      <td><strong>${name}</strong></td><td>${kid}</td><td style="color:var(--muted)">${basis}</td>
+      <td class="num">${yr===null?"—":(yr===0?"R0":fmtR(yr))}</td>
+      <td class="num">${yr===null?"—":(yr===0?"R0":fmtR(yr/12))}</td>
+      <td><span class="pill ${st.includes("confirm")||st.includes("enquiry")||st.includes("TBC")?"warn":"ok"}">${st}</span></td>
+    </tr>
+  `).join("") + `<tr style="background:var(--surface-2);border-top:2px solid var(--border-strong)">
+    <td colspan="3"><strong>Total Projected 2027 Annualised Run Rate (OT &amp; Speech Removed)</strong></td>
+    <td class="num"><strong>${fmtR(grandY)}</strong></td>
+    <td class="num"><strong>${fmtR(grandY/12)}</strong></td>
+    <td><span class="pill neutral">+ TBC &amp; R6 784 once-off</span></td>
+  </tr>`;
+}
+
+function renderTodos() {
+  document.getElementById("todo-list").innerHTML = TODOS.map(t => {
+    const done = state.todosDone.has(t.id);
+    return `<label class="todo-row ${done?"done":""}" style="cursor:pointer">
+      <input type="checkbox" data-todo="${t.id}" ${done?"checked":""} style="width:17px;height:17px;accent-color:var(--accent);margin-top:2px">
+      <div><span class="pill ${t.badge}">${t.when}</span></div>
+      <div><div style="font-weight:700;font-size:14px">${t.title}</div><div style="font-size:13px;color:var(--muted);margin-top:2px">${t.why}</div></div>
+    </label>`;
+  }).join("");
+}
+
+let mapObj = null;
+function initMap() {
+  if (mapObj || typeof L === "undefined") return;
+  const el = document.getElementById("map");
+  if (!el || el.offsetWidth === 0) return;
+  mapObj = L.map("map", {scrollWheelZoom:false});
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {maxZoom:18, attribution:"&copy; OpenStreetMap contributors"}).addTo(mapObj);
+  const bounds = [];
+  VENUES.forEach(v => {
+    L.circleMarker([v.lat, v.lon], {radius:8.5, color:"#fff", weight:2, fillColor:v.col, fillOpacity:1})
+      .addTo(mapObj)
+      .bindPopup(`<b>${v.name}</b><br>${v.what}<br>Welgemoed: <b>${v.dR.m} min</b> · Lauren: <b>${v.dL.m} min</b><br><a href="https://www.google.com/maps/dir/?api=1&destination=${v.lat},${v.lon}" target="_blank" rel="noopener">Directions →</a>`);
+    if (v.key !== "lane") bounds.push([v.lat, v.lon]);
+  });
+  mapObj.fitBounds(bounds, {padding:[26,26], maxZoom:12});
+}
+
+function renderAll() {
+  renderHUD();
+  renderVerdictBanner();
+  renderChildPanel("don");
+  renderChildPanel("gia");
+  renderTimetable();
+  renderDynamicGaps();
+  renderBudget();
+  renderTodos();
+  if (state.tab === "maptab" || state.showAll) setTimeout(() => { initMap(); if (mapObj) mapObj.invalidateSize(); }, 60);
+}
+
+document.addEventListener("change", e => {
+  if (e.target.matches("input[data-id]")) {
+    const id = e.target.dataset.id;
+    if (e.target.checked) state.selected.add(id); else state.selected.delete(id);
+    document.querySelectorAll("[data-preset]").forEach(b => b.classList.remove("active"));
+    renderAll();
+  }
+  if (e.target.matches("input[data-todo]")) {
+    const id = e.target.dataset.todo;
+    if (e.target.checked) state.todosDone.add(id); else state.todosDone.delete(id);
+    renderTodos();
+  }
+});
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab"); if (!b) return;
+  state.showAll = false;
+  document.getElementById("main-wrap").classList.remove("show-all");
+  document.getElementById("btn-all").classList.remove("active");
+  state.tab = b.dataset.tab;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t === b));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "tab-" + state.tab));
+  if (state.tab === "maptab") setTimeout(() => { initMap(); if (mapObj) mapObj.invalidateSize(); }, 60);
+});
+document.getElementById("season-seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.season = b.dataset.season;
+  document.querySelectorAll("#season-seg button").forEach(x => x.classList.toggle("active", x === b));
+  renderAll();
+});
+document.getElementById("tc-seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.tcMode = b.dataset.tc;
+  document.querySelectorAll("#tc-seg button").forEach(x => x.classList.toggle("active", x === b));
+  renderAll();
+});
+document.getElementById("driver-seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.driver = b.dataset.driver;
+  document.querySelectorAll("#driver-seg button").forEach(x => x.classList.toggle("active", x === b));
+  renderAll();
+});
+document.querySelectorAll("[data-preset]").forEach(b => b.addEventListener("click", () => {
+  const p = b.dataset.preset;
+  state.selected = new Set(PRESETS[p]);
+  if (p === "plusbjj") {
+    state.tcMode = "double";
+    document.querySelectorAll("#tc-seg button").forEach(x => x.classList.toggle("active", x.dataset.tc === "double"));
+  }
+  document.querySelectorAll("[data-preset]").forEach(x => x.classList.toggle("active", x === b));
+  renderAll();
+}));
+document.getElementById("filter-bar").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.filter = b.dataset.filter;
+  document.querySelectorAll("#filter-bar button").forEach(x => x.classList.toggle("active", x === b));
+  renderChildPanel("don"); renderChildPanel("gia");
+});
+document.getElementById("btn-theme").addEventListener("click", () => {
+  document.documentElement.setAttribute("data-theme", document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark");
+});
+document.getElementById("btn-all").addEventListener("click", e => {
+  state.showAll = !state.showAll;
+  document.getElementById("main-wrap").classList.toggle("show-all", state.showAll);
+  e.currentTarget.classList.toggle("active", state.showAll);
+  if (state.showAll) setTimeout(() => { initMap(); if (mapObj) mapObj.invalidateSize(); }, 80);
+});
+document.getElementById("btn-copy").addEventListener("click", () => {
+  const don = ACTIVITIES.filter(a => a.child==="don" && state.selected.has(a.id));
+  const gia = ACTIVITIES.filter(a => a.child==="gia" && state.selected.has(a.id));
+  const tot = [...don,...gia].reduce((s,a)=>s+(a.priced||a.est?a.annual:0),0);
+  const txt = [
+    "2027 KIDS PLAN SUMMARY (Updated 25 Nov 2026)",
+    "============================================",
+    "Support: Panashe 30m homework on sport days · No OT/Speech · Tina Cowley 2×/wk both kids",
+    "",
+    "DONATELLO (Grade 4, Reddam):",
+    ...don.map(a => `• ${a.name} [${a.feeds}${a.sec?"+"+a.sec:""} · ${a.season}] — ${a.when} (${a.annual?fmtR(a.annual)+"/yr":a.priceTxt})`),
+    "",
+    "GIANNA (Grade 2, Reddam):",
+    ...gia.map(a => `• ${a.name} [${a.feeds}${a.sec?"+"+a.sec:""} · ${a.season}] — ${a.when} (${a.annual?fmtR(a.annual)+"/yr":a.priceTxt})`),
+    "",
+    `Total activities + Tina Cowley est.: ${fmtR(tot)}/yr (${fmtR(tot/12)}/mo)`
+  ].join("\n");
+  navigator.clipboard?.writeText(txt);
+  const t = document.getElementById("toast"); t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200);
+});
+
+renderVenuesTable();
+renderAll();
+</script>
+</body>
+</html>
