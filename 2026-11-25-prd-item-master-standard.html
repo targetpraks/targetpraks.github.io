@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>The Item Master Standard — SKUs, variants and price lists (PRD)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="the-item-master-standard--skus-variants-and-price-lists">The Item Master Standard — SKUs, Variants and Price Lists</h1>
+<p><strong>Every tradeable item carries its brand's prefix, its category code, and the same words it always had — and every price list can be read as a real subset of the catalogue.</strong></p>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td>Status</td>
+<td>Implemented 2026-11-25 on org <code>716443079</code> — §6 lists each pass and its verification</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>2026-11-25</td>
+</tr>
+<tr>
+<td>Organisation</td>
+<td>Infinity Brands — Zoho Inventory org <code>716443079</code></td>
+</tr>
+<tr>
+<td>Owner</td>
+<td>Ricardo Maio</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>Adrianna A (AI stack)</td>
+</tr>
+<tr>
+<td>Supersedes</td>
+<td><code>docs/sku-prefix-standard.md</code> as the <em>statement of intent</em>; that file remains the working reference and evidence log</td>
+</tr>
+<tr>
+<td>Out of scope by instruction</td>
+<td>Anything outside Zoho Inventory — the storefront, Creator, Flow and external apps are untouched</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="1-what-you-asked-for-and-where-each-piece-landed">1. What you asked for, and where each piece landed</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Your words</th>
+<th>What exists now</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"make sure each price list has a subset of items, based on the stationery and the clothing"</td>
+<td>Four per-item price lists, one per brand, each carrying 11 stationery/clothing items — a real subset, not a multiplier</td>
+</tr>
+<tr>
+<td>"Desk pads, Pens, A gazebo, Men's and women's shirts of different sizes"</td>
+<td>44 catalogue items: desk pad, single-unit pen, 3m gazebo, mens and ladies golf shirts in S/M/L/XL, per brand</td>
+</tr>
+<tr>
+<td>"use the prefix based on the brand"</td>
+<td><code>INF-</code>, <code>EXP-</code>, <code>TLF-</code>, <code>PPP-</code> — and after the clean-up, all 705 EXP SKUs follow <code>EXP-CATEGORY-ITEM-VARIANT</code></td>
+</tr>
+<tr>
+<td>"put fake pricing inside, realistic, in alignment to ACDC Express"</td>
+<td>Prices derived from live ACDC masters: desk mat R170.00, pen R150.00 per box of ten, gazebo R8 281.00, golf shirts R346.80 / R329.90</td>
+</tr>
+<tr>
+<td>"remove any 2xl versions"</td>
+<td>8 items retired; catalogue is S–XL only</td>
+</tr>
+<tr>
+<td>"change box qty to individual numbers"</td>
+<td>Pen sells as one unit: R15.00 base, R18.00 list, unit <code>pcs</code></td>
+</tr>
+<tr>
+<td>"3p needs to change to PPP"</td>
+<td>11 SKUs renamed on the same item ids; <code>3p-</code> no longer exists anywhere</td>
+</tr>
+<tr>
+<td>"clean up the sku better in naming… keep a was and now format"</td>
+<td>618 of 640 EXP SKUs standardised, every word preserved, was/now page published</td>
+</tr>
+<tr>
+<td>"sort out those 42 non-conforming… they could be duplicates… you would have to merge them"</td>
+<td>26 duplicates merged and retired, 9 SKUs assigned, 5 service lines handled — <strong>0 non-conforming</strong></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="2-the-problem">2. The problem</h2>
+<p>The item master had grown by import. It worked well enough to sell from, but it could not be reported on or trusted:</p>
+<ol type="1">
+<li><strong>The SKU said nothing reliable.</strong> 101 of 748 tracked items failed the prefix rule: 60 on an unregistered <code>FRA-</code>, 14 on <code>CON-</code>, 8 on <code>MEN-</code>, one on <code>SUN-</code>, 16 with no prefix and 14 with no SKU at all. Two brands in the group had no items.</li>
+<li><strong>Category was invisible in the code.</strong> A SKU like <code>EXP-PEN-B</code> did not say whether the item was stationery or promotional, so nobody could slice the catalogue from the code alone.</li>
+<li><strong>Duplicates existed in parallel.</strong> 26 golf shirts and hoodies existed twice — an older <code>AC/DC Express …</code> group at a 2% markup and a newer <code>Express …</code> group at 12% — and 9 of those pairs were <em>both</em> live on the storefront.</li>
+<li><strong>Price lists were empty or opaque.</strong> The brand lists were percentage multipliers and stored no items at all; on the surface that reads as "no catalogue".</li>
+<li><strong>Zero-rate noise.</strong> Ten active items carried no rate — which turned out to be charge lines, not products (§7.4).</li>
+</ol>
+<hr />
+<h2 id="3-goals-and-non-goals">3. Goals and non-goals</h2>
+<p><strong>Goals</strong></p>
+<ol type="1">
+<li>Every item you can trade today carries a SKU that states brand, category and variant, and no two items share a SKU.</li>
+<li>Every rename is reversible and leaves the item's history intact — same item id, rate, stock and documents.</li>
+<li>Each brand's price list can be read as a catalogue: a named subset of items with a price each.</li>
+<li>Nothing is deleted. Retiring is a status change; every record keeps its history.</li>
+</ol>
+<p><strong>Non-goals</strong></p>
+<ul>
+<li>No storefront work, no Creator, no Flow, no external app.</li>
+<li>No renaming of SKUs on retired items — a SKU is immutable once documents reference it.</li>
+<li>No change to the 20% brand markup rule.</li>
+</ul>
+<hr />
+<h2 id="4-the-standard">4. The standard</h2>
+<pre><code>&lt;BRAND&gt;-&lt;CATEGORY&gt;-&lt;ITEM&gt;[-&lt;VARIANT&gt;]
+EXP-UNI-MSHIRT-S
+INF-STA-DESKPAD-A3
+PPP-PRO-GAZEBO-3X3
+TIE-INS-NSHIRT-L-5XL</code></pre>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Brand</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>INF-</code></td>
+<td>Infinity Brands</td>
+</tr>
+<tr>
+<td><code>EXP-</code></td>
+<td>ACDC Express</td>
+</tr>
+<tr>
+<td><code>TLF-</code></td>
+<td>The Local Farmer</td>
+</tr>
+<tr>
+<td><code>PPP-</code></td>
+<td>Papa Pasta</td>
+</tr>
+<tr>
+<td><code>TIE-</code></td>
+<td>Titan Electrical</td>
+</tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Category</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>STA</code></td>
+<td>Stationery</td>
+</tr>
+<tr>
+<td><code>UNI</code></td>
+<td>Uniform / clothing</td>
+</tr>
+<tr>
+<td><code>PRO</code></td>
+<td>Promotional</td>
+</tr>
+<tr>
+<td><code>GIF</code></td>
+<td>Gifts</td>
+</tr>
+<tr>
+<td><code>INS</code></td>
+<td>In-store</td>
+</tr>
+<tr>
+<td><code>ONL</code></td>
+<td>Online Marketing</td>
+</tr>
+<tr>
+<td><code>OFF</code></td>
+<td>Office / consumables</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Rules, in priority order</strong></p>
+<ol type="1">
+<li><strong>Words are never rewritten.</strong> A rename may change case, separators and the prefix, and may insert a code. It may not abbreviate, merge, split or invent a token — verified mechanically: strip <code>EXP-</code> and the inserted code from all 618 full-pass renames and the token list matched the old SKU exactly (0 differences).</li>
+<li><strong>One brand per item.</strong> Prefix and the item's brand field must agree.</li>
+<li><strong>A variant is an item.</strong> Zoho Inventory models size and colour as an <em>item group</em> with up to three attributes; each combination is a full item with its own SKU, rate and stock. The SKU therefore lives on the variant, never on the group (<code>EXP-UNI-MSHIRT-S</code>, not "Mens Golf Shirt").</li>
+<li><strong>Retired items keep their SKU.</strong> The rule applies to items you can still trade: tracked, active, stock. <code>scripts/check_sku_prefix.py</code> enforces exactly that scope.</li>
+<li><strong>Services carry no brand prefix.</strong> Charge lines (<code>Delivery Fee</code>, <code>SALES: SIMPLEPAY</code>, cost recoveries) are not stock and are excluded.</li>
+</ol>
+<hr />
+<h2 id="5-where-the-catalogue-and-price-lists-landed">5. Where the catalogue and price lists landed</h2>
+<p><strong>44 catalogue items</strong>, 11 per brand, all <code>active</code>, all <code>sales_and_purchases</code> with stock tracking off:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Base (ACDC anchor)</th>
+<th>Purchase</th>
+<th>List (+20%, whole rand)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Desk Pad - A3</td>
+<td>170.00</td>
+<td>126.49</td>
+<td>204</td>
+</tr>
+<tr>
+<td>Ballpoint Pen - Black, single unit</td>
+<td>15.00</td>
+<td>12.00</td>
+<td>18</td>
+</tr>
+<tr>
+<td>Gazebo - 3m x 3m</td>
+<td>8 281.00</td>
+<td>6 625.00</td>
+<td>9 937</td>
+</tr>
+<tr>
+<td>Mens Golf Shirt S/M/L/XL</td>
+<td>346.80</td>
+<td>289.00</td>
+<td>416</td>
+</tr>
+<tr>
+<td>Ladies Golf Shirt S/M/L/XL</td>
+<td>329.90</td>
+<td>274.92</td>
+<td>396</td>
+</tr>
+</tbody>
+</table></div>
+<p>Other brands are the same table at a factor: The Local Farmer 0.95, Papa Pasta 1.05, Infinity Brands 1.00. The pen's rate is the live box-of-ten price divided by ten.</p>
+<p><strong>Price lists.</strong> Four per-item lists — <code>&lt;Brand&gt; — Stationery &amp; Clothing</code>, 11 items each, every price verified at <code>base × 1.20</code> in whole rand. The four brand retail lists stay <code>fixed_percentage</code> at 20% and were never touched.</p>
+<hr />
+<h2 id="6-what-was-built-in-order-and-how-each-step-was-verified">6. What was built, in order, and how each step was verified</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Pass</th>
+<th>What</th>
+<th>Result</th>
+<th>Verified by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Catalogue + per-item lists</td>
+<td>52 items, 4 lists</td>
+<td>52/52 list prices at base × 1.20</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Character defects on EXP SKUs</td>
+<td>13 renamed</td>
+<td>read-back: status, rate, stock unchanged each</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Revisions: 2XL out, pen per unit, PPP-</td>
+<td>8 retired, 8 renamed</td>
+<td>44/44 prices, ids unchanged</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Full EXP standardisation</td>
+<td><strong>618 renamed</strong>, 22 already standard, 0 collisions</td>
+<td>618/618 landed, 0 drift, 0 duplicate SKUs</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Non-EXP prefixes</td>
+<td>57 renamed (99 → 42 non-conforming)</td>
+<td>57/57 landed, 0 drift</td>
+</tr>
+<tr>
+<td>5</td>
+<td>The last 42, by decision tree</td>
+<td>26 merged, 9 SKUs assigned, 5 services</td>
+<td>0 of 497 in-scope non-conforming</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Brand field on the 13 branded items missing it</td>
+<td>13/13</td>
+<td>EXP items without brand: 0</td>
+</tr>
+</tbody>
+</table></div>
+<p>Current state, read live: <strong>839 items · 745 tracked · 497 tracked and active in scope · 0 non-conforming · 705 EXP SKUs · 0 duplicate SKUs · <code>verify_pricing_standard.py</code> 48/48 passing.</strong></p>
+<p><strong>How the writes were done, and why it matters.</strong> Every rename is a single <code>PUT</code> carrying only the <code>sku</code> field (plus <code>category_id</code> on the 18 items that had no category at all). Measured first: a <code>sku</code>-only PUT leaves name, rate, purchase rate, category, unit, status, stock and tax flags untouched. Every run snapshots the org before the first write and compares the whole org after the last one.</p>
+<p><strong>Zoho rate-limits the whole organisation</strong> at roughly 100 requests a minute (<code>429 code 43</code>); a 618-PUT burst tripped it and cost about half an hour. The writer now paces at 0.5 requests/second with backoff and resumes idempotently from wherever it stopped.</p>
+<hr />
+<h2 id="7-decisions-and-the-evidence-behind-them">7. Decisions, and the evidence behind them</h2>
+<h3 id="71-a-price-list-can-only-hold-a-subset-if-it-is-per_item">7.1 A price list can only hold a subset if it is <code>per_item</code></h3>
+<p>Measured on throwaway lists (<code>scripts/probe_pricebook_subset.py</code>): a <code>fixed_percentage</code> list <strong>ignores</strong> the items you send it — it stored none and still priced items that were never added (45.00 → 54.00). A <code>per_item</code> list stores each item with its own <code>pricebook_rate</code>, and returns an empty rate for items not on it. A per-item list also requires <code>currency_id</code>, rejects a missing <code>rounding_type</code> (yet stores <code>no_rounding</code>), and refuses inactive items (<code>400 code 2006</code>).</p>
+<h3 id="72-the-brand-retail-lists-stay-multipliers">7.2 The brand retail lists stay multipliers</h3>
+<p>Converting them to per-item would strip the 20% from every item not explicitly listed — roughly 780 items. The subset requirement is met with separate per-item lists instead.</p>
+<h3 id="73-merge-means-keep-one-and-retire-the-other">7.3 "Merge" means keep one and retire the other</h3>
+<p>Zoho Inventory has no item-record merge: no API call and no UI action folds two items into one. The merge done here keeps the canonical <code>EXP-UNI</code> record, carries across anything only the duplicate had, and sets the duplicate inactive. Item ids, rates, stock and documents are untouched, so it reverses with one status change per item.</p>
+<p>The duplicates were not cosmetic: the retired set was an older <code>AC/DC Express …</code> group at a <strong>2% markup</strong> (golf shirt R153.25 on R149.95) against <strong>12%</strong> on the survivor (R163.25 on R145.95). Nine pairs were listed on the shop twice; retiring the duplicate cleared the second listing, and the survivor was already listed in every case.</p>
+<h3 id="74-the-ten-zero-rate-items-were-not-a-defect">7.4 The ten zero-rate items were not a defect</h3>
+<p><code>Delivery Fee</code>, <code>SALES: SIMPLEPAY</code>, <code>SALES: SLA SERVICES …</code>, cost recoveries, <code>SALES: ZOHO</code>, bakkie usage and disposals are charge lines priced per transaction. Setting a rate would have been wrong, so nothing changed.</p>
+<h3 id="75-two-service-lines-stay-tracked">7.5 Two service lines stay tracked</h3>
+<p><code>Pad printing</code> and <code>Setup Fees</code> cannot be untracked — Zoho refuses an item-type change on items with transactions (<code>400 code 2034</code>). They are retired and inactive, so they sit outside the rule rather than having their history broken.</p>
+<hr />
+<h2 id="8-what-is-deliberately-not-done-yet">8. What is deliberately not done yet</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Count</th>
+<th>Why it is open</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attribute names split seven ways — <code>Size</code>, <code>pa_size</code>, <code>Quantity</code>, <code>Title</code>, <code>Type</code>, one literally <code>S, M, L, XL, 2XL, 3XL+</code></td>
+<td>640 slots</td>
+<td>Group reporting cannot roll up, and one group stores <code>XXL</code> where its SKU says <code>2XL</code>. Needs a UI-led pass with a per-group check, not a blind API run</td>
+</tr>
+<tr>
+<td>Pack text inside item names ("Sold in a bundle of 10")</td>
+<td>169</td>
+<td>Belongs in the unit or SKU; a name edit is safe but touches how quotes read, so it wants a decision per family</td>
+</tr>
+<tr>
+<td>Inactive items</td>
+<td>226 of 839</td>
+<td>Policy call: keep for history, archive by category, or leave. Deleting would destroy references</td>
+</tr>
+<tr>
+<td>Brand on service/ledger lines</td>
+<td>28</td>
+<td>Charge lines have no brand by design — deliberately left blank</td>
+</tr>
+<tr>
+<td>Category on retired rows</td>
+<td>31</td>
+<td>None of them is tracked-and-active, so none affects a report you can trade from</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="9-acceptance-criteria">9. Acceptance criteria</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/check_sku_prefix.py <span class="at">--strict</span>     <span class="co"># exit 0; &quot;total non-conforming: 0&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/verify_pricing_standard.py       <span class="co"># &quot;all checks passed&quot; (48 checks)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/create_demo_catalogue.py         <span class="co"># dry run: 44 rows, nothing written</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/rename_skus.py <span class="op">&lt;</span>map<span class="op">&gt;</span>             <span class="co"># dry run: shows DONE for everything already applied</span></span></code></pre></div>
+<p>All four were run at the end of this work; the first two are the gate.</p>
+<hr />
+<h2 id="10-risks-and-rollback">10. Risks and rollback</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A rename breaks a feed or storefront that keys on SKU</td>
+<td>Every map carries both sides; the inverse map restores the previous codes in one paced run. Item ids never change</td>
+</tr>
+<tr>
+<td>A retired record was the one a document references</td>
+<td>Retiring is a status change only — the record, its history and its documents stay</td>
+</tr>
+<tr>
+<td>Zoho throttles a long run again</td>
+<td>Writer paces at 0.5 req/s with backoff and is idempotent; a run can be stopped and resumed without duplicating work</td>
+</tr>
+<tr>
+<td>A future catalogue edit collides with an existing SKU</td>
+<td><code>plan_sku_standard.py</code> refuses to write a plan containing a collision</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="11-evidence-index">11. Evidence index</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/sku_renames_full_20261125.json</code></td>
+<td>618 renames, both sides, with reasons</td>
+</tr>
+<tr>
+<td><code>data/sku_renames_pass2_20261125.json</code></td>
+<td>57 prefix renames + the 26 duplicates and 11 no-SKU rows held back</td>
+</tr>
+<tr>
+<td><code>data/sku_renames_pass3_20261125.json</code></td>
+<td>7 group-parent SKUs</td>
+</tr>
+<tr>
+<td><code>data/nonconforming_resolved_*.json</code></td>
+<td>The decision-tree run: merges, assignments, untracks, problems</td>
+</tr>
+<tr>
+<td><code>data/sku_renames_applied_full_*.json</code></td>
+<td>Per-run verification records (drift, duplicates, failures)</td>
+</tr>
+<tr>
+<td><code>data/items_snapshot_before_rename_*.json</code></td>
+<td>Pre-write snapshot used for the drift check</td>
+</tr>
+<tr>
+<td><code>data/demo_catalogue_*.json</code></td>
+<td>The 44-item catalogue manifest with list prices</td>
+</tr>
+<tr>
+<td><code>docs/sku-prefix-standard.md</code></td>
+<td>The standard as a working reference and the running evidence log</td>
+</tr>
+<tr>
+<td>Published pages</td>
+<td>was/now (all 640), register, pass 2, the 42 decision tree</td>
+</tr>
+</tbody>
+</table></div>
+<p>Scripts: <code>plan_sku_standard.py</code>, <code>rename_skus.py</code>, <code>resolve_nonconforming.py</code>, <code>check_sku_prefix.py</code>, <code>create_demo_catalogue.py</code>, <code>probe_pricebook_subset.py</code>, <code>build_exp_register.py</code>, <code>build_sku_plan_page.py</code>, <code>build_nonconforming_page.py</code>.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
