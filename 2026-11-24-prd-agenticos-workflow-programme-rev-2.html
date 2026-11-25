@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 15)</title>
+<title>PRD — AgenticOS workflow programme (rev 16)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1446,5 +1446,36 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 <li><strong>Deploy plan:</strong> image diff against the published 1.92.0 image (expect one file), staging rehearsal on the test DB, production swap with the existing 70-second stop-migrate-start and a rollback image ready.</li>
 </ul>
 <p>No diff was written tonight: patching a 9,000-line runner from reading alone would be guesswork dressed as work, and this estate's rule is evidence before a deploy. The decision is made and the brief is complete — the next build window executes it.</p>
+<h3 id="1321-the-routine_deliveries-brief-was-wrong--corrected-before-anyone-built-it">13.21 The <code>routine_deliveries</code> brief was wrong — corrected before anyone built it</h3>
+<p>Reading the tests and <code>agent_trigger._deliver</code> before writing the patch changed the finding. The brief in §13.20 said "write the row on the ordinary terminal write path". That would have been a <strong>bug</strong>, not a fix:</p>
+<ul>
+<li><code>routine_deliveries</code> rows are <strong>pending handoffs</strong>, not a log. <code>test_a_durable_answer_is_delivered_once_after_a_restart</code> shows the worker consumes a <code>pending</code> row and delivers once; <code>queue()</code> both inserts the row <em>and</em> enqueues <code>DELIVER_ROUTINE_ANSWER</code>.</li>
+<li><code>agent_trigger._deliver()</code> (line 3804) delivers <strong>directly</strong>: it resolves the destination (<code>PrimaryConversationService.ensure</code> for <code>answer_to=primary</code>) and returns <code>DELIVERED</code> without touching the queue.</li>
+<li>So the estate has <strong>two delivery mechanisms</strong>. The durable one is reached only on cancellation (<code>agent_runner.py:8561</code>) and on a resumed segment with deferred tools (<code>:9282</code>); the direct one runs on every ordinary fire and records nothing.</li>
+</ul>
+<p>Writing a row after a successful direct delivery would therefore have created a <code>pending</code> handoff that a worker would deliver <strong>again</strong> — a duplicate message, the exact fault this PRD exists to prevent.</p>
+<p><strong>What the fix actually is — a design choice, not a one-liner:</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>What it means</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. Route delivery through the queue</strong></td>
+<td><code>_deliver</code> delegates to <code>RoutineDeliveryService.queue</code>, the worker performs the send</td>
+<td>Touches the hot path for 136 triggers; needs the queue to preserve the exact destination and ordering</td>
+</tr>
+<tr>
+<td><strong>B. Record at admission, settle after</strong></td>
+<td>Insert the handoff at admit time, update to <code>delivered</code> after the direct send, and teach the worker to skip an already-settled row</td>
+<td>Needs a repo function that accepts a terminal status; the skip rule must be airtight or it double-posts</td>
+</tr>
+</tbody>
+</table></div>
+<p>Neither is a patch to write from reading. Both need the product's tests extended (the two existing routines above are the template) and a staged rehearsal. <strong>Recorded as the corrected brief for F-20261123-01</strong>: the decision to schedule it stands, the <em>shape</em> of the change is A or B, and the owner picks — because the difference is where a duplicate message can be born, and that is a judgement about the product, not about this programme.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
