@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creality Hi-4365 — machine, configuration and software audit</title>
+<style>
+  :root{--paper:#fdfaf3;--ink:#12203a;--muted:#5a6472;--rule:#e2dbcc;--card:#fff;
+        --accent:#c2452d;--ok:#1f7a52;--warn:#a8621a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+       font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:36px 20px 72px}
+  header{border-bottom:3px solid var(--ink);padding-bottom:14px}
+  .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  h1{font:600 30px/1.15 Georgia,serif;margin:8px 0 6px}
+  .sub{color:var(--muted);font-size:14.5px}
+  h2{font:600 21px/1.3 Georgia,serif;margin:38px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+  h3{font-size:15.5px;margin:24px 0 6px}
+  p{margin:10px 0} ul,ol{margin:10px 0 10px 22px;padding:0} li{margin:6px 0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;background:var(--card);
+        border:2px solid var(--ink);font-size:14.5px}
+  th,td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{background:#f4efe3;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .card{background:var(--card);border:2px solid var(--ink);padding:16px 18px;margin:16px 0}
+  .verdict{border-left:8px solid var(--accent)}
+  .pass{color:var(--ok);font-weight:700} .fail{color:var(--accent);font-weight:700}
+  .warn{color:var(--warn);font-weight:700}
+  code{background:#f2ece0;padding:1px 5px;border-radius:3px;font-size:13.5px;
+       font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  a{color:var(--accent);text-underline-offset:2px}
+  .foot{margin-top:44px;border-top:1px solid var(--rule);padding-top:14px;color:var(--muted);font-size:13px}
+  .rank{display:inline-block;min-width:26px;font-weight:700;color:var(--accent)}
+  @media print{body{background:#fff}.wrap{max-width:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Infinity Brands · machine audit</div>
+  <h1>Creality Hi-4365 — machine, configuration and software</h1>
+  <div class="sub">Audited 25 November 2026 · 117 printer objects, 135 config sections, a 16-check live test</div>
+</header>
+
+<div class="card verdict">
+  <p><strong>The printer is sound, the filament path is half-repaired, and the configuration has one bug that would quietly ruin the job.</strong></p>
+  <p style="margin-bottom:0">The tube fix moved the CFS from 0 of 4 slots delivering to 2 of 4. Everything mechanical passes. What stands between this machine and Donatello's plate is two stubborn slots and a fan macro that halves every cooling command.</p>
+</div>
+
+<h2>1 · The live test, as it ran</h2>
+<table>
+  <tr><th>Phase</th><th>Check</th><th>Result</th></tr>
+  <tr><td>Firmware</td><td>Klipper ready, config clean</td><td class="pass">pass — 135 sections, 0 warnings, 1 unsaved</td></tr>
+  <tr><td>Motion</td><td>Home all axes</td><td class="pass">pass — 54.7 s</td></tr>
+  <tr><td>Motion</td><td>Travel to centre and both diagonals</td><td class="pass">pass — exact to 240,240</td></tr>
+  <tr><td>Heat</td><td>Nozzle to 215 °C</td><td class="pass">pass — 215.5 °C in 119 s</td></tr>
+  <tr><td>Heat</td><td>Bed to 65 °C</td><td class="pass">pass — 63.2 °C, sensor is remapped in config</td></tr>
+  <tr><td>CFS</td><td>Slot 1 load</td><td class="pass">pass — 26.7 s, reached the toolhead</td></tr>
+  <tr><td>CFS</td><td>Slot 2, white</td><td class="fail">fail — 53.1 s, never arrived</td></tr>
+  <tr><td>CFS</td><td>Slot 3, teal</td><td class="fail">fail — 26.7 s, never arrived</td></tr>
+  <tr><td>CFS</td><td>Slot 4, red</td><td class="pass">pass — 19.7 s, reached the toolhead</td></tr>
+  <tr><td>Extruder</td><td>Advance 100 mm</td><td class="pass">pass — 100.0 mm in 20.4 s</td></tr>
+</table>
+<p><strong>14 of 16.</strong> Two slots deliver, two do not. Slot 2 took twice as long as a good load — one retry, then a give-up.</p>
+
+<h2>2 · Configuration faults, ranked by damage</h2>
+<p>Every line below is quoted from the files on the machine, and each was re-checked against the file myself.</p>
+<table>
+  <tr><th></th><th>Fault</th><th>What it does</th></tr>
+  <tr><td class="rank">1</td><td><code>filament_sensor</code> arrives disabled</td>
+      <td>Runout protection is <code>pause_on_runout: true</code> in the config, but the live object reads <code>enabled: false</code>. With <code>max_extrude_only_distance: 1000</code> the machine will grind a dry nozzle for hours without noticing — the exact failure that killed the previous unit.</td></tr>
+  <tr><td class="rank">2</td><td><code>[gcode_macro M106]</code> halves the fan</td>
+      <td>Whenever <code>Rmode.flag == 0</code> — which is every print, because <code>START_PRINT</code> calls <code>Rmode_exit</code> — any fan command above S=102 is halved and everything below is floored at 20 %. Your slicer's cooling curve never reaches the nozzle.</td></tr>
+  <tr><td class="rank">3</td><td><code>min_temp: 0</code> on both heaters, <code>max_temp: 320</code></td>
+      <td>A failing thermistor reads as a low positive temperature, so the fault never fires. The nozzle is also allowed to 320 °C against a 300 °C rating.</td></tr>
+  <tr><td class="rank">4</td><td><code>idle_timeout: 99999999</code></td>
+      <td>No idle shutdown. A cancelled or paused job leaves the hotend at temperature indefinitely.</td></tr>
+  <tr><td class="rank">5</td><td>Corner velocity has three values and the worst wins</td>
+      <td>The file says 8.0, the finish and pause macros say 5, and line 781 of <code>START_PRINT</code> sets <strong>10</strong> — so every print runs at 10 with acceleration 12000. That is where corner ghosting comes from.</td></tr>
+  <tr><td class="rank">6</td><td><code>gcode_arcs resolution: 1.0</code></td>
+      <td>Arcs are flattened into 1 mm chords. On Dummy 13's small round features that is visible faceting.</td></tr>
+  <tr><td class="rank">7</td><td><code>START_PRINT</code> never re-levels the gantry</td>
+      <td><code>Z_TILT_ADJUST</code> is commented out at line 803. The saved mesh spans 0.74 mm with a 0.4 mm high left edge, so the mesh spends its headroom compensating for a tilt that could be removed.</td></tr>
+  <tr><td class="rank">8</td><td>Probe at 45 °C, print at 215 °C</td>
+      <td>The mesh and the Z datum are taken cold, bridged by one hand-typed constant with no recorded basis for the value.</td></tr>
+</table>
+
+<h2>3 · The fan bug, in numbers</h2>
+<table>
+  <tr><th>The slicer asks for</th><th class="num">Delivered</th><th class="num">Should be</th></tr>
+  <tr><td>S=255 (100 %)</td><td class="num fail">50 %</td><td class="num">100 %</td></tr>
+  <tr><td>S=128 (50 %)</td><td class="num fail">25 %</td><td class="num">50 %</td></tr>
+  <tr><td>S=76 (30 %)</td><td class="num fail">20 %</td><td class="num">30 %</td></tr>
+  <tr><td>S=1 to S=102</td><td class="num fail">20 % — all of them</td><td class="num">0.4 to 40 %</td></tr>
+</table>
+<p>No slicer setting produces true full cooling on this machine. Overhangs, bridges and the purge tower are exactly what a two-colour job leans on, so this is patched before anything prints.</p>
+
+<h2>4 · What is not a problem, though it looks like one</h2>
+<ul>
+  <li><strong>Bed mesh fade 5/50 — leave it.</strong> On a 51-layer, 8.38 mm part, layers 1 to 31 get full correction and even the top layer keeps 93 %. It never prints uncorrected where it matters.</li>
+  <li><strong>The extruder is configured correctly.</strong> Rotation distance 6.9, 16 microsteps, pressure advance 0.04, spreadcycle rather than stealthchop. It advances exactly 100.0 mm when asked for 100 mm.</li>
+  <li><strong>Z offset is not missing.</strong> This machine probes with the nozzle itself, so <code>z_offset: 0</code> is the design, not a gap. What needs verifying is the temperature-compensation constant, not an offset.</li>
+</ul>
+
+<h2>5 · Software</h2>
+<table>
+  <tr><th>Layer</th><th>What</th><th>Verdict</th></tr>
+  <tr><td>Slicer</td><td>OrcaSlicer 2.5.2, CLI, on the MacBook</td><td class="pass">Right tool — correct Klipper start, relative extrusion, a real prime.</td></tr>
+  <tr><td>Firmware</td><td>Klipper fork + Moonraker 1.0.5</td><td class="pass">Sound; driven over its own API.</td></tr>
+  <tr><td>Box</td><td>CFS firmware 1.5.2</td><td class="warn">The transplanted box — its own firmware already flags slot 3 as <code>−1</code>.</td></tr>
+  <tr><td>Contract</td><td><code>START_PRINT BED_TEMP=… EXTRUDER_TEMP=…</code>, then <code>T1</code>/<code>T3</code>, then <code>END_PRINT</code> alone</td><td class="warn">Must be exact — a stray <code>G28</code> after the start wipes the mesh it just measured.</td></tr>
+  <tr><td>Viewer</td><td>Creality Print 7.3.2</td><td>Window only — no CLI, cannot be automated.</td></tr>
+</table>
+
+<h2>6 · Order of work</h2>
+<ol>
+  <li><strong>CFS delivery — blocks everything.</strong> Free the two dead slots, or move both job colours into the two proven ones. Done when each colour completes a load, a cut and a retract on its own.</li>
+  <li><strong>Runout guard on.</strong> Done when pulling filament at the toolhead pauses a running job within a second.</li>
+  <li><strong>Patch the fan macro.</strong> Done when S=255 gives 255 at the pin and S=0 gives 0.</li>
+  <li><strong>Z datum.</strong> Gantry levelled, probe accuracy at three points under 0.01 mm, a one-layer square measuring 0.14–0.18 mm at full temperature.</li>
+  <li><strong>Motion.</strong> Shapers measured on this frame, arcs at 0.2, corner velocity 5 everywhere including line 781.</li>
+  <li><strong>Extruder truth.</strong> Mark 120 mm, ask for 100, measure what actually entered the hotend.</li>
+  <li><strong>Slicer contract.</strong> Slice plate 1 and read three things: the header, one toolchange block, the tail.</li>
+  <li><strong>Safety config.</strong> Minimum temperatures above zero, 300 °C ceiling, explicit heater watchdog, a finite idle timeout.</li>
+  <li><strong>Supervised smoke job</strong> — two colours, three forced changes, an hour. Then Donatello's plate, first hour watched.</li>
+</ol>
+
+<h2>7 · How this audit was made, and its limits</h2>
+<p><strong>Codex was asked first and refused: the workspace is out of credits.</strong> Rather than drop the second opinion, the same evidence bundle went to an independent reviewer, and I re-checked its load-bearing claims against the files myself — the corner-velocity override at line 781, the commented-out gantry levelling at line 803, the probe-at-45-°C sequence, <code>min_temp: 0</code> on both heaters, and the duplicated <code>virtual_sdcard</code> section. All five held.</p>
+<p>Three things remain genuinely unknown and are named rather than guessed: whether Orca's numeric <code>T1</code> matches the box's own <code>T1A…T1D</code> naming, what the temperature-compensation constant's units are, and why the runout sensor arrives disabled. The first sliced plate answers the first; a job log answers the others.</p>
+
+<h2>8 · Sources</h2>
+<ul>
+  <li><a href="http://192.168.0.148:4408">Fluidd on the machine — live state</a></li>
+  <li><a href="https://www.klipper3d.org/Config_Reference.html#gcode_macro">Klipper G-code macro reference</a></li>
+  <li><a href="https://www.klipper3d.org/Config_Reference.html#bed_mesh">Klipper bed mesh reference — fade behaviour</a></li>
+  <li><a href="https://www.klipper3d.org/Measuring_Resonances.html">Klipper resonance measurement — input shaper procedure</a></li>
+  <li><a href="https://github.com/SoftFever/OrcaSlicer/releases">OrcaSlicer 2.5.2 — the slicer in use</a></li>
+  <li><a href="https://www.creality.com/products/creality-hi-combo-3d-printer">Creality Hi with CFS</a></li>
+</ul>
+
+<div class="foot">
+  Built from live machine readings on 25 November 2026: 117 printer objects captured, 135 configuration sections parsed, four configuration files pulled straight off the machine, and a 16-check functional test executed. The full independent review is filed alongside this page as AUDIT.md.
+</div>
+
+</div>
+</body>
+</html>
