@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>PRD — AgenticOS workflow programme (rev 12)</title>
+<title>PRD — AgenticOS workflow programme (rev 13)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <style>
@@ -1307,5 +1307,48 @@ capacity_disk     69% used, 23460016 free                             -&gt; row 
 </table></div>
 <p>Six lanes, six gates, and both directions proved for the two that matter most (L8 silent on an irrelevant edit, L5 silent on a healthy trail). The programme now behaves the way §5.8 said a lane should: <strong>it earns the right to interrupt by having something to say.</strong></p>
 <p>Schedules after the rebuild: Mon 06:30 (findings review), Mon 06:45 (findings/ledger), Mon 07:00 (document sweep), Wed 07:00 (store/satellite), daily 06:15 and 18:15 (liveness), event-driven (blocker), on-failure (watchdog), Mondays 07:30 (board).</p>
+<h3 id="1316-attention-is-now-measured--and-it-says-nobody-has-read-anything">13.16 Attention is now measured — and it says nobody has read anything</h3>
+<p>The board gained the measure §9 called <em>consumed</em>: workflow notices in the last seven days, and how many carry <code>read_at</code>. First reading:</p>
+<blockquote>
+<p><strong>12 notices in 7 days, 12 unread.</strong></p>
+</blockquote>
+<p>That includes four notices the lanes should never have sent (§13.10, §13.13). The number is deliberately unkind: a programme that emits and is not read is the shelfware risk the panel named, and now the board says so on its face rather than in a paragraph of prose.</p>
+<p>Retirement rule this feeds: a lane unread for three consecutive cycles is retired (§9). On today's count, that clock starts for all of them the moment they next speak.</p>
+<h3 id="1317-root-cause-traced--routine_deliveries-is-written-on-only-one-code-path">13.17 Root cause traced — <code>routine_deliveries</code> is written on only one code path</h3>
+<p>Finding <strong>F-20261123-01</strong> ("44 routines report delivered while <code>routine_deliveries</code> holds zero rows") is real, and the cause is not missing data. Measured on 25 November:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Evidence</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>agent_triggers</code></td>
+<td>136 rows, all <code>answer_to = primary</code></td>
+</tr>
+<tr>
+<td>…with <code>last_delivery_status</code> set</td>
+<td><strong>56</strong>, all <code>report</code>/<code>primary</code>/<code>delivered</code></td>
+</tr>
+<tr>
+<td>routine runs (<code>agent_runs.routine_kind = 'trigger'</code>)</td>
+<td><strong>490</strong>, newest <code>2026-11-25 17:30Z</code></td>
+</tr>
+<tr>
+<td><code>routine_deliveries</code></td>
+<td><strong>0 rows</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>The writer exists — <code>RoutineDeliveryService.queue()</code> → <code>routine_delivery_repo.create()</code> — but read where it is called from:</p>
+<ul>
+<li><code>agent_runner.py:8561</code> — on <strong>cancellation</strong> of a trigger run;</li>
+<li><code>agent_runner.py:9282</code> — under <code>if deferred_tool_results is not None:</code>, i.e. only on a <strong>resumed segment carrying deferred tool results</strong>.</li>
+</ul>
+<p>A routine that simply completes on its clock takes neither path, so no delivery row is ever written. The trigger still records <code>delivered</code>, because <code>agent_trigger.py:3371</code> stamps the status from the delivery verdict it computed in memory. Status and evidence are therefore produced by two different paths, and only one of them persists.</p>
+<p><strong>Why this is in the PRD rather than patched tonight:</strong> the fix is a one-line call added to the ordinary terminal write path — queue a delivery for any completed <code>trigger</code> run that has an answer — but that is a backend change to a live product, and this estate's discipline is image diff → staging rehearsal → production swap with a rollback ready. It belongs in a reviewed change, not an evening's loop. The finding now carries its root cause and the exact call sites, which is what the owner needs to schedule it.</p>
+<p><strong>What it means for the programme:</strong> no workflow can evidence routine delivery until this is fixed, so L7's "open findings with no ledger row" stays at 7 and F-20261123-01 stays open. Nothing in the workflow layer can paper over it.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
