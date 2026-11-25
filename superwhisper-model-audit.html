@@ -408,11 +408,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <p><strong>F1 — Voice layer: leave alone.</strong> Cohere Transcribe q4 is the most accurate local ASR in the library and is applied to all nine modes. Switching anything here trades privacy for a smaller gain than it costs.</p>
 <p><strong>F2 — <code>gemini-3.8-flash</code> is valid, not stale.</strong> It is absent from the public docs page (which lags the server) but present in the app's own catalog as non-legacy/non-deprecated, accuracy 9. Mail and Ramble are correctly pinned.</p>
 <p><strong>F3 — One real upgrade: Ramble → Sonnet 5.5.</strong> Ramble carries a 4,745-character prompt that turns speech into structured Todoist lists — the heaviest rewriting job in the set, and accuracy matters more than the 2-point speed drop. Mail's prompt is empty (built-in email with <code>tone: formal</code>), so Gemini 3.8 Flash at speed 9 is the better trade there.</p>
-<p><strong>F4 — Two cosmetic gaps.</strong></p>
-<ul>
-<li><code>settings.json</code> → <code>modeKeys</code> lists 7 modes and omits <code>custom-RMBL</code> (Ramble), although the app renders it from the modes directory.</li>
-<li><code>default.json</code> (Message) has no <code>tone</code> key, while <code>mail.json</code> has <code>"tone": "formal"</code>. Tone control exists for Message/Mail/Notes since 2.17.3, so Default is silently on the neutral setting.</li>
-</ul>
+<p><strong>F4 — One cosmetic gap.</strong> <code>settings.json</code> → <code>modeKeys</code> listed 7 modes and omitted <code>custom-RMBL</code> (Ramble), although the app renders it from the modes directory. <code>default.json</code> also has no <code>tone</code> key while <code>mail.json</code> carries <code>"tone": "formal"</code> — but that is by design: the build stores only <code>casual</code> and <code>formal</code>, so an absent key simply means neutral.</p>
 <p><strong>F5 — Five idle modes.</strong> Cliq, Staff, Email, Ramble and Mail have zero recordings against 89 total. Worth a decision: keep, or retire what is never used.</p>
 <p><strong>F6 — Outside Superwhisper, the weakest ASR in the stack is Hermes' own.</strong> On the Mac mini, <code>~/.hermes/config.yaml</code> runs <code>stt.provider: local</code> with faster-whisper <strong><code>base</code></strong> (roughly 2× the word error of Cohere). The <code>~/.local/bin/superwhisper-stt</code> wrapper is installed there but Superwhisper itself is not, so that route cannot work on the mini as written.</p>
 <h2 id="checked-and-fine">Checked and fine</h2>
@@ -422,15 +418,79 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Cohere Transcribe q4 (1,585 MB) present; vocab 272 terms, 42 replacements.</li>
 <li>Pro is active — today's 08:28 recording ran Cohere (Pro-only) into S1-Language in 689 ms.</li>
 </ul>
-<h2 id="proposed-changes-nothing-applied">Proposed changes (nothing applied)</h2>
-<pre class="jsonc"><code>// modes/custom-RMBL.json  — Ramble: accuracy over latency for the 4.7k-char prompt
-&quot;languageModelID&quot;: &quot;claude-sonnet-5-5&quot;   // was &quot;gemini-3.8-flash&quot;  (accuracy 9 → 10)
+<h2 id="applied-25-nov-2026-1339-sast">Applied 25 Nov 2026, 13:39 SAST</h2>
+<p>Two changes made on the Air, both verified end-to-end:</p>
+<pre class="jsonc"><code>// modes/custom-RMBL.json — Ramble: accuracy over latency for the 4,745-char prompt
+&quot;languageModelID&quot;: &quot;claude-sonnet-5-5&quot;   // was &quot;gemini-3.8-flash&quot; (accuracy 9 → 10)
 
 // settings/settings.json — restore the missing mode to the ordering list
-&quot;modeKeys&quot;: [ …, &quot;custom-RMBL&quot; ]
-
-// modes/default.json — make the Message tone explicit instead of implicit
-&quot;tone&quot;: &quot;neutral&quot;    // mail.json already carries &quot;tone&quot;: &quot;formal&quot;</code></pre>
-<p>Applying any of these needs an app restart (<code>killall cfprefsd; open -a superwhisper.app</code>) before it takes effect.</p>
+&quot;modeKeys&quot;: [ …, &quot;custom-RMBL&quot; ]</code></pre>
+<p><strong>Verification:</strong> active mode was switched to Ramble, the app restarted, a real recording transcribed, then the active mode restored to AI Brief.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mode file after write</td>
+<td><code>Ramble  cohere-transcribe-q4  claude-sonnet-5-5</code></td>
+</tr>
+<tr>
+<td><code>modeKeys</code> after app restart</td>
+<td>8 entries, <code>custom-RMBL</code> present (the app did not re-normalise it away)</td>
+</tr>
+<tr>
+<td>new DB row</td>
+<td><code>Ramble · Cohere Transcribe · Sonnet 5.5 · 879 ms · 56 raw → 45 llm words</code>, language-model pass 2,277 ms</td>
+</tr>
+<tr>
+<td>output shape</td>
+<td>two Todoist quick-add bullets with <code>%INF</code> label — Sonnet 5.5 followed the prompt</td>
+</tr>
+<tr>
+<td>restored state</td>
+<td><code>activeModeKey = custom-PBVZ</code> (AI Brief), app running</td>
+</tr>
+</tbody>
+</table></div>
+<p>Backups written beside each file: <code>custom-RMBL.json.bak-&lt;stamp&gt;</code>, <code>settings.json.bak-&lt;stamp&gt;</code>.</p>
+<p><strong>Not applied — <code>tone</code> on Default.</strong> The 3.4.0 binary carries only two stored tone values, <code>casual</code> and <code>formal</code>; "neutral" is the unset default and is not a value the app writes. Adding <code>"tone": "neutral"</code> would have been an invented value, so Default stays keyless and neutral.</p>
+<h2 id="hermes-asr--applied-the-same-evening">Hermes ASR — applied the same evening</h2>
+<p>The mini's Hermes STT was the weakest link: <code>stt.provider: local</code> on faster-whisper <code>base</code>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">stt</span><span class="kw">:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">local</span><span class="kw">:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">model</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;turbo&quot;</span><span class="at">                                  </span><span class="co"># was &quot;base&quot; — large-v3-turbo</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">initial_prompt</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;Ricardo, Maio, Maio Hub, OpenKnowledge, Hermes, …&quot;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">unload_after_idle_seconds</span><span class="kw">:</span><span class="at"> </span><span class="dv">900</span><span class="at">                  # was 0 (never unload)</span></span></code></pre></div>
+<p>Same 7.1-second clip, CPU int8, before and after:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Load</th>
+<th>Inference</th>
+<th>Transcript</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base</code></td>
+<td>1.0 s</td>
+<td>1.5 s</td>
+<td>"Hermes, open the Kanban board and summarize the blocked cards for Ricardo, also note that the <strong>Mayo</strong> Hub Vault is read only."</td>
+</tr>
+<tr>
+<td><code>turbo</code></td>
+<td>—</td>
+<td>5.0 s</td>
+<td>"Hermes. Open the Kanban board and summarize the blocked cards for Ricardo. Also note that the <strong>Maio</strong> Hub vault is read only."</td>
+</tr>
+</tbody>
+</table></div>
+<p>End-to-end through Hermes' own <code>transcribe_audio(path, source="gateway")</code>: <code>{"success": true, "provider": "local"}</code> in 7.0 s, with "Maio Hub" and sentence punctuation correct. <code>load_config()</code> caches on the config file signature, so the running gateway picks the change up without a restart.</p>
+<p><code>~/.local/bin/superwhisper-stt</code> on the mini remains dead weight — Superwhisper is not installed there — but nothing points at it while <code>stt.provider</code> is <code>local</code>.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
