@@ -289,6 +289,21 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>The two crash-looping launchd jobs above. com.maio.constellation-dev has 1,702 runs and last exit 1; com.maio.agenticos-staff-seating is not running, 44 runs, last exit 1. Repair is a service change and was not taken without a word.</li>
 <li>The v3 lane's C2 shard files are not generated yet; the page asks for them, gets 404, and falls back to the snapshot honestly.</li>
 </ul>
+<p>SIXTH STEP - THE LAST PRD GAPS CLOSED</p>
+<p>C2 shards (the v3 lane's outstanding half). The generator already carried a shard step; it had simply never run on this machine. Ran it: shards/{overview,projects,roster,prds,stack,library}.json plus shard-manifest.json are on disk, all six answer 200 through the companion, and the manifest names all six. Verified live: Projects reads "projects shard · 2026-11-25" with 97 cards, Stack reads "stack shard · 2026-11-25", and SHARD_STATE holds {projects: ok, stack: ok} instead of HTTP 404.</p>
+<p>E11 receipt. The Stack card now states the newest gated action in its own words, read from /api/fix/log: "Last gated action: refresh-data · ran · 33d ago" on the local build. A tailnet page cannot read that lane, so there it reads "Action history is readable on the local build only (127.0.0.1:9111)." - the contract card is never left looking receiptless. Formatter is pure and tested; 42 of 42 tests pass on the deployed tree. Committed on feat/api-card-receipt (b0cb7a94) and fast-forwarded into main, because the ship-small hook refuses commits made directly on the protected branch.</p>
+<p>THE TWO FAILED LAUNCHD JOBS - DIAGNOSED, NOT TOUCHED</p>
+<p>com.maio.constellation-dev (1,702 runs, last exit 1, nothing on :3214)</p>
+<ul>
+<li>The launcher runs ~/.config/maio-stack/bin/constellation-prod.sh, which starts the Constellation staff build on 127.0.0.1:3214. It dies at startup: PrismaClientKnownRequestError, code 42P01, relation "_prisma_migrations" does not exist, from scripts/start-staff.mjs through prisma/runtime-db.mjs.</li>
+<li>DATABASE_URL in that repo points at postgresql://owner:***@127.0.0.1:55440/constellation_dev, a local container (constellation-dev-pg, 127.0.0.1:55440-&gt;5432), also held open by an ssh forward. <code>npx prisma migrate status</code> lists the migration set, so migrations exist and the database plainly does not carry their table.</li>
+<li>A repair is either <code>npx prisma migrate deploy</code> against that database, or pointing the app at the database that already holds the schema. Both are schema/data writes to a staff system, so neither was taken without a word. Until then KeepAlive restarts it every 15 seconds.</li>
+</ul>
+<p>com.maio.agenticos-staff-seating (44 runs, last exit 1, not running, StartInterval 600)</p>
+<ul>
+<li>The script swallows its traceback ("Employee sync failed: ValueError"). Run directly, the real error is: reconcile_staff_access.py line 160, require(len(people) == count, "HR directory changed during paging or was incomplete").</li>
+<li>That is an integrity check on the HR directory refusing to proceed. The next steps in that script create and remove Zoho People seats, so loosening the check could mass-change staff access. Not touched, by design.</li>
+</ul>
 <p>END OF RECORD</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
