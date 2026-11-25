@@ -225,6 +225,14 @@ HTTP 400 {&quot;code&quot;:&quot;MANDATORY_NOT_FOUND&quot;,&quot;details&quot;:{
 </blockquote>
 <p><strong>Run manifest, the real inventory: 403 tools mounted</strong> — 200 platform · 66 ClickUp · 45 GitHub · 19 Zoho · 5 Blender-render.</p>
 <p><strong>Live run <code>2908d45c</code> (v27)</strong>: 66 ClickUp · 19 Zoho · 45 GitHub; "Zoho writes: enabled — ClickUp write parks, every binding carries <code>approval: "writes"</code>".</p>
+<p><strong>Final live run <code>d587b686</code>, after the gateway restart</strong> — the answer Ricardo would get if he asked right now:</p>
+<blockquote>
+<ol type="1">
+<li><code>zoho_services</code> → <code>"writes_enabled": true</code> (also <code>"mail_send_enabled": true</code>).</li>
+<li>19 Zoho tools and 66 ClickUp tools.</li>
+<li>It parks for approval — no ClickUp write executes on my initiative.</li>
+</ol>
+</blockquote>
 <p><strong>T3 Code seat check</strong> — <code>zoho-api</code> MCP <code>ok</code>, 98 scopes; ClickUp CLI authenticated as <code>Ricardo Maio &lt;ricardom@infinitybrands.co.za&gt;</code>; a write to a real task returned ClickUp's own <code>400 {"err":"Comment is required"}</code> — the token is authorised to write.</p>
 <h2 id="the-one-brake-that-remains-and-why">The one brake that remains, and why</h2>
 <p>Every mutating Zoho or ClickUp call parks in Ricardo's approval queue — one click to release. That is the platform's own rule (PRD §5.3: never <code>none</code>) and the only thing standing between an agent and a bulk change such as the 1,390-task archive plan in the same screenshot. It is not a capability gap: the call is prepared and only the yes is missing.</p>
@@ -233,7 +241,7 @@ HTTP 400 {&quot;code&quot;:&quot;MANDATORY_NOT_FOUND&quot;,&quot;details&quot;:{
 <ul>
 <li><strong>Iron Man under-reported his own tools</strong> in his first answer ("10 ClickUp tools"). <code>tool_search</code> defers MCP servers, so only a handful sit in the prompt; the manifest shows 66. v27 tells him to count before answering and never to claim a missing capability without a failed call.</li>
 <li><strong><code>projects_portals</code> crashed</strong> on a bare-array <code>/api/v3/portals</code> response. Fixed in <code>server.py</code> at 10:25:13Z by the parallel lane; container restarted 10:25:18Z; it now answers both portals (<code>infinitybrands</code> 688223013, <code>ricardominfinitybrandsdotcodotza</code> 924224948).</li>
-<li><strong>A failed tool hides its reason.</strong> The MCP framework turns any exception into <code>Error executing tool &lt;name&gt;</code>, so the agent cannot read Zoho's message and correct itself. Three of the six "crashes" Iron Man reported were his own path errors (<code>/api/v3/api/v3/…</code>, <code>/api/v1/api/v1/…</code> — both bases already carry the prefix). Proposed, not applied: raise <code>ToolError(str(e))</code> from <code>_rest</code>.</li>
+<li><strong>A failed tool hides its reason.</strong> The MCP framework turns any exception into <code>Error executing tool &lt;name&gt;</code>, so the agent could not read Zoho's message and correct itself. Three of the six "crashes" Iron Man reported were his own path errors (<code>/api/v3/api/v3/…</code>, <code>/api/v1/api/v1/…</code> — both bases already carry the prefix). <strong>Fixed:</strong> <code>ZohoError</code> is now a <code>ToolError</code> subclass, so the agent reads the real reason — a bad WorkDrive path now answers <code>Error executing tool read: zoho 400: {"errors":[{"id":"F6016","title":"URL Rule is not configured"}]}</code>.</li>
 <li><strong>What flipped the gate off</strong> at 21:43 was a shell edit on the host during the workflow build, with no audit row and no cron behind it. It is a one-off, not a recurring job; a change record and a corrected docstring now sit beside it so the next agent does not close it again.</li>
 </ul>
 <h2 id="reversing-it">Reversing it</h2>
