@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Maio OS - PRD Action Record</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<p>MAIO OS - PRD ACTION RECORD</p>
+<p>Date ............. 2026-11-25 PRD .............. Maio OS - Capability Enhancement PRD (2026-11-25) Route in scope .... <a href="https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel">https://ricardos-mac-mini.taile9f837.ts.net:9443/#wheel</a> Assigned lane ..... Google Neon Branch ........... prd/capability-enhancement-20261125 Commit ........... 30c8a8fa Worktree ......... /Users/ricardomaio/.t3/worktrees/maio-os/prd-capability-20261125 State ............ Committed on a branch, not merged, not deployed. The live build is untouched.</p>
+<p>WHAT WAS ACTIONED</p>
+<p>E4 - Kanban: the live board is restored.</p>
+<ul>
+<li>Finding: the companion read the board with a fixed 8 MB stdout ceiling. <code>hermes kanban ls --json</code> returned 8,610,191 bytes on 2026-11-25 (2,012 tasks, each carrying its body), so the read failed with a buffer overflow and the page reported the CLI's stray 1Password warning as the cause. The board had been shown as unavailable while the CLI itself was healthy.</li>
+<li>Second finding: of the 80 cards that survive the payload cap, the reader took the board's own order, which is done-first. All 80 were finished cards, so the blocked and ready columns carried no detail.</li>
+<li>Fix: runAsync takes a maxBuffer option (default unchanged at 8 MB); the kanban read asks for 64 MB; stdout is parsed before the exit code is judged, so a non-zero exit that still carries a complete array yields the board; cards are ordered blocked, running, ready, todo, scheduled, triage, done before the cap is applied, newest first inside a status.</li>
+<li>Fix: the collector now carries <code>blockedReason</code> from the card's own <code>last_failure_error</code>, trimmed to one line. A blocked card with no recorded reason stays null, so the page can say "no reason recorded" instead of inventing one.</li>
+<li>Verified on a QA companion (127.0.0.1:9113, this worktree): kanban ok true, counts triage 0, todo 19, scheduled 2, ready 22, running 1, blocked 16, done 1953; 16 of 16 blocked cards present in the payload.</li>
+<li>Verified in a browser: the blocked strip reads "16 blocked", each row carries its reason or "no reason recorded", the age and the assignee; the assignee links to its agent page only when the roster holds that name.</li>
+</ul>
+<p>E4 (shell) - blocked cards lead the page.</p>
+<ul>
+<li>One attention strip above the columns: title, reason, age, assignee. The blocked column repeats the reason on each card. Assignees are links only where the roster has a matching agent, so no link can miss.</li>
+</ul>
+<p>E1 - Shell: an unmatched route says so.</p>
+<ul>
+<li>Finding: <code>#unknown</code> (and every malformed fragment) fell back to Overview with no explanation, so a mistyped deep link looked like a working one.</li>
+<li>Fix: an invalid fragment now sets a notice that Overview draws once, escaped and truncated: "No section or document matches "unknown" - showing Overview instead." The render is forced, because a plain showSection keeps the frame and the notice would never appear.</li>
+<li>Verified in a browser on the QA build: the notice draws, the section is Overview, and a hostile fragment renders as escaped text.</li>
+</ul>
+<p>E8 - Wheel of Life: the ninth area is measured.</p>
+<ul>
+<li>The application code already carried the six fixes the app's own PRD listed (week periods, tenths, provenance, lifecycle, quadrant, nine areas in LIFE_AREAS). The live SQLite database did not: it held 8 areas, none with a quadrant.</li>
+<li>Action: backup <code>dev.db.bak-20261125-155352</code>, then the repo's own idempotent seed. Result: "Seed complete: { lifeAreas: 9, boards: 1 }", and the database now reports health|body, career|vocation, finances|vocation, family|spirit, growth|mind, fun|body, environment|vocation, purpose|spirit, romance|spirit.</li>
+<li>Verified live: the scoring page reads "Week 48 · 2026", "1–10 in half points", and lists Romance and Spirituality alongside the other seven areas.</li>
+</ul>
+<p>E12 - targets and width, measured not assumed.</p>
+<ul>
+<li>At 390x844 the Kanban page has no horizontal overflow (scrollWidth 390 against a 390 viewport) and no interactive target under 44 px. Desktop: no target under 24 px.</li>
+</ul>
+<p>TESTS</p>
+<ul>
+<li><code>node --test tests/</code> in the worktree: 19 tests, 19 pass, 0 fail.</li>
+<li>New coverage: a board larger than 8 MB, a non-zero exit carrying a valid array, the cap keeping blocked cards, blockedReason present only on blocked cards, an absent array still failing with the CLI line, the route notice drawn once and escaped, the blocked strip with reason, age and a real roster link.</li>
+</ul>
+<p>NOT DONE, AND WHY</p>
+<ul>
+<li>E2, E3, E5, E6, E7, E9, E10, E11: their enhancement detail in the PRD reads [unspecified]. The parts that already existed were checked, not rewritten. Nothing was invented to fill the gap.</li>
+<li>Deploy: not merged and not installed. The live companion still runs the previous build; the fixes are on the branch until Ricardo says merge.</li>
+<li>The companion's 1Password and Bitwarden secret-store warnings are still printed on every CLI call. They are noise, not the cause now that stdout is parsed first; silencing them is a separate configuration decision.</li>
+</ul>
+<p>EVIDENCE FILES</p>
+<ul>
+<li>Worktree: /Users/ricardomaio/.t3/worktrees/maio-os/prd-capability-20261125</li>
+<li>QA companion log: /tmp/qa-companion-9113.log</li>
+<li>Wheel backup: /Volumes/Hiksemi 1TB/DevMini/maio-os/apps/wheel/dev.db.bak-20261125-155352</li>
+</ul>
+<p>SECOND SLICE - commit 1f23782a</p>
+<p>E11 - The contract is published in the page.</p>
+<ul>
+<li>Stack now carries a Companion API card read from the companion's own /openapi.json, cached ten minutes so a 30 second repaint does not re-ask.</li>
+<li>Verified in a browser on the QA build: "Maio OS companion · 1.0.0 · 9 declared routes · Host allowlist on every route", then each route with its verbs (GET /health, POST /api/fix, GET /api/fix/log, POST /api/top8/research, GET /api/vault/search, GET /api/vault/note, GET /files/{rel}, GET /local.js, GET /openapi.json).</li>
+<li>When the page is not on the companion origin the card says so instead of failing silently. The action history stays where it was, in Machine.</li>
+</ul>
+<p>E2 - Search is ranked and counted.</p>
+<ul>
+<li>Order: exact title, then title prefix, then title contains, then description; a kind match adds weight, so "kanban" finds the Kanban section first.</li>
+<li>The summary now counts by kind. Verified: query "kanban" returns "3 results · Document 1 · Published page 1 · Section 1", with Section / Kanban first.</li>
+</ul>
+<p>E4 - Blocked work reaches the first screen.</p>
+<ul>
+<li>Overview raises "16 blocked — reason first on the board" above the board counts, and only when the count is above zero.</li>
+<li>Every Kanban card carries its task id (for example t_efaae3c2), so a card can be named exactly in a message or a handoff.</li>
+</ul>
+<p>Tests: 22 of 22 pass in the worktree. New cases cover the ranking order, the kind summary, the contract row shaping (verbs extracted, unknown verbs empty, null contract safe) and the blocked alert appearing only when blocked is above zero.</p>
+<p>END OF RECORD</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
