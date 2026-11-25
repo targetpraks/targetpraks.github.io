@@ -345,6 +345,21 @@ TIE-INS-NSHIRT-L-5XL</code></pre>
 </ol>
 <hr />
 <h2 id="5-where-the-catalogue-and-price-lists-landed">5. Where the catalogue and price lists landed</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TD</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">A</span>[<span class="vs">Item in the master</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>{<span class="vs">Tracked, active, stock?</span>}</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--</span> <span class="vs">no </span><span class="pp">--&gt;</span> <span class="dt">Z</span>[<span class="vs">Outside the rule</span><span class="sc">&lt;br/&gt;</span><span class="vs">retired / service / group parent without stock</span>]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--</span> <span class="vs">yes </span><span class="pp">--&gt;</span> <span class="dt">C</span>{<span class="vs">Has a SKU?</span>}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">--</span> <span class="vs">no </span><span class="pp">--&gt;</span> <span class="dt">D</span>[<span class="vs">Assign the standard SKU</span>]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">--</span> <span class="vs">yes </span><span class="pp">--&gt;</span> <span class="dt">E</span>{<span class="vs">Prefix is the brand&#39;s?</span>}</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">E</span> <span class="pp">--</span> <span class="vs">no </span><span class="pp">--&gt;</span> <span class="dt">F</span>{<span class="vs">Is there a live twin</span><span class="sc">&lt;br/&gt;</span><span class="vs">under the right prefix?</span>}</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">F</span> <span class="pp">--</span> <span class="vs">yes </span><span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="vs">Merge: keep the twin,</span><span class="sc">&lt;br/&gt;</span><span class="vs">retire this record</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">F</span> <span class="pp">--</span> <span class="vs">no </span><span class="pp">--&gt;</span> <span class="dt">H</span>[<span class="vs">Rename onto prefix + category code</span>]</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">E</span> <span class="pp">--</span> <span class="vs">yes </span><span class="pp">--&gt;</span> <span class="dt">I</span>{<span class="vs">Carries the category code?</span>}</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">I</span> <span class="pp">--</span> <span class="vs">no </span><span class="pp">--&gt;</span> <span class="dt">H</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">I</span> <span class="pp">--</span> <span class="vs">yes </span><span class="pp">--&gt;</span> <span class="dt">J</span>[<span class="vs">Conforming</span>]</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">H</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">H</span> <span class="pp">--&gt;</span> <span class="dt">J</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">J</span></span></code></pre></div>
 <p><strong>44 catalogue items</strong>, 11 per brand, all <code>active</code>, all <code>sales_and_purchases</code> with stock tracking off:</p>
 <div class="tablewrap"><table>
 <thead>
@@ -502,10 +517,10 @@ TIE-INS-NSHIRT-L-5XL</code></pre>
 </table></div>
 <hr />
 <h2 id="9-acceptance-criteria">9. Acceptance criteria</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/check_sku_prefix.py <span class="at">--strict</span>     <span class="co"># exit 0; &quot;total non-conforming: 0&quot;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/verify_pricing_standard.py       <span class="co"># &quot;all checks passed&quot; (48 checks)</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/create_demo_catalogue.py         <span class="co"># dry run: 44 rows, nothing written</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/rename_skus.py <span class="op">&lt;</span>map<span class="op">&gt;</span>             <span class="co"># dry run: shows DONE for everything already applied</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/check_sku_prefix.py <span class="at">--strict</span>     <span class="co"># exit 0; &quot;total non-conforming: 0&quot;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/verify_pricing_standard.py       <span class="co"># &quot;all checks passed&quot; (48 checks)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/create_demo_catalogue.py         <span class="co"># dry run: 44 rows, nothing written</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> scripts/rename_skus.py <span class="op">&lt;</span>map<span class="op">&gt;</span>             <span class="co"># dry run: shows DONE for everything already applied</span></span></code></pre></div>
 <p>All four were run at the end of this work; the first two are the gate.</p>
 <hr />
 <h2 id="10-risks-and-rollback">10. Risks and rollback</h2>
