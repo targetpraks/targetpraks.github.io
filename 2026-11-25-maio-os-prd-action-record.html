@@ -304,6 +304,22 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>The script swallows its traceback ("Employee sync failed: ValueError"). Run directly, the real error is: reconcile_staff_access.py line 160, require(len(people) == count, "HR directory changed during paging or was incomplete").</li>
 <li>That is an integrity check on the HR directory refusing to proceed. The next steps in that script create and remove Zoho People seats, so loosening the check could mass-change staff access. Not touched, by design.</li>
 </ul>
+<p>SEVENTH STEP - THE TWO FAILED JOBS, FIXED</p>
+<p>com.maio.constellation-dev (was 1,854 restarts, nothing on :3214)</p>
+<ul>
+<li>Cause: the Postgres database the staff build points at (127.0.0.1:55440/constellation_dev, container constellation-dev-pg) had no _prisma_migrations table while 28 tables already existed. Prisma refused to deploy (P3005).</li>
+<li>Repair: measured the delta first with <code>prisma migrate diff --from-url … --to-migrations … --shadow-database-url …</code> against a throwaway shadow database (created and dropped). The delta was exactly the last migration, so the older ones were baselined with <code>prisma migrate resolve --applied</code>, then <code>prisma migrate deploy</code> applied the two genuinely pending ones (data_request_sla, programme_storage).</li>
+<li>Result: "13 migrations found · Database schema is up to date". The job was kicked; Next.js is up on 127.0.0.1:3214 ("Ready in 318ms"), the job reads state = running, and :3214 answers 307 (the sign-in redirect).</li>
+</ul>
+<p>com.maio.agenticos-staff-seating (was exit 1 every 10 minutes)</p>
+<ul>
+<li>Cause, layer one: current_people() required the paged employee count to equal the count endpoint exactly. On 2026-11-25 the count said 38 while paging returned 40 distinct employees with unique emails - the directory had grown between the two reads. Fixed to require len(people) &gt;= count, so a short read still stops the run while growth does not; an empty page inside the range is now its own named failure.</li>
+<li>Cause, layer two: after that, the post-change audit crashed inside the container with StopIteration at verify_employee_access.py:129, <code>next(p for p in projects.values() if p.id == archive_id)</code>. The FIN archive project (295f7649-…) no longer exists in the AgenticOS database, so the audit could never finish - and it runs after removals and before additions, which is exactly why the job kept dying half-way.</li>
+<li>Repair: the archive is now optional; its visibility and grant checks run only while it exists, and the access audit's per-user archive check is skipped when it does not. No other expectation was loosened.</li>
+<li>Verified: the audit alone prints "Effective-access mismatches 0"; <code>--sync</code> exits 0 with its JSON report (ordinary_links_added 0, removed 0, awaiting_registration 23); the launchd job now shows runs 49, last exit code 0.</li>
+</ul>
+<p>Both repairs backed up first: ~/Library/Application Support/AgenticOSStaff/backups/{reconcile_staff_access,verify_employee_access}.py.<timestamp>.</p>
+<p>Live confirmation: the Machine section's Needs attention card no longer lists either job. It now reads one line only - "Swap pressure · 6.99 of 8 GB swap in use · 70.6% memory used · Trim RAM, allowlisted" - and the local payload reports zero launchd jobs with a non-zero exit and zero allowlisted services down.</p>
 <p>END OF RECORD</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
