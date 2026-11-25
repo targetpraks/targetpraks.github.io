@@ -159,7 +159,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>Version</td>
-<td>0.9 — for Ricardo's review</td>
+<td>1.1: decisions locked, build-ready</td>
 </tr>
 <tr>
 <td>Date</td>
@@ -171,18 +171,20 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>Author</td>
-<td>Adrianna A, with the MoA (decision log §16)</td>
+<td>Adrianna A, with the MoA (decision log §16); 1.1 revision by Claude Code</td>
 </tr>
 <tr>
 <td>Source of truth for the numbers</td>
-<td>Zoho Inventory org 716443079, read live 2026-11-25 18:10 SAST</td>
+<td>Zoho Inventory org 716443079, read live 2026-11-25 18:10 SAST (<code>work-zoho-inventory/data/items_live_20261125T1810.json</code>, recounted for 1.1: every §3.1 figure matches)</td>
 </tr>
 <tr>
 <td>Status</td>
-<td>Draft — build starts only on Ricardo's go</td>
+<td><strong>Decided.</strong> Ricardo answered the four blocking questions on 2026-11-25 (§16.3). Build starts on his "go"; Q5–Q15 (§17) carry defaults and block nothing</td>
 </tr>
 </tbody>
 </table></div>
+<p><strong>1.0</strong> applied Ricardo's four answers (§16.3). <strong>1.1</strong> keeps them unchanged and adds what a builder needs: testable criteria, permissions, concurrency, audit, API contract, migration, NFRs and residual risks. <strong>ASSUMPTION</strong> marks an unmeasured figure with its default.</p>
+<p><strong>Revision note.</strong> 1.1 was written by Claude Code (Claude Opus 5.5) over the 1.0 text on 2026-11-25, then checked by Adrianna A: every §3.1 figure was recounted from <code>items_live_20261125T1810.json</code> (696/505/637/676 ACDC; 11 each TLF/PPP/INF; 729/538/637/676 total), the 560 variants, the 55 <code>zz…</code> items, the 54 unprefixed and the 2 blank units all match, <code>reorder_level</code> is 0 of 729, and every §8 contrast ratio was recomputed from the hex values (all match, including <code>#0d8a4f</code> at 4.41:1, which fails AA). During the run the working copy of 1.0 was overwritten with the v0.9 draft at 20:01:46 by an unidentified writer; it was restored from the vault archive copy (<code>5.PARA/4.Archive/2026-11-25-prd-infinity-catalogue-v2.md</code>) and no content was lost. This edition is the master.</p>
 <hr />
 <h2 id="1-problem-and-vision">1. Problem and vision</h2>
 <h3 id="11-the-request-in-the-owners-words">1.1 The request, in the owner's words</h3>
@@ -203,56 +205,62 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td>R1</td>
 <td>"absolutely everything for ACDC Express, Local Farmer, Papa Pasta, Infinity Brands"</td>
-<td>Every active item in those four brands appears in the catalogue, grouped by brand then section</td>
+<td>Every in-scope item (§3.1) sits in exactly one brand → section; staff see the active, approved ones</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>R2</td>
-<td>"toggle what is or needs to [be]… always a product that has to be in stock"</td>
-<td>A <strong>core-range flag</strong> per item plus a toggle that shows only core items; a second toggle for stock health (below min / within / above max)</td>
+<td>"toggle what is or needs to [be]… always a product that has to be in stock". Clarified 2026-11-25: <em>"force my team to have some items in stock and other items made to order… visually see it… set it on and off"</em></td>
+<td>One <strong>stock policy</strong> per item with a single on/off switch: <strong>ON = Must be in stock</strong> (forced; min and max), <strong>OFF = Made to order</strong> (no minimum; lead time in days). A coloured pill on every card and in the drawer, a grid filter, per-item or bulk flips, and a brand default for new items</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>R3</td>
 <td>"show the minimums and maximums of that product"</td>
-<td>Minimum and maximum stock level shown on every item, visible to all staff, editable by managers</td>
+<td>Min and max on every must-be-in-stock item, visible to all, edited by approvers</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>R4</td>
 <td>"allow a manager to sign off on loading new products"</td>
-<td>A per-section approval queue; a new product cannot be shown as live until a manager approves it</td>
+<td>A new product stays hidden from staff until an approver <strong>for its brand</strong> approves it</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>R5</td>
 <td>"a section says 'Newly added', so that we can then sign off on the artwork"</td>
-<td>New items land in <strong>Newly added</strong> with their artwork image; approval is given on the item <em>and</em> its artwork, with a comment on rejection</td>
+<td>New items land in <strong>Newly added</strong> with their artwork; approval covers item <em>and</em> artwork; rejection needs a comment</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>R6</td>
 <td>"that can be done in each kind of section"</td>
-<td>The Newly added queue exists inside every brand and every section, plus one cross-brand queue for managers</td>
+<td>The queue appears in every brand and section, plus a cross-brand queue for Ricardo; authority stays per brand (R9)</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>R7</td>
 <td>"all of Infinity Brands team members to have access… hosted on a link"</td>
-<td>One HTTPS address; every team member signs in; no client install</td>
+<td>One HTTPS address, every team member signs in, nothing to install</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>R8</td>
 <td>"ClickUp login or Zoho login… sort out any form of authentication"</td>
-<td>Single sign-on through one of the company's existing identities; role (staff / manager) derived at sign-in</td>
+<td>Single sign-on through <strong>Zoho</strong>, confirmed 2026-11-25 for all 39 team members. Roles come from the app (§9.1)</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>"approval per brand needs to be able to be set… we can set who can approve based on that brand… based on the user list"</td>
+<td><strong>Approval authority is per brand</strong>, set in the app from the Zoho user list. Ricardo holds every brand, and more than one approver per brand is allowed</td>
 <td>P0</td>
 </tr>
 </tbody>
 </table></div>
-<p>One sentence of the request is ambiguous and is recorded as an open question (§17 Q1): <em>"toggle what is or needs to see what is always…"</em>. This PRD reads it as <strong>two separate toggles</strong> — "core range only" and "stock health" — because that is the only reading that gives the sentence a distinct meaning from R3.</p>
+<p>The ambiguous sentence, <em>"toggle what is or needs to see what is always…"</em>, is <strong>answered</strong>: the toggle is the on/off stock policy in R2, and "always in stock" is that switch set to ON. There is no second flag. "Not set" is not a third policy; it means nobody has decided yet, and it must reach zero (§1.4). Stock <strong>health</strong> (below min / within / above max) is a <em>filter</em>, not a field.</p>
 <h3 id="13-vision">1.3 Vision</h3>
-<p>One link. Every product the group sells or gives away, with its photo, its price, its stock and its limits. Every new product lands in a queue that a named manager must clear before staff ever see it as approved. Zoho Inventory stays the single source of the item; this application is the place people <em>decide</em> about it.</p>
+<p>One link. Every product the group sells or gives away, with its photo, its price, its stock and its limits. Every new product lands in a queue that a named approver must clear before staff see it. Zoho Inventory stays the single source of the item, and this application is where people <em>decide</em> about it.</p>
 <h3 id="14-success-measures">1.4 Success measures</h3>
 <div class="tablewrap"><table>
 <thead>
@@ -264,23 +272,31 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>Team members who can sign in</td>
-<td>39 of 39 ClickUp members (or 100% of the chosen IdP's directory)</td>
+<td>39 of 39, counted as distinct <code>sign_in</code> identities in the audit (Stage 1 exit)</td>
 </tr>
 <tr>
-<td>Items visible in the catalogue</td>
-<td>729 of 729 in-scope items — 696 ACDC, 11 TLF, 11 PPP, 11 INF</td>
+<td>Items mirrored and sectioned</td>
+<td>729 of 729 at baseline (696 ACDC, 11 TLF, 11 PPP, 11 INF); tests compare against Zoho's live count (§13.1 M0)</td>
 </tr>
 <tr>
-<td>Items with a min set</td>
-<td>0 today → 100% of core-range items within 60 days</td>
+<td>Items carrying an explicit stock policy</td>
+<td>0 today → 100% within 60 days of build start, from the weekly "Not set" count per brand</td>
+</tr>
+<tr>
+<td>Must-be-in-stock items with both a min and a max</td>
+<td>0 today → 100% within 60 days; enforced on save (F10)</td>
 </tr>
 <tr>
 <td>New item time-to-approval</td>
-<td>≤ 2 working days from appearing in Newly added</td>
+<td>≤ 2 working days (§11.4) from appearing in Newly added; share that met it, reported weekly</td>
 </tr>
 <tr>
 <td>Pages that need a manual edit to change a price</td>
-<td>0 — the app reads Zoho</td>
+<td>0, because the app reads Zoho</td>
+</tr>
+<tr>
+<td>Brands with an approver other than Ricardo</td>
+<td>4 of 4 in week 1 of the approvals stage</td>
 </tr>
 </tbody>
 </table></div>
@@ -299,35 +315,118 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td><strong>Staff</strong></td>
-<td>All ~39 team members</td>
+<td>All 39 team members</td>
 <td>"What do we sell, what does it look like, what does it cost, what must never run out?"</td>
-<td>All four brands, all sections, prices, stock, min/max</td>
-<td>Browse, search, filter, open an item, download/print</td>
+<td>Approved, active items in all four brands</td>
+<td>Browse, search, filter, open an item, print a page from the browser</td>
+</tr>
+<tr>
+<td><strong>Brand approver</strong></td>
+<td>One or more per brand from the user list; Ricardo holds <strong>all</strong> brands</td>
+<td>"Approve what goes live in my brand and keep its stock policy honest"</td>
+<td>Plus their brands' queue, rejected and retired entries, purchase price</td>
+<td>Approve and reject; set policy, limits, lead time and brand default, for their brands</td>
 </tr>
 <tr>
 <td><strong>Section manager</strong></td>
-<td>One named manager per brand-section (e.g. ACDC Uniform)</td>
-<td>"Approve what goes live and keep the limits honest"</td>
-<td>Their sections + the Newly added queue</td>
-<td>Approve/reject items and artwork, set min/max, set core flag</td>
-</tr>
-<tr>
-<td><strong>Brand owner</strong></td>
-<td>Brand lead per brand (and Ricardo)</td>
-<td>"The brand's range is right and the artwork is on-brand"</td>
-<td>One brand, all its sections</td>
-<td>Everything a section manager can do, across that brand</td>
+<td><strong>P1</strong>, optional, one per brand-section</td>
+<td>"Keep my section's limits honest"</td>
+<td>Their sections</td>
+<td>Policy and limits there; not in v1</td>
 </tr>
 <tr>
 <td><strong>Admin</strong></td>
-<td>Ricardo; one delegate</td>
+<td>Ricardo plus one delegate</td>
 <td>"The system is healthy and the roles are right"</td>
 <td>Everything</td>
-<td>Roles, sync, settings, export, audit</td>
+<td>Grants, sync, settings, audit export; item decisions only with a brand grant</td>
 </tr>
 </tbody>
 </table></div>
-<p>Deliberate restraint: <strong>staff cannot edit anything</strong>. Every write is a manager action with a named actor and a timestamp.</p>
+<p><strong>Staff cannot edit anything.</strong> Every write is a named action with a timestamp.</p>
+<h3 id="21-permission-matrix">2.1 Permission matrix</h3>
+<blockquote>
+<p><strong>For the business:</strong> this table is the security rule. Every ✗ is refused by the server, not just hidden on screen, and it runs as an automated test (AC7.1).</p>
+</blockquote>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Staff</th>
+<th>Approver, own brand</th>
+<th>Approver, other brand</th>
+<th>Admin delegate</th>
+<th>Ricardo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>View approved, active items</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>View NEW / REJECTED / RETIRED entries</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓ read</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>See purchase price</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Approve / reject</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Set policy, min, max, lead time (single or bulk), brand default</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Grant / revoke brand approvers</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Revoke Ricardo from any brand</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>On-demand sync, sync log, audit export</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table></div>
+<p>A refused write returns <strong>403</strong> and writes nothing. A staff read of an unapproved item returns <strong>404</strong>, so staff cannot probe for items that are not yet live.</p>
 <hr />
 <h2 id="3-scope">3. Scope</h2>
 <h3 id="31-in-scope-measured-2026-11-25-1810">3.1 In scope (measured 2026-11-25 18:10)</h3>
@@ -391,18 +490,29 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 </tbody>
 </table></div>
-<p>Supporting structures already live in Zoho: <strong>6 category codes</strong> (UNI, PRO, INS, STA, GIF, ONL), <strong>11 price lists</strong> (7 fixed-percentage brand lists at 20%, 4 per-item brand subsets), <strong>7 locations</strong> (Head Office + six brand locations), <strong>1 item custom field</strong>.</p>
+<p>Supporting structures already live in Zoho: <strong>6 category codes</strong> (UNI, PRO, INS, STA, GIF, ONL), <strong>11 price lists</strong> (7 fixed-percentage brand lists at 20%, 4 per-item brand subsets), <strong>7 locations</strong> (Head Office plus six brand locations), and <strong>1 item custom field</strong> (<code>cf_productid</code>).</p>
+<p>Derived from the snapshot:</p>
+<ul>
+<li><strong>The ACDC split is by SKU category code.</strong> Zoho's category field still puts 55 in-scope items in the duplicate <code>zzPromotional</code> (32) and <code>zzUniform</code> (23), so sections use the SKU code (§13.1 M3).</li>
+<li><strong>92 items have no photo</strong> (59 ACDC = 696 − 637, plus all 33 TLF/PPP/INF lines) and cannot be approved until one is loaded (§4.4). <strong>191 ACDC items are inactive</strong> (696 − 505) and mirror as RETIRED.</li>
+<li><strong>560 of 729 items are variants</strong> in Zoho item groups (sizes, colours); each variant is its own card and approval.</li>
+<li><strong>The baseline moved that evening.</strong> The item-master clean-up (<code>work-zoho-inventory/docs/prd-2026-11-25-item-master-standard.md</code>) merged 26 duplicates and then read 705 EXP SKUs, 0 non-conforming and 226 inactive of 839. Tests use Zoho's count at test time, never the literal 729.</li>
+<li><strong><code>INF-</code> is Infinity Brands</strong>, the group's own line. <strong>INFX</strong> is a separate venture, out of scope.</li>
+</ul>
 <h3 id="32-out-of-scope-for-v1">3.2 Out of scope for v1</h3>
 <ul>
-<li><strong>Titan Electrical (<code>TIE-</code>, 30 items), 26 <code>FRA-</code> items (frame stock) and 10 INFX items</strong> — other brands or unregistered prefixes in the same org; they join when the owner says so (Q5).</li>
-<li>The 54 items carrying no prefix at all — cleaned up in Zoho, not in this app. Together these are 110 of the org's 839 items.</li>
-<li>Ordering, quoting, invoicing, purchase orders — P2, and only if v1 earns it.</li>
-<li>Customer-facing availability. This is an internal tool; nothing here is published publicly.</li>
+<li><strong>Titan Electrical (<code>TIE-</code>, 30 items) and 26 <code>FRA-</code> items (frame stock).</strong> These are other brands, or prefixes not registered to a brand, in the same org. They join when the owner says so (Q5).</li>
+<li><strong>The 54 items with no brand prefix</strong>, which include <strong>INFX's 10</strong> (Zoho licence and setup lines). They are cleaned up in Zoho, not in this app. Together these are the <strong>110 of the org's 839 items that are out of scope (30 + 26 + 54)</strong>.</li>
+<li>Ordering, quoting, invoicing and purchase orders. These are P2, and only if v1 earns them.</li>
+<li>Customer-facing availability. This is an internal tool; nothing is published publicly.</li>
 </ul>
 <hr />
 <h2 id="4-source-of-truth-and-data-model">4. Source of truth and data model</h2>
+<blockquote>
+<p><strong>For the business:</strong> Zoho stays the one place a product is described. The app stores only decisions (approvals, who may approve, the audit) and a fast copy of Zoho for search.</p>
+</blockquote>
 <h3 id="41-the-rule">4.1 The rule</h3>
-<p><strong>Zoho Inventory owns the item.</strong> Name, SKU, brand, category, price, photo, stock, <em>minimum</em> and — by the MoA's ruling — the <strong>maximum and core-range flag</strong> as item custom fields, so the item master stays the one place a product is described. The app adds only the approval record and its own audit, plus a read mirror of the limits for fast filtering.</p>
+<p><strong>Zoho Inventory owns the item</strong>: name, SKU, brand, category, price, photo, stock, the <em>minimum</em> (native <code>reorder_level</code>) and, by the MoA's ruling, the <strong>stock policy, maximum and lead time</strong> as item custom fields. The app owns approvals, brand approvers, roles and the audit, plus a read mirror. Zoho always wins, except over an app write still in flight (§4.5). Everything is keyed on Zoho <code>item_id</code>, never on SKU, so a rename never breaks history.</p>
 <h3 id="42-entities">4.2 Entities</h3>
 <div class="tablewrap"><table>
 <thead>
@@ -414,120 +524,198 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td><strong>Item</strong> (synced, read-mostly)</td>
+<td><strong>Item</strong> (mirror)</td>
 <td>Zoho</td>
-<td><code>item_id</code>, <code>sku</code>, <code>name</code>, <code>brand</code>, <code>category_code</code>, <code>unit</code>, <code>rate</code>, <code>purchase_rate</code>, <code>status</code>, <code>image</code>, <code>stock_on_hand</code>, <code>min_level</code> (Zoho <code>reorder_level</code>), <code>track_inventory</code></td>
+<td><code>item_id</code>, <code>sku</code>, <code>name</code>, <code>description</code>, <code>brand</code> (SKU prefix), <code>category_code</code> (SKU), <code>group_id</code>, variant options, <code>unit</code>, <code>rate</code>, <code>purchase_rate</code>, <code>is_taxable</code>, <code>status</code>, <code>track_inventory</code>, <code>image_document_id</code>, <code>image_sha256</code>, <code>stock_on_hand</code>, <code>min_level</code> (= <code>reorder_level</code>), <code>last_modified_time</code></td>
 </tr>
 <tr>
 <td><strong>Section</strong></td>
 <td>App</td>
-<td><code>brand</code> + <code>category_code</code> + display order + manager</td>
+<td><code>brand</code>, <code>category_code</code>, display order, <code>is_holding</code> (§13.1 M3), <code>manager</code> (P1)</td>
 </tr>
 <tr>
 <td><strong>CatalogueEntry</strong></td>
-<td>App (status mirrored to Zoho)</td>
-<td><code>item_id</code>, <code>section</code>, <code>state</code> (new / approved / rejected / retired), <code>artwork_state</code> (missing / pending / approved / changes_requested), <code>approved_by</code>, <code>approved_at</code>, <code>snapshot_hash</code>; written back as <code>Catalogue Status</code> + <code>Approved On</code></td>
+<td>App</td>
+<td><code>item_id</code>, <code>section</code>, <code>state</code> (<code>NEW</code> | <code>APPROVED</code> | <code>REJECTED</code> | <code>RETIRED</code>), <code>changed_since_approval</code>, <code>last_approved_hash</code>, <code>version</code>; artwork status derived</td>
 </tr>
 <tr>
 <td><strong>Approval</strong> (append-only)</td>
 <td>App</td>
-<td><code>entry_id</code>, <code>action</code>, <code>actor</code>, <code>role</code>, <code>comment</code>, <code>snapshot_hash</code>, <code>created_at</code></td>
+<td><code>entry_id</code>, <code>action</code> (<code>approve</code> | <code>reject</code> | <code>baseline</code>), <code>actor</code>, <code>role</code>, <code>comment</code>, <code>snapshot_hash</code>, <code>created_at</code>, <code>prev_hash</code>, <code>row_hash</code></td>
 </tr>
 <tr>
-<td><strong>ItemLimit</strong></td>
-<td>Zoho (custom fields), mirrored read-only in the app</td>
-<td><code>item_id</code>, <code>max_level</code>, <code>core_range</code> (bool) — written to Zoho as <code>Maximum Level</code> and <code>Core Range</code>; <code>updated_by</code>, <code>updated_at</code> kept in the app</td>
+<td><strong>StockPolicy</strong> (mirror)</td>
+<td>Zoho custom fields</td>
+<td><code>item_id</code>, <code>stock_mode</code> (<code>STOCKED</code> | <code>MADE_TO_ORDER</code> | <code>UNSET</code>), <code>max_level</code>, <code>lead_time_days</code>, <code>suggested_mode</code> (§13.1 M5), <code>zoho_write_state</code> (<code>confirmed</code> | <code>pending</code> | <code>failed</code>), <code>version</code></td>
+</tr>
+<tr>
+<td><strong>BrandDefault</strong></td>
+<td>App</td>
+<td><code>brand</code>, <code>stock_mode</code>, plus min and max (if STOCKED) or lead time (if made to order)</td>
+</tr>
+<tr>
+<td><strong>BrandApprover</strong></td>
+<td>App</td>
+<td><code>brand</code>, <code>idp_subject</code>, <code>email</code>, <code>display_name</code>, <code>granted_by</code>, <code>granted_at</code>, <code>active</code>. Ricardo's rows cannot be revoked</td>
 </tr>
 <tr>
 <td><strong>UserRole</strong></td>
 <td>App</td>
-<td><code>idp_subject</code>, <code>email</code>, <code>display_name</code>, <code>role</code>, <code>brand_scope</code>, <code>section_scope</code></td>
+<td><code>idp_subject</code>, <code>email</code>, <code>display_name</code>, <code>is_admin</code>, <code>first_seen_at</code>, <code>last_seen_at</code></td>
+</tr>
+<tr>
+<td><strong>BulkJob</strong></td>
+<td>App</td>
+<td><code>actor</code>, <code>selection</code>, <code>target</code>, <code>before_values</code>, <code>progress</code>, <code>failures</code></td>
 </tr>
 <tr>
 <td><strong>SyncRun</strong></td>
 <td>App</td>
-<td><code>started_at</code>, <code>finished_at</code>, <code>items_read</code>, <code>items_changed</code>, <code>errors</code></td>
+<td><code>started_at</code>, <code>finished_at</code>, <code>items_read</code>, <code>items_changed</code>, <code>images_fetched</code>, <code>zoho_calls</code>, <code>throttled_seconds</code>, <code>errors</code>, <code>audit_head_hash</code></td>
 </tr>
 <tr>
-<td><strong>AuditEvent</strong></td>
+<td><strong>AuditEvent</strong> (append-only)</td>
 <td>App</td>
-<td><code>actor</code>, <code>action</code>, <code>object</code>, <code>before</code>, <code>after</code>, <code>at</code></td>
+<td><code>actor</code> (a person, or <code>zoho-external</code> / <code>brand-default</code> / <code>system</code>), <code>action</code>, <code>object</code>, <code>before</code>, <code>after</code>, <code>at</code>, <code>prev_hash</code>, <code>row_hash</code></td>
 </tr>
 </tbody>
 </table></div>
-<h3 id="43-the-snapshot-hash--carried-over-from-the-generator">4.3 The snapshot hash — carried over from the generator</h3>
-<p>The static catalogue already proves this pattern works (<code>b3d648ba…</code>): a SHA-256 over the canonical item payload. The app keeps it per approval, so "what the manager approved" is provable even after the item changes: re-hashing the item as it stood produces the same value. Artwork is included in the hash by its image id and byte length, not its bytes.</p>
+<h3 id="43-the-snapshot-hash">4.3 The snapshot hash</h3>
+<p>The static catalogue already proves the pattern (<code>b3d648ba…</code>): a SHA-256 over a canonical payload, stored per approval, so what was approved stays provable after the item changes.</p>
+<ul>
+<li><strong>Payload:</strong> sorted-key, whitespace-free UTF-8 JSON of <code>item_id</code>, <code>sku</code>, <code>name</code>, <code>description</code>, <code>brand</code>, <code>category_code</code>, <code>unit</code>, <code>rate</code> (2-decimal string) and <code>image_sha256</code>.</li>
+<li><strong>Artwork is hashed by its bytes</strong>, not by image id and length as in 1.0, so the hash proves which picture was approved, as the locked rule requires.</li>
+<li><strong>Excluded:</strong> stock, min, max, policy, lead time, purchase price and status. They change daily or are decided separately. The print edition keeps its own hash.</li>
+</ul>
 <h3 id="44-state-machine">4.4 State machine</h3>
-<pre><code>Zoho item created ──► NEW (Newly added)
-                        │  manager reviews artwork + fields
-        ┌───────────────┼────────────────┐
-        ▼               ▼                ▼
-   APPROVED        CHANGES REQUESTED   REJECTED
-   (live to staff)  (back to the        (hidden, reason kept)
-                     submitter)
-        │
-        ▼
-    RETIRED (item deactivated in Zoho)</code></pre>
-<p>Rules: an item with <strong>no artwork cannot be approved</strong> (R5). A rejected item stays visible to managers with its reason. Retiring in Zoho retires it here on the next sync, never deletes the approval history.</p>
-<hr />
-<h2 id="5-features">5. Features</h2>
-<h3 id="51-p0--the-app-that-ships-first">5.1 P0 — the app that ships first</h3>
+<pre><code>Zoho item appears ──► NEW (Newly added; hidden from staff)
+             ┌──────────┴──────────┐
+             ▼                     ▼
+         APPROVED               REJECTED (hidden, reason kept)
+      (visible to staff)           └─ item edited in Zoho (hash changes) ──► NEW
+             └─ hash changes in Zoho ──► stays APPROVED, &quot;changed since approval&quot;, re-queued
+any state ──► RETIRED when Zoho status is inactive (hidden from staff)
+RETIRED ──► APPROVED on reactivation if hash = last_approved_hash, else NEW</code></pre>
+<p><strong>Rules:</strong> (1) <strong>No artwork, no approval</strong> (R5). (2) An item with <strong>no stock policy may be approved</strong> but stays flagged "Policy not set"; 0 of 729 carry one today, and blocking would stall the catalogue. (3) <strong>Reject is the send-back</strong>: the fix is made in Zoho, and the new hash returns the item to NEW. (4) A changed approved item stays live with current Zoho values, so a price change never blanks the catalogue (Q14 covers artwork). (5) Retiring never deletes history.</p>
+<h3 id="45-concurrency-rules">4.5 Concurrency rules</h3>
+<blockquote>
+<p><strong>For the business:</strong> when two people act on one item at once, exactly one action counts, and the other person is told who was first.</p>
+</blockquote>
+<p>Every mutable row has a <code>version</code>. Writes are conditional, and a stale write returns <strong>409</strong> with who and when.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>ID</th>
-<th>Feature</th>
-<th>Acceptance criteria</th>
+<th>Case</th>
+<th>Rule</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>F1</strong></td>
-<td><strong>Single sign-on</strong> through the chosen identity provider</td>
-<td>Every member of the directory can sign in with no account created by us. A first-time user reaches the catalogue in ≤ 3 clicks. Sign-out clears the session. Unauthenticated requests never see item data.</td>
+<td>Two approvers decide one entry</td>
+<td>First commit wins; the second gets 409 "Approved by ‹name› at ‹time›"</td>
 </tr>
 <tr>
-<td><strong>F2</strong></td>
-<td><strong>Brand and section browsing</strong></td>
-<td>Home shows the four brands with item counts. Opening a brand lists its sections with counts. Opening a section shows a card grid: photo, name, SKU, price, min/max, stock. Every in-scope item appears in exactly one section — a count check against Zoho returns 729.</td>
+<td>Item changed in Zoho after the drawer opened</td>
+<td>Approve carries the hash shown; a mismatch returns 409 <code>stale_snapshot</code> and reloads</td>
 </tr>
 <tr>
-<td><strong>F3</strong></td>
-<td><strong>Search and toggles</strong></td>
-<td>Free-text search over name and SKU returns in &lt; 300 ms at 729 items. Toggles: <strong>Core range only</strong>, <strong>Stock health</strong> (below min / within / above max), <strong>Status</strong> (new / approved). Filter state survives a page refresh (URL query).</td>
+<td>Policy flipped during an approval</td>
+<td>Independent (policy is outside the hash); both succeed, both audited</td>
 </tr>
 <tr>
-<td><strong>F4</strong></td>
-<td><strong>Item detail</strong></td>
-<td>Photo, description, SKU, brand, section, unit, list price (ex-VAT), purchase price to managers only, stock on hand, min, max, core flag, and approval history. Blank limits read "Not set", never 0.</td>
+<td>Two flips of one item, or a bulk job meeting an edited item</td>
+<td>Version check: the loser gets 409; a bulk job skips and lists the item</td>
 </tr>
 <tr>
-<td><strong>F5</strong></td>
-<td><strong>Newly added queue per section</strong></td>
-<td>Each brand and section shows a Newly added count. The queue lists items in NEW state with artwork thumbnail, submitted date and the fields a manager must check. A cross-brand queue exists for brand owners.</td>
+<td>Approver revoked mid-session</td>
+<td>Authority is checked at commit, so the next action returns 403</td>
 </tr>
 <tr>
-<td><strong>F6</strong></td>
-<td><strong>Approve / reject with artwork</strong></td>
-<td>Approve requires the artwork image to have loaded and a confirmation click; it records actor, time, role and snapshot hash. Reject requires a comment (≥ 10 characters). An approved item becomes visible to staff immediately (≤ 2 s). Approving an item with no image is impossible.</td>
+<td>Sync meets a pending app write</td>
+<td>Sync leaves the field alone unless Zoho's <code>last_modified_time</code> is newer; then Zoho wins, audited <code>superseded_by_zoho</code></td>
 </tr>
 <tr>
-<td><strong>F7</strong></td>
-<td><strong>Roles and scoping</strong></td>
-<td>Server-side enforcement, not just hidden buttons: staff get read-only; a section manager can act only inside their sections; a brand owner only inside their brand. A direct API call outside scope returns 403.</td>
-</tr>
-<tr>
-<td><strong>F8</strong></td>
-<td><strong>Sync with visible health</strong></td>
-<td>Nightly full sync + on-demand refresh by an admin. Sync writes a SyncRun row with counts and errors. If Zoho fails or throttles, the app keeps serving the last good data and shows "last synced 6h ago" rather than an empty catalogue.</td>
-</tr>
-<tr>
-<td><strong>F9</strong></td>
-<td><strong>Audit trail</strong></td>
-<td>Every approval, rejection, role change and limit change is an immutable row: who, what, before, after, when. Exportable to CSV by an admin.</td>
+<td>Policy edited directly in Zoho</td>
+<td>Applied by the sync, audited as <code>zoho-external</code> (Zoho does not say who)</td>
 </tr>
 </tbody>
 </table></div>
+<h3 id="46-audit-immutability">4.6 Audit immutability</h3>
+<blockquote>
+<p><strong>For the business:</strong> nobody, including the app itself, can quietly alter a past approval, and tampering is detected overnight.</p>
+</blockquote>
+<p><code>approval</code> and <code>audit_event</code> are insert-only: the app's role has INSERT and SELECT only, and a trigger rejects UPDATE and DELETE. Rows form a chain, <code>row_hash = SHA-256(prev_hash ‖ row)</code>, which a nightly verifier walks, alerting on any break and storing the head hash in SyncRun and the dump. Mistakes are corrected with a new row, never an edit.</p>
+<hr />
+<h2 id="5-features">5. Features</h2>
+<h3 id="51-p0--the-app-that-ships-first">5.1 P0 — the app that ships first</h3>
+<p>Every criterion is a test (§12) that can fail. "Approver" means an approver for the item's brand, or Ricardo.</p>
+<p><strong>F1 — Single sign-on through Zoho.</strong></p>
+<ul>
+<li>AC1.1 A first-time team member with a Zoho login reaches Home in ≤ 3 clicks, with no registration.</li>
+<li>AC1.2 With no session, any page, image or <code>/api/*</code> route returns a sign-in redirect (pages) or 401 (API), with no item data.</li>
+<li>AC1.3 Sign-out clears the app cookie and the Access session; the next request asks for sign-in.</li>
+<li>AC1.4 A new identity becomes Staff and sees approved items only.</li>
+<li>AC1.5 By Stage 1 exit, the audit holds <code>sign_in</code> events from 39 distinct identities.</li>
+</ul>
+<p><strong>F2 — Brand and section browsing.</strong></p>
+<ul>
+<li>AC2.1 After a sync, the mirrored count equals Zoho's live in-scope count (729 at baseline), and each item sits in exactly one section (holding counted and flagged).</li>
+<li>AC2.2 Home shows four brand cards counting approved, active items, plus a pending count for approvers.</li>
+<li>AC2.3 Each card shows photo (or "No photo"), name, SKU, price, policy pill, min/max or lead time, and stock.</li>
+</ul>
+<p><strong>F3 — Search and filter chips.</strong> Chips: <strong>All · Must be in stock · Made to order · Policy not set</strong>, plus <strong>Stock health</strong> and <strong>Status</strong> (approvers).</p>
+<ul>
+<li>AC3.1 A full SKU (for example <code>INF-STA-DESKPAD-A3</code>) returns that item first; server p95 &lt; 300 ms over 100 runs.</li>
+<li>AC3.2 Search is a case-insensitive substring match on name and SKU, limited to what the user may see.</li>
+<li>AC3.3 A reload, or the same URL opened by another user, gives the same filter, within that user's permissions.</li>
+<li>AC3.4 Made-to-order and not-set items never appear under a Stock health chip.</li>
+</ul>
+<p><strong>F4 — Item detail.</strong> Photo, description, SKU, brand, section, variant, unit, price with VAT label (§11.4), pill, stock, min and max (or lead time), approval history.</p>
+<ul>
+<li>AC4.1 For Staff, purchase price is absent from both the HTML and the API response.</li>
+<li>AC4.2 Missing limits read "Not set", never 0. AC4.3 A made-to-order item shows its lead time and no minimum field.</li>
+</ul>
+<p><strong>F5 — Newly added queue per brand and section.</strong></p>
+<ul>
+<li>AC5.1 After the next sync, a new in-scope Zoho item is NEW in its section's queue, the brand's pending count rises, and staff see nothing.</li>
+<li>AC5.2 Ricardo's <code>/new</code> lists all four brands; any other approver's only their brands.</li>
+<li>AC5.3 Each row shows the thumbnail, the date it appeared, the fields to check (name, category, price, unit) and the brand default policy.</li>
+</ul>
+<p><strong>F6 — Approve / reject with artwork: one click, per brand.</strong></p>
+<ul>
+<li>AC6.1 With the image loaded and the hash unchanged, one click sets APPROVED, writes an Approval row (actor, role, time, <code>snapshot_hash</code>), and staff see the item within ≤ 2 s. No confirm dialog, no e-signature.</li>
+<li>AC6.2 With no image, Approve is disabled with the reason, and the API returns 422 <code>artwork_missing</code>.</li>
+<li>AC6.3 A rejection comment under 10 characters returns 422; with 10 or more, the entry becomes REJECTED, hidden from staff, reason kept.</li>
+<li>AC6.4 A TLF-only approver approving an ACDC item gets 403, and no row is written.</li>
+<li>AC6.5 Two concurrent approvals leave exactly one Approval row; the other approver gets 409. AC6.6 An item changed in Zoho since the drawer opened returns 409 <code>stale_snapshot</code>.</li>
+</ul>
+<p><strong>F7 — Roles, brand authority and scoping.</strong></p>
+<ul>
+<li>AC7.1 The §2.1 matrix runs as an API test: every ✗ returns 403 (404 for staff reads of unapproved items) and writes nothing.</li>
+<li>AC7.2 A grant from Settings writes a BrandApprover row and an AuditEvent, and the grantee can act on their next request.</li>
+<li>AC7.3 A revocation applies on the next request, and revoking Ricardo is refused. AC7.4 A brand with only Ricardo shows a warning.</li>
+</ul>
+<p><strong>F8 — Sync with visible health.</strong></p>
+<ul>
+<li>AC8.1 The nightly run (02:00 SAST) and each admin refresh write a SyncRun row with counts, calls and errors.</li>
+<li>AC8.2 On a Zoho 429 or 5xx, the last good data keeps serving under "Last synced ‹time›", the error is recorded, and the admin is alerted.</li>
+<li>AC8.3 A sync with no image changes makes 0 image calls. AC8.4 The call log shows ≤ 1 Zoho request/s overall and ≤ 0.5 writes/s.</li>
+</ul>
+<p><strong>F9 — Audit trail.</strong></p>
+<ul>
+<li>AC9.1 Every approval, rejection, role change, policy or limit change, brand-default change and bulk job writes one AuditEvent per affected item, with before and after.</li>
+<li>AC9.2 UPDATE or DELETE on <code>approval</code> or <code>audit_event</code> through the app's role fails. AC9.3 A hand-edited row in a scratch copy is reported by the verifier's next run.</li>
+<li>AC9.4 The admin CSV export for a date range matches the table's row count for that range.</li>
+</ul>
+<p><strong>F10 — Stock policy: the on/off switch.</strong></p>
+<ul>
+<li>AC10.1 ON with min ≥ 1 and max ≥ min writes, and reads back from Zoho, <code>Stock Policy = Must be in stock</code>, <code>reorder_level = min</code> and <code>Maximum Level = max</code>; the pill turns green, with one AuditEvent.</li>
+<li>AC10.2 ON without a min or a max is refused in a plain sentence, and nothing reaches Zoho. AC10.3 A max below the min is refused: "Maximum must be at least the minimum".</li>
+<li>AC10.4 OFF requires a lead time of ≥ 1 whole day, clears min and max in Zoho (old values kept in the audit to pre-fill a later ON), and turns the pill amber.</li>
+<li>AC10.5 A failed Zoho write shows "Pending Zoho", is retried (§10.1), is never shown as confirmed, and alerts the admin on final failure.</li>
+<li>AC10.6 A bulk set on N items runs as a background job with progress: N Zoho calls, N audit rows, failures listed, undo available.</li>
+<li>AC10.7 Every card and drawer shows exactly one of three pills (§8), each with an icon and a word. A policy cannot go back to "Not set".</li>
+</ul>
 <h3 id="52-p1--after-launch-one-quarter">5.2 P1 — after launch, one quarter</h3>
 <div class="tablewrap"><table>
 <thead>
@@ -539,13 +727,8 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>F10</td>
-<td>Edit min/max and the core flag in the app, with change history</td>
-<td>Today those live in Zoho; managers should not need Zoho to set a limit</td>
-</tr>
-<tr>
 <td>F11</td>
-<td>Notifications (Cliq or email) when an item needs sign-off, and a daily digest to managers</td>
+<td>Notifications (Cliq or email) when an item needs sign-off, and a daily digest to approvers (§10.2)</td>
 <td>Approval without a nudge stalls</td>
 </tr>
 <tr>
@@ -556,27 +739,30 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td>F13</td>
 <td>Generate the print edition from the app (reuse the existing generator)</td>
-<td>One data set, screen + print</td>
+<td>One data set for screen and print</td>
 </tr>
 <tr>
 <td>F14</td>
-<td>Stock health dashboard: how many items are below min, per brand</td>
-<td>Turns the min/max data into a decision</td>
+<td>Stock health dashboard: items below min per brand, and the must-be-in-stock vs made-to-order split</td>
+<td>Turns the policy and limit data into a decision</td>
 </tr>
 <tr>
 <td>F15</td>
-<td>Bulk approve with per-item records</td>
-<td>40 new items in a week should not be 40 modal dialogs</td>
+<td>Bulk approve with per-item records, including all variants of a group at once</td>
+<td>560 of 729 items are variants</td>
 </tr>
 </tbody>
 </table></div>
 <h3 id="53-p2--only-if-v1-is-adopted">5.3 P2 — only if v1 is adopted</h3>
-<p>F16 ordering/replenishment into Zoho (sales orders for brands, purchase requests for stock), F17 per-location min/max, F18 artwork versioning through WorkDrive, F19 supplier lead times and reorder cadence.</p>
+<p>F16 ordering and replenishment into Zoho (sales orders for brands, purchase requests for stock), F17 per-location min/max, F18 artwork versioning through WorkDrive, F19 supplier lead times and reorder cadence.</p>
 <hr />
 <h2 id="6-application-structure">6. Application structure</h2>
+<blockquote>
+<p><strong>For the business:</strong> one web app on the company staging server, behind the Cloudflare gate already used for internal apps. Staff never touch Zoho directly.</p>
+</blockquote>
 <h3 id="61-architecture">6.1 Architecture</h3>
 <figure>
-<svg viewBox="0 0 940 470" width="100%" role="img" aria-label="Architecture: identity provider to Cloudflare Access to the catalogue app, its database and the Zoho Inventory API">
+<svg viewBox="0 0 940 470" width="100%" role="img" aria-label="Architecture: Zoho sign-in through Cloudflare Access to the catalogue app, its database, the image cache and the Zoho Inventory API">
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#5b6770"/>
@@ -587,16 +773,16 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
   <rect x="14" y="26" width="170" height="70" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
   <text x="28" y="52" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Team member</text>
   <text x="28" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">browser, phone, desktop</text>
-  <text x="28" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">~39 people</text>
+  <text x="28" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">39 people</text>
 
   <rect x="232" y="26" width="190" height="70" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
-  <text x="246" y="52" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Identity provider</text>
-  <text x="246" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">ClickUp or Zoho login</text>
-  <text x="246" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">role claim at sign-in</text>
+  <text x="246" y="52" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Zoho login</text>
+  <text x="246" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">proves who the person is</text>
+  <text x="246" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">ClickUp OAuth: fallback only</text>
 
   <rect x="470" y="26" width="210" height="70" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
   <text x="484" y="52" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Cloudflare Access</text>
-  <text x="484" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">policy per app, HTTPS</text>
+  <text x="484" y="70" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">edge gate, HTTPS, signed JWT</text>
   <text x="484" y="86" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">audit of every sign-in</text>
 
   <path d="M184,61 L228,61" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
@@ -604,9 +790,9 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 
   <rect x="250" y="170" width="440" height="120" rx="12" fill="#ffffff" stroke="#e2001a" stroke-width="1.6"/>
   <text x="268" y="196" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Catalogue app (Infinity staging server)</text>
-  <text x="268" y="216" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">browse · search · toggles · item detail</text>
-  <text x="268" y="233" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Newly added queue · approve / reject · roles</text>
-  <text x="268" y="250" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">API routes enforce scope server-side</text>
+  <text x="268" y="216" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">browse · search · policy switch · item detail</text>
+  <text x="268" y="233" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Newly added queue · approve / reject · roles from the app</text>
+  <text x="268" y="250" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">API routes enforce scope server-side · paced Zoho client</text>
   <text x="268" y="272" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">container on staging-ingress, no host ports</text>
 
   <path d="M575,96 L520,166" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
@@ -614,25 +800,26 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
   <rect x="740" y="170" width="186" height="120" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
   <text x="754" y="196" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">App database</text>
   <text x="754" y="214" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Postgres</text>
-  <text x="754" y="231" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">entries · approvals ·</text>
-  <text x="754" y="247" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">limits mirror · roles · audit</text>
-  <text x="754" y="269" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">nightly dump</text>
+  <text x="754" y="231" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">approvals · audit (append-only)</text>
+  <text x="754" y="247" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">item mirror · roles · jobs</text>
+  <text x="754" y="269" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">nightly dump, off-host copy</text>
   <path d="M690,230 L736,230" stroke="#5b6770" stroke-width="1.3" fill="none" marker-end="url(#a)"/>
 
   <rect x="250" y="340" width="210" height="100" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
   <text x="264" y="366" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Zoho Inventory</text>
-  <text x="264" y="384" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">items, photos, stock,</text>
-  <text x="264" y="400" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">price lists, reorder level,</text>
-  <text x="264" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">max + core custom fields</text>
+  <text x="264" y="384" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">items, photos, stock, reorder level</text>
+  <text x="264" y="400" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Stock Policy, Maximum Level,</text>
+  <text x="264" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Lead Time Days fields</text>
+  <text x="264" y="432" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">read by a server-side credential</text>
 
   <rect x="500" y="340" width="190" height="100" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
   <text x="514" y="366" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Image cache</text>
   <text x="514" y="384" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">photos fetched once,</text>
   <text x="514" y="400" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">paced (429 measured)</text>
-  <text x="514" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">served from disk</text>
+  <text x="514" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">served only to signed-in users</text>
 
   <rect x="730" y="340" width="196" height="100" rx="10" fill="#ffffff" stroke="#c9d1d9" stroke-width="1.2"/>
-  <text x="744" y="366" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Print edition</text>
+  <text x="744" y="366" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="13" font-weight="600" fill="#11161c">Print edition (P1)</text>
   <text x="744" y="384" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">same data to A4 PDF</text>
   <text x="744" y="400" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">edition hash for sign-off</text>
   <text x="744" y="416" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Mac mini generator</text>
@@ -641,8 +828,8 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
   <path d="M470,290 L540,336" stroke="#b6bfc7" stroke-width="1.1" fill="none" stroke-dasharray="5 4" marker-end="url(#a)"/>
   <path d="M600,290 L790,336" stroke="#b6bfc7" stroke-width="1.1" fill="none" stroke-dasharray="5 4" marker-end="url(#a)"/>
 
-<p><text x="26" y="200" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Read path:</text> <text x="26" y="218" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">everything staff see</text> <text x="26" y="235" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">comes from the app,</text> <text x="26" y="252" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">never live from Zoho.</text> <text x="26" y="276" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Write path:</text> <text x="26" y="293" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">approvals live in the app,</text> <text x="26" y="310" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">limits are written to Zoho</text> <text x="26" y="327" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">and mirrored back.</text> </svg></p>
-<figcaption>One sign-in, one app, one database; Zoho Inventory stays the master of the item and the print edition is generated from the same data.</figcaption>
+<p><text x="26" y="200" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Read path:</text> <text x="26" y="218" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">everything staff see</text> <text x="26" y="235" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">comes from the app,</text> <text x="26" y="252" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">never live from Zoho.</text> <text x="26" y="276" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">Write path:</text> <text x="26" y="293" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">approvals live in the app,</text> <text x="26" y="310" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">policy and limits are written</text> <text x="26" y="327" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#5b6770">to Zoho and mirrored back.</text> </svg></p>
+<figcaption>One sign-in, one app, one database. Zoho Inventory stays the master of the item, and the print edition (P1) is generated from the same data.</figcaption>
 </figure>
 
 <h3 id="62-screens">6.2 Screens</h3>
@@ -659,74 +846,154 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td>S1</td>
 <td>Sign-in</td>
-<td><code>/</code></td>
-<td>Provider button, then straight to the catalogue</td>
+<td>(Cloudflare Access)</td>
+<td>The Zoho button, then straight to Home</td>
 </tr>
 <tr>
 <td>S2</td>
 <td>Home</td>
 <td><code>/</code></td>
-<td>Four brand cards with counts, plus "Your sections" for managers, plus Newly added badge</td>
+<td>Four brand cards with counts, "Your brands" for approvers, and the Newly added badge</td>
 </tr>
 <tr>
 <td>S3</td>
 <td>Brand</td>
 <td><code>/b/:brand</code></td>
-<td>Section cards with counts and pending approvals</td>
+<td>Section cards with counts and pending approvals; the holding section shows for approvers only</td>
 </tr>
 <tr>
 <td>S4</td>
 <td>Section</td>
 <td><code>/b/:brand/s/:section</code></td>
-<td>Card grid + search + toggles (Core only, Stock health, Status)</td>
+<td>Card grid, search, policy chips (All / Must be in stock / Made to order / Not set), Stock health and Status. The header shows the policy split</td>
 </tr>
 <tr>
 <td>S5</td>
 <td>Item</td>
 <td><code>/item/:id</code> (drawer over S4)</td>
-<td>Photo, fields, limits, stock, history, manager actions</td>
+<td>Photo, fields, the stock-policy switch, limits, stock, history and approver actions</td>
 </tr>
 <tr>
 <td>S6</td>
 <td>Newly added</td>
-<td><code>/new</code> (global) and in-section</td>
-<td>Queue with artwork, approve / reject</td>
+<td><code>/new</code>, and in each section</td>
+<td>The queue with artwork and one-click approve / reject; variants of one group grouped together</td>
 </tr>
 <tr>
 <td>S7</td>
-<td>Limits</td>
-<td><code>/limits</code> (manager)</td>
-<td>Table of items with min/max/core, filter "not set"</td>
+<td>Stock policy</td>
+<td><code>/policy</code> (approvers)</td>
+<td>Table with the switch, min, max, lead time and suggested policy; "not set" and "made to order" filters; bulk set per section or brand; job progress</td>
 </tr>
 <tr>
 <td>S8</td>
 <td>Settings</td>
 <td><code>/settings</code> (admin)</td>
-<td>Sections, managers, sync, exports, audit</td>
+<td>Brand approvers (with each one's last sign-in), brand defaults, sections, sync log, audit export, public holidays</td>
 </tr>
 </tbody>
 </table></div>
-<p>Mobile: S4 and S6 are the two screens that must work on a phone; the grid becomes one column, the drawer becomes a full screen.</p>
 <h3 id="63-navigation-rules">6.3 Navigation rules</h3>
-<p>Brand → section → item is the only hierarchy; search and Newly added are global shortcuts. No nested menus deeper than that — staff should never be more than two taps from an item.</p>
+<p>Brand → section → item is the only hierarchy, and search and Newly added are global shortcuts. Staff are never more than two taps from an item.</p>
+<h3 id="64-loading-empty-and-error-states">6.4 Loading, empty and error states</h3>
+<p>Loading is always a skeleton, and image boxes keep their 1:1 shape.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>What the screen shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zoho unreachable</td>
+<td>Banner "Last synced ‹time› — showing that data"; everything still works</td>
+</tr>
+<tr>
+<td>Database down</td>
+<td>Full page "Catalogue unavailable, try again in a few minutes"; admin alerted</td>
+</tr>
+<tr>
+<td>Brand with nothing approved (S2/S3)</td>
+<td>"No approved items yet"; approvers also see "‹N› waiting for sign-off"</td>
+</tr>
+<tr>
+<td>No filter matches (S4)</td>
+<td>"No items match these filters", with Clear</td>
+</tr>
+<tr>
+<td>Photo missing or failed</td>
+<td>A neutral "No photo" tile, never a broken image</td>
+</tr>
+<tr>
+<td>Staff open a retired or unapproved item (S5)</td>
+<td>"This item is not in the catalogue" (404)</td>
+</tr>
+<tr>
+<td>Empty queue (S6)</td>
+<td>"Nothing waiting", with the time of the last decision</td>
+</tr>
+<tr>
+<td>Artwork not loaded (S6)</td>
+<td>Approve disabled: "Artwork not loaded"</td>
+</tr>
+<tr>
+<td>Someone acted first (S6/S7)</td>
+<td>The 409 text: who, and when</td>
+</tr>
+<tr>
+<td>Write in flight or failed, or custom fields missing (S7)</td>
+<td>"Pending Zoho — retrying" on the row; missing fields make the screen read-only</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="65-phone-and-warehouse-floor">6.5 Phone and warehouse floor</h3>
+<p>S4–S6 must work on a phone (one-column grid, full-screen drawer). Touch targets are ≥ 44 × 44 px, stricter than AA, for gloved hands. Images are resized derivatives (§10.1). No offline mode: a dropped connection keeps the last data and shows "Offline: changes not saved".</p>
 <hr />
 <h2 id="7-flows">7. Flows</h2>
 <h3 id="71-sign-in">7.1 Sign-in</h3>
-<p>Identity provider → Cloudflare Access → app session. The app maps the IdP email to a UserRole row. An email with no role row lands as <strong>Staff</strong> (read-only) and an admin sees them in Settings → Users to promote. No one is ever locked out by a missing role.</p>
+<p>Zoho login → Cloudflare Access → app. The app maps the verified email to a UserRole. A new identity lands as <strong>Staff</strong> (read-only) and appears in Settings for an admin to grant a brand. No one is locked out by a missing role.</p>
 <h3 id="72-browse-and-find">7.2 Browse and find</h3>
-<p>Home → brand → section → card. Or type a SKU anywhere and press enter. Toggles live in the URL so a manager can send "ACDC Uniform, core only, below min" as a link.</p>
+<p>Home → brand → section → card. Or type a SKU anywhere and press Enter. Filters live in the URL, so an approver can send "ACDC Uniform, must be in stock, below min" as a link.</p>
 <h3 id="73-a-new-product-arrives">7.3 A new product arrives</h3>
 <ol type="1">
-<li>An item is created in Zoho (by whoever loads products today), with a photo attached.</li>
-<li>Nightly sync (or an admin's refresh) creates a CatalogueEntry in <strong>NEW</strong> and it appears in Newly added for its section.</li>
-<li>The section manager opens it: artwork large, fields beside it, "check these" list (name, category, price, unit).</li>
-<li><strong>Approve</strong> → entry becomes APPROVED, snapshot hash recorded, item visible to staff. <strong>Reject</strong> → comment required, entry REJECTED, the person who loaded it is named in the comment thread.</li>
-<li>The history stays forever; a later edit to the item in Zoho creates a "changed since approval" flag rather than silently replacing what was signed off.</li>
+<li>Someone creates an item in Zoho with a photo, as products are loaded today.</li>
+<li>The next sync creates a <strong>NEW</strong> CatalogueEntry in Newly added for its section.</li>
+<li>An approver <strong>for that brand</strong>, or Ricardo, opens it: artwork large, fields beside it, a "check these" list (name, category, price, unit) and the brand default policy.</li>
+<li><strong>Approve</strong>, one click: APPROVED, hash recorded, visible to staff. An item with no policy gets the brand default written to Zoho, audited as <code>brand-default</code>. <strong>Reject</strong> needs a comment and sets REJECTED.</li>
+<li>A later Zoho edit follows §4.4 rule 4 and never silently replaces what was signed off.</li>
 </ol>
-<h3 id="74-setting-a-limit">7.4 Setting a limit</h3>
-<p>Manager opens Limits → filters "not set" → sets min and max → saves. Change is audited. If a max is set below the min, the form refuses with a plain sentence. Zoho's <code>reorder_level</code> takes the min; the max and the core flag are written to the two item custom fields.</p>
+<h3 id="74-setting-the-stock-policy--the-switch">7.4 Setting the stock policy — the switch</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Switch</th>
+<th>Meaning</th>
+<th>Required on save</th>
+<th>Written to Zoho</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ON — Must be in stock</strong></td>
+<td>Forced stocked line; green pill; stock health applies</td>
+<td>Min ≥ 1, max ≥ min, whole numbers (<strong>ASSUMPTION</strong>: 727 of 729 in-scope items count in <code>pcs</code> or <code>box</code>)</td>
+<td><code>Stock Policy = Must be in stock</code>, <code>reorder_level = min</code>, <code>Maximum Level = max</code></td>
+</tr>
+<tr>
+<td><strong>OFF — Made to order</strong></td>
+<td>Made when ordered; amber pill; no minimum</td>
+<td>Lead time, whole days ≥ 1</td>
+<td><code>Stock Policy = Made to order</code>, <code>Lead Time Days</code>; min and max cleared</td>
+</tr>
+</tbody>
+</table></div>
+<p>Saving is one click, audited and written to Zoho in the same request ("Pending Zoho" if Zoho is slow). <strong>Bulk:</strong> select a section or brand, choose the state, apply. Bulk ON needs min and max for every item (per row or one pair for all) and refuses while any is missing; each item still gets its own audit row and paced Zoho call. <strong>Brand defaults</strong> carry the mode plus the values it requires, and apply when a new item is approved (§7.3).</p>
 <h3 id="75-rejection-and-re-submission">7.5 Rejection and re-submission</h3>
-<p>A rejected item stays in Newly added for managers with the reason; once the artwork is replaced in Zoho and the sync runs, the manager sees the new image beside the old one and can approve.</p>
+<p>A rejected item stays in its brand's queue with the reason. Once it is fixed in Zoho (new artwork or fields), the changed hash returns it to NEW, and the approver sees the new image beside the rejected one.</p>
+<h3 id="76-deciding-who-approves-a-brand">7.6 Deciding who approves a brand</h3>
+<p>Settings → Brand approvers → pick a brand → search by name or email → grant. Revoking uses the same row. Ricardo holds every brand and cannot be revoked. A brand with no approver but Ricardo shows a warning, so "nobody else can approve this" is visible rather than discovered on a Friday.</p>
+<p><strong>The people list comes from Zoho sign-in</strong>: with no Directory scope (§9.1), the picker offers every identity that has signed in once, which is all 39 after Stage 1 (AC1.5; Q13).</p>
 <hr />
 <h2 id="8-ui-design-system">8. UI design system</h2>
 <div class="tablewrap"><table>
@@ -743,11 +1010,15 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>Colour</td>
-<td>Ink <code>#11161c</code>, muted <code>#5b6770</code>, line <code>#e2e7ec</code>, surface <code>#ffffff</code>, canvas <code>#f6f7f8</code>; brand accent per brand: ACDC <code>#e2001a</code>, TLF <code>#2f6b3a</code>, PPP <code>#c2410c</code>, INF <code>#1e3a8a</code></td>
+<td>Ink <code>#11161c</code>, muted <code>#5b6770</code> (5.41:1 on canvas), line <code>#e2e7ec</code> (decorative only), surface <code>#ffffff</code>, canvas <code>#f6f7f8</code>. Brand accents: ACDC <code>#e2001a</code>, TLF <code>#2f6b3a</code>, PPP <code>#c2410c</code>, INF <code>#1e3a8a</code></td>
+</tr>
+<tr>
+<td>Policy pills</td>
+<td>Must be in stock: <code>#0b6b3f</code> on <code>#e6f4ec</code> (5.81:1) with a ● icon. Made to order: <code>#8a4a06</code> on <code>#fdf0e1</code> (6.11:1) with a ◷ icon. Not set: <code>#4b5560</code> on <code>#eef0f2</code> (6.64:1) with a ? icon</td>
 </tr>
 <tr>
 <td>Status colours</td>
-<td>New <code>#b45309</code>, approved <code>#0d8a4f</code>, rejected <code>#b91c1c</code>, retired <code>#6b7280</code></td>
+<td>New <code>#6d28d9</code> (7.10:1), approved <code>#0b7a46</code> (5.40:1), rejected <code>#b91c1c</code> (6.47:1), retired <code>#6b7280</code> (4.83:1). New left amber so it cannot be mistaken for Made to order; approved left <code>#0d8a4f</code> (4.41:1, fails AA)</td>
 </tr>
 <tr>
 <td>Radius</td>
@@ -755,28 +1026,31 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>Density</td>
-<td>4-column card grid on desktop, 1 column on phone; card = image 1:1, name 2 lines max, SKU mono, price bold</td>
+<td>4-column grid on desktop, 1 column on phone. A card is a 1:1 image, a name of at most 2 lines, the SKU in mono and the price in bold</td>
 </tr>
 <tr>
 <td>Motion</td>
-<td>≤ 150 ms, no animation on data load beyond a skeleton</td>
+<td>≤ 150 ms; no animation on data load beyond a skeleton</td>
 </tr>
 <tr>
 <td>Accessibility</td>
-<td>WCAG 2.1 AA contrast, keyboard reachable, focus rings, labels on every control, no colour-only status (icon + text)</td>
+<td>WCAG 2.1 AA, as defined in §11.5</td>
 </tr>
 </tbody>
 </table></div>
-<p>The static catalogue already proves this visual language with 343 items; the app reuses it rather than inventing a second one.</p>
+<p>The static catalogue already proves this visual language with 343 items, and the app reuses it. Ratios are against white unless stated otherwise.</p>
 <hr />
 <h2 id="9-authentication-and-hosting">9. Authentication and hosting</h2>
+<blockquote>
+<p><strong>For the business:</strong> staff sign in once with their Zoho account. Cloudflare checks that sign-in before anyone reaches the app, and the app decides what each person may do.</p>
+</blockquote>
 <h3 id="91-the-choice">9.1 The choice</h3>
-<p>Three viable lanes, with the evidence that decides it:</p>
+<p>The evidence from before the decision is kept for the record:</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Lane</th>
-<th>Coverage today</th>
+<th>Coverage measured</th>
 <th>New accounts</th>
 <th>Role model</th>
 <th>Cost</th>
@@ -786,16 +1060,16 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td><strong>ClickUp login (OAuth)</strong></td>
 <td>39 members in workspace 4627083, verified live</td>
-<td>None — the team is already there</td>
-<td>ClickUp member + app-side role table</td>
+<td>None</td>
+<td>App-side role table</td>
 <td>R0 (Business plan already paid)</td>
 </tr>
 <tr>
-<td><strong>Zoho login (OAuth / Zoho Directory)</strong></td>
-<td>26 Inventory users, 12 active</td>
-<td>None for Zoho users; staff without a Zoho seat need one</td>
-<td>Zoho roles exist (8 job roles built 2026-11-24)</td>
-<td>Zoho seats</td>
+<td><strong>Zoho login</strong></td>
+<td>26 Inventory users, 12 active (a seat is not a login)</td>
+<td>None</td>
+<td>App-side role table</td>
+<td>R0 for sign-in</td>
 </tr>
 <tr>
 <td><strong>Cloudflare Access email PIN</strong></td>
@@ -806,24 +1080,28 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 </tbody>
 </table></div>
-<p>The MoA chose <strong>Zoho login</strong>, and its reason is sound: the same OAuth token can read Inventory, and staff already live in Zoho Mail, Projects and WorkDrive. But the premise behind the vote — "every staffer already has a Zoho One account" — is <strong>unverified</strong>, and the one number we can measure points the other way: Inventory holds 26 users with 12 active, while ClickUp holds 39 members. Zoho's directory may be larger than its Inventory seats (a seat is not a login), but until that is counted, the safe reading is:</p>
+<p><strong>Decided: Zoho login.</strong> Ricardo confirmed on 2026-11-25 that the Zoho user list carries all 39.</p>
 <ul>
-<li><strong>Primary — Zoho login</strong>, <em>if</em> the Zoho Directory (or Zoho One user list) is confirmed to contain all 39 team members. That is a five-minute check in the Zoho admin console, and it is Q2.</li>
-<li><strong>Fallback — ClickUp OAuth</strong>, which provably covers the team today (39 of 39, verified).</li>
-<li><strong>In both cases Cloudflare Access stays in front</strong> as the edge gate and the sign-in audit, so an unauthenticated request never reaches the app even if the app's own auth has a bug.</li>
+<li><strong>Mechanism.</strong> Zoho Accounts is the OpenID Connect provider for the Cloudflare Access app (same data centre as the API host <code>www.zohoapis.com</code>). The app validates the <code>Cf-Access-Jwt-Assertion</code> JWT on every request and reads email and name from it, so there is one sign-in. <strong>ASSUMPTION:</strong> Zoho works as a generic OIDC provider in Access; a day-one spike proves it.</li>
+<li><strong>No Inventory seat needed.</strong> The app reaches Inventory with its own server-side credential (§10.1). 1.0's "the same OAuth token reads Inventory" would have worked for only the 12 active Inventory users, so it is removed.</li>
+<li><strong>Fallback: ClickUp OAuth</strong> stays wired but off, used only if a real Zoho sign-in fails in the pilot. 39 of 39 are verified in workspace 4627083.</li>
+<li><strong>Cloudflare Access stays in front</strong> either way, as edge gate and sign-in audit. <strong>Roles come from the app</strong>: Zoho proves <em>who</em>, the brand-approver table decides <em>what they may approve</em>.</li>
+<li><strong>Evidence note.</strong> The 39 rests on Ricardo's confirmation, not a machine count. The fleet's Zoho token has no Directory scope, so both directory endpoints answered 404 when probed on 2026-11-25 (<code>scripts</code>/scratch <code>probe_directory.py</code>). Stage 1 proves coverage with a recorded sign-in from each of the 39 (AC1.5).</li>
 </ul>
 <h3 id="92-hosting">9.2 Hosting</h3>
 <p>The Infinity staging server already publishes internal apps behind Cloudflare Access in one command, verified live:</p>
 <ul>
-<li><code>staging-host register catalogue --port &lt;port&gt; --access emails --allow @infinitybrands.co.za</code></li>
-<li>HTTPS name: <code>https://catalogue-staging.infinityapps.co.za</code> (or a production-style name on Ricardo's instruction)</li>
-<li>Container on <code>staging-ingress</code>, no host ports; database on the app's private network</li>
+<li><code>staging-host register catalogue --port &lt;port&gt; --access emails --allow @infinitybrands.co.za</code>; the policy must use the Zoho provider and allow every domain the 39 use (Q12).</li>
+<li>HTTPS name: <code>https://catalogue-staging.infinityapps.co.za</code>, or a production-style name on Ricardo's instruction.</li>
+<li>Container on <code>staging-ingress</code>, no host ports; database on the app's private network. <strong>ASSUMPTION:</strong> the host is Linux arm64 (access register 2026-11-12), so images build for <code>linux/arm64</code>. Secrets live in the host's gitignored <code>.env</code>, never in the bundle.</li>
 </ul>
-<p>That gives a real link, real authentication and real audit of sign-ins without buying a product. If the MoA instead picked Zoho Creator, hosting moves to Zoho and this section becomes a configuration task rather than a build.</p>
 <h3 id="93-sessions">9.3 Sessions</h3>
-<p>HttpOnly, Secure, SameSite=Lax cookie; 8-hour session; server-side role check on every API call; no item data in the browser's local storage.</p>
+<p>HttpOnly, Secure, SameSite=Lax cookie; an 8-hour session matched by Access; server-side role checks on every call; no item data in local storage; sign-out also calls Access logout. A leaver's disabled Zoho account cannot sign in, an open session ends within 8 hours, and S8's last-sign-in column prompts an admin to revoke stale grants.</p>
 <hr />
 <h2 id="10-sync-and-integrations">10. Sync and integrations</h2>
+<blockquote>
+<p><strong>For the business:</strong> the app copies Zoho overnight in a handful of calls and writes back only policy and limits. Zoho's rate limit, shared by every Zoho integration in the company, is the constraint to respect.</p>
+</blockquote>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -835,41 +1113,90 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>Zoho Inventory items + stock + images</td>
+<td>Zoho Inventory items, stock and images</td>
 <td>read</td>
-<td>nightly 02:00 + admin on demand</td>
-<td>keep last good data, show staleness, alert</td>
+<td>Nightly at 02:00 SAST, plus admin on demand (Q15: hourly delta)</td>
+<td>Keep the last good data, show its age, alert</td>
 </tr>
 <tr>
 <td>Zoho <code>reorder_level</code> (min)</td>
 <td>write</td>
-<td>on manager save</td>
-<td>retry with backoff; if it fails, the app value stands and the row is flagged "pending Zoho"</td>
+<td>On approver save</td>
+<td>Pending, retried (§10.1); never shown as confirmed until Zoho reads it back</td>
 </tr>
 <tr>
-<td>Zoho item custom fields (max, core)</td>
+<td>Zoho item custom fields (<code>Stock Policy</code>, <code>Maximum Level</code>, <code>Lead Time Days</code>)</td>
 <td>write</td>
-<td>on manager save</td>
-<td>same</td>
+<td>On approver save</td>
+<td>Same</td>
 </tr>
 <tr>
-<td>IdP directory</td>
+<td>Identity (Zoho via Access)</td>
 <td>read</td>
-<td>on sign-in</td>
-<td>deny with a plain message</td>
+<td>On sign-in</td>
+<td>Deny with a plain message</td>
 </tr>
 <tr>
-<td>Cliq / email notifications (P1)</td>
+<td>Cliq / email notifications</td>
 <td>write</td>
-<td>on NEW items</td>
-<td>queue and retry</td>
+<td>Admin alerts in P0; approver nudges in P1 (§10.2)</td>
+<td>Queue and retry</td>
 </tr>
 </tbody>
 </table></div>
-<p>Four item custom fields must be created in Zoho before the limits and sign-off features ship: <strong><code>Maximum Level</code></strong> (number), <strong><code>Core Range</code></strong> (checkbox), <strong><code>Catalogue Status</code></strong> (picklist: new / approved / rejected) and <strong><code>Approved On</code></strong> (date). The minimum uses the native <code>reorder_level</code>, which exists on every item today and is set on none.</p>
-<p>Measured constraint: Zoho throttles at roughly 100 requests/minute and the image endpoint blocks for 15+ minutes after a burst — the sync must pace at ≤ 1 request/second for images, cache them, and never re-fetch an unchanged photo.</p>
+<p>Three item custom fields must exist before the policy feature ships: <strong><code>Stock Policy</code></strong> (picklist: <code>Must be in stock</code> / <code>Made to order</code>), <strong><code>Maximum Level</code></strong> (number) and <strong><code>Lead Time Days</code></strong> (number, Q9; keeping the lead time in Zoho stops the app becoming a second master). The minimum uses the native <code>reorder_level</code>, which exists on every item today and is set on none. <code>Core Range</code> from v0.9 is dropped: the picklist replaces it, because a checkbox cannot express "made to order".</p>
+<h3 id="101-api-contract-with-zoho">10.1 API contract with Zoho</h3>
+<p>The base URL is <code>https://www.zohoapis.com/inventory/v1</code>, and every call carries <code>organization_id=716443079</code>. The contract test pins every field against a recorded fixture.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>Use</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /items?per_page=200&amp;page=n</code></td>
+<td>Nightly full read</td>
+<td>839 items = 5 pages, while <code>page_context.has_more_page</code> is true; scope by <code>EXP-</code>/<code>TLF-</code>/<code>PPP-</code>/<code>INF-</code> prefix. All §4.2 fields are present in the 18:10 snapshot</td>
+</tr>
+<tr>
+<td><code>GET /items/{item_id}</code></td>
+<td>Custom fields</td>
+<td>The list omits them (the active <code>cf_productid</code> is absent from the snapshot). Read for every item at first import, then only for items changed in Zoho by someone else</td>
+</tr>
+<tr>
+<td><code>GET /items/{item_id}/image</code></td>
+<td>Artwork</td>
+<td>Only when <code>image_document_id</code> changes. Original cached (and hashed), plus a ≤ 560 px JPEG at quality 78, as <code>scripts/build_catalogue.py</code> does</td>
+</tr>
+<tr>
+<td><code>PUT /items/{item_id}</code></td>
+<td>Policy and limits</td>
+<td>Body holds only <code>reorder_level</code> and <code>custom_fields</code> (<code>customfield_id</code> + <code>value</code>). A single-field PUT is measured to leave all else untouched (item-master PRD §6); the contract test repeats this for these fields</td>
+</tr>
+<tr>
+<td>Custom-field settings read</td>
+<td>Field ids at start-up</td>
+<td>The call behind <code>data/customfields_item.json</code>. A missing field fails closed: S7 becomes read-only</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Credential:</strong> a dedicated server-side Zoho OAuth client with item read, item update and settings read scopes (names confirmed in the contract test).</p>
+<p><strong>Measured throttle:</strong> Zoho rate-limits the <strong>whole organisation</strong> at roughly 100 requests a minute (<code>429 code 43</code>). A 618-PUT burst on 2026-11-25 cost about half an hour, and the image endpoint blocks for 15+ minutes after a burst.</p>
+<ul>
+<li><strong>Pacing:</strong> one global limiter at ≤ 1 request/s (about 60 a minute, leaving headroom for other integrations) and ≤ 0.5 writes/s, the rate the item-master writer settled on after the lockout.</li>
+<li><strong>Backoff:</strong> on a 429, all calls pause 30 s × attempt (as <code>scripts/rename_skus.py</code> does) for up to 5 attempts (<strong>ASSUMPTION</strong>), then the write is <code>failed</code> and the admin is alerted. An image 429 suspends image fetches for 15 minutes. Writes are idempotent and confirmed by read-back.</li>
+<li><strong>Derived load:</strong> first import 729 detail reads (about 12 min) plus 637 images (about 11 min), overnight. A full bulk pass is 729 writes at 0.5/s (about 24 min), hence background jobs. <strong>ASSUMPTION:</strong> the daily API allowance covers a normal night.</li>
+</ul>
+<h3 id="102-notifications">10.2 Notifications</h3>
+<p><strong>P0, admin only:</strong> a Cliq alert on sync failure, image suspension, a <code>failed</code> write, an audit-chain break or a failed backup (<strong>ASSUMPTION</strong>: via a Cliq incoming webhook for this app). <strong>P1 (F11):</strong> approvers hear when an entry becomes NEW, plus a 07:30 SAST digest (<strong>ASSUMPTION</strong>) of entries waiting over 1 working day. Nothing goes to staff without Ricardo's go.</p>
 <hr />
 <h2 id="11-non-functional-requirements">11. Non-functional requirements</h2>
+<blockquote>
+<p><strong>For the business:</strong> how fast, safe and private the app must be, and what happens when something breaks.</p>
+</blockquote>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -879,93 +1206,144 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>Performance</td>
-<td>Section page p95 &lt; 1.5 s on the office LAN with 729 items; search &lt; 300 ms; image grid lazy-loads</td>
-</tr>
-<tr>
 <td>Availability</td>
-<td>07:00–18:00 SAST target 99%; a Zoho outage must not blank the catalogue</td>
+<td>99% between 07:00 and 18:00 SAST; a Zoho outage must not blank the catalogue</td>
 </tr>
 <tr>
 <td>Security</td>
-<td>SSO only, RBAC enforced server-side, CSRF tokens, rate-limited API, dependency scanning, no secrets in the bundle</td>
-</tr>
-<tr>
-<td>Privacy (POPIA)</td>
-<td>Store work email and display name only — no ID numbers, no home addresses, no health data. Staff data lives in the IdP; the app keeps a role row and nothing else</td>
-</tr>
-<tr>
-<td>Audit</td>
-<td>Approvals and limit changes append-only, retained 3 years, exportable</td>
-</tr>
-<tr>
-<td>Backup</td>
-<td>Nightly database dump, 30-day retention, quarterly restore drill</td>
-</tr>
-<tr>
-<td>Accessibility</td>
-<td>WCAG 2.1 AA; usable keyboard-only; tested with VoiceOver on the core flow</td>
+<td>Sign-in only through Access, roles enforced server-side (§2.1), CSRF tokens, a rate-limited API, dependency scanning, no secrets in the bundle</td>
 </tr>
 <tr>
 <td>Observability</td>
-<td>Sync log in-app; error alert to the admin's Cliq; uptime check every 5 minutes</td>
+<td>Sync log in the app, admin alerts (§10.2), an uptime check every 5 minutes</td>
 </tr>
 <tr>
 <td>Browser support</td>
-<td>Current Chrome, Safari, Edge; iOS Safari and Android Chrome</td>
+<td>Current Chrome, Safari and Edge; iOS Safari and Android Chrome</td>
 </tr>
 </tbody>
 </table></div>
+<h3 id="111-performance-budget-per-screen-p95-measured-by-script-output-quoted">11.1 Performance budget per screen (p95, measured by script, output quoted)</h3>
+<p>Source requirements: S4 on the office LAN &lt; 1.5 s; search &lt; 300 ms; approve → visible ≤ 2 s. <strong>ASSUMPTION</strong> budgets: S2, S3 and S6 &lt; 1.5 s; S5 drawer &lt; 1 s; S7 with a full brand (696 rows) &lt; 2 s; a single policy save including the Zoho write &lt; 3 s (else "Pending Zoho"); S4 on a phone over mobile data &lt; 3 s to the first screen of cards.</p>
+<h3 id="112-privacy-popia-and-retention">11.2 Privacy (POPIA) and retention</h3>
+<ul>
+<li><strong>Held:</strong> work email, display name, Zoho subject id, sign-in times and audited actions; no ID numbers, home addresses or health data, and nothing personal in URLs or logs beyond the actor's email. <strong>Purpose:</strong> access control and accountability for product decisions only.</li>
+<li><strong>Responsible party:</strong> Infinity Brands. The Information Officer is by default the head of the private body (Ricardo) unless another is registered. Cloudflare and Zoho process sign-in data and may hold it outside South Africa (POPIA s72); both go in the company's POPIA register.</li>
+<li><strong>Retention:</strong> approvals and audit are kept <strong>at least 3 years</strong> and never deleted automatically in v1 (1.0 said both "forever" and "3 years"); a purge needs Ricardo's instruction. A leaver's UserRole is marked inactive and kept while audit rows refer to it. An admin can export one person's audit rows on request.</li>
+</ul>
+<h3 id="113-backup-and-disaster-recovery">11.3 Backup and disaster recovery</h3>
+<p>The nightly dump is kept 30 days and <strong>copied off the staging host</strong> (Q11). A quarterly drill restores it into a scratch database, runs the chain verifier and compares counts. <strong>RPO 24 h</strong> (derived from the nightly dump): at worst a day of approvals is lost, while policy already written to Zoho survives there. <strong>RTO:</strong> 4 business hours (<strong>ASSUMPTION</strong>). The image cache is not backed up; it refills from Zoho in about 11 minutes.</p>
+<h3 id="114-time-currency-vat-and-units">11.4 Time, currency, VAT and units</h3>
+<ul>
+<li><strong>Time:</strong> stored in UTC, shown in the org's <code>time_zone</code>, Africa/Johannesburg (SAST, UTC+2, no daylight saving), as <code>25 Nov 2026 18:10</code> (org format <code>dd MMM yyyy</code>, 24-hour). Staleness reads "6 h ago", with the exact time on tap. <strong>Working days</strong> are Monday–Friday, excluding SA public holidays from a list the admin keeps in Settings.</li>
+<li><strong>Currency:</strong> ZAR (<code>currency_code</code>), written <code>R8 281.00</code> as in the item-master documents. v1 shows the item <code>rate</code> only, not price lists.</li>
+<li><strong>VAT:</strong> the org has 15% SARS taxes and all 839 items are <code>is_taxable</code>. Whether <code>rate</code> includes VAT cannot be read from the snapshot (Q10). The app never calculates VAT; it labels the price with Zoho's basis.</li>
+<li><strong>Units:</strong> Zoho's <code>unit</code> verbatim (<code>pcs</code> 546, <code>box</code> 181 in scope); limits and stock use it ("Min 10 box"). The 2 in-scope items with a blank unit (<code>EXP-ONL-SOCIAL-1000</code>/<code>-500</code>, both "Discontinued") show "Unit not set" and are listed for a decision.</li>
+</ul>
+<h3 id="115-accessibility-wcag-21-aa-and-what-that-means-here">11.5 Accessibility: WCAG 2.1 AA, and what that means here</h3>
+<ul>
+<li>Text contrast ≥ 4.5:1 (large text ≥ 3:1), measured for every §8 token. Switch tracks, input borders and focus rings ≥ 3:1 (muted <code>#5b6770</code>). No status by colour alone: every pill has an icon and a word.</li>
+<li>The policy switch is a real <code>role="switch"</code> labelled "Must be in stock" that announces on or off and toggles with Space. Everything works by keyboard; the drawer traps focus, Esc closes it and focus returns to the card. Errors and 409s are announced through <code>aria-live</code>; images carry alt text of name and SKU.</li>
+<li>Reflows at 320 px and at 200% zoom without horizontal scrolling.</li>
+<li>Tested with axe-core (no serious or critical issues on S2–S8) and VoiceOver on macOS and iOS through sign-in → find → flip → approve.</li>
+</ul>
 <hr />
 <h2 id="12-testing-strategy">12. Testing strategy</h2>
+<blockquote>
+<p><strong>For the business:</strong> every promise in §5 is a test that must pass with its output quoted, and no test creates fake products in the live Zoho org.</p>
+</blockquote>
 <ul>
-<li><strong>Unit:</strong> state machine (NEW → APPROVED/REJECTED → RETIRED), scope checks, limit validation, hash canonicalisation.</li>
-<li><strong>Contract:</strong> a recorded Zoho read fixture so sync tests never hit the live org; one live read-only smoke test per release.</li>
-<li><strong>End-to-end:</strong> sign-in → find a section → open an item → approve as manager → verify it appears for staff; reject → verify hidden with reason; scope denial → 403.</li>
-<li><strong>Acceptance:</strong> each P0 feature's criteria in §5.1 becomes a test case; the count check (729 items, one section each) runs on every deploy.</li>
-<li><strong>UAT:</strong> three real managers (one per brand, ACDC split in two) clear five seeded new items before launch.</li>
-<li><strong>Evidence rule:</strong> a feature is done when the test output is quoted, not when it "should work".</li>
+<li><strong>Unit:</strong> state machine (§4.4, incl. re-submission and reactivation), brand scope, policy rules (§7.4), hash canonicalisation, backoff.</li>
+<li><strong>Contract:</strong> a recorded Zoho fixture pins the list, detail, image and PUT shapes (§10.1), plus one live read-only smoke test per release. Live writes go to <strong>one designated test item</strong> only (Q14).</li>
+<li><strong>Permission, concurrency, audit:</strong> the §2.1 matrix table-driven (AC7.1); the §4.5 cases; append-only grants and the tamper check (AC9.2–9.3).</li>
+<li><strong>End-to-end:</strong> sign in → find a section → open an item → flip its policy → check the pill and the Zoho read-back → approve as that brand's approver → visible to staff → reject → hidden with its reason → a TLF approver tries an ACDC approval → 403.</li>
+<li><strong>Acceptance:</strong> every AC in §5.1, plus §11.1 and §11.5; the count check (AC2.1) runs on every deploy.</li>
+<li><strong>UAT:</strong> at least one real approver per brand (or Ricardo standing in) clears five queue entries each, including a rejection and a re-submission. The entries are real new items or fixtures in a staging database copy, never fake Zoho items.</li>
+<li><strong>Evidence rule:</strong> a feature is done when its test output is quoted, not when it "should work".</li>
 </ul>
 <hr />
 <h2 id="13-rollout">13. Rollout</h2>
+<p>Weeks count from Ricardo's "go". A stage is done only when every exit check passes with quoted output.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
 <th>Stage</th>
 <th>What</th>
-<th>Exit criteria</th>
+<th>Exit: definition of done</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>0 · Decisions</td>
-<td>Ricardo answers §17; IdP confirmed; managers named</td>
-<td>Signed decision log</td>
+<td><strong>Done 2026-11-25.</strong> Four answers recorded (§16.3)</td>
+<td>Signed decision log (v1.0); 1.1 accepted</td>
 </tr>
 <tr>
-<td>1 · Read-only pilot (week 1–2)</td>
-<td>Sync + browse + search + item detail, staff role only, one brand (ACDC)</td>
-<td>696 items, counts match Zoho, p95 within budget</td>
+<td>1 · Read-only pilot (weeks 1–2)</td>
+<td>M0–M3, sync, browse, search, detail; staff role, ACDC only; all 39 invited to sign in once</td>
+<td>Count = Zoho's live ACDC count; all sectioned; §11.1 budgets for S2–S5 met; OIDC spike passed; 39 sign-ins (AC1.5)</td>
 </tr>
 <tr>
 <td>2 · Approvals (week 3)</td>
-<td>Newly added, approve/reject, artwork, roles, audit</td>
-<td>Five seeded items approved and rejected correctly; 403 outside scope</td>
+<td>M4 baseline, Newly added, one-click approve/reject, brand approvers, audit chain</td>
+<td>Each brand has ≥ 1 approver (Ricardo counts); AC5–AC7 and AC9 pass; UAT cleared; verifier clean</td>
 </tr>
 <tr>
 <td>3 · All brands (week 4)</td>
-<td>TLF, PPP, INF sections; brand owners scoped</td>
-<td>729 items live; each brand owner sees only their brand</td>
+<td>TLF, PPP and INF sections; approvers scoped</td>
+<td>Count = Zoho's live in-scope count (729 at baseline); holding empty; approvers see only their brands; photo-less items listed with an owner</td>
 </tr>
 <tr>
 <td>4 · Launch (week 5)</td>
-<td>All 39 staff, training note, Cliq announcement</td>
-<td>Sign-ins from every department; no role tickets in week one</td>
+<td>All 39 staff, training note, Cliq announcement on Ricardo's go</td>
+<td>Sign-ins from every department; no role tickets in week one; off-host backup and first restore drill done</td>
 </tr>
 <tr>
-<td>5 · Limits (week 6–8)</td>
-<td>Managers set min/max and core flags; stock health view</td>
-<td>100% of core items have a min and a max</td>
+<td>5 · Policy and limits (weeks 6–8)</td>
+<td>M5–M6; stock health view</td>
+<td>0 "Not set"; every ON item has min and max and every OFF item a lead time, confirmed by Zoho read-back</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="131-data-migration-and-backfill">13.1 Data migration and backfill</h3>
+<blockquote>
+<p><strong>For the business:</strong> how the 729 existing items enter the app and get their policy and limits, without anyone typing 729 rows by hand.</p>
+</blockquote>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M0 Pre-flight</strong></td>
+<td>Re-measure and reconcile against §3.1; <code>scripts/check_sku_prefix.py --strict</code> must report 0 non-conforming. The 244 renames that failed at 16:50 were re-applied at 17:23 (<code>data/sku_renames_applied_full_20261125T172325.json</code>: 243 renamed, 0 failed), and the gate later read 0. Anything the gate lists goes to the holding section</td>
+</tr>
+<tr>
+<td><strong>M1 Zoho fields</strong></td>
+<td>Create the three custom fields (§10); this changes the live org, so it waits for Ricardo's go (Q9)</td>
+</tr>
+<tr>
+<td><strong>M2 First import</strong></td>
+<td>Mirror every in-scope item with details and images (§10.1), overnight</td>
+</tr>
+<tr>
+<td><strong>M3 Sections</strong></td>
+<td>Brand from the SKU prefix, section from the SKU category code. A disagreeing Zoho brand or category (such as the 55 <code>zz…</code> items) is reported, never moved. An unparseable SKU goes to a per-brand <strong>Unsorted</strong> holding section (approvers only), which must be empty at Stage 3. A later code-changing rename moves the item and flags it "changed since approval"</td>
+</tr>
+<tr>
+<td><strong>M4 Baseline</strong></td>
+<td>Default (Q7a): each <strong>active item with a photo</strong> gets its own <code>baseline</code> Approval row with a full hash, confirmed by Ricardo in one recorded admin action. Items without a photo import as NEW, inactive items as RETIRED; later items go through Newly added</td>
+</tr>
+<tr>
+<td><strong>M5 Policy seed</strong></td>
+<td>Fill <code>suggested_mode</code> (Q7), <strong>not</strong> the policy: stock-tracked ACDC → must be in stock, untracked → made to order. Approvers confirm in S7, and ON still needs min and max, so a seed never creates an ON item without limits</td>
+</tr>
+<tr>
+<td><strong>M6 Backfill</strong></td>
+<td>Approvers work through S7; a weekly "Not set" count per brand goes to Ricardo, target 0 within 60 days. Every bulk job keeps its before-values and can be undone</td>
 </tr>
 </tbody>
 </table></div>
@@ -984,52 +1362,52 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tbody>
 <tr>
 <td>R1</td>
-<td><strong>Min/max are greenfield</strong> — 0 of 839 items carry a reorder level today</td>
+<td><strong>Policy and limits are greenfield.</strong> 0 of 839 items carry a reorder level, and no item carries a stock policy</td>
 <td>Certain</td>
 <td>High</td>
-<td>Bulk template per section, defaults discussed per brand, "Not set" is visible rather than hidden, 60-day target</td>
+<td>Seeded suggestions, bulk set, brand defaults, visible "Not set", 60-day target, weekly count</td>
 </tr>
 <tr>
 <td>R2</td>
-<td><strong>Approval bottleneck</strong> — one manager per section</td>
+<td><strong>Approval bottleneck</strong>: one approver per brand</td>
 <td>Medium</td>
 <td>Medium</td>
-<td>Brand-owner fallback, P1 bulk approve, daily digest, time-to-approve measured</td>
+<td>Several approvers per brand; Ricardo as fallback; baseline (M4); P1 bulk approve and digest; time-to-approve measured</td>
 </tr>
 <tr>
 <td>R3</td>
-<td><strong>Two sources of truth</strong> for min/max and core</td>
+<td><strong>Two sources of truth</strong> for min/max and policy</td>
 <td>Medium</td>
 <td>High</td>
-<td>Zoho owns min (<code>reorder_level</code>); app owns max and core and mirrors them to Zoho custom fields; one named owner per field in §4</td>
+<td>Zoho owns all four fields; the app mirrors them and Zoho wins conflicts (§4.5)</td>
 </tr>
 <tr>
 <td>R4</td>
 <td><strong>Zoho API throttling</strong> (measured 429 lockout)</td>
 <td>High</td>
 <td>Medium</td>
-<td>Paced sync, image cache, backoff, keep serving last good data</td>
+<td>Global limiter, image cache, backoff, last good data (§10.1)</td>
 </tr>
 <tr>
 <td>R5</td>
-<td><strong>Auth coverage gap</strong> — only 12 active Inventory users vs 39 team members</td>
-<td>High if Zoho chosen</td>
-<td>High</td>
-<td>Choose the IdP by directory coverage (§9), verify every member signs in during pilot</td>
+<td><del>Auth coverage gap</del>: <strong>closed 2026-11-25</strong>, Ricardo confirmed the Zoho user list holds all 39</td>
+<td>—</td>
+<td>—</td>
+<td>Residual check: 39 recorded sign-ins (AC1.5); ClickUp OAuth stays wired as the fallback</td>
 </tr>
 <tr>
 <td>R6</td>
-<td><strong>Data quality</strong> — duplicate categories (<code>zzUniform</code>, <code>zzPromotional</code>), 54 unprefixed items, 26 unregistered <code>FRA-</code> items</td>
+<td><strong>Data quality</strong>: duplicate categories <code>zzUniform</code>/<code>zzPromotional</code> (55 in-scope items), 54 unprefixed items, 26 <code>FRA-</code> items not registered to a brand, 2 blank units</td>
 <td>Medium</td>
 <td>Medium</td>
-<td>Fold to the six canonical codes in the app; fix in Zoho separately; out-of-scope items listed</td>
+<td>Sections use the SKU code; mismatches reported; out-of-scope items listed (§3.2); fixed in Zoho</td>
 </tr>
 <tr>
 <td>R7</td>
-<td><strong>Approval without legal weight</strong> — an in-app click is not a signature</td>
-<td>Medium</td>
-<td>Medium</td>
-<td>Snapshot hash per approval; Zoho Sign only if the owner wants formal signatures (Q4)</td>
+<td><del>Approval without legal weight</del>: <strong>closed 2026-11-25</strong>, Ricardo ruled a click is enough</td>
+<td>—</td>
+<td>—</td>
+<td>The snapshot hash still makes each approval provable, at no signature friction</td>
 </tr>
 <tr>
 <td>R8</td>
@@ -1038,15 +1416,46 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Medium</td>
 <td>P2 is explicitly gated on v1 adoption</td>
 </tr>
+<tr>
+<td>R9</td>
+<td><strong>Made-to-order items judged against stock health</strong></td>
+<td>Low</td>
+<td>Medium</td>
+<td>Policy is checked before health (AC3.4)</td>
+</tr>
+<tr>
+<td>R10</td>
+<td><strong>Artwork gap</strong>: 92 in-scope items have no photo and cannot be approved</td>
+<td>Certain</td>
+<td>High</td>
+<td>Listed per brand at Stage 3 with a named owner</td>
+</tr>
+<tr>
+<td>R11</td>
+<td><strong>Edits made straight in Zoho</strong> bypass the app's checks</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Audited as <code>zoho-external</code>; edit rights stay with the existing Inventory job roles</td>
+</tr>
 </tbody>
 </table></div>
+<h3 id="141-what-could-still-kill-this">14.1 What could still kill this</h3>
+<p>The four decisions removed the design risk. What remains is execution, most dangerous first:</p>
+<ol type="1">
+<li><strong>Nobody does the backfill.</strong> The app is only as useful as 729 policy decisions and the limits on every must-be-in-stock item, none of which exists today, and the 60-day window covers the December–January shutdown. Without that work, staff see grey "Not set" pills, and <em>"force my team to have some items in stock"</em> is not met.</li>
+<li><strong>Three brands look empty to staff.</strong> None of the 33 TLF/PPP/INF lines has a photo, so none can be approved until someone photographs and loads them.</li>
+<li><strong>Zoho sign-in through Cloudflare is unproven.</strong> Coverage rests on Ricardo's word (the directory endpoints answer 404). If Zoho will not act as an OIDC provider for Access, launch slips onto the ClickUp fallback.</li>
+<li><strong>The rate limit is shared.</strong> A burst from any other integration, like the 618-PUT run, freezes the app's writes for tens of minutes, and "Pending Zoho" erodes trust.</li>
+<li><strong>Production on a staging host.</strong> Approvals are the one record Zoho cannot rebuild, and a host loss costs up to a day of them.</li>
+<li><strong>Variants turn approval into busywork.</strong> 560 of 729 items are variants. One click each, without P1 bulk approve, becomes noise approvers learn to ignore.</li>
+</ol>
 <hr />
 <h2 id="15-out-of-scope-assumptions">15. Out of scope, assumptions</h2>
-<p><strong>Out of scope:</strong> ordering and invoicing; customer-facing storefront; Titan Electrical and INFX; per-location limits in v1; artwork editing (the app reviews artwork, it does not create it).</p>
-<p><strong>Assumptions:</strong> Zoho Inventory keeps its current shape; the team stays on ClickUp (39 seats) or Zoho One; the staging server remains available for internal apps; the owner wants approvals by click, not e-signature, unless Q4 says otherwise.</p>
+<p><strong>Out of scope:</strong> ordering and invoicing; a customer-facing storefront; Titan Electrical, <code>FRA-</code> stock and INFX; per-location limits in v1; artwork editing (the app reviews artwork, it does not create it); offline use; barcode scanning.</p>
+<p><strong>Assumptions:</strong> Zoho Inventory keeps its current shape; the Zoho user list holds the team (confirmed); the staging server stays available; approval is by click (confirmed 2026-11-25). Every other assumption is marked <strong>ASSUMPTION</strong> where it is used (§7.4, §9, §10, §11).</p>
 <hr />
 <h2 id="16-decision-log">16. Decision log</h2>
-<p>The four architecture questions went to the MoA as one ballot. The <code>council_deliberate</code> tool failed with an internal error (<code>too many values to unpack</code>), so the identical brief ran on the MoA lane — recorded here with the seats that actually answered, read from the trace file, not the config.</p>
+<p>The four architecture questions went to the MoA as one ballot. The <code>council_deliberate</code> tool failed with an internal error (<code>too many values to unpack</code>), so the identical brief ran on the MoA lane. It is recorded here with the seats that actually answered, read from the trace file, not the config.</p>
 <h3 id="161-the-run">16.1 The run</h3>
 <div class="tablewrap"><table>
 <tbody>
@@ -1056,31 +1465,22 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </tr>
 <tr>
 <td>Lane</td>
-<td>MoA (<code>hermes chat --provider moa</code>), two independent runs</td>
+<td>MoA (<code>hermes chat --provider moa</code>), session <code>local-f74948e6…</code></td>
 </tr>
 <tr>
-<td>Run A (background retry)</td>
-<td>session <code>local-0664436c…</code>, answer in <code>catalogue-prd-2026-11-25/moa-out.md</code></td>
-</tr>
-<tr>
-<td>Run B (recorded)</td>
-<td>session <code>local-f74948e6…</code></td>
-</tr>
-<tr>
-<td>Seats that answered (both runs)</td>
+<td>Seats that answered</td>
 <td><code>glm-5.3:cloud</code>, <code>kimi-k3.1-pro:cloud</code>, <code>hy4:cloud</code></td>
 </tr>
 <tr>
-<td>Aggregator (both runs)</td>
+<td>Aggregator</td>
 <td><code>nemotron-3-ultra:cloud</code></td>
 </tr>
 <tr>
 <td>Trace</td>
-<td><code>~/.hermes/moa-traces/local-0664436c….jsonl</code>, <code>…local-f74948e6….jsonl</code></td>
+<td><code>~/.hermes/moa-traces/local-f74948e6….jsonl</code></td>
 </tr>
 </tbody>
 </table></div>
-<p>Two runs exist because the first attempt was backgrounded and looked dead (its log showed only startup warnings), so the ballot was re-issued; both completed and both stay on the record. They agree on the layer, the identity provider, Zoho as owner of the limits and the biggest risk. They differ on one point — run A would write the approval back into the item master, run B would keep it in the app only — and that difference is reconciled below.</p>
 <h3 id="162-verdicts-and-adjudication">16.2 Verdicts and adjudication</h3>
 <div class="tablewrap"><table>
 <thead>
@@ -1104,35 +1504,74 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>2</td>
 <td>Authentication</td>
 <td><strong>Zoho login</strong> (2–1 over Cloudflare Access email PIN)</td>
-<td><strong>Adopted with a correction.</strong> The premise "every staffer already has Zoho One" is unverified and contradicted by the Inventory seat count: 26 users, 12 active, against 39 ClickUp members. Adopted <em>subject to</em> verifying the Zoho directory covers all 39; if it does not, ClickUp OAuth is the only lane that provably covers the team</td>
-<td><code>/inventory/v1/users</code> 26/12; ClickUp <code>GET /api/v2/team</code> 39</td>
+<td><strong>Adopted and confirmed.</strong> The MoA's premise looked unverified against the Inventory seat count (26 users, 12 active vs 39 ClickUp members), so it was held conditional. <strong>Ricardo confirmed on 2026-11-25 that the Zoho user list covers all 39</strong>, which closes the condition. ClickUp OAuth stays wired as the pilot fallback</td>
+<td><code>/inventory/v1/users</code> 26/12; ClickUp <code>GET /api/v2/team</code> 39; Ricardo's answer 2026-11-25</td>
 </tr>
 <tr>
 <td>3</td>
 <td>Where min / max / core live</td>
-<td><strong>Zoho Inventory item custom fields; Zoho named as owner</strong> (2 votes Zoho; 1 app DB; 1 both)</td>
-<td><strong>Adopted.</strong> Zoho owns min (<code>reorder_level</code>) and the new max/core custom fields; the app keeps a read mirror for fast filtering and never becomes a second master</td>
+<td><strong>Zoho Inventory item custom fields, with Zoho named as owner</strong> (2 votes Zoho; 1 app DB; 1 both)</td>
+<td><strong>Adopted.</strong> Zoho owns min (<code>reorder_level</code>) and the new custom fields; the app keeps a read mirror. <em>(The "core" flag in this question was later replaced by the <code>Stock Policy</code> picklist, §10.)</em></td>
 <td>measured: 1 item custom field exists, <code>reorder_level</code> on 0 items</td>
 </tr>
 <tr>
 <td>4</td>
 <td>Sign-off</td>
-<td><strong>Recorded in the app</strong> (run B, 3–0) vs <strong>recorded in the app and written back to the item</strong> (run A)</td>
-<td><strong>Reconciled: the app holds the record, Zoho shows the status.</strong> The append-only approval row (actor, role, timestamp, SHA-256 of the item and artwork) is the evidence; a <code>Catalogue Status</code> and <code>Approved On</code> custom field are mirrored to Zoho so anyone in the item master can see it was approved, by whom and when — without treating a Zoho field as the audit trail</td>
-<td>the generator already proved the hash pattern (<code>b3d648ba…</code>); Zoho has 1 item custom field today, so two more fit the same mechanism</td>
+<td><strong>Recorded in the app only</strong> (3–0)</td>
+<td><strong>Adopted and confirmed by Ricardo.</strong> One click with actor, role, timestamp and a SHA-256 of the reviewed item and artwork; no per-item Zoho Sign friction</td>
+<td>MoA 3–0; Ricardo 2026-11-25: "a click is enough"</td>
 </tr>
 <tr>
 <td>—</td>
 <td>Biggest risk</td>
-<td>All three seats independently: <strong>the limits are greenfield — 0 of 839 items carry a min, max or core flag, so someone must define and backfill them before the app is useful</strong></td>
-<td><strong>Adopted</strong> as risk R1, with a 60-day backfill target and a per-section template</td>
+<td>All three seats independently: <strong>the limits are greenfield. 0 of 839 items carry a min, max or core flag, so someone must define and backfill them before the app is useful</strong></td>
+<td><strong>Adopted</strong> as risk R1, with a 60-day backfill target and seeded suggestions (§13.1)</td>
 <td>measured: <code>reorder_level</code> set on 0 items</td>
 </tr>
 </tbody>
 </table></div>
-<p>Two dissents are worth keeping on the record: one seat preferred the generated static catalogue plus a small approvals service (cheaper, but still a service to run), and one preferred Cloudflare Access email PIN for authentication (simpler, but it gives no role or name). Neither beat the majority, and both are recoverable later — the app reads the same data, and the Access gate stays in front either way.</p>
+<p>Two dissents are worth keeping on the record. One seat preferred the generated static catalogue plus a small approvals service: cheaper, but still a service to run. One preferred Cloudflare Access email PIN for authentication: simpler, but it gives no role or name. Neither beat the majority, and both can be revisited later: the app reads the same data, and the Access gate stays in front either way.</p>
+<h3 id="163-ricardos-answers--2026-11-25">16.3 Ricardo's answers — 2026-11-25</h3>
+<p>The four blocking questions are closed. They are quoted as given, with the consequence for the build.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Question</th>
+<th>Ricardo's answer</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Does the Zoho user list hold all 39 team members?</td>
+<td><strong>"yes"</strong></td>
+<td>Zoho login is the identity provider, unconditionally. ClickUp stays only as the pilot fallback. §9.1, R5</td>
+</tr>
+<tr>
+<td>2</td>
+<td>What does "toggle" mean?</td>
+<td><strong>"I basically want to force my team to have some items in stock and other items made to order and I want to be able to visually see it and also I want to set it on and off"</strong></td>
+<td>Replaces the v0.9 "two toggles" reading. One <strong>stock policy</strong> per item with an on/off switch (ON = must be in stock, OFF = made to order), a coloured pill everywhere, filter chips, bulk set and brand defaults. §1.2 R2, §4.2, F10, S4–S7, §7.4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Who approves, and at what level?</td>
+<td><strong>"Approval per brand needs to be able to be set and I can approve and we can set who can approve based on that brand in the future based on the user list"</strong></td>
+<td>Approval authority is <strong>per brand</strong>, configured in the app from the user list. Ricardo holds all brands, and more than one approver per brand is allowed. §2, §2.1, §4.2, F6, F7, S8, §7.6</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Is a click enough, or a signature?</td>
+<td><strong>"a click is enough"</strong></td>
+<td>One-click approval with actor, role, time and snapshot hash. No Zoho Sign. R7 closed</td>
+</tr>
+</tbody>
+</table></div>
 <hr />
 <h2 id="17-open-questions-for-ricardo">17. Open questions for Ricardo</h2>
+<p><strong>Closed 2026-11-25:</strong> Q1 (the toggle is the on/off stock policy), Q2 (Zoho, all 39), Q3 (approval per brand, set in the app from the user list) and Q4 (a click is enough). See §16.3. None of the questions below blocks the build.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -1144,30 +1583,6 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </thead>
 <tbody>
 <tr>
-<td>Q1</td>
-<td>Does "toggle what is or needs to see what is always in stock" mean <strong>two toggles</strong> (core range + stock health), as §1.2 reads it?</td>
-<td>Shapes F3</td>
-<td>Two toggles</td>
-</tr>
-<tr>
-<td>Q2</td>
-<td>Which identity provider is authoritative for staff: ClickUp (39 members) or Zoho (26 users, 12 active)?</td>
-<td>Coverage of "all team members"</td>
-<td>ClickUp, per MoA</td>
-</tr>
-<tr>
-<td>Q3</td>
-<td>Who are the section managers per brand and section — names, not roles?</td>
-<td>F5/F6 cannot ship without them</td>
-<td>Brand owner acts as manager until named</td>
-</tr>
-<tr>
-<td>Q4</td>
-<td>Is a click approval enough, or must a brand owner's sign-off carry a Zoho Sign signature?</td>
-<td>Audit strength vs friction</td>
-<td>Click + snapshot hash</td>
-</tr>
-<tr>
 <td>Q5</td>
 <td>Do Titan Electrical (30 items) and INFX (10) join now or later?</td>
 <td>Scope</td>
@@ -1177,12 +1592,72 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Q6</td>
 <td>Are minimums per <strong>item</strong> or per <strong>item per location</strong>?</td>
 <td>Data model</td>
-<td>Per item in v1</td>
+<td>Per item, against total stock on hand</td>
+</tr>
+<tr>
+<td>Q7</td>
+<td>Which items start as <strong>made to order</strong>? My reading: the 33 TLF/PPP/INF lines (none stock-tracked) start made to order, and the 676 stock-tracked ACDC items are candidates for "must be in stock"; the choice per item is yours and your approvers'</td>
+<td>Seeds the backfill instead of leaving 729 items "not set"</td>
+<td>Seeded as <strong>suggestions</strong> that approvers confirm, adding min/max where required (§13.1 M5)</td>
+</tr>
+<tr>
+<td>Q7a</td>
+<td>Do existing items count as approved at go-live?</td>
+<td>Otherwise every existing item waits in Newly added and staff see nothing</td>
+<td>A per-item <code>baseline</code> approval for active items with a photo, confirmed by you in one recorded action (§13.1 M4)</td>
+</tr>
+<tr>
+<td>Q8</td>
+<td><strong>Names of the approvers per brand.</strong> The pilot needs at least one per brand</td>
+<td>F6/F7 cannot be tested without them</td>
+<td>Ricardo on all four brands</td>
+</tr>
+<tr>
+<td>Q9</td>
+<td>Confirm the new item fields: <code>Stock Policy</code> picklist (<code>Must be in stock</code> / <code>Made to order</code>), <code>Maximum Level</code> number, <code>Lead Time Days</code> number. Creating them changes the live org</td>
+<td>Must exist before S7 ships</td>
+<td>Those names, created on your go</td>
+</tr>
+<tr>
+<td>Q10</td>
+<td>Are Zoho item rates entered <strong>with or without VAT</strong>?</td>
+<td>The price label on every card</td>
+<td>"excl. VAT", checked against one invoice before Stage 1</td>
+</tr>
+<tr>
+<td>Q11</td>
+<td>Where does the off-host database backup live?</td>
+<td>Approvals are the one record Zoho cannot rebuild</td>
+<td>A company location you name; until then a second disk on the host, risk recorded</td>
+</tr>
+<tr>
+<td>Q12</td>
+<td>Which email domains do the 39 sign in to Zoho with?</td>
+<td>The Access allow list (<code>@infinitybrands.co.za</code> may not cover ACDC staff)</td>
+<td>Every domain seen among the 39 in the pilot</td>
+</tr>
+<tr>
+<td>Q13</td>
+<td>Give the integration credential a directory read scope?</td>
+<td>The approver picker could list people before their first sign-in</td>
+<td>No; the picker uses signed-in identities (§7.6)</td>
+</tr>
+<tr>
+<td>Q14</td>
+<td>Hide an approved item whose <strong>artwork</strong> changes until re-approved? Which Zoho item may tests write to?</td>
+<td>Artwork sign-off vs a catalogue that never blanks; tests must not touch real products</td>
+<td>Stays visible, flagged, re-queued; tests use one inactive item you nominate</td>
+</tr>
+<tr>
+<td>Q15</td>
+<td>Add an hourly list-only sync from 07:00 to 18:00?</td>
+<td>Nightly only means an item loaded at 09:00 reaches Newly added the next morning</td>
+<td>Yes: 5 list calls an hour, far inside the throttle</td>
 </tr>
 </tbody>
 </table></div>
 <hr />
 <h2 id="18-what-done-looks-like">18. What "done" looks like</h2>
-<p>A person in the warehouse opens one link on their phone, signs in with the account they already have, finds any of the 729 products, sees its photo, price, stock, minimum and maximum, and can tell at a glance which products must never run out. A manager opens Newly added, looks at a new product's artwork, and approves or rejects it with a comment that will still be there in three years. Nobody edits a spreadsheet to publish a catalogue.</p>
+<p>Someone in the warehouse opens one link on their phone, signs in with the Zoho account they already have, and finds any approved product with its photo, price and stock. A green or amber pill tells them at a glance whether it <strong>must be in stock</strong>, with its minimum and maximum, or is <strong>made to order</strong>, with its lead time. A brand approver opens Newly added, looks at a new product's artwork, and approves or rejects it in one click, and that record is still provable in three years. Nobody edits a spreadsheet to publish a catalogue.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
