@@ -248,5 +248,59 @@ HTTP 400 {&quot;code&quot;:&quot;MANDATORY_NOT_FOUND&quot;,&quot;details&quot;:{
 <pre><code>sed -i &#39;s/^ZOHO_ALLOW_WRITES=1/ZOHO_ALLOW_WRITES=0/; s/^ZOHO_MAIL_ALLOW_SEND=1/ZOHO_MAIL_ALLOW_SEND=0/&#39; \
   ~/agenticos/zoho-mcp/credentials.env &amp;&amp; ~/agenticos/zoho-mcp/run.sh</code></pre>
 <p>Restore the previous agent version with <code>POST /agents/{id}/rollback {"version_id": "&lt;previous&gt;"}</code>.</p>
+<hr />
+<h2 id="coverage-audit--what-everything-actually-means-2026-11-25-1340-sast">Coverage audit — what "everything" actually means (2026-11-25, 13:40 SAST)</h2>
+<h3 id="the-three-domains">The three domains</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Superman (AgenticOS v21)</th>
+<th>Iron Man (AgenticOS v29)</th>
+<th>Iron Man (T3 Code seat)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Zoho</strong> — 19 gateway tools, 21 REST services, 95 product gateways</td>
+<td>yes, writes park</td>
+<td>yes, writes park</td>
+<td>yes — <code>zoho_call</code> on 98 scopes, no gate</td>
+</tr>
+<tr>
+<td><strong>ClickUp</strong> — 67 MCP tools</td>
+<td>yes, writes park</td>
+<td>yes, writes park</td>
+<td>yes — CLI, no gate</td>
+</tr>
+<tr>
+<td><strong>macserver</strong> (the Linux host the platform runs on)</td>
+<td><strong>no shell</strong> — sandbox <code>{"backend": "state"}</code>, files only</td>
+<td>yes — <code>/workspace/bin/host</code>, proved <code>hostname</code> → <code>macmini-inf</code>; account is in the <code>docker</code> group, root-equivalent</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><strong>Ricardo's Macs</strong></td>
+<td>no</td>
+<td>no</td>
+<td>yes — this seat runs on the Mac</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="holes-found">Holes found</h3>
+<ul>
+<li><strong>Zoho Desk is unreachable.</strong> <code>read desk /tickets</code> → <code>403 SCOPE_MISMATCH</code>: the 94-scope grant carries no Desk scope. Needs an OAuth re-consent by Ricardo.</li>
+<li><strong>Zoho Sprints</strong> is reachable only through <code>mcp_call product='sprints'</code> (96 product tools), not as a REST service.</li>
+<li><strong>ClickUp is work management, not the whole product.</strong> The 67 tools cover tasks (19), structure (16), comments, time tracking, chat, docs, members and search. There are <strong>no</strong> tools for goals, webhooks, views, guests/roles, automations, dashboards, templates or custom-field creation; the personal token + REST path reaches those.</li>
+<li><strong>No Mac route at all.</strong> The platform host is <code>macmini-inf</code>, Ubuntu (<code>Linux 7.0.0-43-generic</code>), not a Mac; the runtime image has no <code>ssh</code>; no device hub is configured. Only the T3 Code seat is Mac-native.</li>
+</ul>
+<h3 id="the-approval-gate-is-real--tested-not-assumed">The approval gate is real — tested, not assumed</h3>
+<p>Superman claimed a ClickUp write would "execute immediately — my tool surface has no approval gate". He was wrong, and he had not tested it. One harmless write attempt each (an empty comment on a real task):</p>
+<pre><code>SUPERMAN  run 93215558  -&gt; status: awaiting_approval
+IRON MAN  run b9beb5c0  -&gt; status: awaiting_approval</code></pre>
+<p>Nothing reached ClickUp; both runs were then cancelled, so no stray approval sits in the queue. The gate holds for every binding with <code>approval: "writes"</code>. The flip side, stated plainly: an unattended run that tries to write <strong>stops</strong> at that point — which is what the 20:00 automations must be designed around.</p>
+<h3 id="durability-fix-applied">Durability fix applied</h3>
+<p><code>zoho-mcp</code> is a standalone container on the compose network, so <code>agenticos.sh down</code> could not remove the network it holds and a later <code>up</code> left it stranded — every Zoho call from every seat would fail as "unreachable". Patched: <code>zoho_up</code> on up/restart, <code>docker rm -f zoho-mcp</code> before down, backup <code>agenticos.sh.bak-zoho-20261125T113546</code>, <code>bash -n</code> clean.</p>
+<p>Remaining watch items: the write flags are a hand-edited env line (a restore from <code>credentials.env.bak-gates-…</code> closes them again); the two Zoho refresh tokens and the ClickUp token can be revoked with no alert; two lanes published Iron Man v28/v29 during the same session.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
