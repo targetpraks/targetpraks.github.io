@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accessible LLM ranking — intelligence vs cost</title>
+<style>
+:root{--ink:var(--foreground,#e8edf7);--dim:var(--muted-foreground,#8b98ad);--line:var(--border,#26303f);
+--card-bg:var(--card,#141a25);--acc:var(--chart-1,#5eead4);--acc2:var(--chart-2,#a78bfa);--acc3:var(--chart-4,#fbbf24)}
+*{box-sizing:border-box}
+.wrap{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink);max-width:none}
+h1{font-size:clamp(24px,3.2vw,38px);line-height:1.12;margin:0 0 8px;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--acc)}
+.sub{color:var(--dim);max-width:74ch;margin:0}
+.meta{color:var(--dim);font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:14px 0 0}
+.meta b{color:var(--ink);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px;margin:22px 0 4px}
+.card{background:var(--card-bg);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+.card .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.card .v{font-size:19px;font-weight:650;margin-top:3px;letter-spacing:-.01em}
+.card .n{font-size:12.5px;color:var(--dim);margin-top:3px}
+.card.acc{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.panel{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:16px 16px 10px;margin-top:22px}
+.ptitle{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 2px}
+.psub{color:var(--dim);font-size:12.5px;margin:0 0 8px;max-width:96ch}
+.chart{height:470px;position:relative}
+svg{width:100%;height:470px;display:block}
+.grid line{stroke:var(--line);stroke-width:1;opacity:.65}
+.ax text{fill:var(--dim);font-size:11px}
+.ax .ttl{fill:var(--dim);font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+.dot{cursor:pointer}
+.lbl{fill:var(--ink);font-size:11px;paint-order:stroke;stroke:var(--card-bg);stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--dim);margin:2px 0 10px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}
+th{text-align:left;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);padding:9px 7px;
+border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+td{padding:8px 7px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.rk{color:var(--dim);width:2.2em;font-weight:600}
+td.md .ch{display:block;font-size:11px;color:var(--dim);font-weight:400;margin-top:1px}
+td.num{text-align:right;white-space:nowrap}
+td.small{font-size:12px;color:var(--dim)}
+tr.na td{opacity:.5}
+tr.top1 td{background:color-mix(in srgb,var(--acc) 8%,transparent)}
+.note{color:var(--dim);font-size:12.5px;margin:14px 0 2px;max-width:100ch;padding-bottom:6px}
+.note b{color:var(--ink)}
+.tip{position:fixed;pointer-events:none;background:var(--card-bg);border:1px solid var(--line);border-radius:10px;
+padding:8px 10px;font-size:12px;color:var(--ink);opacity:0;transition:opacity .1s;z-index:9;max-width:270px;box-shadow:0 12px 32px #0006}
+@media(max-width:760px){.chart,svg{height:340px}table{font-size:12.5px}}
+</style></head><body>
+<div class="wrap">
+<h1>What we can actually call: <em>29 scored models, ranked</em></h1>
+<p class="sub">Every model reachable from this Mac — 23 Ollama Cloud models and 9 Antigravity families — scored on intelligence and price using only Artificial Analysis and LLM Stats. No vendor claims.</p>
+<p class="meta">Pulled <b>26 Nov 2026 · 08:00 SAST</b> · AA Intelligence Index <b>v5.0.2</b> · LLM Stats leaderboard <b>456 models</b> · access verified with <b>ollama list</b> + <b>agy models</b></p>
+
+<div class="cards">
+  <div class="card acc"><div class="k">Best reachable overall</div><div class="v">Gemini 4 Neon</div><div class="n">AA 61.5 · LS 58.5 · $6.00/M blended · Antigravity</div></div>
+  <div class="card"><div class="k">Best on the key-backed cloud</div><div class="v">Kimi K3.1 Pro</div><div class="n">AA 46.6 · LS 54.0 · $4.00/M · Ollama Cloud</div></div>
+  <div class="card"><div class="k">Best value in the top 10</div><div class="v">DeepSeek V4.1 Flash</div><div class="n">LS 49.8 at $0.52/M — 11× cheaper than #1, ~85% of the score</div></div>
+  <div class="card"><div class="k">Best cheap workhorse</div><div class="v">GLM-5.3-Flash</div><div class="n">LS 47.6 at $0.24/M — the fallback that earns its slot</div></div>
+</div>
+
+<div class="panel">
+  <p class="ptitle">Intelligence vs price</p>
+  <p class="psub">Y = composite of AA Intelligence Index and LLM Stats score (percentile within this set, 0–100). X = blended $/1M tokens at 3:1 input:output, log scale. Up and to the left is better.</p>
+  <div class="legend">
+    <span><i style="background:var(--acc)"></i>Antigravity (Google seat)</span>
+    <span><i style="background:var(--acc2)"></i>Ollama Cloud</span>
+    <span><i style="background:var(--acc3)"></i>Ollama local</span>
+  </div>
+  <div class="chart"><svg id="sc" viewBox="0 0 980 470" preserveAspectRatio="none" aria-label="Scatter: intelligence versus blended price"></svg></div>
+</div>
+
+<div class="panel">
+  <p class="ptitle">The ranking — top 30</p>
+  <p class="psub">Composite = mean of each model's percentile on the two sources; a model missing one source falls back to the other. Cost from LLM Stats (AA where LLM Stats lists none).</p>
+  <table><thead><tr><th>#</th><th>Model</th><th style="text-align:right">Comp.</th><th style="text-align:right">AA</th>
+  <th style="text-align:right">LLM Stats</th><th style="text-align:right">$/M</th><th style="text-align:right">in / out</th>
+  <th style="text-align:right">Reason</th><th style="text-align:right">Code</th><th style="text-align:right">Ctx</th></tr></thead>
+  <tbody><tr class="top1"><td class=rk>1</td><td class=md><b>Gemini 4 Neon</b> <span class=ch>Antigravity (xhigh)</span></td><td class=num><b>98</b></td><td class=num>61.5</td><td class=num>58.5</td><td class=num>$6.00</td><td class='num small'>$3 / $15</td><td class=num>57</td><td class=num>44</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>2</td><td class=md><b>Gemini 4 Carbon</b> <span class=ch>Antigravity (high)</span></td><td class=num><b>92</b></td><td class=num>60.1</td><td class=num>56.4</td><td class=num>$4.00</td><td class='num small'>$2 / $10</td><td class=num>53</td><td class=num>44</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>3</td><td class=md><b>Claude Opus 5.5</b> <span class=ch>Antigravity (high)</span></td><td class=num><b>90</b></td><td class=num>51.8</td><td class=num>58.0</td><td class=num>$8.00</td><td class='num small'>$4 / $20</td><td class=num>57</td><td class=num>48</td><td class='num small'>1M</td></tr>
+<tr><td class=rk>4</td><td class=md><b>Gemini 4 Argon</b> <span class=ch>Antigravity (high)</span></td><td class=num><b>81</b></td><td class=num>50.5</td><td class=num>52.7</td><td class=num>$4.00</td><td class='num small'>$2 / $10</td><td class=num>50</td><td class=num>41</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>5</td><td class=md><b>Kimi K3.1 Pro</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>80</b></td><td class=num>46.6</td><td class=num>54.0</td><td class=num>$4.00</td><td class='num small'>$2 / $10</td><td class=num>53</td><td class=num>40</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>6</td><td class=md><b>Claude Sonnet 5.5</b> <span class=ch>Antigravity (high)</span></td><td class=num><b>80</b></td><td class=num>41.5</td><td class=num>56.3</td><td class=num>$4.00</td><td class='num small'>$2 / $10</td><td class=num>55</td><td class=num>46</td><td class='num small'>1M</td></tr>
+<tr><td class=rk>7</td><td class=md><b>Kimi K3</b> <span class=ch>Ollama Cloud (no eval)</span></td><td class=num><b>78</b></td><td class=num>—</td><td class=num>50.0</td><td class=num>$5.70</td><td class='num small'>$2.85 / $14.25</td><td class=num>50</td><td class=num>39</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>8</td><td class=md><b>Gemini 4 Hydrogen</b> <span class=ch>Antigravity (xhigh)</span></td><td class=num><b>71</b></td><td class=num>54.1</td><td class=num>47.5</td><td class=num>$3.00</td><td class='num small'>$1.5 / $7.5</td><td class=num>46</td><td class=num>25</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>9</td><td class=md><b>DeepSeek V4.1 Flash 1017</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>69</b></td><td class=num>32.4</td><td class=num>49.8</td><td class=num>$0.52</td><td class='num small'>$0.3 / $1.2</td><td class=num>47</td><td class=num>38</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>10</td><td class=md><b>Hy4</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>67</b></td><td class=num>34.6</td><td class=num>47.8</td><td class=num>$1.25</td><td class='num small'>$0.834 / $2.501</td><td class=num>48</td><td class=num>36</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>11</td><td class=md><b>GLM-5.3</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>65</b></td><td class=num>31.6</td><td class=num>49.3</td><td class=num>$1.90</td><td class='num small'>$1.2 / $4</td><td class=num>49</td><td class=num>38</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>12</td><td class=md><b>Gemini 3.8 Flash</b> <span class=ch>Antigravity (high)</span></td><td class=num><b>60</b></td><td class=num>—</td><td class=num>47.6</td><td class=num>$1.50</td><td class='num small'>$0.75 / $3.75</td><td class=num>45</td><td class=num>33</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>13</td><td class=md><b>MiMo V2.6 Pro</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>55</b></td><td class=num>29.9</td><td class=num>47.6</td><td class=num>$0.54</td><td class='num small'>$0.43 / $0.87</td><td class=num>45</td><td class=num>37</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>14</td><td class=md><b>GLM-5.3-Flash</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>51</b></td><td class=num>27.7</td><td class=num>47.6</td><td class=num>$0.24</td><td class='num small'>$0.15 / $0.5</td><td class=num>47</td><td class=num>30</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>15</td><td class=md><b>Inkling 2 Small</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>50</b></td><td class=num>30.7</td><td class=num>46.9</td><td class=num>$0.47</td><td class='num small'>$0.3 / $1</td><td class=num>48</td><td class=num>36</td><td class='num small'>256k</td></tr>
+<tr><td class=rk>16</td><td class=md><b>MiniMax M3.1 Flash</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>48</b></td><td class=num>29.1</td><td class=num>47.3</td><td class=num>$0.26</td><td class='num small'>$0.15 / $0.6</td><td class=num>45</td><td class=num>36</td><td class='num small'>1M</td></tr>
+<tr><td class=rk>17</td><td class=md><b>Mistral Large 4</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>38</b></td><td class=num>26.1</td><td class=num>45.6</td><td class=num>$1.05</td><td class='num small'>$0.7 / $2.1</td><td class=num>44</td><td class=num>35</td><td class='num small'>1M</td></tr>
+<tr><td class=rk>18</td><td class=md><b>GLM-5.2</b> <span class=ch>Ollama Cloud (no eval)</span></td><td class=num><b>36</b></td><td class=num>—</td><td class=num>43.8</td><td class=num>$1.16</td><td class='num small'>$0.75 / $2.4</td><td class=num>44</td><td class=num>32</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>19</td><td class=md><b>MiMo V2.6 Flash</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>35</b></td><td class=num>26.8</td><td class=num>43.6</td><td class=num>$0.18</td><td class='num small'>$0.14 / $0.28</td><td class=num>42</td><td class=num>32</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>20</td><td class=md><b>Muse Spark Open</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>34</b></td><td class=num>24.9</td><td class=num>44.6</td><td class=num>$2.00</td><td class='num small'>$1.25 / $4.25</td><td class=num>45</td><td class=num>33</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>21</td><td class=md><b>Kimi K2.6</b> <span class=ch>Ollama Cloud (no eval)</span></td><td class=num><b>26</b></td><td class=num>—</td><td class=num>42.6</td><td class=num>$1.44</td><td class='num small'>$0.75 / $3.5</td><td class=num>43</td><td class=num>32</td><td class='num small'>262.1k</td></tr>
+<tr><td class=rk>22</td><td class=md><b>DeepSeek V4 Pro</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>23</b></td><td class=num>23.1</td><td class=num>42.0</td><td class=num>$1.62</td><td class='num small'>$1.3 / $2.6</td><td class=num>42</td><td class=num>30</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>23</td><td class=md><b>Beam 1.0</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>22</b></td><td class=num>17.7</td><td class=num>43.1</td><td class=num>$0.60</td><td class='num small'>$0.4 / $1.2</td><td class=num>44</td><td class=num>32</td><td class='num small'>1.0M</td></tr>
+<tr><td class=rk>24</td><td class=md><b>MiniMax M3</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>19</b></td><td class=num>19.0</td><td class=num>40.1</td><td class=num>$0.49</td><td class='num small'>$0.28 / $1.1</td><td class=num>40</td><td class=num>29</td><td class='num small'>1M</td></tr>
+<tr><td class=rk>25</td><td class=md><b>Kimi K2.7 Code</b> <span class=ch>Ollama Cloud (no eval)</span></td><td class=num><b>16</b></td><td class=num>—</td><td class=num>37.6</td><td class=num>$1.36</td><td class='num small'>$0.68 / $3.4</td><td class=num>33</td><td class=num>27</td><td class='num small'>262.1k</td></tr>
+<tr><td class=rk>26</td><td class=md><b>Nemotron 3 Ultra</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>12</b></td><td class=num>11.8</td><td class=num>35.5</td><td class=num>$0.93</td><td class='num small'>$0.5 / $2.2</td><td class=num>35</td><td class=num>19</td><td class='num small'>262.1k</td></tr>
+<tr><td class=rk>27</td><td class=md><b>Gemma 4 31B</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>8</b></td><td class=num>4.4</td><td class=num>32.2</td><td class=num>$0.15</td><td class='num small'>$0.09 / $0.34</td><td class=num>33</td><td class=num>—</td><td class='num small'>262.1k</td></tr>
+<tr><td class=rk>28</td><td class=md><b>GPT-OSS 120B</b> <span class=ch>Antigravity (high)</span></td><td class=num><b>4</b></td><td class=num>3.8</td><td class=num>27.9</td><td class=num>$0.07</td><td class='num small'>$0.04 / $0.17</td><td class=num>22</td><td class=num>—</td><td class='num small'>131.1k</td></tr>
+<tr><td class=rk>29</td><td class=md><b>Nemotron 3 Super</b> <span class=ch>Ollama Cloud (no eval)</span></td><td class=num><b>2</b></td><td class=num>—</td><td class=num>25.8</td><td class=num>$0.17</td><td class='num small'>$0.09 / $0.4</td><td class=num>24</td><td class=num>13</td><td class='num small'>262.1k</td></tr>
+<tr class="na"><td class=rk>30</td><td class=md><b>Clef (in-house)</b> <span class=ch>Ollama Cloud</span></td><td class=num><b>—</b></td><td class=num>—</td><td class=num>—</td><td class=num>—</td><td class='num small'>—</td><td class=num>—</td><td class=num>—</td><td class='num small'>—</td></tr></tbody></table>
+  <p class="note"><b>Read before routing.</b> Antigravity rows are scored at the highest effort our seat exposes — Claude Opus 5.5 at High (AA 51.8), because Max (59.1) is not on the seat; same cap puts Sonnet 5.5 at 41.5 rather than 54.7. Rows marked <b>no eval</b> (Kimi K3, K2.6, K2.7 Code, GLM-5.2, Nemotron 3 Super, Gemini 3.8 Flash) are ranked on LLM Stats alone — AA publishes no index for them yet. Clef and d3 Flash are ours and carry no independent eval, so they sit outside the ranking, as do granite3.2-vision, qwen2.5vl:3b, ocria-1, glm-ocr and deepseek-ocr. Hy4's price comes from AA. Antigravity's three Orchestrator variants are routing aliases, not distinct models.</p>
+</div>
+<div class="tip" id="tip"></div>
+</div>
+<script>
+const D=[{"rank": 1, "label": "Gemini 4 Neon", "ch": "Antigravity (xhigh)", "aa": 61.5, "ls": 58.5, "comp": 98.1, "blend": 6.0, "lin": 3.0, "lout": 15.0, "reason": 57.0, "code": 43.6, "ctx": "1.0M"}, {"rank": 2, "label": "Gemini 4 Carbon", "ch": "Antigravity (high)", "aa": 60.1, "ls": 56.4, "comp": 92.4, "blend": 4.0, "lin": 2.0, "lout": 10.0, "reason": 53.3, "code": 44.5, "ctx": "1.0M"}, {"rank": 3, "label": "Claude Opus 5.5", "ch": "Antigravity (high)", "aa": 51.8, "ls": 58.0, "comp": 89.8, "blend": 8.0, "lin": 4.0, "lout": 20.0, "reason": 56.9, "code": 47.5, "ctx": "1M"}, {"rank": 4, "label": "Gemini 4 Argon", "ch": "Antigravity (high)", "aa": 50.5, "ls": 52.7, "comp": 80.7, "blend": 4.0, "lin": 2.0, "lout": 10.0, "reason": 50.2, "code": 40.9, "ctx": "1.0M"}, {"rank": 5, "label": "Kimi K3.1 Pro", "ch": "Ollama Cloud", "aa": 46.6, "ls": 54.0, "comp": 80.3, "blend": 4.0, "lin": 2.0, "lout": 10.0, "reason": 52.9, "code": 40.5, "ctx": "1.0M"}, {"rank": 6, "label": "Claude Sonnet 5.5", "ch": "Antigravity (high)", "aa": 41.5, "ls": 56.3, "comp": 79.8, "blend": 4.0, "lin": 2.0, "lout": 10.0, "reason": 54.9, "code": 45.7, "ctx": "1M"}, {"rank": 7, "label": "Kimi K3", "ch": "Ollama Cloud (no eval)", "aa": null, "ls": 50.0, "comp": 77.6, "blend": 5.7, "lin": 2.85, "lout": 14.25, "reason": 49.5, "code": 38.6, "ctx": "1.0M"}, {"rank": 8, "label": "Gemini 4 Hydrogen", "ch": "Antigravity (xhigh)", "aa": 54.1, "ls": 47.5, "comp": 71.3, "blend": 3.0, "lin": 1.5, "lout": 7.5, "reason": 45.7, "code": 24.8, "ctx": "1.0M"}, {"rank": 9, "label": "DeepSeek V4.1 Flash 1017", "ch": "Ollama Cloud", "aa": 32.4, "ls": 49.8, "comp": 68.6, "blend": 0.52, "lin": 0.3, "lout": 1.2, "reason": 47.0, "code": 38.5, "ctx": "1.0M"}, {"rank": 10, "label": "Hy4", "ch": "Ollama Cloud", "aa": 34.6, "ls": 47.8, "comp": 67.3, "blend": 1.25, "lin": 0.834, "lout": 2.501, "reason": 47.8, "code": 35.7, "ctx": "1.0M"}, {"rank": 11, "label": "GLM-5.3", "ch": "Ollama Cloud", "aa": 31.6, "ls": 49.3, "comp": 64.7, "blend": 1.9, "lin": 1.2, "lout": 4.0, "reason": 49.1, "code": 37.7, "ctx": "1.0M"}, {"rank": 12, "label": "Gemini 3.8 Flash", "ch": "Antigravity (high)", "aa": null, "ls": 47.6, "comp": 60.3, "blend": 1.5, "lin": 0.75, "lout": 3.75, "reason": 45.0, "code": 32.6, "ctx": "1.0M"}, {"rank": 13, "label": "MiMo V2.6 Pro", "ch": "Ollama Cloud", "aa": 29.9, "ls": 47.6, "comp": 55.2, "blend": 0.54, "lin": 0.43, "lout": 0.87, "reason": 45.3, "code": 36.9, "ctx": "1.0M"}, {"rank": 14, "label": "GLM-5.3-Flash", "ch": "Ollama Cloud", "aa": 27.7, "ls": 47.6, "comp": 50.8, "blend": 0.24, "lin": 0.15, "lout": 0.5, "reason": 46.8, "code": 30.1, "ctx": "1.0M"}, {"rank": 15, "label": "Inkling 2 Small", "ch": "Ollama Cloud", "aa": 30.7, "ls": 46.9, "comp": 50.4, "blend": 0.47, "lin": 0.3, "lout": 1.0, "reason": 47.6, "code": 36.2, "ctx": "256k"}, {"rank": 16, "label": "MiniMax M3.1 Flash", "ch": "Ollama Cloud", "aa": 29.1, "ls": 47.3, "comp": 47.8, "blend": 0.26, "lin": 0.15, "lout": 0.6, "reason": 44.7, "code": 36.4, "ctx": "1M"}, {"rank": 17, "label": "Mistral Large 4", "ch": "Ollama Cloud", "aa": 26.1, "ls": 45.6, "comp": 37.9, "blend": 1.05, "lin": 0.7, "lout": 2.1, "reason": 44.2, "code": 34.9, "ctx": "1M"}, {"rank": 18, "label": "GLM-5.2", "ch": "Ollama Cloud (no eval)", "aa": null, "ls": 43.8, "comp": 36.2, "blend": 1.16, "lin": 0.75, "lout": 2.4, "reason": 43.7, "code": 32.0, "ctx": "1.0M"}, {"rank": 19, "label": "MiMo V2.6 Flash", "ch": "Ollama Cloud", "aa": 26.8, "ls": 43.6, "comp": 34.9, "blend": 0.18, "lin": 0.14, "lout": 0.28, "reason": 42.3, "code": 32.1, "ctx": "1.0M"}, {"rank": 20, "label": "Muse Spark Open", "ch": "Ollama Cloud", "aa": 24.9, "ls": 44.6, "comp": 34.0, "blend": 2.0, "lin": 1.25, "lout": 4.25, "reason": 44.6, "code": 32.7, "ctx": "1.0M"}, {"rank": 21, "label": "Kimi K2.6", "ch": "Ollama Cloud (no eval)", "aa": null, "ls": 42.6, "comp": 25.9, "blend": 1.44, "lin": 0.75, "lout": 3.5, "reason": 43.0, "code": 32.4, "ctx": "262.1k"}, {"rank": 22, "label": "DeepSeek V4 Pro", "ch": "Ollama Cloud", "aa": 23.1, "ls": 42.0, "comp": 23.2, "blend": 1.62, "lin": 1.3, "lout": 2.6, "reason": 42.4, "code": 30.5, "ctx": "1.0M"}, {"rank": 23, "label": "Beam 1.0", "ch": "Ollama Cloud", "aa": 17.7, "ls": 43.1, "comp": 22.3, "blend": 0.6, "lin": 0.4, "lout": 1.2, "reason": 44.1, "code": 32.5, "ctx": "1.0M"}, {"rank": 24, "label": "MiniMax M3", "ch": "Ollama Cloud", "aa": 19.0, "ls": 40.1, "comp": 19.3, "blend": 0.49, "lin": 0.28, "lout": 1.1, "reason": 40.3, "code": 29.4, "ctx": "1M"}, {"rank": 25, "label": "Kimi K2.7 Code", "ch": "Ollama Cloud (no eval)", "aa": null, "ls": 37.6, "comp": 15.5, "blend": 1.36, "lin": 0.68, "lout": 3.4, "reason": 32.8, "code": 27.3, "ctx": "262.1k"}, {"rank": 26, "label": "Nemotron 3 Ultra", "ch": "Ollama Cloud", "aa": 11.8, "ls": 35.5, "comp": 11.5, "blend": 0.93, "lin": 0.5, "lout": 2.2, "reason": 35.0, "code": 19.4, "ctx": "262.1k"}, {"rank": 27, "label": "Gemma 4 31B", "ch": "Ollama Cloud", "aa": 4.4, "ls": 32.2, "comp": 7.6, "blend": 0.15, "lin": 0.09, "lout": 0.34, "reason": 32.8, "code": null, "ctx": "262.1k"}, {"rank": 28, "label": "GPT-OSS 120B", "ch": "Antigravity (high)", "aa": 3.8, "ls": 27.9, "comp": 3.7, "blend": 0.07, "lin": 0.04, "lout": 0.17, "reason": 22.3, "code": null, "ctx": "131.1k"}, {"rank": 29, "label": "Nemotron 3 Super", "ch": "Ollama Cloud (no eval)", "aa": null, "ls": 25.8, "comp": 1.7, "blend": 0.17, "lin": 0.09, "lout": 0.4, "reason": 24.1, "code": 12.8, "ctx": "262.1k"}, {"rank": 30, "label": "Clef (in-house)", "ch": "Ollama Cloud", "aa": null, "ls": null, "comp": null, "blend": null, "lin": null, "lout": null, "reason": null, "code": null, "ctx": null}];
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById('sc');
+const W=980,H=470,ml=62,mr=190,mt=18,mb=52;
+const pts=D.filter(d=>d.blend!=null&&d.comp!=null);
+const lx0=Math.log10(Math.min(...pts.map(d=>d.blend))*0.92), lx1=Math.log10(Math.max(...pts.map(d=>d.blend))*1.12);
+const X=v=>ml+(Math.log10(v)-lx0)/(lx1-lx0)*(W-ml-mr);
+const Y=v=>H-mb-(v/100)*(H-mt-mb);
+const mk=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e};
+const g=mk('g',{class:'grid'});
+for(let t=0;t<=100;t+=20)g.appendChild(mk('line',{x1:ml,x2:W-mr,y1:Y(t),y2:Y(t)}));
+[0.1,0.25,0.5,1,2,4,8,16].forEach(v=>g.appendChild(mk('line',{x1:X(v),x2:X(v),y1:mt,y2:H-mb})));
+svg.appendChild(g);
+const ax=mk('g',{class:'ax'});
+for(let t=0;t<=100;t+=20){const e=mk('text',{x:ml-10,y:Y(t)+4,'text-anchor':'end'});e.textContent=t;ax.appendChild(e)}
+[0.1,0.25,0.5,1,2,4,8,16].forEach(v=>{const e=mk('text',{x:X(v),y:H-mb+19,'text-anchor':'middle'});e.textContent='$'+v;ax.appendChild(e)});
+{const e=mk('text',{x:(ml+W-mr)/2,y:H-10,'text-anchor':'middle',class:'ttl'});e.textContent='blended $ / 1M tokens (log)';ax.appendChild(e)}
+{const e=mk('text',{transform:`rotate(-90)`,x:-(mt+(H-mt-mb)/2),y:16,'text-anchor':'middle',class:'ttl'});e.textContent='composite intelligence';ax.appendChild(e)}
+svg.appendChild(ax);
+const cs=getComputedStyle(document.documentElement);
+const cvar=(n,f)=>cs.getPropertyValue(n).trim()||f;
+const COL={anti:cvar('--acc','#5eead4'),cloud:cvar('--acc2','#a78bfa'),local:cvar('--acc3','#fbbf24')};
+const col=c=>c.startsWith('Antigravity')?COL.anti:c.startsWith('Ollama local')?COL.local:COL.cloud;
+const tip=document.getElementById('tip');
+const lab=new Set(['Gemini 4 Neon','Gemini 4 Carbon','Claude Opus 5.5','Kimi K3.1 Pro','Claude Sonnet 5.5','Gemini 4 Argon','Kimi K3','DeepSeek V4.1 Flash 1017','Gemini 4 Hydrogen','GLM-5.3','Hy4','GLM-5.3-Flash']);
+const placed=[];
+const overlaps=(a)=>placed.some(b=>!(a.x2<b.x1||b.x2<a.x1||a.y2<b.y1||b.y2<a.y1));
+pts.forEach(d=>{
+  const c=mk('circle',{cx:X(d.blend),cy:Y(d.comp),r:lab.has(d.label)?6:4.3,fill:col(d.ch),class:'dot','fill-opacity':lab.has(d.label)?1:.55});
+  c.addEventListener('mousemove',e=>{const t=document.getElementById('tip');t.style.opacity=1;
+    t.style.left=Math.min(e.clientX+14,window.innerWidth-280)+'px';t.style.top=(e.clientY-8)+'px';
+    t.innerHTML='<b>'+d.label+'</b> · #'+d.rank+'<br>composite '+(d.comp?d.comp.toFixed(0):'—')+' · AA '+(d.aa??'—')+' · LS '+(d.ls??'—')+'<br>$'+d.blend.toFixed(2)+'/M blended · '+d.ch;});
+  c.addEventListener('mouseleave',()=>{document.getElementById('tip').style.opacity=0});
+  svg.appendChild(c);
+});
+pts.forEach(d=>{placed.push({x1:X(d.blend)-7,x2:X(d.blend)+7,y1:Y(d.comp)-7,y2:Y(d.comp)+7})});
+const ordered=pts.filter(d=>lab.has(d.label)).sort((a,b)=>b.comp-a.comp);
+ordered.forEach(d=>{
+  const cx=X(d.blend), cy=Y(d.comp), w=d.label.length*5.9+8, h=13;
+  const cands=[[cx+13,cy-3,'start',cx+12,cx+12+w,cy-11,cy+3],
+               [cx-13-w,cy-3,'end',cx-13-w,cx-12,cy-11,cy+3],
+               [cx+11,cy-18,'start',cx+11,cx+11+w,cy-26,cy-12],
+               [cx-11-w,cy-18,'end',cx-11-w,cx-11,cy-26,cy-12],
+               [cx+11,cy+14,'start',cx+11,cx+11+w,cy+6,cy+20],
+               [cx-11-w,cy+14,'end',cx-11-w,cx-11,cy+6,cy+20],
+               [cx+13,cy-32,'start',cx+13,cx+13+w,cy-40,cy-26],
+               [cx-13-w,cy-32,'end',cx-13-w,cx-13,cy-40,cy-26]];
+  for(const [tx,ty,anchor,x1,x2,y1,y2] of cands){
+    const box={x1,x2,y1,y2};
+    if(!overlaps(box)&&y1>10&&x1>2&&x2<W-6){placed.push(box);
+      const t=mk('text',{class:'lbl',x:tx,y:ty,'text-anchor':anchor});t.textContent=d.label;svg.appendChild(t);break;}
+  }
+});
+</script>
+</body></html>
