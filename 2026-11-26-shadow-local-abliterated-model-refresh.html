@@ -320,8 +320,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li><code>ollama ps</code> → <code>shadow-abl:9b  7.9 GB  100% GPU  65536</code>.</li>
 <li>Idle unloading: global <code>OLLAMA_KEEP_ALIVE=90s</code>, so the 7.9 GB is released a minute and a half after Shadow stops working.</li>
 </ul>
-<h2 id="open-item">Open item</h2>
-<p>The running gateway caches each served profile's config <strong>once at startup</strong> (<code>gateway/run.py</code>: <em>"as loaded once by <code>_load_secondary_profile_config</code>"</em>). Shadow's <strong>bot</strong> keeps the old cloud model until the gateway process cycles; the CLI path already reads the new config. A <code>hermes gateway restart</code> from a shell outside the gateway applies it to the bot.</p>
+<h2 id="applied-to-the-running-gateway-without-a-restart">Applied to the running gateway without a restart</h2>
+<p>The multiplexer hot-reloads a served profile whose <code>config.yaml</code> changes (<code>gateway/run_profile_reconcile.py</code>, 30-second watcher). Its log confirms both edits were picked up:</p>
+<pre><code>2026-11-26 08:29:06,917 INFO gateway.run_profile_reconcile: [MULTIPLEX] Re-scanned profile &#39;shadow&#39; after config/.env change
+2026-11-26 08:30:07,986 INFO gateway.run_profile_reconcile: [MULTIPLEX] Re-scanned profile &#39;shadow&#39; after config/.env change</code></pre>
+<p>No <code>hermes gateway restart</code> was needed and none was run.</p>
+<h2 id="not-changed-deliberately">Not changed (deliberately)</h2>
+<p><code>web.backend: tinyfish</code> stays — Shadow's brief allows public-web tools for research; that is a search API, not a model. <code>web_search</code> queries leave the machine, model prompts do not. If Ricardo wants even search kept local, that is a separate decision and a different tool.</p>
 <h2 id="files-touched">Files touched</h2>
 <ul>
 <li><code>/Users/ricardomaio/.hermes/profiles/shadow/config.yaml</code> (backup: <code>config.yaml.bak-abl9b-20261126T082850</code>)</li>
