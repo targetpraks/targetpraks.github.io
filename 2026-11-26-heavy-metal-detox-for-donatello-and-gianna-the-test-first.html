@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Heavy Metal Detox for Donatello &amp; Gianna — the test-first protocol</title>
+<style>
+:root{
+  --bg:#f8f6f1; --surface:#ffffff; --surface-2:#f3efe6; --ink:#171c20; --ink-2:#434a52; --muted:#5f5a52;
+  --border:#e2dcd0; --border-strong:#cfc7b8;
+  --accent:#1a6b58; --accent-soft:#e6f3ef; --accent-ink:#114a3d;
+  --ok-bg:#e7f5ec; --ok-fg:#145a32; --ok-bd:#bce3ca;
+  --warn-bg:#fef4e4; --warn-fg:#8a4b08; --warn-bd:#f5d5a3;
+  --bad-bg:#fdeceb; --bad-fg:#991b1b; --bad-bd:#f5c2bf;
+  --shadow:0 1px 3px rgba(20,25,30,.05), 0 6px 20px rgba(20,25,30,.04);
+  --radius:12px;
+  --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121518; --surface:#1a1f24; --surface-2:#222830; --ink:#eef1f4; --ink-2:#c4ccd4; --muted:#b0a99b;
+    --border:#2c343d; --border-strong:#3d4753;
+    --accent:#3db89a; --accent-soft:#16332c; --accent-ink:#8ee3cd;
+    --ok-bg:#133321; --ok-fg:#7ee0a3; --ok-bd:#215437;
+    --warn-bg:#382810; --warn-fg:#f7c572; --warn-bd:#5c421a;
+    --bad-bg:#3b1818; --bad-fg:#f89b9b; --bad-bd:#632626;
+    --shadow:0 2px 10px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:600;letter-spacing:-.01em;margin:0}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+a:hover{border-bottom-color:var(--accent)}
+.wrap{max-width:min(1240px,94vw);margin:0 auto;padding:0 18px}
+.prose{max-width:50rem}
+header.hero{background:var(--surface);border-bottom:1px solid var(--border);padding:30px 0 24px}
+.kicker{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:8px}
+h1{font-size:clamp(26px,3.4vw,38px);line-height:1.1;margin-bottom:12px;max-width:22ch}
+.lede{color:var(--ink-2);max-width:62ch;margin:0;font-size:16px}
+.meta{color:var(--muted);font-size:12.5px;margin-top:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:22px}
+.stat{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.stat .n{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.05;color:var(--accent-ink)}
+.stat .l{font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.4}
+main{padding:34px 0 70px}
+section{margin:0 0 40px}
+h2{font-size:clamp(20px,2.3vw,26px);margin-bottom:6px}
+h2 .num{color:var(--accent);font-size:.72em;margin-right:8px;font-variant-numeric:tabular-nums}
+h3{font-size:17px;margin:0 0 4px}
+p{margin:10px 0}
+.standfirst{color:var(--muted);font-size:14px;margin-bottom:16px;max-width:52rem}
+.verdict{background:var(--accent-soft);border:1px solid var(--body-bd,#c2e2d8);border-left:4px solid var(--accent);border-radius:10px;padding:16px 18px;margin:0 0 26px}
+.verdict strong{display:block;font-family:var(--serif);font-size:19px;color:var(--accent-ink);margin-bottom:6px}
+.verdict p{margin:6px 0 0;color:var(--ink-2);font-size:14.5px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.card.bad{border-color:var(--bad-bd)}
+.card.good{border-color:var(--ok-bd)}
+.card p{font-size:14px;color:var(--ink-2);margin:8px 0 0}
+.tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;margin-bottom:8px}
+.tag.bad{background:var(--bad-bg);color:var(--bad-fg);border:1px solid var(--bad-bd)}
+.tag.good{background:var(--ok-bg);color:var(--ok-fg);border:1px solid var(--ok-bd)}
+.tag.warn{background:var(--warn-bg);color:var(--warn-fg);border:1px solid var(--warn-bd)}
+.tablewrap{margin:16px 0;overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:680px}
+th{text-align:left;font:700 11px/1.3 var(--sans);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:11px 14px;border-bottom:1px solid var(--border-strong);background:var(--surface-2);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--ink-2)}
+td:first-child{color:var(--ink);font-weight:600}
+tr:last-child td{border-bottom:none}
+figure{margin:20px 0;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+figure svg{display:block;width:100%;height:auto}
+.scrollfig{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:640px){.scrollfig svg{min-width:780px}}
+figcaption{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+ol.steps{list-style:none;counter-reset:s;padding:0;margin:14px 0}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 0 42px;margin:0 0 16px}
+ol.steps>li:before{content:counter(s);position:absolute;left:0;top:-1px;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font:700 13px/28px var(--sans);text-align:center}
+ol.steps strong{display:block;font-size:15px;margin-bottom:2px}
+ol.steps span{color:var(--ink-2);font-size:14px}
+ul.plain{list-style:none;padding:0;margin:12px 0}
+ul.plain>li{position:relative;padding:9px 0 9px 26px;border-bottom:1px dashed var(--border);font-size:14px;color:var(--ink-2)}
+ul.plain>li:last-child{border-bottom:none}
+ul.plain>li:before{content:"";position:absolute;left:4px;top:16px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+ul.no>li:before{content:"✕";background:none;color:var(--bad-fg);font-weight:800;font-size:12px;left:2px;top:9px;width:auto;height:auto}
+.note{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:13.5px;color:var(--ink-2);margin:16px 0}
+.note b{color:var(--ink)}
+.sources ol{padding-left:20px;margin:10px 0}
+.sources li{font-size:13px;color:var(--ink-2);margin-bottom:7px;line-height:1.5}
+footer{border-top:1px solid var(--border);padding:22px 0 40px;color:var(--muted);font-size:12px}
+@media print{body{background:#fff}.wrap{max-width:none}header.hero{box-shadow:none}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Splinter · Personal · Health evidence review · 26 November 2026</div>
+    <h1>Heavy metal detox for Donatello and Gianna</h1>
+    <p class="lede">There is no detox protocol worth running on two children who have not been tested. The real protocol is one venous blood lead test each, then act on the number — and keep every marketed "detox" product away from both of them while the number is unknown.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">1</div><div class="l">test that starts everything: a <em>venous</em> blood lead level (PbB) for each child</div></div>
+      <div class="stat"><div class="n">3.5</div><div class="l">µg/dL — CDC's blood lead reference value since October 2021 (down from 5)</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">over-the-counter "chelation" products the FDA has ever approved</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">deaths from chelation-related hypocalcaemia, 2003–2005, per the CDC</div></div>
+    </div>
+    <div class="meta">Donatello 9, Gianna 7 · Welgemoed, Cape Town · South Africa has no national childhood lead-screening programme, so the GP is the entry point</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="verdict prose">
+    <strong>The short answer</strong>
+    <p>Nothing in the "heavy metal detox" aisle has ever been shown to help a child. The one treatment that genuinely removes metal — chelation — is a prescription drug for a <em>measured</em> high load, given in hospital, and it killed three children in three years when it was used outside that setting. So the protocol we can run is: <b>measure this week, act on the number, remove the source if there is one.</b></p>
+    <p>If a practitioner has already given you a test result and a product list, send it to me before either child takes anything — that changes the answer, and it usually changes it toward "don't".</p>
+  </div>
+
+  <section>
+    <h2><span class="num">01</span> Two completely different things are called "detox"</h2>
+    <p class="standfirst">Almost every dangerous decision here comes from mixing these two up. The product shelf borrows the authority of the hospital treatment, and the hospital treatment is the one with the body count.</p>
+    <div class="two">
+      <div class="card good">
+        <span class="tag good">Real medicine</span>
+        <h3>Chelation</h3>
+        <p>A prescription drug (succimer, CaEDTA) that binds a toxic metal and carries it out through the urine. Used only for a <em>confirmed</em> high blood level, or a symptomatic child, under a toxicologist. All FDA-approved chelating agents require a prescription precisely because they can only be used safely under supervision (<a href="https://fda.gov/drugs/medication-health-fraud/questions-and-answers-unapproved-chelation-products" target="_blank" rel="noopener">FDA</a>).</p>
+      </div>
+      <div class="card bad">
+        <span class="tag bad">The product shelf</span>
+        <h3>"Detox" for kids</h3>
+        <p>Zeolite, bentonite clay, chlorella, cilantro drops, "binders", foot patches, nasal sprays, clay baths, and the urine kits sold alongside them. None of it has a trial in children showing a health benefit. The FDA warned eight companies in 2010 that these are unapproved drugs, and named kidney failure and death among the risks (<a href="https://fda.gov/Safety/MedWatch/SafetyInformation/SafetyAlertsforHumanMedicalProducts/ucm229454.htm" target="_blank" rel="noopener">FDA safety alert</a>).</p>
+      </div>
+    </div>
+    <div class="note prose"><b>Why the shelf is not "gentle":</b> a chelator cannot tell lead from calcium or zinc. The dose that pulls metal out of bone is the dose that can empty the blood of calcium and stop the heart — which is exactly how the three children in the CDC report died, after being given edetate disodium instead of the calcium-bound form (<a href="https://www.cdc.gov/mmwr/preview/mmwrhtml/mm5508a3.htm" target="_blank" rel="noopener">CDC MMWR 2006</a>). One of them was a five-year-old given his third IV chelation for autism (<a href="https://www.theguardian.com/society/2005/aug/26/health" target="_blank" rel="noopener">The Guardian, 2005</a>).</div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> The evidence, with the numbers attached</h2>
+    <p class="standfirst">Every row below is the best available synthesis or trial for that intervention, not a single study and not a testimonial.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Intervention</th><th>Best evidence</th><th>What it actually did</th><th>Risk</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Oral succimer (DMSA) — the real oral chelator</td>
+            <td>Treatment of Lead-Exposed Children trial, 780 children; <a href="https://www.nejm.org/doi/10.1056/nejm200105103441902" target="_blank" rel="noopener">NEJM 2001</a> and <a href="https://publications.aap.org/pediatrics/article/114/1/19/64789/Effect-of-Chelation-Therapy-on-the" target="_blank" rel="noopener">Pediatrics 2004</a> follow-up</td>
+            <td>Blood lead down for about six months — and <b>no benefit</b> on cognition, behaviour or neuromotor scores, at 3 years or at school entry</td>
+            <td>Needs medical supervision</td>
+          </tr>
+          <tr>
+            <td>IV edetate disodium (Na₂EDTA)</td>
+            <td><a href="https://www.cdc.gov/mmwr/preview/mmwrhtml/mm5508a3.htm" target="_blank" rel="noopener">CDC MMWR 2006</a> — three deaths, 2003–2005</td>
+            <td>Cardiac arrest from hypocalcaemia</td>
+            <td>Fatal. The CDC's own instruction: never give Na₂EDTA to a child</td>
+          </tr>
+          <tr>
+            <td>OTC chelation drops, sprays, clay baths</td>
+            <td><a href="https://fda.gov/drugs/medication-health-fraud/questions-and-answers-unapproved-chelation-products" target="_blank" rel="noopener">FDA Q&amp;A</a>: no OTC chelation product has ever been approved</td>
+            <td>No trials. No evidence of any detoxification benefit</td>
+            <td>Dehydration, kidney failure, death; the paired urine test kits are not cleared and may mislead</td>
+          </tr>
+          <tr>
+            <td>"Provoked" / challenge urine metal testing</td>
+            <td><a href="https://link.springer.com/article/10.1007/s13181-010-0039-0" target="_blank" rel="noopener">ACMT position statement 2010</a>; prospective cohort <a href="https://pubmed.ncbi.nlm.nih.gov/34184587" target="_blank" rel="noopener">2021</a></td>
+            <td>Does not predict real toxicity — it measures what the drug pushed out, not the body's load</td>
+            <td>False positives drive unnecessary treatment. This test is the sales step for the product</td>
+          </tr>
+          <tr>
+            <td>Hair mineral analysis</td>
+            <td><a href="https://pubmed.ncbi.nlm.nih.gov/11150111/" target="_blank" rel="noopener">JAMA 2001</a>, six commercial labs, split samples; <a href="https://atsdr.cdc.gov/hac/hair_analysis/hair_analysis.pdf" target="_blank" rel="noopener">ATSDR panel</a></td>
+            <td>Labs disagreed with each other on the same hair; external dust and shampoo contaminate the sample</td>
+            <td>Unreliable as a diagnosis — the reference ranges are largely the lab's own</td>
+          </tr>
+          <tr>
+            <td>Household education and dust control</td>
+            <td><a href="https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD006047.pub6/full" target="_blank" rel="noopener">Cochrane 2020</a>, 17 RCTs, 3,282 children under six</td>
+            <td>Education alone probably makes no difference to blood lead or floor dust (moderate certainty); dust control made little or no difference to outcomes over 3–8 years</td>
+            <td>None — but it does not undo exposure either</td>
+          </tr>
+          <tr>
+            <td>Finding and stopping the source</td>
+            <td>Same Cochrane review; <a href="https://cdc.gov/lead-prevention/hcp/clinical-guidance" target="_blank" rel="noopener">CDC clinical guidance</a></td>
+            <td>The only lever with a coherent mechanism: you cannot un-expose a child, but you can stop the next dose</td>
+            <td>None</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="prose" style="font-size:13.5px;color:var(--muted)">Read the succimer row twice. A real chelator, in a real trial, in 780 children, lowered the blood level and changed nothing about how those children thought, behaved or moved. If a prescription drug cannot do it, a clay powder will not.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> The protocol — measure first, then act on the number</h2>
+    <p class="standfirst">Three phases. Phase one costs one GP appointment and two lab tubes, and changes nothing about their diet or routine.</p>
+
+    <h3 style="margin-top:18px;margin-bottom:8px">Phase 1 — this week</h3>
+    <ol class="steps">
+      <li><strong>One appointment, both children, venous blood lead level.</strong> <span>Ask for a <em>venous</em> draw, not a finger-prick. A capillary sample picks up lead from the skin and reads falsely high, which is why CDC always confirms it with a vein (<a href="https://www.cdc.gov/lead-prevention/testing/index.html" target="_blank" rel="noopener">CDC testing</a>). Lancet Laboratories publishes a lead-exposure bulletin and runs the assay, as do Ampath and PathCare (<a href="https://www.lancet.co.za/wp-content/uploads/2019/03/Lead-Exposure.pdf" target="_blank" rel="noopener">Lancet lead bulletin</a>).</span></li>
+      <li><strong>Same draw: iron studies (ferritin, Hb, MCV).</strong> <span>Iron deficiency raises lead absorption, and it also causes the tiredness and poor focus that send parents down this road in the first place. The CDC's own action list at every level includes checking and treating iron deficiency (<a href="https://cdc.gov/lead-prevention/hcp/clinical-guidance" target="_blank" rel="noopener">CDC</a>).</span></li>
+      <li><strong>Answer the twelve questions below.</strong> <span>Ten minutes at the kitchen table. This is the part that finds the source if there is one — and in a South African house it is more informative than any test sold online.</span></li>
+      <li><strong>Change nothing else.</strong> <span>No product goes into either child before a number exists. That is not caution for its own sake; it is the whole finding of section 02.</span></li>
+    </ol>
+
+    <h3 style="margin-top:26px;margin-bottom:10px">Phase 2 — when the number lands</h3>
+    <figure>
+      <div class="scrollfig">
+      <svg viewBox="0 0 980 352" role="img" aria-label="Decision tree from a venous blood lead level to the action for each band">
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g style="color:var(--border-strong)" stroke="currentColor" stroke-width="1.5" fill="none">
+          <path d="M490,86 L490,112"/>
+          <path d="M129,112 L880,112"/>
+          <path d="M129,112 L129,140" marker-end="url(#ar)"/>
+          <path d="M379,112 L379,140" marker-end="url(#ar)"/>
+          <path d="M629,112 L629,140" marker-end="url(#ar)"/>
+          <path d="M880,112 L880,140" marker-end="url(#ar)"/>
+        </g>
+        <g>
+          <rect x="300" y="14" width="380" height="72" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)" stroke-width="1.5"/>
+          <text x="490" y="42" text-anchor="middle" style="fill:var(--accent-ink);font:700 14px var(--sans)">One venous blood lead test each</text>
+          <text x="490" y="62" text-anchor="middle" style="fill:var(--ink-2);font:12px var(--sans)">plus iron studies, from the same draw</text>
+          <text x="490" y="78" text-anchor="middle" style="fill:var(--muted);font:11px var(--sans)">results usually in a few days</text>
+        </g>
+
+        <g>
+          <rect x="17" y="140" width="225" height="196" rx="10" style="fill:var(--ok-bg);stroke:var(--ok-bd)" stroke-width="1.5"/>
+          <text x="33" y="168" style="fill:var(--ok-fg);font:800 15px var(--sans)">&lt; 3.5 µg/dL</text>
+          <text x="33" y="190" style="fill:var(--ink);font:600 11px var(--sans)">NOTHING TO REMOVE</text>
+          <text x="33" y="212" style="fill:var(--ink-2);font:11.5px var(--sans)">Keep iron and calcium</text>
+          <text x="33" y="228" style="fill:var(--ink-2);font:11.5px var(--sans)">adequate. Retest per the GP.</text>
+          <text x="33" y="250" style="fill:var(--ink-2);font:11.5px var(--sans)">No chelation. No products.</text>
+          <text x="33" y="266" style="fill:var(--ink-2);font:11.5px var(--sans)">Repeat if exposure</text>
+          <text x="33" y="282" style="fill:var(--ink-2);font:11.5px var(--sans)">changes (renovation, move,</text>
+          <text x="33" y="298" style="fill:var(--ink-2);font:11.5px var(--sans)">new hobby in the house).</text>
+        </g>
+
+        <g>
+          <rect x="267" y="140" width="225" height="196" rx="10" style="fill:var(--warn-bg);stroke:var(--warn-bd)" stroke-width="1.5"/>
+          <text x="283" y="168" style="fill:var(--warn-fg);font:800 15px var(--sans)">3.5 – 19 µg/dL</text>
+          <text x="283" y="190" style="fill:var(--ink);font:600 11px var(--sans)">SOURCE HUNT</text>
+          <text x="283" y="212" style="fill:var(--ink-2);font:11.5px var(--sans)">Twelve questions, then the</text>
+          <text x="283" y="228" style="fill:var(--ink-2);font:11.5px var(--sans)">household audit. Doctor to</text>
+          <text x="283" y="244" style="fill:var(--ink-2);font:11.5px var(--sans)">take an exposure history.</text>
+          <text x="283" y="266" style="fill:var(--ink-2);font:11.5px var(--sans)">Treat iron deficiency.</text>
+          <text x="283" y="282" style="fill:var(--ink-2);font:11.5px var(--sans)">Retest on the clinician's</text>
+          <text x="283" y="298" style="fill:var(--ink-2);font:11.5px var(--sans)">schedule. Still no products.</text>
+        </g>
+
+        <g>
+          <rect x="517" y="140" width="225" height="196" rx="10" style="fill:var(--warn-bg);stroke:var(--warn-fg)" stroke-width="1.5"/>
+          <text x="533" y="168" style="fill:var(--warn-fg);font:800 15px var(--sans)">20 – 44 µg/dL</text>
+          <text x="533" y="190" style="fill:var(--ink);font:600 11px var(--sans)">PAEDIATRICIAN, THIS WEEK</text>
+          <text x="533" y="212" style="fill:var(--ink-2);font:11.5px var(--sans)">Full history and exam.</text>
+          <text x="533" y="228" style="fill:var(--ink-2);font:11.5px var(--sans)">Abdominal X-ray considered</text>
+          <text x="533" y="244" style="fill:var(--ink-2);font:11.5px var(--sans)">for swallowed paint chips.</text>
+          <text x="533" y="266" style="fill:var(--ink-2);font:11.5px var(--sans)">Home hazard reduction.</text>
+          <text x="533" y="282" style="fill:var(--ink-2);font:11.5px var(--sans)">Specialist advice, not a</text>
+          <text x="533" y="298" style="fill:var(--ink-2);font:11.5px var(--sans)">kit from the chemist.</text>
+        </g>
+
+        <g>
+          <rect x="767" y="140" width="196" height="196" rx="10" style="fill:var(--bad-bg);stroke:var(--bad-bd)" stroke-width="1.5"/>
+          <text x="783" y="168" style="fill:var(--bad-fg);font:800 15px var(--sans)">≥ 45 µg/dL</text>
+          <text x="783" y="190" style="fill:var(--ink);font:600 11px var(--sans)">MEDICAL EMERGENCY</text>
+          <text x="783" y="212" style="fill:var(--ink-2);font:11.5px var(--sans)">Hospital the same day.</text>
+          <text x="783" y="228" style="fill:var(--ink-2);font:11.5px var(--sans)">Chelation only here —</text>
+          <text x="783" y="244" style="fill:var(--ink-2);font:11.5px var(--sans)">by a toxicologist, with</text>
+          <text x="783" y="260" style="fill:var(--ink-2);font:11.5px var(--sans)">calcium and electrolytes</text>
+          <text x="783" y="276" style="fill:var(--ink-2);font:11.5px var(--sans)">monitored. This is the only</text>
+          <text x="783" y="292" style="fill:var(--ink-2);font:11.5px var(--sans)">band where chelation is</text>
+          <text x="783" y="308" style="fill:var(--ink-2);font:11.5px var(--sans)">ever the answer.</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>Figure 1 — the only decision tree that matters.</b> Everything above "the number" is guessing; everything below it is a clinician's call. Bands and actions adapted from CDC's recommended actions by blood lead level — South Africa has no equivalent public-health trigger, so the clinician sets the follow-up interval. A venous result is the one you act on: a finger-prick above 3.5 µg/dL is a reason to draw blood, not a diagnosis. <span style="opacity:.75">On a phone, scroll the diagram sideways.</span></figcaption>
+    </figure>
+
+    <h3 style="margin-top:26px;margin-bottom:8px">Phase 3 — only if the number is high</h3>
+    <p class="prose">Cape Town has no childhood lead-screening programme to fall back on, and the country's lead-in-paint limit of 90 ppm only became effective on 17 May 2025 — so every coat of paint in a house older than that is a legitimate question, not a scare (<a href="https://www.sgs.com/en-mu/news/2024/09/safeguards-14424-south-africa-regulates-lead-in-paint-and-coating-materials" target="_blank" rel="noopener">SGS on the 2024 regulations</a>; <a href="https://mg.co.za/health/2022-09-27-lead-is-destroying-childrens-brains-and-sa-has-no-plans-to-remove-it" target="_blank" rel="noopener">Mail &amp; Guardian on the gap</a>). A confirmed level in the 20+ band buys a paediatrician, a home hazard assessment and, at 45+, a hospital bed — not a supplement.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> The twelve questions that find a source</h2>
+    <p class="standfirst">Ten minutes, no cost. Answer for the house they sleep in and any house they spend a day a week in. Two or more "yes" answers and we do not need a product — we need the specific room, pipe, pot or toy.</p>
+    <ul class="plain prose">
+      <li><b>1.</b> When was the house built, and has anything been painted, sanded, stripped or renovated in the last three years — especially window frames, doors and stoeps?</li>
+      <li><b>2.</b> Is there chipped or peeling paint anywhere at a child's height, inside or on the outside wall they brush past?</li>
+      <li><b>3.</b> What is the incoming water pipe made of, and is there any lead solder on copper plumbing? (Old Cape Town properties still have galvanised and, rarely, lead service lines.)</li>
+      <li><b>4.</b> Any borehole, well or rainwater tank feeding a tap they drink from?</li>
+      <li><b>5.</b> Do they eat or drink from market pottery, glazed mugs or imported ceramics? Lead glaze is a classic source.</li>
+      <li><b>6.</b> Imported spices — turmeric above all — or any traditional remedy given by a family member?</li>
+      <li><b>7.</b> Cheap jewellery, keyrings, toy parts, fishing sinkers or curtain weights within reach of either child?</li>
+      <li><b>8.</b> Batteries, e-waste, scrap metal, solder, ammunition, stained glass or a home workshop in the house or garage?</li>
+      <li><b>9.</b> Does anyone in the household work with paint, batteries, scrap, sandblasting or shooting — and come home in those clothes?</li>
+      <li><b>10.</b> How much tuna, snoek or kingklip a week does each child eat? (This is the mercury question, and it has a portion answer, not a pill answer.)</li>
+      <li><b>11.</b> Any industry nearby — a smelter, battery recycler, sandblaster, or a busy road whose dust settles on a bare-soil play area?</li>
+      <li><b>12.</b> Has a practitioner already run a hair or urine test and handed over a protocol? Send it to me before it is used.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> What we will not do, and why</h2>
+    <div class="two">
+      <div class="card bad">
+        <span class="tag bad">Hard no</span>
+        <h3>Nothing on this list touches either child</h3>
+        <ul class="plain no" style="margin-top:10px">
+          <li>Chelation — IV or oral — outside a hospital, ever</li>
+          <li>Zeolite, bentonite clay, chlorella, cilantro, "binders", foot patches, clay baths, "TRS", "HMD"</li>
+          <li>A "provoked" or challenge urine metal test — it cannot tell you the body's load</li>
+          <li>A hair mineral test as a diagnosis — the labs disagree with each other on the same hair</li>
+          <li>Any detox product from a practitioner who has not shown you a validated lab result and a registered clinician's name</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag warn">The tell</span>
+        <h3>How to spot the funnel in ten seconds</h3>
+        <p>A test you buy from the same person who sells the treatment. A week-by-week "protocol" with before-and-after testimonials. A practitioner who will not put the diagnosis in writing on a lab report. The FDA calls this out directly: the companies selling unapproved chelation products also sell the home test kits that "diagnose" the problem the product then treats (<a href="https://fda.gov/drugs/medication-health-fraud/questions-and-answers-unapproved-chelation-products" target="_blank" rel="noopener">FDA Q&amp;A</a>).</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> What actually moves the needle — honestly</h2>
+    <p class="standfirst">Modest, free, and none of it sold in a bottle. I would rather give you a small true effect than a large invented one.</p>
+    <ul class="plain prose">
+      <li><b>Stop the exposure.</b> The single lever with a real mechanism. If the twelve questions surface a source, removing it is worth more than every product in section 05 combined.</li>
+      <li><b>Iron and calcium adequacy.</b> The CDC's action list at every blood level includes diet focused on iron and calcium, and testing and treating iron deficiency. Iron-deficient children absorb more lead — and iron deficiency alone explains a lot of tired, foggy, poor-focus school days (<a href="https://cdc.gov/lead-prevention/hcp/clinical-guidance" target="_blank" rel="noopener">CDC</a>).</li>
+      <li><b>The ordinary stack, for the thing you are probably chasing.</b> Sleep regularity, movement, and reading are real but modest for focus and behaviour. They are already in the household's health plan for both children, and they cost nothing.</li>
+    </ul>
+    <div class="note prose"><b>Calibration, because it matters:</b> the Cochrane review found that even household education and dust control probably do not lower a child's blood lead, and made no measurable difference to how children developed over three to eight years. That is not a reason to skip the source hunt — it is the reason not to spend money on anything else. Prevention is the only place the effect lives.</div>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span> What I need from you</h2>
+    <ul class="plain prose">
+      <li><b>One word — "go"</b> — and I will draft the GP note: the exact wording for a venous blood lead plus iron studies for both children, in one appointment, with the clinical justification written so the receptionist does not talk you out of it.</li>
+      <li><b>The household audit sheet</b> — the twelve questions as a printable one-pager you can walk the house with. Say the word and it comes with the GP note.</li>
+      <li><b>The trigger.</b> If this started with a practitioner, a hair test, a reel or a symptom (focus, behaviour, sleep, tummy), send me whatever prompted it. A protocol built for the wrong problem is the most expensive kind.</li>
+      <li><b>Nothing else is needed to start.</b> The appointment is the whole first phase, and it is the only thing here that needs your diary.</li>
+    </ul>
+    <p class="prose" style="font-size:13px;color:var(--muted)">A registered clinician signs the treatment; I am giving you the evidence base and the decision path, and the evidence says the path starts at a laboratory, not a shelf. If either child becomes confused, weak, drowsy, or vomits repeatedly, that is an emergency department, not a protocol — the SA Poisons Information Helpline is 0861 555 777, 24 hours (<a href="https://childsafe.org.za/media-release-at-least-six-south-african-children-die-every-month-due-to-poisoning-cloned" target="_blank" rel="noopener">ChildSafe SA</a>).</p>
+  </section>
+
+  <section class="sources">
+    <h2><span class="num">08</span> Sources</h2>
+    <ol class="prose">
+      <li><a href="https://www.cdc.gov/mmwr/volumes/70/wr/mm7043a4.htm" target="_blank" rel="noopener">CDC, MMWR 70(43), 2021 — Update of the Blood Lead Reference Value to 3.5 µg/dL</a></li>
+      <li><a href="https://cdc.gov/lead-prevention/hcp/clinical-guidance" target="_blank" rel="noopener">CDC — Recommended actions based on blood lead level</a> (action bands, iron-deficiency step, confirmatory venous schedule)</li>
+      <li><a href="https://www.cdc.gov/lead-prevention/testing/index.html" target="_blank" rel="noopener">CDC — Testing for lead poisoning in children</a> (capillary vs venous, why capillary reads high)</li>
+      <li><a href="https://www.cdc.gov/mmwr/preview/mmwrhtml/mm5508a3.htm" target="_blank" rel="noopener">CDC, MMWR 55(08), 2006 — Deaths associated with hypocalcaemia from chelation therapy, Texas, Pennsylvania, Oregon 2003–2005</a></li>
+      <li><a href="https://fda.gov/drugs/medication-health-fraud/questions-and-answers-unapproved-chelation-products" target="_blank" rel="noopener">FDA — Questions and answers on unapproved chelation products</a></li>
+      <li><a href="https://fda.gov/Safety/MedWatch/SafetyInformation/SafetyAlertsforHumanMedicalProducts/ucm229454.htm" target="_blank" rel="noopener">FDA MedWatch — Chelation products: unapproved over-the-counter drugs</a></li>
+      <li><a href="https://www.nejm.org/doi/10.1056/nejm200105103441902" target="_blank" rel="noopener">Rogan et al., NEJM 2001 — Succimer and neuropsychological development in lead-exposed children (TLC trial)</a></li>
+      <li><a href="https://publications.aap.org/pediatrics/article/114/1/19/64789/Effect-of-Chelation-Therapy-on-the" target="_blank" rel="noopener">Dietrich et al., Pediatrics 2004 — Chelation and development of lead-exposed children after school entry</a></li>
+      <li><a href="https://www.cochranelibrary.com/cdsr/doi/10.1002/14651858.CD006047.pub6/full" target="_blank" rel="noopener">Cochrane 2020 — Household interventions for secondary prevention of domestic lead exposure in children (17 RCTs, 3,282 children)</a></li>
+      <li><a href="https://link.springer.com/article/10.1007/s13181-010-0039-0" target="_blank" rel="noopener">American College of Medical Toxicology — Position statement on post-chelator challenge urinary metal testing</a></li>
+      <li><a href="https://pubmed.ncbi.nlm.nih.gov/34184587" target="_blank" rel="noopener">2021 prospective cohort — chelator-provoked urine results fail to predict heavy metal toxicity</a></li>
+      <li><a href="https://pubmed.ncbi.nlm.nih.gov/11150111/" target="_blank" rel="noopener">Seidel et al., JAMA 2001 — Assessment of commercial laboratories performing hair mineral analysis</a></li>
+      <li><a href="https://atsdr.cdc.gov/hac/hair_analysis/hair_analysis.pdf" target="_blank" rel="noopener">ATSDR — Hair analysis panel discussion</a></li>
+      <li><a href="https://www.theguardian.com/society/2005/aug/26/health" target="_blank" rel="noopener">The Guardian, 26 Aug 2005 — autistic boy dies after US chelation therapy</a></li>
+      <li><a href="https://www.sgs.com/en-mu/news/2024/09/safeguards-14424-south-africa-regulates-lead-in-paint-and-coating-materials" target="_blank" rel="noopener">SGS — South Africa regulates lead in paint and coating materials (90 ppm, effective 17 May 2025)</a></li>
+      <li><a href="https://mg.co.za/health/2022-09-27-lead-is-destroying-childrens-brains-and-sa-has-no-plans-to-remove-it" target="_blank" rel="noopener">Mail &amp; Guardian — lead poisoning and South Africa's missing removal plan</a></li>
+      <li><a href="https://www.lancet.co.za/wp-content/uploads/2019/03/Lead-Exposure.pdf" target="_blank" rel="noopener">Lancet Laboratories (SA) — Lead exposure bulletin</a> (sources, absorption factors, test availability)</li>
+      <li><a href="https://childsafe.org.za/media-release-at-least-six-south-african-children-die-every-month-due-to-poisoning-cloned" target="_blank" rel="noopener">ChildSafe South Africa — Poisons Information Helpline 0861 555 777</a></li>
+    </ol>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    Prepared by Splinter for Ricardo · 26 November 2026 · personal health research, English only. Evidence base and decision path only — a registered clinician signs the treatment.
+  </div>
+</footer>
+
+</body>
+</html>
