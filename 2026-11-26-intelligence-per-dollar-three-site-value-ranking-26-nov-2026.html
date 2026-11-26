@@ -1,0 +1,211 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Intelligence per dollar — three-site value ranking</title>
+<style>
+:root{--ink:var(--foreground,#e8edf7);--dim:var(--muted-foreground,#8b98ad);--line:var(--border,#26303f);
+--card-bg:var(--card,#141a25);--c1:var(--chart-1,#5eead4);--c2:var(--chart-2,#a78bfa);--c3:var(--chart-3,#f472b6)}
+*{box-sizing:border-box}
+.wrap{font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;color:var(--ink)}
+h1{font-size:clamp(24px,3.2vw,36px);line-height:1.12;margin:0 0 8px;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--c1)}
+.sub{color:var(--dim);max-width:78ch;margin:0}
+.meta{color:var(--dim);font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin:14px 0 0}
+.meta b{color:var(--ink);font-weight:600}
+.src{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:22px 0 4px}
+.s{background:var(--card-bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.s .k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.s .v{font-size:15px;font-weight:650;margin-top:3px}
+.s .n{font-size:12px;color:var(--dim);margin-top:3px}
+.panel{background:var(--card-bg);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:22px}
+.ptitle{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 3px}
+.psub{color:var(--dim);font-size:12.5px;margin:0 0 10px;max-width:100ch}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--dim);margin:0 0 10px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+#chart{width:100%;height:600px;position:relative}
+svg{display:block}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);padding:8px 6px;border-bottom:1px solid var(--line);font-weight:600;white-space:nowrap}
+td{padding:7px 6px;border-bottom:1px solid var(--line)}
+td.rk{color:var(--dim);width:2em;font-weight:600}
+td.md .ch{display:block;font-size:11px;color:var(--dim);font-weight:400}
+td.num{text-align:right;white-space:nowrap}
+td.strong{font-weight:650}
+td.small{font-size:11.5px;color:var(--dim)}
+td.cov{font-family:ui-monospace,monospace;letter-spacing:.06em;color:var(--ink);font-weight:600;padding-right:14px;opacity:.9}
+tr:hover td{background:color-mix(in srgb,var(--c1) 6%,transparent)}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin:16px 0 4px}
+.tier{border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.tier .k{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim)}
+.tier .v{font-size:14px;font-weight:600;margin-top:4px;line-height:1.4}
+.tier .n{font-size:12px;color:var(--dim);margin-top:3px}
+.note{color:var(--dim);font-size:12.5px;margin:14px 0 2px;max-width:100ch}
+.note b{color:var(--ink)}
+.tip{position:fixed;pointer-events:none;background:var(--card-bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;color:var(--ink);opacity:0;transition:opacity .1s;z-index:9;max-width:280px;box-shadow:0 12px 32px #0006}
+</style></head><body><div class="wrap">
+<h1>Intelligence per dollar — <em>23 of our 29 models, scored only on value</em></h1>
+<p class="sub">Nothing here measures raw capability. Each number is points of intelligence bought per dollar, and the only inputs are the three leaderboards that publish both a score and a price. Six of the 29 are scored by a single source and fall outside the ladder — they are named under the table.</p>
+<p class="meta">Pulled <b>26 Nov 2026</b> · Artificial Analysis <b>v5.0.2</b> · LLM Stats <b>456 models</b> · Vellum Agent Index <b>updated 19 Nov, 26 priced models</b></p>
+
+<div class="src">
+  <div class="s"><div class="k">Artificial Analysis</div><div class="v">Intelligence Index ÷ $/M</div><div class="n">Blended 3:1 input:output, their own blend</div></div>
+  <div class="s"><div class="k">LLM Stats</div><div class="v">LLM Stats Score ÷ $/M</div><div class="n">Composite score, input/output recalculated 3:1</div></div>
+  <div class="s"><div class="k">Vellum</div><div class="v">Agent Index ÷ $/M</div><div class="n">Seven-benchmark knowledge-work index, their blend</div></div>
+</div>
+
+<div class="panel">
+  <p class="ptitle">The value ladder</p>
+  <p class="psub">Bars = average of the three percentile ranks on points-per-dollar. Dots = where each source alone places the model, so you can see whether the three agree.</p>
+  <div class="legend"><span><i style="background:var(--c1)"></i>Artificial Analysis</span> <span><i style="background:var(--c2)"></i>LLM Stats</span> <span><i style="background:var(--c3)"></i>Vellum</span></div>
+  <div id="chart"></div>
+</div>
+
+<div class="panel">
+  <p class="ptitle">The ranking — intelligence per dollar</p>
+  <p class="psub">A = Artificial Analysis · L = LLM Stats · V = Vellum. A model needs two of the three to be ranked; the six that have only one are listed after the table.</p>
+  <table><thead><tr><th>#</th><th>Model</th><th style="text-align:right">AA score</th><th style="text-align:right">AA pt/$</th>
+  <th style="text-align:right">LS pt/$</th><th style="text-align:right">Vellum pt/$</th><th style="text-align:right">Avg pct</th><th style="text-align:right;padding-right:14px">Sites</th></tr></thead>
+  <tbody><tr><td class=rk>1</td><td class=md><b>MiMo V2.6 Flash</b> <span class=ch>$ 0 . 1 7 / M</span></td>
+<td class=num>26.8</td><td class=num>153</td>
+<td class=num>249</td><td class=num>—</td>
+<td class="num strong">96</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>2</td><td class=md><b>GLM-5.3-Flash</b> <span class=ch>$ 0 . 3 3 / M</span></td>
+<td class=num>27.7</td><td class=num>117</td>
+<td class=num>200</td><td class=num>70</td>
+<td class="num strong">87</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>3</td><td class=md><b>MiniMax M3.1 Flash</b> <span class=ch>$ 0 . 3 6 / M</span></td>
+<td class=num>29.1</td><td class=num>111</td>
+<td class=num>180</td><td class=num>103</td>
+<td class="num strong">87</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>4</td><td class=md><b>DeepSeek V4.1 Flash 1017</b> <span class=ch>$ 0 . 2 0 / M</span></td>
+<td class=num>32.4</td><td class=num>62</td>
+<td class=num>95</td><td class=num>202</td>
+<td class="num strong">83</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>5</td><td class=md><b>Inkling 2 Small</b> <span class=ch>$ 0 . 4 7 / M</span></td>
+<td class=num>30.7</td><td class=num>65</td>
+<td class=num>99</td><td class=num>—</td>
+<td class="num strong">80</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>6</td><td class=md><b>GPT-OSS 120B</b> <span class=ch>$ 0 . 0 7 / M</span></td>
+<td class=num>3.8</td><td class=num>14</td>
+<td class=num>385</td><td class=num>—</td>
+<td class="num strong">71</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>7</td><td class=md><b>MiMo V2.6 Pro</b> <span class=ch>$ 0 . 6 5 / M</span></td>
+<td class=num>29.9</td><td class=num>55</td>
+<td class=num>88</td><td class=num>60</td>
+<td class="num strong">70</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>8</td><td class=md><b>MiniMax M3</b> <span class=ch>$ 0 . 4 8 / M</span></td>
+<td class=num>19.0</td><td class=num>36</td>
+<td class=num>83</td><td class=num>—</td>
+<td class="num strong">68</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>9</td><td class=md><b>Beam 1.0</b> <span class=ch>$ 0 . 6 0 / M</span></td>
+<td class=num>17.7</td><td class=num>30</td>
+<td class=num>72</td><td class=num>—</td>
+<td class="num strong">64</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>10</td><td class=md><b>Mistral Large 4</b> <span class=ch>$ 1 . 0 5 / M</span></td>
+<td class=num>26.1</td><td class=num>25</td>
+<td class=num>43</td><td class=num>—</td>
+<td class="num strong">58</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>11</td><td class=md><b>GLM-5.3</b> <span class=ch>$ 0 . 4 2 / M</span></td>
+<td class=num>31.6</td><td class=num>15</td>
+<td class=num>26</td><td class=num>65</td>
+<td class="num strong">53</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>12</td><td class=md><b>Gemini 4 Hydrogen</b> <span class=ch>$ 4 . 5 0 / M</span></td>
+<td class=num>54.1</td><td class=num>18</td>
+<td class=num>16</td><td class=num>15</td>
+<td class="num strong">46</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>13</td><td class=md><b>Nemotron 3 Ultra</b> <span class=ch>$ 0 . 9 3 / M</span></td>
+<td class=num>11.8</td><td class=num>12</td>
+<td class=num>38</td><td class=num>—</td>
+<td class="num strong">45</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>14</td><td class=md><b>Muse Spark Open</b> <span class=ch>$ 2 . 0 0 / M</span></td>
+<td class=num>24.9</td><td class=num>12</td>
+<td class=num>22</td><td class=num>—</td>
+<td class="num strong">34</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>15</td><td class=md><b>DeepSeek V4 Pro</b> <span class=ch>$ 1 . 6 2 / M</span></td>
+<td class=num>23.1</td><td class=num>12</td>
+<td class=num>26</td><td class=num>—</td>
+<td class="num strong">32</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>16</td><td class=md><b>Claude Sonnet 5.5</b> <span class=ch>$ 6 . 0 0 / M</span></td>
+<td class=num>41.5</td><td class=num>10</td>
+<td class=num>14</td><td class=num>14</td>
+<td class="num strong">30</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>17</td><td class=md><b>Gemini 3.8 Flash</b> <span class=ch>$ 2 . 2 5 / M</span></td>
+<td class=num>—</td><td class=num>—</td>
+<td class=num>32</td><td class=num>5</td>
+<td class="num strong">30</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>18</td><td class=md><b>Kimi K3.1 Pro</b> <span class=ch>$ 6 . 0 0 / M</span></td>
+<td class=num>46.6</td><td class=num>12</td>
+<td class=num>14</td><td class=num>11</td>
+<td class="num strong">28</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>19</td><td class=md><b>Gemini 4 Neon</b> <span class=ch>$ 9 . 0 0 / M</span></td>
+<td class=num>61.5</td><td class=num>10</td>
+<td class=num>10</td><td class=num>10</td>
+<td class="num strong">20</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>20</td><td class=md><b>Gemini 4 Carbon</b> <span class=ch>$ 4 . 0 0 / M</span></td>
+<td class=num>60.1</td><td class=num>8</td>
+<td class=num>14</td><td class=num>—</td>
+<td class="num strong">17</td><td class="num small cov">2/3</td></tr>
+<tr><td class=rk>21</td><td class=md><b>Claude Opus 5.5</b> <span class=ch>$ 1 2 . 0 0 / M</span></td>
+<td class=num>51.8</td><td class=num>6</td>
+<td class=num>7</td><td class=num>7</td>
+<td class="num strong">12</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>22</td><td class=md><b>Gemini 4 Argon</b> <span class=ch>$ 1 2 . 0 0 / M</span></td>
+<td class=num>50.5</td><td class=num>6</td>
+<td class=num>13</td><td class=num>5</td>
+<td class="num strong">11</td><td class="num small cov">3/3</td></tr>
+<tr><td class=rk>23</td><td class=md><b>Kimi K3</b> <span class=ch>$ 7 . 8 3 / M</span></td>
+<td class=num>—</td><td class=num>—</td>
+<td class=num>9</td><td class=num>4</td>
+<td class="num strong">5</td><td class="num small cov">2/3</td></tr></tbody></table>
+  <p class="note" style="margin-top:12px"><b>Single-source, so unranked:</b> Kimi K2.6 (29.6 pt/$), Kimi K2.7 Code (27.6), GLM-5.2 (37.7) and Hy4 (27.7) each appear on only one site, so no cross-site ratio exists for them. Two more would actually score high on one source alone — Nemotron 3 Super at 154 and Gemma 4 31B at 211 points per dollar on LLM Stats — and they are exactly the models Artificial Analysis puts at the floor (no published index and 4.4 respectively). That gap is the argument for requiring two sources: a cheap model with a single generous score is a trap, not a bargain.</p>
+<div class="tiers">
+    <div class="tier"><div class="k">Under $0.50 / M — where the value is</div><div class="v">MiMo V2.6 Flash · GLM-5.3-Flash · MiniMax M3.1 Flash · DeepSeek V4.1 Flash 1017</div><div class="n">All four sit in the top five on every source that scores them</div></div>
+    <div class="tier"><div class="k">$0.50 – $2 / M — the mid band</div><div class="v">MiMo V2.6 Pro · Beam 1.0 · Mistral Large 4 · GLM-5.3</div><div class="n">GLM-5.3 is the only one of these the frontier-leaning sources still rate</div></div>
+    <div class="tier"><div class="k">Over $2 / M — capability, not value</div><div class="v">Gemini 4 Neon · Claude Opus 5.5 · Kimi K3.1 Pro · Gemini 4 Argon</div><div class="n">Buy these for the ceiling, never for the ratio</div></div>
+  </div>
+  <p class="note"><b>What breaks this list.</b> Vellum prices whatever host is cheapest — DeepSeek V4.1 Flash is quoted at DeepInfra's $0.098/$0.294 there versus $0.30/$1.20 official on LLM Stats, which is why its Vellum ratio is double its LLM Stats one. Pure ratios also reward cheap and shallow: GPT-OSS 120B reaches sixth on $0.04/$0.17 while Artificial Analysis scores it 3.8 — it wins on arithmetic, not on usefulness. And the frontier buys badly by this measure: Claude Fable 5.2 is 3.7 points per dollar and Opus 5.5 is 7.4, the two worst ratios in Vellum's set. Finally, the per-dollar axis is academic for the Ollama Cloud lane, which bills flat against the company subscription.</p>
+</div>
+<div class="tip" id="tip"></div>
+</div>
+<script>
+const D=[{"rank": 1, "label": "MiMo V2.6 Flash", "avg": 96.2, "nsrc": 2, "aa": 153.14285714285717, "ls": 249.14285714285717, "v": null, "paa": 97.72727272727273, "pls": 94.64285714285714, "pv": null, "price": 0.175, "aa_metric": 26.8, "ls_metric": 43.6, "v_metric": null}, {"rank": 2, "label": "GLM-5.3-Flash", "avg": 87.2, "nsrc": 3, "aa": 116.63157894736842, "ls": 200.42105263157896, "v": 69.53846153846155, "paa": 93.18181818181819, "pls": 87.5, "pv": 80.76923076923077, "price": 0.325, "aa_metric": 27.7, "ls_metric": 47.6, "v_metric": 22.6}, {"rank": 3, "label": "MiniMax M3.1 Flash", "avg": 87.0, "nsrc": 3, "aa": 110.85714285714286, "ls": 180.19047619047618, "v": 103.31274564851206, "paa": 88.63636363636364, "pls": 83.92857142857143, "pv": 88.46153846153847, "price": 0.3562, "aa_metric": 29.1, "ls_metric": 47.3, "v_metric": 36.8}, {"rank": 4, "label": "DeepSeek V4.1 Flash 1017", "avg": 83.0, "nsrc": 3, "aa": 61.71428571428571, "ls": 94.85714285714285, "v": 202.0408163265306, "paa": 79.54545454545455, "pls": 73.21428571428571, "pv": 96.15384615384616, "price": 0.196, "aa_metric": 32.4, "ls_metric": 49.8, "v_metric": 39.6}, {"rank": 5, "label": "Inkling 2 Small", "avg": 80.4, "nsrc": 2, "aa": 64.63157894736842, "ls": 98.73684210526316, "v": null, "paa": 84.0909090909091, "pls": 76.78571428571429, "pv": null, "price": 0.475, "aa_metric": 30.7, "ls_metric": 46.9, "v_metric": null}, {"rank": 6, "label": "GPT-OSS 120B", "avg": 70.7, "nsrc": 2, "aa": 14.476190476190474, "ls": 384.82758620689657, "v": null, "paa": 43.18181818181818, "pls": 98.21428571428571, "pv": null, "price": 0.0725, "aa_metric": 3.8, "ls_metric": 27.9, "v_metric": null}, {"rank": 7, "label": "MiMo V2.6 Pro", "avg": 70.0, "nsrc": 3, "aa": 54.99356262644841, "ls": 88.14814814814814, "v": 59.92337164750958, "paa": 75.0, "pls": 69.64285714285714, "pv": 65.38461538461539, "price": 0.6525, "aa_metric": 29.9, "ls_metric": 47.6, "v_metric": 39.1}, {"rank": 8, "label": "MiniMax M3", "avg": 68.3, "nsrc": 2, "aa": 36.19047619047619, "ls": 82.68041237113403, "v": null, "paa": 70.45454545454545, "pls": 66.07142857142857, "pv": null, "price": 0.485, "aa_metric": 19.0, "ls_metric": 40.1, "v_metric": null}, {"rank": 9, "label": "Beam 1.0", "avg": 64.2, "nsrc": 2, "aa": 29.5, "ls": 71.83333333333334, "v": null, "paa": 65.9090909090909, "pls": 62.5, "pv": null, "price": 0.6, "aa_metric": 17.7, "ls_metric": 43.1, "v_metric": null}, {"rank": 10, "label": "Mistral Large 4", "avg": 57.9, "nsrc": 2, "aa": 24.857142857142858, "ls": 43.42857142857143, "v": null, "paa": 56.81818181818182, "pls": 58.92857142857143, "pv": null, "price": 1.05, "aa_metric": 26.1, "ls_metric": 45.6, "v_metric": null}, {"rank": 11, "label": "GLM-5.3", "avg": 52.8, "nsrc": 3, "aa": 14.697674418604652, "ls": 25.94736842105263, "v": 65.0, "paa": 47.72727272727273, "pls": 37.5, "pv": 73.07692307692308, "price": 0.42, "aa_metric": 31.6, "ls_metric": 49.3, "v_metric": 27.3}, {"rank": 12, "label": "Gemini 4 Hydrogen", "avg": 45.6, "nsrc": 3, "aa": 18.033333333333335, "ls": 15.833333333333334, "v": 15.444444444444445, "paa": 52.27272727272727, "pls": 26.785714285714285, "pv": 57.69230769230769, "price": 4.5, "aa_metric": 54.1, "ls_metric": 47.5, "v_metric": 69.5}, {"rank": 13, "label": "Nemotron 3 Ultra", "avg": 44.7, "nsrc": 2, "aa": 11.949367088607595, "ls": 38.37837837837838, "v": null, "paa": 34.09090909090909, "pls": 55.357142857142854, "pv": null, "price": 0.925, "aa_metric": 11.8, "ls_metric": 35.5, "v_metric": null}, {"rank": 14, "label": "Muse Spark Open", "avg": 34.5, "nsrc": 2, "aa": 12.45, "ls": 22.3, "v": null, "paa": 38.63636363636363, "pls": 30.357142857142858, "pv": null, "price": 2.0, "aa_metric": 24.9, "ls_metric": 44.6, "v_metric": null}, {"rank": 15, "label": "DeepSeek V4 Pro", "avg": 31.7, "nsrc": 2, "aa": 11.666666666666668, "ls": 25.846153846153847, "v": null, "paa": 29.545454545454547, "pls": 33.92857142857143, "pv": null, "price": 1.625, "aa_metric": 23.1, "ls_metric": 42.0, "v_metric": null}, {"rank": 16, "label": "Claude Sonnet 5.5", "avg": 30.0, "nsrc": 3, "aa": 10.375, "ls": 14.075, "v": 13.866666666666667, "paa": 20.454545454545453, "pls": 19.642857142857142, "pv": 50.0, "price": 6, "aa_metric": 41.5, "ls_metric": 56.3, "v_metric": 83.2}, {"rank": 17, "label": "Gemini 3.8 Flash", "avg": 29.9, "nsrc": 2, "aa": null, "ls": 31.733333333333334, "v": 5.066666666666666, "paa": null, "pls": 48.214285714285715, "pv": 11.538461538461538, "price": 2.25, "aa_metric": null, "ls_metric": 47.6, "v_metric": 11.4}, {"rank": 18, "label": "Kimi K3.1 Pro", "avg": 27.8, "nsrc": 3, "aa": 11.65, "ls": 13.5, "v": 10.9, "paa": 25.0, "pls": 16.071428571428573, "pv": 42.30769230769231, "price": 6, "aa_metric": 46.6, "ls_metric": 54.0, "v_metric": 65.4}, {"rank": 19, "label": "Gemini 4 Neon", "avg": 19.8, "nsrc": 3, "aa": 10.25, "ls": 9.75, "v": 10.477777777777778, "paa": 15.909090909090908, "pls": 8.928571428571429, "pv": 34.61538461538461, "price": 9, "aa_metric": 61.5, "ls_metric": 58.5, "v_metric": 94.3}, {"rank": 20, "label": "Gemini 4 Carbon", "avg": 17.3, "nsrc": 2, "aa": 7.5125, "ls": 14.1, "v": null, "paa": 11.363636363636363, "pls": 23.214285714285715, "pv": null, "price": 4.0, "aa_metric": 60.1, "ls_metric": 56.4, "v_metric": null}, {"rank": 21, "label": "Claude Opus 5.5", "avg": 11.8, "nsrc": 3, "aa": 6.475, "ls": 7.25, "v": 7.433333333333334, "paa": 6.818181818181818, "pls": 1.7857142857142858, "pv": 26.923076923076923, "price": 12, "aa_metric": 51.8, "ls_metric": 58.0, "v_metric": 89.2}, {"rank": 22, "label": "Gemini 4 Argon", "avg": 11.3, "nsrc": 3, "aa": 6.3125, "ls": 13.175, "v": 5.491666666666667, "paa": 2.272727272727273, "pls": 12.5, "pv": 19.23076923076923, "price": 12, "aa_metric": 50.5, "ls_metric": 52.7, "v_metric": 65.9}, {"rank": 23, "label": "Kimi K3", "avg": 4.6, "nsrc": 2, "aa": null, "ls": 8.771929824561402, "v": 4.396166134185303, "paa": null, "pls": 5.357142857142857, "pv": 3.8461538461538463, "price": 7.825, "aa_metric": null, "ls_metric": 50.0, "v_metric": 34.4}];
+const box=document.getElementById('chart'), tip=document.getElementById('tip');
+const NS="http://www.w3.org/2000/svg";
+function draw(){
+  box.innerHTML='';
+  const W=box.clientWidth||700, rowH=Math.min(26, Math.max(20, 600/D.length)), H=rowH*D.length+44;
+  const ml=Math.min(190, W*0.34), mr=54, mt=8, mb=32;
+  const svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('width',W); svg.setAttribute('height',H); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const cs=getComputedStyle(document.documentElement);
+  const cv=(n,f)=>cs.getPropertyValue(n).trim()||f;
+  const c1=cv('--c1','#5eead4'), c2=cv('--c2','#a78bfa'), c3=cv('--c3','#f472b6'), line=cv('--border','#26303f'), dim=cv('--dim','#8b98ad');
+  const mk=(n,a)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);return e};
+  const X=v=>ml+(v/100)*(W-ml-mr);
+  [0,25,50,75,100].forEach(t=>{
+    svg.appendChild(mk('line',{x1:X(t),x2:X(t),y1:mt,y2:mt+rowH*D.length,stroke:line,'stroke-width':1,opacity:.6}));
+    const tx=mk('text',{x:X(t),y:H-10,'text-anchor':'middle',fill:dim,'font-size':10});tx.textContent=t+'%';svg.appendChild(tx);
+  });
+  D.forEach((d,i)=>{
+    const y=mt+rowH*i+rowH/2;
+    const lab=mk('text',{x:ml-8,y:y+3.5,'text-anchor':'end',fill:'currentColor','font-size':11.5});
+    lab.textContent=d.label; svg.appendChild(lab);
+    const bar=mk('rect',{x:ml,y:y-3.5,width:Math.max(1,X(d.avg)-ml),height:7,rx:3.5,fill:c1,'fill-opacity':.22});
+    svg.appendChild(bar);
+    const dot=mk('circle',{cx:X(d.avg),cy:y,r:3.4,fill:c1});svg.appendChild(dot);
+    [['paa',c1],['pls',c2],['pv',c3]].forEach(([k,col])=>{
+      if(d[k]==null)return;
+      const c=mk('circle',{cx:X(d[k]),cy:y,r:2.3,fill:col,'fill-opacity':.95});svg.appendChild(c);
+    });
+    const hit=mk('rect',{x:0,y:y-rowH/2,width:W,height:rowH,fill:'transparent'});
+    hit.addEventListener('mousemove',e=>{
+      tip.style.opacity=1;tip.style.left=Math.min(e.clientX+14,window.innerWidth-300)+'px';tip.style.top=(e.clientY-8)+'px';
+      const f=v=>v==null?'—':v.toFixed(1);
+      tip.innerHTML='<b>'+d.label+'</b> · #'+d.rank+'<br>avg percentile '+d.avg.toFixed(0)+'<br>AA '+f(d.aa)+' · LLM Stats '+f(d.ls)+' · Vellum '+f(d.v)+' pt/$<br>$'+d.price.toFixed(2)+'/M list';
+    });
+    hit.addEventListener('mouseleave',()=>{tip.style.opacity=0});
+    svg.appendChild(hit);
+  });
+  box.appendChild(svg);
+}
+draw();
+window.addEventListener('resize',()=>{clearTimeout(window.__rt);window.__rt=setTimeout(draw,120)});
+</script></body></html>
