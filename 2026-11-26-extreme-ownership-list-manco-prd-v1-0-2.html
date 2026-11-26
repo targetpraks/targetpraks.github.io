@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Extreme Ownership List (MANCO) — PRD v1.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd--extreme-ownership-list-manco-v10">PRD — Extreme Ownership List (MANCO) v1.0</h1>
+<p><strong>Date:</strong> 2026-11-26 · <strong>Owner:</strong> Ricardo Maio · <strong>Author:</strong> Bruce Wayne · <strong>Status:</strong> DRAFT — 5 decisions open (§10) <strong>Build target:</strong> ClickUp list <code>1501000000003567</code> "Extreme Ownership" in the MANCO space, verified live today. <strong>Open it:</strong> <a href="https://app.clickup.com/4627083">ClickUp workspace</a> ▸ MANCO ▸ Extreme Ownership — <a href="https://app.clickup.com/4627083/v/li/1501000000003567">direct list link</a>. <strong>The ethos source:</strong> Jocko Willink's <a href="https://echelonfront.com/services/online-leadership-training-and-development/extreme-ownership-academy/">Extreme Ownership</a> (Echelon Front) — the list is named after it.</p>
+<hr />
+<h2 id="1-the-product-in-five-lines">1. The product in five lines</h2>
+<ol type="1">
+<li>One board in MANCO where every failure that hit the company gets owned in full — What. Why. Fix.</li>
+<li>Every card carries <strong>Brand</strong>, <strong>Business Unit</strong> and <strong>Section</strong>, so a failure is findable by where it lived.</li>
+<li>Every card carries a <strong>Recurrence</strong> flag — First time, Repeat, Chronic — so the twice-rule is visible, not remembered.</li>
+<li>The Section filter is the payoff: when the same thing threatens to happen again, the history of that section failing across every BU is one filter click away — before it happens, not a month after.</li>
+<li>MANCO reads it in the weekly, and nothing repeats without a system change on record.</li>
+</ol>
+<h2 id="2-stack-fixed-in-one-paragraph">2. Stack, fixed in one paragraph</h2>
+<p>The product is <strong>ClickUp configuration only</strong> on the existing workspace (Infinity Brands, plan <code>Business</code>): one list, three list-level custom fields, one template task, four list views. No code, no third-party tool, <strong>no automations</strong> — workspace history shows an automation that silently falsified due dates had to be killed by hand; this build uses none. The list, its statuses and two of the fields already exist and were read back from the live API today; everything else is listed in the build order (§7). Nothing migrates: the list starts empty and fills from Monday's real work.</p>
+<h2 id="3-the-card">3. The card</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Part</th>
+<th>What goes in it</th>
+<th>Who sets it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Title</strong></td>
+<td>The failure in plain words, no code: <em>"Diesel delivery missed the Saturday drop"</em></td>
+<td>Finder</td>
+</tr>
+<tr>
+<td><strong>WHAT</strong></td>
+<td>One sentence, facts only. No blame, no adjectives.</td>
+<td>Finder</td>
+</tr>
+<tr>
+<td><strong>WHY</strong></td>
+<td>The cause, not the excuse. <em>"Friday's stock check ran at 15:00, after the order cut-off."</em></td>
+<td>Finder or Fixer</td>
+</tr>
+<tr>
+<td><strong>FIX</strong></td>
+<td>Named person and a date. <em>"Ryno — reorder Monday 07:00, Saturday drop secured."</em></td>
+<td>Fixer</td>
+</tr>
+<tr>
+<td><strong>Assignee</strong></td>
+<td>The person on the Fix</td>
+<td>Fixer</td>
+</tr>
+<tr>
+<td><strong>Due date</strong></td>
+<td>When the Fix lands</td>
+<td>Fixer</td>
+</tr>
+<tr>
+<td><strong>Brand / Business Unit / Section / Recurrence</strong></td>
+<td>Where it lived (table §4)</td>
+<td>Finder, on filing</td>
+</tr>
+</tbody>
+</table></div>
+<p>Filing takes about 90 seconds. What. Why. Fix. stays three paragraphs in the description — not three custom fields — because typing beats clicking when something is on fire, and free text carries the nuance a dropdown kills. The department and section, the things we filter on, are the fields.</p>
+<h2 id="4-fields">4. Fields</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Field</th>
+<th>Status</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td><strong>Brand</strong></td>
+<td>EXISTS — verified id <code>26141310-8c2f-…</code></td>
+<td>dropdown (9: INF, EXP, TLF, PPP, DID, FXS, FXL, NVP, ALL)</td>
+<td>Which brand.</td>
+</tr>
+<tr>
+<td>F2</td>
+<td><strong>Business Unit</strong></td>
+<td>EXISTS — verified id <code>5f03c736-0fb8-…</code></td>
+<td>dropdown (13: FIN, HRM, ADM, ITC, MKT, SAL, EXP, TLF, FXS, FXL, PPP, DID, NVP)</td>
+<td>Which desk.</td>
+</tr>
+<tr>
+<td>F3</td>
+<td><strong>Section</strong></td>
+<td>NEW — list-level</td>
+<td>dropdown, 18 options (table §4.1)</td>
+<td>The process area inside the desk. <strong>The repeat-killer field.</strong></td>
+</tr>
+<tr>
+<td>F4</td>
+<td><strong>Recurrence</strong></td>
+<td>NEW — list-level</td>
+<td>dropdown: <code>First time</code> · <code>Repeat</code> · <code>Chronic</code></td>
+<td>The twice-rule as data. <code>Repeat</code> and <code>Chronic</code> feed the Repeat Watch view.</td>
+</tr>
+<tr>
+<td>F5</td>
+<td><strong>Cost impact (R)</strong></td>
+<td>NEW — list-level, optional</td>
+<td>number</td>
+<td>Hard money lost, when it is countable. Blank allowed — most failures are time or trust, not rands.</td>
+</tr>
+</tbody>
+</table></div>
+<p>F1 and F2 are verified live on the list today; F3–F5 are the build. The six remaining inherited fields (Quality, Requested By, Engagement Tier, Filestage URL, Work Format, SLA Service Tier) are hidden from this list's views, not deleted.</p>
+<h3 id="41-section-taxonomy-f3--18-options">4.1 Section taxonomy (F3) — 18 options</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Lives under</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cash &amp; Banking</td>
+<td>FIN</td>
+</tr>
+<tr>
+<td>Payroll &amp; People</td>
+<td>HRM</td>
+</tr>
+<tr>
+<td>Compliance &amp; Licences</td>
+<td>HRM / ADM</td>
+</tr>
+<tr>
+<td>Tax &amp; Bookkeeping</td>
+<td>FIN</td>
+</tr>
+<tr>
+<td>Suppliers &amp; Buying</td>
+<td>Ops</td>
+</tr>
+<tr>
+<td>Stock &amp; Inventory</td>
+<td>Ops</td>
+</tr>
+<tr>
+<td>Deliveries &amp; Logistics</td>
+<td>Ops</td>
+</tr>
+<tr>
+<td>Sales Floor &amp; POS</td>
+<td>Brand ops</td>
+</tr>
+<tr>
+<td>Customer Service &amp; Complaints</td>
+<td>Brand ops</td>
+</tr>
+<tr>
+<td>Jobs &amp; Installations</td>
+<td>EXP</td>
+</tr>
+<tr>
+<td>Grow Room</td>
+<td>TLF</td>
+</tr>
+<tr>
+<td>Central Kitchen</td>
+<td>PPP</td>
+</tr>
+<tr>
+<td>Store Build &amp; Openings</td>
+<td>Projects</td>
+</tr>
+<tr>
+<td>IT &amp; Systems</td>
+<td>ITC</td>
+</tr>
+<tr>
+<td>Marketing &amp; Content</td>
+<td>MKT</td>
+</tr>
+<tr>
+<td>Sales &amp; CRM</td>
+<td>SAL</td>
+</tr>
+<tr>
+<td>Franchise Desk &amp; Onboarding</td>
+<td>FXS</td>
+</tr>
+<tr>
+<td>Property &amp; Facilities</td>
+<td>ADM / NVP</td>
+</tr>
+</tbody>
+</table></div>
+<p>One section per card, chosen by the finder — the value is in consistency, not perfection; MANCO can re-tag cheaply in the weekly.</p>
+<h2 id="5-views-all-four-on-the-list-first-one-the-default">5. Views (all four on the list, first one the default)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>View</th>
+<th>Shape</th>
+<th>Answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V1</td>
+<td><strong>All Cards</strong></td>
+<td>List, grouped by Status</td>
+<td>Today's open failures.</td>
+</tr>
+<tr>
+<td>V2</td>
+<td><strong>By Business Unit</strong></td>
+<td>Board, grouped by Business Unit</td>
+<td>Which desk is bleeding.</td>
+</tr>
+<tr>
+<td>V3</td>
+<td><strong>By Section</strong></td>
+<td>Board, grouped by Section</td>
+<td>Which <em>process</em> is bleeding — across every brand at once.</td>
+</tr>
+<tr>
+<td>V4</td>
+<td><strong>Repeat Watch</strong></td>
+<td>Filter: Recurrence = <code>Repeat</code> + <code>Chronic</code></td>
+<td>The twice-rule, enforced weekly. Empty means the house is holding.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Build note, stated honestly:</strong> ClickUp's API on this plan denied column editing and custom-field columns in views during the earlier field-sweep work, so V3 and V4 are built by hand in the ClickUp UI (a minutes-long, click-only job) while the fields themselves go in by API. The build order assigns each step to the honest lane.</p>
+<h2 id="6-the-protocol-how-the-rule-lives-after-the-build">6. The protocol (how the rule lives after the build)</h2>
+<ol type="1">
+<li><strong>Filing:</strong> finder files the card the day the failure is found, fills WHAT on the spot; WHY and FIX can land same day. A Repeat card links to the first card (native task link) — the paper trail of a pattern is two clicks deep.</li>
+<li><strong>Weekly — 5 minutes of MANCO Weekly</strong> (Nadine chairs): walk V4 Repeat Watch. A <code>Repeat</code> closes only when the Fix names the <strong>system change</strong>; a <code>Chronic</code> comes to Ricardo with the system-change proposal attached, because three strikes are a business decision, not a task.</li>
+<li><strong>Close rule:</strong> no card closes without a Fix line showing a person and a date; a Repeat or Chronic closes without a system change recorded in the Fix is not a close — reopening is one click and MANCO sees it happen.</li>
+<li><strong>The promise the list makes:</strong> the first failure is training; the second is a decision. Nobody at MANCO should ever meet failure number three unannounced.</li>
+</ol>
+<h2 id="7-build-order--by-dependency-no-dates">7. Build order — by dependency, no dates</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Work</th>
+<th>Exit test (boolean)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1 — Fields</td>
+<td>Create F3 Section (18 options), F4 Recurrence, F5 Cost impact by API on list <code>…3567</code>; hide the 6 unused inherited columns</td>
+<td><code>clickup --ws work fields</code> shows 11 fields, Section first-set of options returns all 18</td>
+</tr>
+<tr>
+<td>S2 — Template</td>
+<td>One task "TEMPLATE — copy me": body pre-filled with WHAT/WHY/FIX labels; stays Open forever</td>
+<td>Duplicating it yields a card a stranger could fill in 90 seconds</td>
+</tr>
+<tr>
+<td>S3 — Views</td>
+<td>V1 default; V2, V3, V4 built in UI; groupings and filters set</td>
+<td>V4 with zero <code>Repeat</code> cards shows empty (house holding); V3 groups on all 18 sections</td>
+</tr>
+<tr>
+<td>S4 — Access</td>
+<td>Per D1 (§10): edit rights for filers on this one list</td>
+<td>A BU lead can file a card with only comment-level space access</td>
+</tr>
+<tr>
+<td>S5 — Pilot</td>
+<td>MANCO back-fills the first 10 real cards from last month's known failures</td>
+<td>10 cards, 100% carry Brand + BU + Section; first Repeat Watch walk done in the weekly</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="8-status-ledger-verified-vs-planned--checked-2026-11-26">8. Status ledger (verified vs planned — checked 2026-11-26)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>State</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Extreme Ownership list exists in MANCO</td>
+<td>VERIFIED</td>
+<td>read-back twice today: id <code>1501000000003567</code>, 0 tasks</td>
+</tr>
+<tr>
+<td>List carries What/Why/Fix + twice-rule text</td>
+<td>VERIFIED</td>
+<td>list <code>content</code> read back verbatim</td>
+</tr>
+<tr>
+<td>Brand + Business Unit fields on the list</td>
+<td>VERIFIED</td>
+<td><code>clickup fields</code> today: ids and 9 + 13 options</td>
+</tr>
+<tr>
+<td>Section, Recurrence, Cost fields</td>
+<td>PLANNED</td>
+<td>S1</td>
+</tr>
+<tr>
+<td>Four views</td>
+<td>PLANNED</td>
+<td>S3 (V3/V4 are UI work)</td>
+</tr>
+<tr>
+<td>Who may file</td>
+<td>OPEN</td>
+<td>D1</td>
+</tr>
+<tr>
+<td>MANCO announcement post</td>
+<td>DRAFTED (§11) — not sent, never sends without Ricardo's word</td>
+<td>§11; ClickUp comms post under his name</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="9-acceptance-tests-p0">9. Acceptance tests (P0)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. Filter <code>Business Unit = TLF</code> + <code>Section = Deliveries</code></td>
+<td>Returns every delivery failure TLF ever filed, including a card filed by another brand's lead — that is the whole point</td>
+</tr>
+<tr>
+<td>B. File a card with Recurrence = <code>Repeat</code></td>
+<td>It appears in V4 Repeat Watch the moment the field flips, no refresh tricks</td>
+</tr>
+<tr>
+<td>C. Close a Repeat card with no system-change line</td>
+<td>MANCO reopens it — protocol §6.3 is a click, not a hope</td>
+</tr>
+<tr>
+<td>D. A finder without space edit rights files a card</td>
+<td>Card lands (D1 access rule); nothing sends or posts anywhere else</td>
+</tr>
+<tr>
+<td>E. Template duplication</td>
+<td>New card has WHAT/WHY/FIX paragraphs pre-labelled, all three F3–F5 fields visible</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="10-decisions-register--only-ricardo-answers-these">10. Decisions register — only Ricardo answers these</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Recommendation (mine, marked)</th>
+<th>Cost of the other road</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Who files cards? <strong>(a)</strong> all BU GMs get edit on this one list, or <strong>(b)</strong> MANCO files centrally on their behalf</td>
+<td><strong>(a)</strong> — the failure gets filed at the moment it hurts, not weekly-second-hand</td>
+<td>(b) costs a week of lag on every card and a MANCO clerk for typing</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Section taxonomy: approve the 18, or trim</td>
+<td>Approve the 18 as listed; trim only if a section can go a year unused</td>
+<td>Too few sections makes the repeat-search mushy — the field's only job</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Cost impact field: on or off</td>
+<td><strong>On</strong>, optional, blank allowed</td>
+<td>Off loses the one number Ricardo will someday sort by</td>
+</tr>
+<tr>
+<td>D4</td>
+<td>Weekly pass: attach to MANCO Weekly or a separate sitting</td>
+<td>Attach — 5 minutes at the top, V4 on screen</td>
+<td>A separate sitting dies by December</td>
+</tr>
+<tr>
+<td>D5</td>
+<td>Keep list name <strong>Extreme Ownership</strong></td>
+<td>Keep — the name is the standard; every alternative is a caption</td>
+<td>A rename costs nothing but a re-explaining</td>
+</tr>
+</tbody>
+</table></div>
+<p>One word per number — A/B answers D1–D5 in a single reply.</p>
+<hr />
+<h2 id="11-the-manco-announcement-post--written-to-send">11. The MANCO announcement post — written to send</h2>
+<p>The list only works if MANCO itself expects every card. The text below is the launch post for the whole management committee — the point, the use, and the bar — in the house voice. It goes out under Ricardo's name: paste into the MANCO weekly agenda, pin it as a doc in the MANCO space, or read it live at the top of the meeting. <strong>Nothing is sent, posted or announced until Ricardo says so.</strong></p>
+<blockquote>
+<p><strong>EXTREME OWNERSHIP — how this team runs from Monday</strong></p>
+<p>We've opened one list: <strong>Extreme Ownership</strong>. Read this once — then live it.</p>
+<p><strong>The point.</strong> Every f*ck-up gets a card. Not to shame anyone — to build superstars. Superstars aren't people who never f*ck up. Superstars are people who own their misses the same day and make sure the same one never lands twice.</p>
+<p><strong>How it works — 90 seconds a card.</strong></p>
+<ul>
+<li>Anything goes wrong in your area — you file the card. You. Not the person next to you. Same day.</li>
+<li>Three paragraphs: <strong>WHAT</strong> happened (facts, one sentence) · <strong>WHY</strong> it happened (the cause, not the excuse) · <strong>FIX</strong> (who's on it, and when it's closed).</li>
+<li>Tag <strong>Brand</strong>, <strong>Business Unit</strong> and <strong>Section</strong>, and set <strong>Recurrence</strong>: First time · Repeat · Chronic.</li>
+<li>That's it. No essays. No excuses. Own it.</li>
+</ul>
+<p><strong>Use it for three things.</strong></p>
+<ol type="1">
+<li>The <strong>own-up card</strong> — the same day something breaks.</li>
+<li>The <strong>"this feels familiar" search</strong> — before you act, filter the Section and see every time that process has failed, in any brand. Learn from them all.</li>
+<li>The <strong>weekly walk</strong> — MANCO reads the Repeat Watch in the weekly, five minutes, every failure that has landed twice sits on one screen.</li>
+</ol>
+<p><strong>What MANCO will see.</strong> Which desk is bleeding. Which process is bleeding — across every brand at once. And the one thing we refuse: the same failure three times. Once is training. Twice, the fix must <strong>change the system</strong> — not the person. Three strikes is a boardroom decision.</p>
+<p><strong>The bar.</strong> This team runs with superstars, and superstars want their f*ck-ups logged — because the log is where the lessons live. The person who owns their miss is the one we hand bigger work to. The person who hides it is the problem, and the list is exactly how we find out nobody hid one.</p>
+<p>When it goes wrong: <strong>Good. Now we fix it — and it never happens twice.</strong></p>
+</blockquote>
+<p><strong>Deployment notes.</strong> File the post as a ClickUp Doc in the MANCO space pinned beside the list, drop the same text into the MANCO Weekly agenda as a permanent item under the Repeat Watch walk, and let the first walk be done against 10 pilot cards from S5 so the committee sees a populated board, not an empty promise.</p>
+<hr />
+<p><em>Provenance: list, statuses and field options read from the live ClickUp API 2026-11-26 (SAST) via <code>clickup --ws work lists 901211093531</code> and <code>clickup --ws work fields 1501000000003567</code>. No writes were made to ClickUp while this PRD was produced, beyond the list and description Ricardo ordered earlier today.</em></p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
