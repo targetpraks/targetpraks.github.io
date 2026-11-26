@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Stack health — 2026-11-26 06:30 SAST</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="stack-health--2026-11-26-0630-sast">Stack health — 2026-11-26 06:30 SAST</h1>
+<p>Scheduled 06:30 health check. Reads the 03:35 night-check report rather than repeating it, and adds the gate, OpenKnowledge, Colima, Google, backup-fallback and night-check lanes.</p>
+<p><strong>Verdict: RED.</strong> Three things need Ricardo's eye — the nightly backup did not run at all this morning, the internal disk is at 96%, and two of the probes named in this run's brief no longer exist because the services they tested were decommissioned.</p>
+<h2 id="lanes-at-a-glance">Lanes at a glance</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Status</th>
+<th>One line</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>decision gates</td>
+<td>🟢 green</td>
+<td>daemon, inference, CLI, MCP all true; d3-flash-mlx present</td>
+</tr>
+<tr>
+<td>OpenKnowledge vault</td>
+<td>🟢 green</td>
+<td>server alive, semantic search enabled + capable, 0 broken symlinks</td>
+</tr>
+<tr>
+<td>Colima / Docker</td>
+<td>🟢 green</td>
+<td>26 containers up, 2 939 MB free in VM, 46% disk, no log bloat</td>
+</tr>
+<tr>
+<td>Google Workspace fleet</td>
+<td>🟢 green</td>
+<td>token valid, refresh ok, live Gmail getProfile, 30 profiles with token</td>
+</tr>
+<tr>
+<td>Cloud-route fallback rate</td>
+<td>🟢 green</td>
+<td>1 fallback in 9 054 calls = 0.011% (floor 5%)</td>
+</tr>
+<tr>
+<td>night check (03:35)</td>
+<td>🔴 red</td>
+<td>2 red / 1 amber / 22 lanes; 3 heals attempted</td>
+</tr>
+<tr>
+<td><strong>backups (live)</strong></td>
+<td>🔴 red</td>
+<td><strong>0 of 4 lanes ran — <code>com.maio.backup</code> exits 1 on a secrets.env parse error</strong></td>
+</tr>
+<tr>
+<td><strong>internal disk</strong></td>
+<td>🔴 red</td>
+<td><strong>96% used, 21 Gi free, up from 94% at 03:35</strong></td>
+</tr>
+<tr>
+<td>LiteLLM alias probe</td>
+<td>⚪ n/a</td>
+<td>script gone — LiteLLM decommissioned 2026-10-19</td>
+</tr>
+<tr>
+<td>LiteLLM fallback alert</td>
+<td>⚪ n/a</td>
+<td>script gone — same decommission</td>
+</tr>
+<tr>
+<td>Paperclip</td>
+<td>⚪ n/a</td>
+<td>script gone — paperclip removed 2026-11-25</td>
+</tr>
+<tr>
+<td>MetaMCP</td>
+<td>🟠 amber</td>
+<td>running and healthy although decommissioned 2026-11-09</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="red_circle-1-the-nightly-backup-did-not-run-at-all-this-morning">🔴 1. The nightly backup did not run at all this morning</h2>
+<p><code>com.maio.backup</code> fired at 03:30, the night check kicked a re-run at 03:35, and both died in the same place — before a single lane completed. <code>launchctl print gui/501/com.maio.backup</code> reports <code>runs = 2</code>, <code>last exit code = 1</code>.</p>
+<p>Log, verbatim (<code>~/Library/Logs/com.maio.backup.log</code>):</p>
+<pre><code>[2026-11-26 03:30:06] backup start (v4)
+/Users/ricardomaio/.config/maio-stack/secrets.env:1501: missing delimiter for &#39;u&#39; glob qualifier
+[2026-11-26 03:35:27] backup start (v4)
+/Users/ricardomaio/.config/maio-stack/secrets.env:1501: missing delimiter for &#39;u&#39; glob qualifier</code></pre>
+<p><strong>Root cause.</strong> <code>backup.sh</code> line 37 runs <code>set -a; source "$HOME/.config/maio-stack/secrets.env"; set +a</code> under <code>set -euo pipefail</code>. Line 1501 of <code>secrets.env</code> is the last key in the file — <code>ZOHO_SUPERMAN_ISSUED_BY</code> — and its value is unquoted while containing a parenthesis. zsh reads the parenthesis as a glob qualifier, fails the parse, and <code>source</code> returns 1; <code>set -e</code> then aborts <code>backup.sh</code> before the first lane. Measured, values not printed:</p>
+<pre><code>$ zsh -c &#39;set -euo pipefail; set -a; source ~/.config/maio-stack/secrets.env; set +a; echo REACHED&#39;
+secrets.env:1501: missing delimiter for &#39;u&#39; glob qualifier
+real_exit=1</code></pre>
+<p>All 197 keys above line 1501 load correctly (verified by name only — 197 of 197 present in the environment after sourcing); the failing key is the last one, so nothing else in the file is lost beyond that single variable and the abort itself.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TD</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">A</span>[<span class="st">&quot;03:30 com.maio.backup starts (v4)&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;line 37: source secrets.env under set -e&quot;</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>{<span class="st">&quot;line 1501 value has an unquoted &#39;(&#39;&quot;</span>}</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;zsh reads it as a glob qualifier&quot;</span><span class="vs">|</span> <span class="dt">D</span>[<span class="st">&quot;parse error: missing delimiter for &#39;u&#39;&quot;</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;source returns 1&quot;</span>]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">E</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;set -e aborts backup.sh&quot;</span>]</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">F</span> <span class="pp">--&gt;</span> <span class="dt">G</span>[<span class="st">&quot;0 of 4 lanes ran: no hindsight, constellation, paperclip or home-assistant archive for 2026-11-26&quot;</span>]</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">A2</span>[<span class="st">&quot;03:35 night-check heal kicks a re-run&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span></span></code></pre></div>
+<p><strong>Consequence.</strong> Newest archive in <code>Backups/hindsight/</code> is still <code>2026-11-25.tgz</code> (03:32). There is no <code>2026-11-26.*</code> for any lane. The 2026-11-25 run had completed fine, so this began today.</p>
+<p><strong>A false green to note.</strong> The night check recorded <code>kickstart (re-run backup) → ok: true</code>. That heal reports the <em>kickstart</em> succeeding, not the backup succeeding, so the report reads healed while the job had already failed again within the same second. Worth tightening in the night-check heal helper.</p>
+<p><strong>Fix, for Ricardo's approval — I changed nothing.</strong> Quote the value on line 1501 (wrap it in single quotes), then re-run <code>com.maio.backup</code> once and confirm a <code>2026-11-26</code> archive lands in every lane. The same <code>secrets.env</code> is sourced by <code>stack-up.sh</code> and <code>bin/vault-ensure</code>, so both carry the same latent risk until the line is quoted.</p>
+<h2 id="red_circle-2-internal-disk-at-96">🔴 2. Internal disk at 96%</h2>
+<pre><code>Filesystem        Size    Used   Avail Capacity  Mounted on
+/dev/disk3s5     460Gi   403Gi    21Gi     96%   /System/Volumes/Data
+/dev/disk7s1     954Gi   262Gi   691Gi     28%   /Volumes/Hiksemi 1TB</code></pre>
+<p>21 Gi free on the boot volume, and it has moved the wrong way since the night check measured 94% at 03:35. Largest single consumers on the data volume: <code>~/AI Hub</code> 101 G (the model store — its correct home), <code>~/.hermes</code> 34 G, <code>~/Library/Caches</code> 13 G, <code>~/Library/Containers</code> 5 G. Hiksemi is comfortable at 28%. Nothing freed — this needs a decision about what moves or goes, not a check.</p>
+<h2 id="orange_circle-3-metamcp-is-running-although-it-was-decommissioned">🟠 3. MetaMCP is running although it was decommissioned</h2>
+<p>The stack's own night check carries the note <em>"MetaMCP decommissioned 2026-11-09 (removal backup: backups/metamcp-removal-20261109-2215). Do not expect them again."</em> Yet:</p>
+<pre><code>metamcp      Up 22 hours (healthy)   127.0.0.1:12008-&gt;12008/tcp
+metamcp-pg   Up 22 hours (healthy)   127.0.0.1:9433-&gt;5432/tcp
+docker exec metamcp ps aux | grep -c server-filesystem   -&gt;  1</code></pre>
+<p>A decommissioned service is up, holding a port and one orphaned stdio child, inside the 6 GB Colima VM. Not urgent today (2 939 MB free, well above the 800 MB floor) but it is exactly the orphan-leak pattern that has OOM-killed hindsight before. Either the decommission was never applied or something brought it back on the last boot — the 22-hour uptime lines up with the host restart. Reporting only.</p>
+<h2 id="white_circle-lanes-that-could-not-run--three-probes-named-in-the-brief-no-longer-exist">⚪ Lanes that could not run — three probes named in the brief no longer exist</h2>
+<p>These are not failures of the stack; they are probes for services this Mac no longer runs. Stated plainly rather than faked.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Result</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>litellm-alias-probe.sh</code></td>
+<td><code>zsh: can't open input file</code> (exit 127)</td>
+<td>LiteLLM decommissioned 2026-10-19. <code>stack-up.sh</code> lines 25–26: <em>"LiteLLM DECOMMISSIONED 2026-10-19 (Ricardo) — never start it again."</em> No container, port 4000 closed, removal backups dated 2026-10-19/20</td>
+</tr>
+<tr>
+<td><code>litellm-fallback-alert.sh</code></td>
+<td><code>zsh: can't open input file</code> (exit 127)</td>
+<td>Same decommission — no proxy, no role aliases, so no alias could be probed</td>
+</tr>
+<tr>
+<td><code>paperclip-health.sh</code></td>
+<td><code>zsh: can't open input file</code> (exit 127)</td>
+<td>Paperclip removed 2026-11-25 (<code>night-check.py:710</code> — <em>"paperclip removed 2026-11-25"</em>; <code>paperclip-qwenpaw</code> change backups throughout <code>~/.config/maio-stack</code>). No launchd label <code>ing.paperclip.paperclipai</code> (<em>"Could not find service"</em>), no process, no container</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>What replaces the LiteLLM intent.</strong> The point of both LiteLLM lanes was to prove that every role alias really serves (not just that <code>/v1/models</code> answers 200) and that the cloud route has not silently fallen back to a local model. That job is now the agent-usage ledger, read live from <code>~/.config/maio-stack/agent-usage-ledger/ledger.db</code>:</p>
+<pre><code>requests  last 24h : 9054
+fallbacks last 24h : 1        -&gt; 0.011%  (alert threshold 5%)
+sole fallback      : 2026-11-25 08:00:12  infinity  deepseek-v4.1-flash:1017 -&gt; glm-5.3-flash:cloud (ollama-cloud)
+ledger collect run : 2026-11-26 06:30:34  homes=36 new_requests=6 new_fallbacks=0 errors=0</code></pre>
+<p>One fallback, and it stayed inside ollama-cloud (deepseek → glm), not to a local model. <strong>The cloud route is healthy — no F5 condition.</strong> The agents now call providers directly; there is no proxy in the path. If a LiteLLM-style alias gate is still wanted, it has to be reinstated deliberately — <code>stack-up.sh</code> says never start it again.</p>
+<h2 id="green_circle-green-lanes--evidence">🟢 Green lanes — evidence</h2>
+<p>Decision gate (<code>gate-health</code>, no arguments, exit 0):</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;daemon&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;inference&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;cli&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;mcp&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;model&quot;</span><span class="fu">:</span> <span class="st">&quot;d3-flash-mlx&quot;</span><span class="fu">,</span> <span class="dt">&quot;model_present&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;probe_noul&quot;</span><span class="fu">:</span> <span class="fl">0.8802695899694379</span><span class="fu">,</span> <span class="dt">&quot;cli_exit&quot;</span><span class="fu">:</span> <span class="dv">0</span><span class="fu">,</span> <span class="dt">&quot;mcp_tools&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;decide&quot;</span><span class="ot">,</span> <span class="st">&quot;ask&quot;</span><span class="ot">]</span><span class="fu">}</span></span></code></pre></div>
+<p>OpenKnowledge (<code>ok-health.sh</code>, exit 0):</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;ok&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;server_alive&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;port&quot;</span><span class="fu">:</span><span class="st">&quot;64200&quot;</span><span class="fu">,</span><span class="dt">&quot;semantic_enabled&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;semantic_capable&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;embedded&quot;</span><span class="fu">:</span><span class="dv">3281</span><span class="fu">,</span><span class="dt">&quot;total&quot;</span><span class="fu">:</span><span class="dv">3272</span><span class="fu">,</span><span class="dt">&quot;broken_symlinks&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">}</span></span></code></pre></div>
+<p>Semantic search is enabled and capable with zero broken symlinks, so Beast's MCP tools on the vault are working. One cosmetic oddity: <code>embedded</code> (3 281) is slightly larger than <code>total</code> (3 272), so the two counters are not measuring the same thing — harmless, but the script's percentage would read above 100%.</p>
+<p>Colima / Docker (<code>colima-health.sh</code>, exit 0):</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;ok&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;colima&quot;</span><span class="fu">:</span><span class="st">&quot;running&quot;</span><span class="fu">,</span><span class="dt">&quot;docker_ok&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;containers_running&quot;</span><span class="fu">:</span><span class="dv">26</span><span class="fu">,</span><span class="dt">&quot;vm_free_mb&quot;</span><span class="fu">:</span><span class="dv">2939</span><span class="fu">,</span><span class="dt">&quot;vm_disk_pct&quot;</span><span class="fu">:</span><span class="dv">46</span><span class="fu">,</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;metamcp_orphans&quot;</span><span class="fu">:</span><span class="dv">1</span><span class="fu">,</span><span class="dt">&quot;metamcp_connect_errors_30m&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span><span class="dt">&quot;metamcp_connect_error_top&quot;</span><span class="fu">:</span><span class="st">&quot;&quot;</span><span class="fu">,</span><span class="dt">&quot;metamcp_state&quot;</span><span class="fu">:</span><span class="st">&quot;running&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;metamcp_health_ok&quot;</span><span class="fu">:</span><span class="dv">1</span><span class="fu">,</span><span class="dt">&quot;metamcp_startup_errors_30m&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span><span class="dt">&quot;biggest_log_mb&quot;</span><span class="fu">:</span><span class="dv">27</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&quot;biggest_log_dir&quot;</span><span class="fu">:</span><span class="st">&quot;/var/lib/docker/containers/3507f867.../&quot;</span><span class="fu">,</span><span class="dt">&quot;logs_over_500mb&quot;</span><span class="fu">:</span><span class="dv">0</span><span class="fu">,</span><span class="dt">&quot;failed&quot;</span><span class="fu">:</span><span class="st">&quot;&quot;</span><span class="fu">}</span></span></code></pre></div>
+<p>Every threshold passes: free RAM 2 939 MB against a 800 MB floor, disk 46%, orphans 1 against a limit of 44, no log over 500 MB, no scheduler queue-full events.</p>
+<p>Google Workspace fleet (<code>google-workspace-health.sh --json</code>, exit 0):</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;ok&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;token&quot;</span><span class="fu">:</span> <span class="st">&quot;valid&quot;</span><span class="fu">,</span> <span class="dt">&quot;refresh_ok&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;rickymaio@gmail.com&quot;</span><span class="fu">,</span> <span class="dt">&quot;messages_total&quot;</span><span class="fu">:</span> <span class="dv">22223</span><span class="fu">,</span> <span class="dt">&quot;scopes&quot;</span><span class="fu">:</span> <span class="dv">8</span><span class="fu">,</span> <span class="dt">&quot;has_refresh_token&quot;</span><span class="fu">:</span> <span class="kw">true</span><span class="fu">,</span> <span class="dt">&quot;profiles_with_token&quot;</span><span class="fu">:</span> <span class="dv">30</span><span class="fu">}</span></span></code></pre></div>
+<p>Token refreshes and a live Gmail <code>getProfile</code> answers, with 30 profiles carrying a token. The fleet's Gmail/Calendar/Drive access is intact.</p>
+<h2 id="night-check-lane--0335-report-read-not-re-run">Night check lane — 03:35 report read, not re-run</h2>
+<p>Report present: <code>night-check-2026-11-26.md</code> + <code>.json</code>, written 03:35. Job state <code>launchctl print gui/501/com.maio.courage-nightcheck</code> → <code>runs = 1</code>, <code>last exit code = 1</code> — the exit code is 1 because the check found reds, the report itself was written in full.</p>
+<p><strong>Verdict: RED — 2 red / 1 amber / 1 info / 22 lanes.</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Status</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>disks</td>
+<td>🔴 red</td>
+<td>internal 94% (now 96%), hiksemi 28%</td>
+</tr>
+<tr>
+<td>backups</td>
+<td>🔴 red</td>
+<td>hindsight newest 24 h old (2026-11-25); re-run kicked — and it failed, see lane 1 above</td>
+</tr>
+<tr>
+<td>cua</td>
+<td>🟠 amber</td>
+<td>driver=True socket=True <code>spacesd=False</code> lume=True cli=True</td>
+</tr>
+<tr>
+<td>coolify</td>
+<td>ℹ️ info</td>
+<td>not installed on this host by the 2026-10-03/04 decision</td>
+</tr>
+</tbody>
+</table></div>
+<p>The other 19 lanes are green: connectivity (gateway/DNS/internet/ollama.com), Discord, Telegram, OpenKnowledge, Obsidian, Plex, Snappier, Hiksemi drive (rw ok, 28%), Colima, Hermes gateway (pid 41246), keep-awake, RAM guard (state OK, 70.8% used, 4.71 GB swap), launchd sweep (79 expected jobs, none missing, none dead), Tailscale Running, decision gates, Gamma MCP proxy, scheduled kanban (2 parked, no due markers), agent ledger.</p>
+<p><strong>Heals it applied (Tier A — restarts only):</strong></p>
+<ol type="1">
+<li><code>relaunch Obsidian</code> → ok, 03:35:18</li>
+<li><code>kickstart (KeepAlive dead) com.maio.mac-control-tunnel</code> → ok, 03:35:27</li>
+<li><code>kickstart (re-run backup) com.maio.backup</code> → reported ok, 03:35:27 — <strong>but the backup failed again immediately; see lane 1.</strong> The heal checked the kickstart, not the outcome.</li>
+</ol>
+<h2 id="what-i-changed">What I changed</h2>
+<p>Nothing. This run was checks and reads only — no restarts, no file edits outside this report, no writes to the vault, no service or configuration touched. Every red above is a proposal for Ricardo, not an action.</p>
+<p>Three items want his decision:</p>
+<ol type="1">
+<li>Quote line 1501 of <code>secrets.env</code> so the nightly backup can run, then confirm a 2026-11-26 archive — and note that today's hindsight/constellation/home-assistant backup simply does not exist.</li>
+<li>What to do about the boot volume at 21 Gi free.</li>
+<li>Whether MetaMCP should be stopped again (it was decommissioned 2026-11-09) or formally brought back.</li>
+</ol>
+<p>— Courage 🐾 (checks only, changed nothing)</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
