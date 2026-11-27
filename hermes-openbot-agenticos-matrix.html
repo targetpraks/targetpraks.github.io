@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Engine, cockpit, building — Hermes / OpenBot / AgenticOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300..700;1,300..600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --fg:var(--foreground,#151C1B);
+    --ink:var(--fg);
+    --ink-soft:color-mix(in srgb,var(--fg) 80%,transparent);
+    --ink-faint:color-mix(in srgb,var(--fg) 66%,transparent);
+    --rule:var(--border,#D6DBD1);
+    --surface:var(--card,#FFFFFF);
+    --p1:var(--chart-1,#2451C9);
+    --p2:var(--chart-2,#A33D6C);
+    --p3:var(--chart-3,#8A5A0B);
+    --r:var(--radius,10px);
+    --sans:var(--font-sans,"Inter Tight",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif);
+    --mono:var(--font-mono,"JetBrains Mono",ui-monospace,monospace);
+    --serif:"Newsreader",Georgia,serif;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:15px;
+    line-height:1.55;
+    font-feature-settings:"kern" 1,"liga" 1;
+    -webkit-font-smoothing:antialiased;
+  }
+  .doc{max-width:1180px;margin:0 auto;}
+  a{color:inherit;text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:2px;text-decoration-color:var(--rule);}
+  a:hover{text-decoration-color:currentColor;}
+  a:focus-visible{outline:2px solid var(--p1);outline-offset:3px;border-radius:2px;}
+  ::selection{background:color-mix(in srgb,var(--p1) 18%,transparent);}
+
+  /* masthead */
+  .mast{
+    display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    padding:6px 0 10px;border-bottom:1px solid var(--ink);
+    font-size:11.5px;letter-spacing:.02em;color:var(--ink-soft);
+  }
+  .mast .stamp{font-family:var(--mono);font-size:10.5px;white-space:nowrap;}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,290px);gap:clamp(18px,4vw,48px);align-items:end;padding:clamp(20px,3.4vw,40px) 0 clamp(16px,2.4vw,26px);}
+  .hero h1{
+    font-family:var(--serif);font-weight:300;font-size:clamp(30px,4.6vw,56px);
+    line-height:.94;letter-spacing:-.025em;margin:0 0 .16em;max-width:15ch;
+  }
+  .hero .stand{font-family:var(--serif);font-size:clamp(15.5px,1.5vw,18px);line-height:1.42;font-weight:300;color:var(--ink-soft);max-width:56ch;margin:0;}
+  .hero .stand strong{font-weight:500;color:var(--ink);}
+  .hero .side{
+    font-size:12px;line-height:1.5;color:var(--ink-soft);
+    border-top:1px solid var(--rule);padding-top:10px;max-width:34ch;justify-self:end;
+  }
+  .hero .side b{display:block;font-weight:600;color:var(--ink);font-size:11px;letter-spacing:.03em;text-transform:uppercase;margin-bottom:4px;}
+
+  /* stat band */
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);}
+  .stat{padding:14px 14px 15px;border-left:1px solid var(--rule);min-width:0;}
+  .stat:first-child{border-left:0;padding-left:0;}
+  .stat:last-child{padding-right:0;}
+  .stat .n{font-family:var(--serif);font-weight:400;font-size:clamp(24px,3vw,33px);line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  .stat .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin-top:6px;display:block;}
+  .stat .s{font-size:11px;color:var(--ink-faint);margin-top:2px;display:block;}
+
+  /* callout */
+  .callout{
+    margin:clamp(18px,3vw,28px) 0 0;padding:12px 14px 12px 16px;
+    border-left:3px solid var(--p1);
+    background:color-mix(in srgb,var(--p1) 6%,transparent);
+    border-radius:0 var(--r) var(--r) 0;
+    font-size:13.5px;line-height:1.5;
+  }
+  .callout b{font-weight:600;}
+
+  /* figure */
+  figure{margin:clamp(20px,3vw,32px) 0 0;}
+  .figwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .figwrap svg{display:block;width:100%;height:auto;}
+  figcaption{font-size:11.5px;line-height:1.45;color:var(--ink-faint);margin-top:8px;max-width:78ch;}
+  .svg-t{font-family:var(--sans);fill:var(--ink);}
+  .svg-m{font-family:var(--mono);fill:var(--ink-faint);letter-spacing:.04em;}
+  .svg-s{font-family:var(--sans);fill:var(--ink-soft);}
+
+  /* controls */
+  .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:clamp(18px,3vw,26px) 0 10px;}
+  .controls .lab{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);margin-right:2px;}
+  .seg{
+    font-family:var(--sans);font-size:11.5px;font-weight:500;letter-spacing:.01em;
+    padding:4px 10px;border:1px solid var(--rule);border-radius:999px;
+    background:transparent;color:var(--ink-soft);cursor:pointer;
+  }
+  .seg:hover{border-color:var(--ink-soft);color:var(--ink);}
+  .seg[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface,var(--card));}
+
+  /* matrix */
+  .matrix{border-top:1px solid var(--ink);}
+  .mhead,.mrow{display:grid;grid-template-columns:minmax(112px,150px) repeat(3,minmax(0,1fr));}
+  .mhead{align-items:end;border-bottom:1px solid var(--ink);}
+  .mrow{border-bottom:1px solid var(--rule);transition:background-color .12s linear;}
+  .mrow:hover{background:color-mix(in srgb,var(--ink) 3.5%,transparent);}
+  .mhead .rail{padding:10px 10px 8px 0;font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--ink-faint);}
+  .colhead{padding:10px 10px 8px;border-left:1px solid var(--rule);min-width:0;}
+  .colhead:last-child{padding-right:0;}
+  .colhead .tick{display:block;height:2px;width:22px;margin-bottom:6px;background:currentColor;}
+  .colhead .nm{font-weight:600;font-size:13px;letter-spacing:-.005em;color:var(--ink);}
+  .colhead .sub{font-family:var(--mono);font-size:9px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);margin-top:1px;}
+  .ch1{color:var(--p1);} .ch2{color:var(--p2);} .ch3{color:var(--p3);}
+
+  .msection{
+    border-bottom:1px solid var(--rule);
+    background:color-mix(in srgb,var(--ink) 4%,transparent);
+    padding:7px 0 6px;font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink);
+  }
+  .msection span{font-family:var(--sans);font-style:normal;font-size:10.5px;color:var(--ink-faint);margin-left:8px;letter-spacing:.01em;}
+
+  .rail{padding:10px 10px 10px 0;font-size:11.5px;font-weight:500;line-height:1.32;color:var(--ink-soft);}
+  .cell{
+    padding:10px 10px 11px;border-left:1px solid var(--rule);
+    font-size:12.2px;line-height:1.47;color:var(--ink);min-width:0;text-wrap:pretty;
+    transition:opacity .15s linear,background-color .15s linear;
+  }
+  .cell:last-child{padding-right:0;}
+  .cell strong{font-weight:600;}
+  .cell .num{font-family:var(--mono);font-size:11px;}
+  .cell[data-col="Hermes"]{box-shadow:inset 2px 0 0 -0px transparent;}
+  .lead{box-shadow:inset 2px 0 0 var(--pigment);}
+  .cell[data-col="Hermes"]{--pigment:var(--p1);}
+  .cell[data-col="OpenBot"]{--pigment:var(--p2);}
+  .cell[data-col="AgenticOS"]{--pigment:var(--p3);}
+  .cell.lead{padding-left:10px;}
+
+  .matrix[data-focus="Hermes"] .cell:not([data-col="Hermes"]),
+  .matrix[data-focus="Hermes"] .colhead:not(.ch1),
+  .matrix[data-focus="OpenBot"] .cell:not([data-col="OpenBot"]),
+  .matrix[data-focus="OpenBot"] .colhead:not(.ch2),
+  .matrix[data-focus="AgenticOS"] .cell:not([data-col="AgenticOS"]),
+  .matrix[data-focus="AgenticOS"] .colhead:not(.ch3){opacity:.3;}
+  .matrix[data-focus="Hermes"] .cell[data-col="Hermes"]{background:color-mix(in srgb,var(--p1) 7%,transparent);}
+  .matrix[data-focus="OpenBot"] .cell[data-col="OpenBot"]{background:color-mix(in srgb,var(--p2) 7%,transparent);}
+  .matrix[data-focus="AgenticOS"] .cell[data-col="AgenticOS"]{background:color-mix(in srgb,var(--p3) 7%,transparent);}
+
+  /* verdict */
+  .verdict{margin-top:clamp(22px,3.4vw,38px);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--ink);border-radius:var(--r);overflow:hidden;}
+  .vcard{background:var(--surface);padding:16px 16px 18px;display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .vcard .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);}
+  .vcard h3{font-family:var(--serif);font-weight:400;font-size:clamp(17px,1.9vw,21px);line-height:1.14;letter-spacing:-.01em;margin:0;}
+  .vcard p{margin:0;font-size:12.5px;line-height:1.5;color:var(--ink-soft);}
+  .vcard .pick{margin-top:auto;padding-top:10px;font-size:12.5px;font-weight:600;color:var(--ink);}
+
+  /* coda + notes */
+  .coda{margin-top:clamp(20px,3vw,32px);display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);padding-top:14px;border-top:1px solid var(--ink);}
+  .coda h2{font-family:var(--serif);font-style:italic;font-weight:400;font-size:14px;margin:0;color:var(--ink-soft);padding-right:12px;}
+  .coda .body p{margin:0 0 .85em;font-family:var(--serif);font-size:clamp(15px,1.5vw,17px);line-height:1.5;font-weight:300;}
+  .coda .body p:last-child{margin-bottom:0;}
+  .coda .body strong{font-weight:500;}
+  .notes{margin-top:clamp(18px,2.6vw,28px);padding-top:10px;border-top:1px solid var(--rule);display:grid;grid-template-columns:minmax(0,150px) minmax(0,1fr);font-size:11.5px;line-height:1.55;color:var(--ink-faint);}
+  .notes h2{font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-soft);margin:0;padding-right:12px;}
+  .notes ul{margin:0;padding:0;list-style:none;display:grid;gap:5px;max-width:86ch;}
+  .notes li::before{content:"—";margin-right:7px;color:var(--rule);}
+  .notes .src{margin-top:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.01em;}
+
+  @media (max-width:700px){
+    .hero{grid-template-columns:1fr;}
+    .hero .side{justify-self:start;max-width:52ch;}
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .stat:nth-child(3){border-left:0;padding-left:0;}
+    .stat:nth-child(3),.stat:nth-child(4){border-top:1px solid var(--rule);}
+    .mhead{display:none;}
+    .mhead,.mrow{grid-template-columns:1fr;}
+    .rail{padding:12px 0 3px;font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-faint);font-weight:400;}
+    .cell{border-left:0;padding:0 0 9px 10px;}
+    .cell::before{content:attr(data-col);display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;color:var(--pigment);opacity:.85;}
+    .verdict{grid-template-columns:1fr;}
+    .coda,.notes{grid-template-columns:1fr;gap:8px;}
+    .figwrap svg{min-width:520px;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important;}}
+  @media print{
+    .mrow:hover{background:transparent;}
+    .controls{display:none;}
+    .cell{opacity:1 !important;}
+  }
+</style>
+</head>
+<body>
+<main class="doc">
+
+  <header class="mast">
+    <div>A comparison for Ricardo · Infinity Brands and the AI-Space fleet</div>
+    <div class="stamp">27 Nov 2026 · measured live, not from memory</div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Engine, cockpit, building.</h1>
+      <p class="stand"><strong>Hermes</strong> is the engine that thinks on your own machine. <strong>OpenBot</strong> is the cockpit where several agents are watched at once. <strong>AgenticOS</strong> is the building seventeen colleagues walk into. They are not three horses in one race — one of them can literally run another.</p>
+    </div>
+    <aside class="side">
+      <b>How to read this</b>
+      Rows are grouped by the question a person actually asks before choosing. Use the focus buttons to isolate one system; a dimmed column means it is not the answer on that line.
+    </aside>
+  </section>
+
+  <section class="stats" aria-label="Figures measured on this Mac on 27 November 2026">
+    <div class="stat"><span class="n">35</span> <span class="l">Hermes profiles</span> <span class="s">on this machine, each with its own memory and keys</span></div>
+    <div class="stat"><span class="n">246</span> <span class="l">skills on disk</span> <span class="s">loaded only when the task matches</span></div>
+    <div class="stat"><span class="n">16</span> <span class="l">live cron jobs</span> <span class="s">and 16 MCP servers behind them</span></div>
+    <div class="stat"><span class="n">266,611</span> <span class="l">Hermes stars</span> <span class="s">on <a href="https://github.com/NousResearch/hermes-agent">GitHub</a>, pushed today</span></div>
+  </section>
+
+  <p class="callout"><b>The short answer.</b> Keep <a href="https://hermes-agent.nousresearch.com/">Hermes</a> as the engine for your own work and the fleet. Let <a href="https://openbot.run/">OpenBot</a> be a trial cockpit over it, not a migration. Keep AgenticOS carrying staff, because it is the only one of the three built to say no.</p>
+
+  <figure>
+    <div class="figwrap">
+      <svg viewBox="0 0 720 300" role="img" aria-labelledby="figtitle figdesc">
+        <title id="figtitle">How the three systems nest</title>
+        <desc id="figdesc">Hermes is the engine on your Mac. OpenBot sits above it as a cockpit and can run Hermes over ACP. AgenticOS stands apart behind an identity boundary, carrying staff seats.</desc>
+        <defs>
+          <marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/>
+          </marker>
+        </defs>
+
+        <!-- your machine -->
+        <rect x="1" y="1" width="524" height="286" rx="12" fill="none" stroke="var(--rule)" stroke-width="1.2" stroke-dasharray="5 5"/>
+        <text class="svg-m" x="14" y="20" font-size="10">YOUR MAC</text>
+
+        <!-- Hermes engine -->
+        <rect x="16" y="140" width="494" height="132" rx="10" fill="color-mix(in srgb, var(--p1) 9%, transparent)" stroke="var(--p1)" stroke-width="1.4"/>
+        <rect x="16" y="140" width="4" height="132" rx="2" fill="var(--p1)"/>
+        <text class="svg-t" x="36" y="172" font-size="19" font-weight="600">Hermes — the engine</text>
+        <text class="svg-s" x="36" y="196" font-size="12.5">Thinks on your machine. 35 profiles, 246 skills, 16 cron jobs,</text>
+        <text class="svg-s" x="36" y="214" font-size="12.5">its own memory, and any model you point it at.</text>
+        <text class="svg-m" x="36" y="244" font-size="9.5">GATEWAY · DASHBOARD · CLI · ACP · A2A</text>
+
+        <!-- OpenBot cockpit -->
+        <rect x="60" y="34" width="300" height="76" rx="10" fill="color-mix(in srgb, var(--p2) 10%, transparent)" stroke="var(--p2)" stroke-width="1.4"/>
+        <rect x="60" y="34" width="4" height="76" rx="2" fill="var(--p2)"/>
+        <text class="svg-t" x="78" y="62" font-size="16" font-weight="600">OpenBot — the cockpit</text>
+        <text class="svg-s" x="78" y="84" font-size="11.5">One window, many agents: Claude, Codex,</text>
+        <text class="svg-s" x="78" y="100" font-size="11.5">OpenCode, Kimi — and Hermes itself.</text>
+
+        <!-- ACP arrow -->
+        <line x1="210" y1="112" x2="210" y2="136" stroke="var(--ink-soft)" stroke-width="1.6" marker-end="url(#arw)"/>
+        <text class="svg-m" x="220" y="130" font-size="9.5">RUNS HERMES OVER ACP</text>
+
+        <!-- other CLIs -->
+        <text class="svg-s" x="384" y="60" font-size="11" font-style="italic">no model of its own —</text>
+        <text class="svg-s" x="384" y="76" font-size="11" font-style="italic">it hosts other vendors' CLIs</text>
+
+        <!-- boundary -->
+        <line x1="538" y1="24" x2="538" y2="278" stroke="var(--ink-faint)" stroke-width="1.2" stroke-dasharray="2 5"/>
+        <text class="svg-m" x="546" y="20" font-size="8.5">A PERSON MUST BE LET IN</text>
+
+        <!-- AgenticOS -->
+        <rect x="552" y="30" width="160" height="242" rx="10" fill="color-mix(in srgb, var(--p3) 9%, transparent)" stroke="var(--p3)" stroke-width="1.4"/>
+        <rect x="552" y="30" width="4" height="242" rx="2" fill="var(--p3)"/>
+        <text class="svg-t" x="568" y="60" font-size="15" font-weight="600">AgenticOS</text>
+        <text class="svg-s" x="568" y="78" font-size="11">the building</text>
+        <text class="svg-s" x="568" y="110" font-size="11.5">24 seats</text>
+        <text class="svg-s" x="568" y="130" font-size="11.5">23 knowledge bases</text>
+        <text class="svg-s" x="568" y="150" font-size="11.5">one shelf per seat</text>
+        <text class="svg-s" x="568" y="170" font-size="11.5">default deny</text>
+        <text class="svg-s" x="568" y="190" font-size="11.5">writes held</text>
+        <text class="svg-s" x="568" y="210" font-size="11.5">for a person</text>
+        <text class="svg-m" x="568" y="252" font-size="9">IN-HOUSE · DOCKER</text>
+      </svg>
+    </div>
+    <figcaption>The nesting is the whole argument. OpenBot can carry Hermes as one of its providers over <a href="https://agentclientprotocol.com">ACP</a>, so it belongs above the engine, not beside it. AgenticOS does not nest with either: it exists to put a person's identity between the assistant and the company's files, which is exactly what the other two deliberately do not do.</figcaption>
+  </figure>
+
+  <div class="controls" role="group" aria-label="Focus one column">
+    <span class="lab">Focus</span>
+    <button class="seg" data-f="all" aria-pressed="true">All three</button>
+    <button class="seg" data-f="Hermes" aria-pressed="false">Hermes</button>
+    <button class="seg" data-f="OpenBot" aria-pressed="false">OpenBot</button>
+    <button class="seg" data-f="AgenticOS" aria-pressed="false">AgenticOS</button>
+  </div>
+
+  <div class="matrix" id="matrix" data-focus="all" role="table" aria-label="Hermes, OpenBot and AgenticOS compared">
+
+    <div class="mhead" role="row">
+      <div class="rail" role="columnheader">Question</div>
+      <div class="colhead ch1" role="columnheader"><span class="tick"></span><div class="nm">Hermes</div><div class="sub">the engine</div></div>
+      <div class="colhead ch2" role="columnheader"><span class="tick"></span><div class="nm">OpenBot</div><div class="sub">the cockpit</div></div>
+      <div class="colhead ch3" role="columnheader"><span class="tick"></span><div class="nm">AgenticOS</div><div class="sub">the building</div></div>
+    </div>
+
+    <div class="msection" role="row">Shape <span>what the thing actually is, before features</span></div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">What it is</div>
+      <div class="cell" data-col="Hermes" role="cell">A runtime and a fleet. You point it at your machine, your providers, your chat apps and your schedule; it keeps thinking between sessions.</div>
+      <div class="cell" data-col="OpenBot" role="cell">A window, not an engine. It hosts other vendors' agent CLIs side by side and gives each a folder, a thread and a queue.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">A tenancy. One address, a sign-in per person, and an assistant per business unit that knows only its own documents.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Where it runs</div>
+      <div class="cell" data-col="Hermes" role="cell">Your machine, a VPS, <a href="https://www.docker.com">Docker</a>, an SSH box, Daytona, Modal or Vercel. Here the gateway and dashboard are already running, on <span class="num">v0.23.4</span>.</div>
+      <div class="cell" data-col="OpenBot" role="cell"><a href="https://www.electronjs.org">Electron</a> on macOS, Windows or Linux; an iPhone app; or a self-hosted server. Data in <span class="num">~/OpenBot</span> and one <a href="https://sqlite.org">SQLite</a> file.</div>
+      <div class="cell lead" data-col="AgenticOS" role="cell">Docker on the Mac mini, published through <a href="https://tailscale.com">Tailscale</a> behind <a href="https://www.cloudflare.com/zero-trust/products/access/">Cloudflare Access</a>. Browser only — no install, no VPN, no port on the office LAN.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Who can use it</div>
+      <div class="cell" data-col="Hermes" role="cell">One owner, many profiles: <span class="num">35</span> on this Mac, each with its own config, memory, skills and credentials.</div>
+      <div class="cell" data-col="OpenBot" role="cell">You, plus teammates you invite to a published server — a team API over WebRTC, with account data on Cloudflare.</div>
+      <div class="cell lead" data-col="AgenticOS" role="cell"><span class="num">24</span> seat rows: ten unit seats, brand seats, five shared desks (numbers, documents, decks, dashboards, SOP) and two admin seats. Registration is restricted to <span class="num">@infinitybrands.co.za</span>.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">What's underneath</div>
+      <div class="cell" data-col="Hermes" role="cell">A Python backend; CLI, TUI, desktop app and dashboard; <a href="https://agentclientprotocol.com">ACP</a>, REST and A2A at the edge.</div>
+      <div class="cell" data-col="OpenBot" role="cell">Electron main plus SolidJS; a typed preload bridge; a SQLite event log; one ACP driver per provider; a sandboxed browser host.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">A Dockerised web app with retrieval, run records and spend telemetry; an MCP relay out to <a href="https://www.zoho.com">Zoho</a> and <a href="https://clickup.com">ClickUp</a>; a nightly re-index at 03:05.</div>
+    </div>
+
+    <div class="msection" role="row">Brains <span>models, memory, and how each one gets smarter</span></div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Which models</div>
+      <div class="cell lead" data-col="Hermes" role="cell">Any: <a href="https://portal.nousresearch.com">Nous Portal</a>, <a href="https://openrouter.ai">OpenRouter</a>, <a href="https://openai.com">OpenAI</a>, or a local <a href="https://ollama.com">Ollama</a> or <a href="https://lmstudio.ai">LM Studio</a>, with per-agent routing and failover.</div>
+      <div class="cell" data-col="OpenBot" role="cell">Whatever your CLI subscriptions already buy: Codex, <a href="https://claude.com">Claude</a>, Grok, OpenCode, <a href="https://gemini.google.com">Gemini</a>, Cursor, Cline, Kimi, Devin, Copilot, <a href="https://mistral.ai">Mistral</a> — and Hermes over ACP.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">Routed through the platform gateway (glm-5.3, kimi-k3, minimax, nemotron for council and gates). Personal provider keys are a policy nobody has set.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Memory</div>
+      <div class="cell lead" data-col="Hermes" role="cell">The deepest of the three: curated memory, full-text recall, a user model and a long-term graph. It compounds — that is the product.</div>
+      <div class="cell" data-col="OpenBot" role="cell">Deliberately thin. The provider's session, the agent's folder, skills and routines persist; understanding does not. It hands you a blank chat each time.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">Not memory but retrieval: <span class="num">23</span> bases, scoped per seat, quoted back with citations. Your thread with an assistant stays private to you.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Skills and extension</div>
+      <div class="cell lead" data-col="Hermes" role="cell">A library that writes itself: <span class="num">246</span> SKILL.md files here, plus plugins, hooks, toolsets and <span class="num">16</span> MCP servers with per-server filters.</div>
+      <div class="cell" data-col="OpenBot" role="cell">A local skill library and a marketplace of skills, agents and apps; routines and webhooks; and ACP, so a new CLI is one row, not a rewrite.</div>
+      <div class="cell" data-col="AgenticOS" role="cell"><span class="num">64</span> console sections, slash commands ( <span class="num">/gaps</span>, <span class="num">/cite</span>, <span class="num">/owner</span>), per-unit knowledge cards, and connectors that wait on OAuth.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Schedules and background</div>
+      <div class="cell lead" data-col="Hermes" role="cell">A real cron, with delivery: <span class="num">16</span> active jobs here, running headless and reporting into channels.</div>
+      <div class="cell" data-col="OpenBot" role="cell">Routines and webhooks that need the host awake; FIFO queues with pause, resume, cancel and crash-safe persistence.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">Housekeeping, not agency: the nightly re-index and the disk guard. Workflows and triggers stay empty until Zoho consent lands.</div>
+    </div>
+
+    <div class="msection" role="row">Work <span>who does what, and with what hands</span></div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Working with other agents</div>
+      <div class="cell" data-col="Hermes" role="cell">Delegation routes, Bot Mode, profiles as workers. Powerful and mostly invisible — the kanban is a CLI, not a picture.</div>
+      <div class="cell lead" data-col="OpenBot" role="cell">The clearest model of teamwork: channels with one task owner, explicit delegation, reassignment, and files passed agent to agent with manifests.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">One assistant per unit plus shared desks; a council of models reviews work — though that council currently fails before it reaches a model.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Files and repos</div>
+      <div class="cell" data-col="Hermes" role="cell">Terminal tools, native git worktrees, <span class="num">AGENTS.md</span> and <span class="num">CLAUDE.md</span>; repository judgement left to the operator.</div>
+      <div class="cell" data-col="OpenBot" role="cell">Each agent gets <span class="num">~/OpenBot/Agents/&lt;id&gt;</span> plus a shared folder, and a browser it can drive. It has no opinion about git.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">Documents, not repos: retrieval over WorkDrive and the unit registers, with the employee's own account deciding what opens.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Computer use</div>
+      <div class="cell" data-col="Hermes" role="cell">A full computer-use toolset, with container isolation optional rather than default.</div>
+      <div class="cell lead" data-col="OpenBot" role="cell">An optional driver bundled into the release, handed to every provider on all three operating systems.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">None, on purpose. It reads the documents it is allowed to read and answers; a change to a live system waits for a person.</div>
+    </div>
+
+    <div class="msection" role="row">Trust <span>the part that decides where each one may live</span></div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Permission model</div>
+      <div class="cell" data-col="Hermes" role="cell">Approvals per command, sandboxed backends, secret redaction, a permission system per profile. Configurable, and therefore only as good as the config.</div>
+      <div class="cell" data-col="OpenBot" role="cell">An explicit product decision: full access, approvals never, one consent at first launch. It says so in its own README — that is not a boundary.</div>
+      <div class="cell lead" data-col="AgenticOS" role="cell">Default deny. A seat sees only its own collection; a personal connector answers for that person alone; company credentials are labelled and admin-only.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Licence</div>
+      <div class="cell lead" data-col="Hermes" role="cell"><a href="https://opensource.org/license/mit">MIT</a>. No paid tier, no seat count, nothing to buy. The only vendor cost is the model you point it at.</div>
+      <div class="cell" data-col="OpenBot" role="cell">Source-available under <a href="https://polyformproject.org/licenses/noncommercial/1.0.0">PolyForm Noncommercial 1.0.0</a>. Commercial use needs seats. Apache-2.0 only up to 0.1.11.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">In-house. No licence to renew and no upstream to outrun — and exactly one operator on the hook when it breaks.</div>
+    </div>
+
+    <div class="msection" role="row">Money and momentum <span>what it costs, and what it would take to regret</span></div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">What you pay</div>
+      <div class="cell lead" data-col="Hermes" role="cell">Tokens only. Everything else is yours, including the electricity and the maintenance.</div>
+      <div class="cell" data-col="OpenBot" role="cell">A seat per person; agents do not count, and the subscriptions already on your card carry over. Noncommercial use is free.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">Internal. Month-to-date reads <span class="num">$0.00</span> across fifty runs, every run marked partial, and no spend cap set — a defect, not a bargain.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">Traction</div>
+      <div class="cell lead" data-col="Hermes" role="cell"><span class="num">266,611</span> stars, pushed today. A real ecosystem around an MIT core.</div>
+      <div class="cell" data-col="OpenBot" role="cell"><span class="num">11,758</span> stars; a release nearly every day from a small team, and a licence that tightened at 0.1.11 — momentum with single-vendor risk attached.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">One deployment, sixteen ClickUp spaces, no external users yet. Its maturity is your own uptime record.</div>
+    </div>
+
+    <div class="mrow" role="row">
+      <div class="rail" role="rowheader">How it fails</div>
+      <div class="cell" data-col="Hermes" role="cell">By weight. It is the heaviest harness measured here and needs an operator who enjoys configuration.</div>
+      <div class="cell" data-col="OpenBot" role="cell">By trust. You consent once and it has your whole disk, with no second gate between a strange page and a shell.</div>
+      <div class="cell" data-col="AgenticOS" role="cell">By telemetry and by one host. Costs and completion are not closed out, dumps sit on the same disk as the database, and a broken tool stays broken until someone looks.</div>
+    </div>
+
+  </div>
+
+  <section class="verdict" aria-label="Where each one belongs">
+    <article class="vcard">
+      <div class="tag">01 — the engine</div>
+      <h3>Hermes, for the work that must think</h3>
+      <p>Scheduling, memory that accumulates, twenty channels, local models, skills that write themselves. The only one of the three that gets better at your work the longer it runs.</p>
+      <div class="pick">Keep it as the engine. Don't make it the company's front door.</div>
+    </article>
+    <article class="vcard">
+      <div class="tag">02 — the cockpit</div>
+      <h3>OpenBot, for watching several agents at once</h3>
+      <p>A real answer to the mess of six terminal windows. It carries Hermes as one of its providers, so it can be a cockpit over the engine rather than a rival to it.</p>
+      <div class="pick">A week-long trial on your own desk. Not a migration, and not for staff.</div>
+    </article>
+    <article class="vcard">
+      <div class="tag">03 — the building</div>
+      <h3>AgenticOS, for seventeen colleagues</h3>
+      <p>The only one whose product is the boundary: identity at the door, knowledge scoped per seat, writes held for a person. Nobody else here is built to say no to a question.</p>
+      <div class="pick">Already the right answer for staff. Its gaps are plumbing, not architecture.</div>
+    </article>
+  </section>
+
+  <section class="coda">
+    <h2>The honest read</h2>
+    <div class="body">
+      <p>Comparing them as rivals flatters OpenBot and undersells AgenticOS. OpenBot is a shell — a very good one — that would lose every row about memory, scheduling and governance, and win the only row that matters at a desk: <strong>can I see five agents working and talk to any of them.</strong></p>
+      <p>AgenticOS is not competing for the same job at all. It is the only one that can be handed to a finance manager without handing her the company, and that is why its weaknesses look different: telemetry that reads zero, a council that does not run, no spend cap. Those are the failures of something already in production.</p>
+      <p>The practical arrangement writes itself. <strong>Hermes stays the engine</strong> for your own work and the fleet. <strong>AgenticOS carries staff</strong> and keeps owning identity and scoping. <strong>OpenBot is a trial</strong>, and the interesting experiment is not adopting it — it is pointing it at Hermes over ACP and seeing whether one window beats twenty terminal tabs.</p>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h2>What this rests on</h2>
+    <div>
+      <ul>
+        <li>Hermes figures were measured on this Mac an hour before this page was written: <span class="num">35</span> profiles, <span class="num">246</span> skills, <span class="num">16</span> active cron jobs, <span class="num">16</span> MCP servers, <span class="num">v0.23.4</span>; stars from the <a href="https://github.com/NousResearch/hermes-agent">GitHub API</a>.</li>
+        <li>OpenBot's facts come from its own <a href="https://github.com/nightly-labs/openbot">README</a>, <a href="https://openbot.run/">site</a> and licence text. The desktop build is source-available, not OSI open source — that distinction matters the moment a company uses it.</li>
+        <li>AgenticOS figures read 13–24 November 2026: 24 seats, 23 knowledge bases, 64 console sections, 17 unit routes, $0.00 metered spend.</li>
+        <li>There is a second product called <a href="https://open.bot/">OpenBot</a> — CopilotKit's enterprise agent platform, built around AG-UI. It is not the one compared here.</li>
+        <li>Nothing was installed, upgraded or reconfigured to write this, and no money or live system was touched.</li>
+      </ul>
+      <div class="src">Sources: hermes-agent.nousresearch.com · github.com/NousResearch/hermes-agent · openbot.run · github.com/nightly-labs/openbot · vault: 2026-11-09-agent-harness-matrix · 2026-11-13-agenticos-every-section · 2026-11-24-agenticos-post-upgrade-configuration</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  var m = document.getElementById('matrix');
+  var btns = document.querySelectorAll('.seg');
+  function set(n){
+    m.setAttribute('data-focus', n);
+    btns.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.f === n)); });
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ set(b.dataset.f); }); });
+})();
+</script>
+</body>
+</html>
