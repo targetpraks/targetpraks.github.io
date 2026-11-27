@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Stack health — 2026-11-27 06:30 SAST</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="stack-health--2026-11-27-0630-sast">Stack health — 2026-11-27 06:30 SAST</h1>
+<p>Check, report, propose. <strong>Nothing was changed by this run</strong> — no restarts, no config edits, no remediation of any kind. All lanes are read-only probes; the night check's Tier-A heals happened on its own 03:35 run and are reported below, not repeated.</p>
+<h2 id="verdict-amber--no-service-down-two-hygienecapacity-faults-in-front-of-ricardo">Verdict: AMBER — no service down, two hygiene/capacity faults in front of Ricardo</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Item</th>
+<th>Severity</th>
+<th>Owner decision needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>OpenKnowledge daily probe <code>ok:false</code> — 5 broken symlinks in the vault (server itself healthy)</td>
+<td>AMBER</td>
+<td>yes — vault write, Beast's lane</td>
+</tr>
+<tr>
+<td>F2</td>
+<td>Internal disk at <strong>96 %</strong> — 408 Gi used, <strong>17 Gi free</strong>, trend 92 % (Thu) → 96 % (Fri)</td>
+<td>RED (capacity, chronic)</td>
+<td>yes — cleanup is a delete-class action</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>LiteLLM alias-probe + fallback-alert lanes retired — scripts absent, exit 127</td>
+<td>INFO</td>
+<td>yes — standing checklist text needs updating</td>
+</tr>
+<tr>
+<td>F4</td>
+<td>Paperclip lane retired 2026-11-25 — service, plist and collector removed</td>
+<td>INFO</td>
+<td>yes — standing checklist text needs updating</td>
+</tr>
+<tr>
+<td>—</td>
+<td>cua <code>spacesd=False</code> — carried amber, known macOS 27 TCC/AX breakage</td>
+<td>AMBER</td>
+<td>no (known, human TCC click pending)</td>
+</tr>
+<tr>
+<td>—</td>
+<td>disks lane RED in the 03:35 night check (internal 96 %) — same fact as F2, reported there at 03:35</td>
+<td>RED</td>
+<td>as F2</td>
+</tr>
+</tbody>
+</table></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">LIVE</span>[<span class="st">&quot;Serving now&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">G</span>[<span class="st">&quot;Decision gates</span><span class="sc">&lt;br/&gt;</span><span class="st">daemon · inference · CLI · MCP ok&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="dt">C</span>[<span class="st">&quot;Colima / Docker</span><span class="sc">&lt;br/&gt;</span><span class="st">26 containers · vm 2045 MB free&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="dt">W</span>[<span class="st">&quot;Google Workspace</span><span class="sc">&lt;br/&gt;</span><span class="st">token ok · 30 profiles&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="dt">X</span>[<span class="st">&quot;OpenKnowledge server :64200</span><span class="sc">&lt;br/&gt;</span><span class="st">alive · semantic 3314/3310 embedded&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">N</span>[<span class="st">&quot;Gateway · Tailscale · keep-awake</span><span class="sc">&lt;br/&gt;</span><span class="st">Hiksemi rw ok · backups fresh&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">BROKEN</span>[<span class="st">&quot;Hygiene&quot;</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">S</span>[<span class="st">&quot;F1 · 5 dead symlinks</span><span class="sc">&lt;br/&gt;</span><span class="st">vault .claude/skills → rmmacbook&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="dt">D</span>[<span class="st">&quot;F2 · disk 96 %</span><span class="sc">&lt;br/&gt;</span><span class="st">17 Gi free · +4 % in 2 days&quot;</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">GONE</span>[<span class="st">&quot;Retired by design&quot;</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="dt">L</span>[<span class="st">&quot;LiteLLM lanes</span><span class="sc">&lt;br/&gt;</span><span class="st">removed 2026-10-19&quot;</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="dt">P</span>[<span class="st">&quot;Paperclip lane</span><span class="sc">&lt;br/&gt;</span><span class="st">removed 2026-11-25&quot;</span>]</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">S</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;blocks OK probe green&quot;</span><span class="vs">|</span> <span class="dt">D</span></span></code></pre></div>
+<hr />
+<h2 id="f1--openknowledge-probe-fails-on-5-broken-symlinks-amber-prominent">F1 — OpenKnowledge probe fails on 5 broken symlinks (AMBER, prominent)</h2>
+<p><code>zsh ~/.config/maio-stack/tools/ok-health.sh</code> — <strong>exit 1</strong>, the failed field is <strong><code>broken_symlinks</code> (5)</strong>. <code>server_alive</code>, <code>semantic_enabled</code> and <code>semantic_capable</code> are all green — <strong>the OK server that Beast's MCP tools depend on is NOT down</strong>; the probe fails purely on dead symlinks inside the vault.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span><span class="dt">&quot;ok&quot;</span><span class="fu">:</span><span class="kw">false</span><span class="fu">,</span><span class="dt">&quot;server_alive&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;port&quot;</span><span class="fu">:</span><span class="st">&quot;64200&quot;</span><span class="fu">,</span><span class="dt">&quot;semantic_enabled&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;semantic_capable&quot;</span><span class="fu">:</span><span class="kw">true</span><span class="fu">,</span><span class="dt">&quot;embedded&quot;</span><span class="fu">:</span><span class="dv">3314</span><span class="fu">,</span><span class="dt">&quot;total&quot;</span><span class="fu">:</span><span class="dv">3310</span><span class="fu">,</span><span class="dt">&quot;broken_symlinks&quot;</span><span class="fu">:</span><span class="dv">5</span><span class="fu">}</span></span></code></pre></div>
+<p>All five live in the vault's own <code>.claude/skills/</code> directory, and all five point at a foreign home (<code>/Users/rmmacbook/…</code> — a previous or other Mac). The local targets all exist under <code>Maio Hub/copilot/skills/</code>, so the repair is a pure re-point or delete, zero data loss:</p>
+<pre><code>.claude/skills/obsidian-markdown            -&gt; /Users/rmmacbook/…/Maio Hub/copilot/skills/obsidian-markdown
+.claude/skills/copilot-youtube-transcript   -&gt; /Users/rmmacbook/…/Maio Hub/copilot/skills/copilot-youtube-transcript
+.claude/skills/obsidian-bases               -&gt; /Users/rmmacbook/…/Maio Hub/copilot/skills/obsidian-bases
+.claude/skills/copilot-fetch-x              -&gt; /Users/rmmacbook/…/Maio Hub/copilot/skills/copilot-fetch-x
+.claude/skills/json-canvas                  -&gt; /Users/rmmacbook/…/Maio Hub/copilot/skills/json-canvas</code></pre>
+<p><strong>Need:</strong> a Beast (vault-writer) pass to delete or re-point these five links to the local home. The vault is read-only to me, so I made no change. Note the probe's own counter oddity: <code>embedded: 3314</code> vs <code>total: 3310</code> — reported as-is from the OK semantic-status endpoint; the script does not treat it as a fault.</p>
+<h2 id="f2--internal-disk-96--headroom-shrinking-red-capacity-prominent">F2 — Internal disk 96 %, headroom shrinking (RED capacity, prominent)</h2>
+<p>Night check 03:35 called the disks lane RED (<code>internal=96% used; hiksemi=27% used</code>); my live re-check at 06:31 confirms it and adds the trend:</p>
+<pre><code>$ df -h / /System/Volumes/Data &quot;/Volumes/Hiksemi 1TB&quot;
+/dev/disk3s5     460Gi   408Gi    17Gi    96%    /System/Volumes/Data
+/dev/disk7s1     954Gi   260Gi   694Gi    28%    /Volumes/Hiksemi 1TB</code></pre>
+<p>Trend: <strong>92 % on Thu 11-25 → 96 % now (≈ +18 GB in two days)</strong>. What it is NOT: the Constellation crash loop (yesterday's suspect) — that log set went from ~1.5 GB to <strong>168 MB</strong> (<code>du -sh ~/.config/maio-stack/logs</code>), <code>~/Library/Logs</code> holds just 21 MB, and there are <strong>no APFS local snapshots to thin</strong> (<code>tmutil listlocalsnapshots /</code> lists none).</p>
+<p>Biggest home-level consumers (read-only du, 06:33):</p>
+<pre><code>107G  ~/AI Hub            (canonical model home — expected)
+ 71G  ~/Library
+ 60G  ~/.colima           (Docker VM — its internal data disk reads 46 %)
+ 32G  ~/.hermes
+ 17G  ~/Pictures
+ 15G  ~/.cache
+ 11G  ~/.t3</code></pre>
+<p><strong>Need from Ricardo:</strong> a go for a reclaim pass (candidates: <code>.cache</code> 15 G, <code>.hermes</code> profile caches 32 G, docker prune inside the Colima VM, <code>.t3</code> 11 G — each reviewed before deletion; <code>disk-headroom.sh</code> exists for this). Deleting data is a delete-class action and stays with you.</p>
+<h2 id="f3--litellm-alias-probe--fallback-alert-lanes-scripts-gone-info-checklist-drift">F3 — LiteLLM alias-probe + fallback-alert lanes: scripts gone (INFO, checklist drift)</h2>
+<p>Both requested lanes fail with <strong>exit 127</strong>, verbatim:</p>
+<pre><code>$ zsh ~/.config/maio-stack/tools/litellm-alias-probe.sh
+zsh: can&#39;t open input file: /Users/ricardomaio/.config/maio-stack/tools/litellm-alias-probe.sh
+$ zsh ~/.config/maio-stack/tools/litellm-fallback-alert.sh
+zsh: can&#39;t open input file: /Users/ricardomaio/.config/maio-stack/tools/litellm-fallback-alert.sh</code></pre>
+<p>This is a <strong>retirement, not an outage</strong> — consistent with the 2026-10-19/20 LiteLLM removal (backup names <code>*.bak-adrianna-20261019-litellm-removal</code> across colima-health.sh, night-check.py, watchtower.py, and <code>*.bak-batman-20261030-litellm-decommission</code>). Verified nothing is listening where the proxy used to live (by design — never treat as an outage):</p>
+<pre><code>$ lsof -nP -iTCP:4000 -sTCP:LISTEN   -&gt; (no output, exit 1)
+$ lsof -nP -iTCP:4141 -sTCP:LISTEN   -&gt; (no output, exit 1)</code></pre>
+<p>Consequences of the removal, for the record: <strong>no alias to fail (the 2026-10-05 eviction-reconcile incident mode cannot recur here) and no local fallback model to measure</strong> — agents call providers directly. Leftover state files <code>.litellm-alias-state</code> and <code>.litellm-probe-full-last</code> still sit in <code>~/.config/maio-stack/tools/</code> (harmless history). <strong>Standing checklist text still orders these lanes — that text is stale and should be updated with Ricardo's go.</strong></p>
+<h2 id="f4--paperclip-lane-retired-2026-11-25-info-checklist-drift">F4 — Paperclip lane: retired 2026-11-25 (INFO, checklist drift)</h2>
+<p><code>paperclip-health.sh</code> also exits 127 with the same verbatim "can't open input file" error. The removal is complete and verified: <code>night-check.py</code> carries the marker <code># paperclip removed 2026-11-25</code> (line 710), the <code>*.bak-adrianna-20261125-paperclip-qwenpaw</code> backups show the 25 Nov retool, and the service is gone end-to-end:</p>
+<pre><code>$ launchctl print gui/501/ing.paperclip.paperclipai
+Could not find service &quot;ing.paperclip.paperclipai&quot; in domain for user gui: 501
+$ launchctl list | grep -iE &#39;paperclip|qwenpaw&#39;        -&gt; (no matches)
+$ ls ~/Library/LaunchAgents | grep -iE &#39;paperclip|qwenpaw&#39; -&gt; (no matches)</code></pre>
+<p>Yesterday's F3 fault ("seat <code>Mr. Infinity</code> in error + 9 seats paused") is therefore <strong>superseded by the removal</strong> — nothing to resume. Only <code>.bak</code> archives of the plist and scripts remain. <strong>Standing checklist text still orders this lane — same staleness as F3.</strong></p>
+<h2 id="night-check--0335-run-red-verdict">Night check — 03:35 run (RED verdict)</h2>
+<p>Read, not re-run. Report <code>AI-Drive/Agent-Output/courage/night-check-2026-11-27.md</code> + <code>.json</code> present.</p>
+<ul>
+<li><strong>Verdict line: RED</strong> — <code>verdict: RED</code>, lanes <code>1 red / 1 amber / 1 info / 22 total</code>, <code>heals_applied: 1</code>.</li>
+<li><strong>🔴 RED lane — disks</strong>: <code>internal=96% used; hiksemi=27% used</code> (= F2 above, now confirmed live).</li>
+<li><strong>🟠 AMBER lane — cua</strong>: <code>driver=True socket=True spacesd=False lume=True cli=True</code> (spacesd off; known macOS 27.0.1 TCC/AX condition, needs a human TCC click + daemon restart).</li>
+<li><strong>ℹ️ INFO lane — coolify</strong>: not installed on this host by the 2026-10-03/04 stack decision.</li>
+<li><strong>Other 19 lanes green</strong>: connectivity (gw/dns/internet/ollama.com), discord bot API, telegram getMe, openknowledge (server + semantic), obsidian running, plex 200 + NAS, snappier :8800/:8011 200, hiksemi rw (read 0.0 s, write 0.0 s), colima VM up, hermes gateway (pid 41246), keep-awake assertion, ram_guard OK (sample 67.1 % used, swap 8 GB, 0 spawns today), launchd sweep 79 com.maio jobs expected, tailscale Running, <strong>backups all fresh (hindsight)</strong>, decision gates green, gamma MCP :8807, kanban 2 scheduled (t_326184da, t_5df7f994), agent ledger fresh (24 h: 4286 calls, 2 fallback activations = 0.05 %).</li>
+<li><strong>Heal applied (Tier A)</strong>: <code>OK kickstart (KeepAlive dead) → com.maio.mac-control-tunnel</code> — i.e. the launchd sweep kickstarted the dead <code>com.maio.mac-control-tunnel</code> KeepAlive job (<code>launched: restarted: com.maio.mac-control-tunnel</code>; nothing else touched).</li>
+</ul>
+<h2 id="lanes-i-ran-this-morning-all-read-only">Lanes I ran this morning (all read-only)</h2>
+<h3 id="gate-health--green">gate-health — GREEN</h3>
+<pre><code>{&quot;daemon&quot;: true, &quot;inference&quot;: true, &quot;cli&quot;: true, &quot;mcp&quot;: true, &quot;model&quot;: &quot;d3-flash-mlx&quot;, &quot;model_present&quot;: true, &quot;probe_noul&quot;: 0.8802695899694379, &quot;cli_exit&quot;: 0, &quot;mcp_tools&quot;: [&quot;decide&quot;, &quot;ask&quot;]}</code></pre>
+<p>Daemon, inference, CLI and MCP all healthy on <code>d3-flash-mlx</code>; cold-start probe 0.88 s.</p>
+<h3 id="colima-health--green">colima-health — GREEN</h3>
+<pre><code>{&quot;ok&quot;:true,&quot;colima&quot;:&quot;running&quot;,&quot;docker_ok&quot;:true,&quot;containers_running&quot;:26,&quot;vm_free_mb&quot;:2045,&quot;vm_disk_pct&quot;:46,&quot;metamcp_orphans&quot;:1,&quot;metamcp_connect_errors_30m&quot;:0,&quot;metamcp_connect_error_top&quot;:&quot;&quot;,&quot;metamcp_state&quot;:&quot;running&quot;,&quot;metamcp_health_ok&quot;:1,&quot;metamcp_startup_errors_30m&quot;:0,&quot;biggest_log_mb&quot;:26,&quot;biggest_log_dir&quot;:&quot;/var/lib/docker/containers/c95ded4c54eeaf26b2f950d288b9ac8066963e1a52db9be4108cfb819c4dbe73/&quot;,&quot;logs_over_500mb&quot;:0,&quot;failed&quot;:&quot;&quot;}</code></pre>
+<p><code>ok:true</code>, <code>failed</code> field empty — no counter over threshold: 26 containers running, VM disk 46 %, zero logs over 500 MB (biggest 26 MB), 1 MetaMCP orphan (under threshold; the known reap-one-liner stays available), zero connect/startup errors in 30 m.</p>
+<h3 id="google-workspace-health--green-f5-clear">google-workspace-health — GREEN (F5 clear)</h3>
+<pre><code>{&quot;ok&quot;: true, &quot;token&quot;: &quot;valid&quot;, &quot;refresh_ok&quot;: true, &quot;email&quot;: &quot;rickymaio@gmail.com&quot;, &quot;messages_total&quot;: 22339, &quot;scopes&quot;: 8, &quot;has_refresh_token&quot;: true, &quot;profiles_with_token&quot;: 30}</code></pre>
+<p>Token valid, refresh OK, Gmail getProfile live (22,339 messages), 30 fleet profiles holding tokens. The fleet's Gmail/Calendar/Drive access is not broken.</p>
+<h3 id="paperclip-health--script-absent-see-f4">paperclip-health — script absent (see F4)</h3>
+<pre><code>zsh: can&#39;t open input file: /Users/ricardomaio/.config/maio-stack/tools/paperclip-health.sh
+---exit 127</code></pre>
+<h2 id="resolved-since-yesterdays-edition">Resolved since yesterday's edition</h2>
+<ul>
+<li><strong>Constellation staff server (:3214)</strong> — yesterday's F1 crash loop is fixed: <code>state = running</code>, node listening, <code>HTTP=307</code>, run count reset to 1854. Its log set shrank ~1.5 GB → 168 MB.</li>
+<li><strong>OpenKnowledge semantic index</strong> — yesterday's F2 (0 of 3,172 chunks embedded) is fixed: semantic enabled + capable, 3,314 embedded.</li>
+</ul>
+<h2 id="what-i-propose-nothing-done">What I propose (nothing done)</h2>
+<ol type="1">
+<li><strong>F1</strong>: Beast pass to delete/re-point the five vault <code>.claude/skills</code> symlinks to the local home — after that, <code>ok-health.sh</code> returns green with zero other changes.</li>
+<li><strong>F2</strong>: Ricardo-approved reclaim pass on internal disk (start with <code>~/.cache</code>, <code>.hermes</code> caches, <code>docker prune</code> in the Colima VM, <code>.t3</code>; review each before any delete).</li>
+<li><strong>F3/F4</strong>: update the standing morning-checklist text — drop the LiteLLM (retired 2026-10-19/20) and Paperclip (retired 2026-11-25) lanes so tomorrow's instructions match the machine.</li>
+</ol>
+<p>— Courage 🐾 (stack-health daily · 06:30 run · checks only, nothing changed)</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
