@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Extreme Ownership — the card that carries the whole story</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="extreme-ownership--the-card-that-carries-the-whole-story">Extreme Ownership — the card that carries the whole story</h1>
+<p><strong>Answer:</strong> all three, each doing one job. The <strong>fields</strong> hold what happened, why and the plan. The <strong>subtasks</strong> hold the actions — but only after the plan is approved. The <strong>checklist</strong> holds the close-out proof. And the approval is not a field at all: it is a status only the approver may move, with their comment naming the plan version.</p>
+<p>Council verdict, run <code>661e1541436e</code> (4 seats · 4 peer reviews · chairman <code>deepseek-v4.1-flash</code>):</p>
+<blockquote>
+<p>The single most important change is making the Approver's timestamped "Approved vN" comment plus their exclusive move to in progress the only gate before fix work starts.</p>
+</blockquote>
+<hr />
+<h2 id="1-what-each-part-is-for">1. What each part is for</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>Carries</th>
+<th>Why there and not elsewhere</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>What happened</strong> · <strong>Why it happened</strong> · <strong>Fix plan</strong> (long-text fields)</td>
+<td>The story, in three parts</td>
+<td>It is the only place a story reads <strong>in the list view</strong>, exports to a sheet, and can be grouped and charted across 40 cards. In a description or a checklist it is one click deep and invisible to every view.</td>
+</tr>
+<tr>
+<td><strong>Assignee</strong> (native)</td>
+<td>The person who owns the failure and therefore the fix</td>
+<td>He is the owner of the card from the second it is logged. One assignee — ClickUp allows a second only with the ClickApp on.</td>
+</tr>
+<tr>
+<td><strong>Approver</strong> (single user)</td>
+<td>The manager who signs the plan off</td>
+<td>Puts a name on the gate, so the automation can call him and the board can filter to <em>his</em> queue.</td>
+</tr>
+<tr>
+<td><strong>Status</strong></td>
+<td>Where the card is in the gate</td>
+<td>The only thing that can make "approved before work starts" true rather than polite.</td>
+</tr>
+<tr>
+<td><strong>Subtasks</strong></td>
+<td>The fix actions, one each, with their own owner and date</td>
+<td>Created <strong>after</strong> approval. A plan that may be rejected should not create six tasks first, and ClickUp cannot roll subtask fields back up to the parent anyway.</td>
+</tr>
+<tr>
+<td><strong>Close-out checklist</strong></td>
+<td>Fix done · Team briefed · SOP updated · Checked again in 2 weeks</td>
+<td>Checklist items have no owner and no date, so they can never be the approvable object — but they are exactly right as the "did we actually close the loop" gate.</td>
+</tr>
+<tr>
+<td><strong>Comments</strong></td>
+<td>Every version of the plan, and the rejection reason</td>
+<td>A long-text field overwrites. The comment thread does not. This is the audit trail.</td>
+</tr>
+<tr>
+<td><strong>Cost impact · Recurrence · Root cause type · Severity · Section · Brand</strong></td>
+<td>What it cost, whether it has happened before, why in one word, how bad, where</td>
+<td>These are the five that make the Monday read possible without opening a card.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Why not one of the three alone:</strong> fields alone give nothing to work — you cannot assign "step 3 of a paragraph". Subtasks alone bury the story and leave a rejected plan's tasks orphaned. Checklists alone are unassignable, undated and unreportable. The mix is not a compromise; each part is doing the one thing the other two cannot.</p>
+<hr />
+<h2 id="2-the-card-as-it-now-looks">2. The card, as it now looks</h2>
+<p>A fully filled example is on the list already: <a href="https://app.clickup.com/t/1an4v5wzxcu">DEMO — Wrong sauce batch dispatched to 3 stores (Napoletana NAP-1121)</a> — 18 × 5 L tubs, <strong>Cost impact 4 850</strong>, Severity <code>High</code>, Root cause <code>Process</code>, Section <code>Central Kitchen</code>, Approver named, and the four fix actions as subtasks. It is test data, marked safe to delete; open it once, then move it to <code>Closed</code> or bin it — your call, not mine.</p>
+<p>The reading order that makes a card answer your three questions without opening anything else:</p>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td><strong>Name</strong></td>
+<td>what went wrong, in the words of the person who was there</td>
+</tr>
+<tr>
+<td><strong>Severity</strong></td>
+<td>How bad · Low / Medium / High / Critical</td>
+</tr>
+<tr>
+<td><strong>What happened</strong></td>
+<td>facts only: when, where, what, who was affected. No adjectives.</td>
+</tr>
+<tr>
+<td><strong>Why it happened</strong></td>
+<td>the cause, not the excuse. Ask why five times; write the answer that would have prevented it.</td>
+</tr>
+<tr>
+<td><strong>Root cause type</strong></td>
+<td>one of People · Process · System / Tech · Supplier · Communication · Training</td>
+</tr>
+<tr>
+<td><strong>Fix plan</strong></td>
+<td>what will change so it cannot happen again — the steps, the owner, the date. Written by the person who owns the failure.</td>
+</tr>
+<tr>
+<td><strong>Assignee</strong></td>
+<td>that person. The card is his from the second it is logged.</td>
+</tr>
+<tr>
+<td><strong>Approver</strong></td>
+<td>the manager who signs the plan off.</td>
+</tr>
+<tr>
+<td><strong>Due date</strong></td>
+<td>when the fix lands.</td>
+</tr>
+<tr>
+<td><strong>Cost impact · Recurrence</strong></td>
+<td>what it cost; first time / repeat / chronic.</td>
+</tr>
+<tr>
+<td><strong>Subtasks</strong></td>
+<td>the fix actions, one each — opened only after approval.</td>
+</tr>
+<tr>
+<td><strong>Close-out</strong></td>
+<td>☐ Fix done ☐ Team briefed ☐ SOP updated ☐ Checked again in 2 weeks</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="3-the-flow">3. The flow</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span>[<span class="st">&quot;Logged</span><span class="sc">&lt;br/&gt;</span><span class="st">WHAT + SEVERITY + owner&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;Owner writing plan</span><span class="sc">&lt;br/&gt;</span><span class="st">WHY + ROOT CAUSE + FIX PLAN&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;Awaiting approval</span><span class="sc">&lt;br/&gt;</span><span class="st">Approver named&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;Approver comments</span><span class="sc">&lt;br/&gt;</span><span class="st">Approved vN&quot;</span><span class="vs">|</span> <span class="dt">D</span>[<span class="st">&quot;Approved – fixing</span><span class="sc">&lt;br/&gt;</span><span class="st">subtasks open here&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;Rejected vN + reason&quot;</span><span class="vs">|</span> <span class="dt">B</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;Verify</span><span class="sc">&lt;br/&gt;</span><span class="st">close-out checklist&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;Closed&quot;</span>]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">-.-&gt;</span><span class="vs">|</span><span class="st">&quot;did not hold&quot;</span><span class="vs">|</span> <span class="dt">B</span></span></code></pre></div>
+<p>Only two moves matter: <strong>the approver moves the card out of <em>Awaiting approval</em></strong>, and <strong>nobody opens a subtask before that</strong>. Everything else is bookkeeping the automations do.</p>
+<hr />
+<h2 id="4-the-three-rules-that-make-it-real">4. The three rules that make it real</h2>
+<ol type="1">
+<li><strong>The approver moves it, nobody else.</strong> ClickUp will not hard-block another person from changing a status, so the gate is enforced by the trail, not by permissions: the comment <code>Approved vN</code> from the Approver field, then the status change, timestamped in that order on the activity feed. A card that skipped it is visible at a glance — that is the accountability.</li>
+<li><strong>The plan is versioned in comments, not in the field.</strong> Before the owner rewrites, he posts the old text as <code>Fix plan v1</code> (or the approver posts <code>Rejected v1 — reason</code>). The field always holds the current draft; the comments hold every version. If the version in the field has no matching comment, the plan was quietly rewritten.</li>
+<li><strong>Nobody opens a subtask before approval.</strong> Subtasks are the <em>execution</em> of an approved plan. If they appear while the card still says <em>Awaiting approval</em>, the gate was skipped.</li>
+</ol>
+<hr />
+<h2 id="5-what-is-already-live-on-the-list">5. What is already live on the list</h2>
+<p>Built through the ClickUp API today, list-scoped, nothing shared touched (<a href="https://app.clickup.com/4627083/v/li/1501000000003567">Extreme Ownership</a>):</p>
+<ul>
+<li><strong>Six fields</strong>: What happened, Why it happened, Fix plan (text) · Severity (Low/Medium/High/Critical) · Root cause type (People/Process/System-Tech/Supplier/Communication/Training) · Approver (single user). The list went from 11 to 17 fields; the six are on this list only.</li>
+<li><strong>Three views</strong>: <code>Incident log</code> (list, grouped by status, columns in reading order), <code>Approval board</code> (board, grouped by status), <code>Awaiting approval</code> (list — filter still to be added once the status exists).</li>
+<li><strong>The template card</strong> rewritten to the eight-step flow, its old one-line checklist replaced with the four-point <strong>Close-out</strong> checklist.</li>
+<li><strong>The list description</strong> carries the flow, so anyone landing on the list reads it first.</li>
+<li><strong>A demo card with four fix subtasks</strong> (see §2) — the pattern filled in once, so nobody has to imagine it.</li>
+</ul>
+<p>Re-read from the API after the run, not taken from the run's own report: the list returns 17 fields including all six, three views with <code>grouping.field = status</code>, the template carrying the <code>Close-out</code> checklist, and <code>override_statuses: false</code> — the space's statuses are untouched.</p>
+<p>Custom fields cannot be deleted through the API — these six are permanent, which is why the design uses them rather than proposing a different shape.</p>
+<hr />
+<h2 id="6-what-still-needs-five-minutes-of-clicks">6. What still needs five minutes of clicks</h2>
+<p>The API cannot create a status set (it refuses open/closed bookends and lower-cases what it does create), automations, or forms. In this order:</p>
+<ol type="1">
+<li><strong>Statuses</strong> — list <code>…</code> menu → Statuses → <em>Use statuses specific to this list</em>: <code>Logged</code> · <code>Owner writing plan</code> · <code>Awaiting approval</code> · <code>Approved – fixing</code> · <code>Verify</code> · <code>Closed</code>. Names are the instruction; that is the whole point of naming them.</li>
+<li><strong>Three automations</strong> — status → <em>Awaiting approval</em>: add the Approver as watcher and comment them · status → <em>Approved – fixing</em>: comment "Plan approved — go" and notify the assignee · task created with no assignee: notify the list owner.</li>
+<li><strong>Form "Log an incident"</strong> — Title, What happened, Severity, Business Unit required; Brand, Cost impact, date optional; new task status = <code>Logged</code>. This is how staff log without duplicating a template by hand.</li>
+<li><strong>Make <code>Incident log</code> the default view</strong>, and add the <em>Status is Awaiting approval</em> filter (plus <em>Approver is me</em> if you want his personal queue).</li>
+</ol>
+<p>Full click-by-click settings and the refusal evidence: <code>REPORT.md</code> beside this file.</p>
+<hr />
+<h2 id="7-the-monday-read">7. The Monday read</h2>
+<p>One dashboard, four cards: incidents by <strong>Assignee</strong>, incidents by <strong>Root cause type</strong>, <strong>sum of Cost impact</strong>, and a table filtered to <strong>Recurrence = Repeat / Chronic</strong>. That answers "who keeps doing this", "what keeps breaking", "what it costs" and "what is repeating" without opening a card. Require Assignee, Root cause type, Cost impact and Recurrence before a card may be closed, or the dashboard quietly empties.</p>
+<hr />
+<h2 id="8-council-record">8. Council record</h2>
+<ul>
+<li>Run <code>661e1541436e</code> — seats <code>kimi-k3.1-pro</code> (first principles), <code>glm-5.3</code> (skeptic), <code>mimo-v2.6-pro</code> (pragmatist), <code>mistral-large-4</code> (researcher); four peer reviews; chairman <code>deepseek-v4.1-flash</code>. All nine calls verified in the run log, not assumed from config.</li>
+<li>A first pass (<code>f517e1256fd0</code>) reached the same four answers independently, which is why they are stated plainly rather than hedged.</li>
+<li><strong>Overruled:</strong> the council recommended reusing the six inherited statuses (<code>Open</code>, <code>in review</code>, <code>in progress</code> …) to avoid a manual status pass. I kept the named set instead: <em>in review</em> does not tell a store manager what is expected of him, and the status name is the only instruction most staff will read. The cost is five minutes of clicking, once.</li>
+<li><strong>Dissent worth keeping:</strong> approval-before-execution can delay urgent containment. Keep the gate, but let a <em>Critical</em> incident contain the damage first and land the approved plan within 24 hours — logged as a comment on the card, not as a quiet bypass.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
