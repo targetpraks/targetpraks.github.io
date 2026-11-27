@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Extreme Ownership — incident to approved fix (ClickUp MANCO)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="extreme-ownership--incident--root-cause--approved-fix">Extreme Ownership — incident → root cause → approved fix</h1>
+<p><strong>List:</strong> <a href="https://app.clickup.com/4627083/v/li/1501000000003567">Extreme Ownership</a> (MANCO · space <code>901211093531</code> · list <code>1501000000003567</code>) <strong>Run:</strong> 2026-11-27 · builder · work order approved by Ricardo 2026-11-27 <strong>Receipt:</strong> <code>receipt.json</code> — 73 calls, 43 writes/probes, every write that changed state returned 200.</p>
+<p>Five of the seven parts are done through the API. <strong>Statuses are not</strong> — the API cannot produce them, and the evidence for that is in §3. Everything still to click is in §4, in the order to do it.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">LR</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">A</span>[<span class="st">&quot;Logged</span><span class="sc">&lt;br/&gt;</span><span class="st">WHAT + SEVERITY&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;Owner writing plan</span><span class="sc">&lt;br/&gt;</span><span class="st">WHY + ROOT CAUSE + FIX&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>[<span class="st">&quot;Awaiting approval&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span><span class="vs">|approve|</span> <span class="dt">D</span>[<span class="st">&quot;Approved – fixing&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">C</span> <span class="pp">--&gt;</span><span class="vs">|send back|</span> <span class="dt">B</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;Verify&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">E</span> <span class="pp">--&gt;</span> <span class="dt">F</span>[<span class="st">&quot;Closed&quot;</span>]</span></code></pre></div>
+<h2 id="1-done-via-the-api">1. Done via the API</h2>
+<h3 id="1a-six-new-custom-fields--list-scoped-nothing-shared-touched">1a. Six new custom fields — list-scoped, nothing shared touched</h3>
+<p><code>POST /v2/list/{list_id}/field</code> works (undocumented; the public reference lists only Get/Set/Remove). It creates the field <strong>on this list alone</strong> — verified: the list went 11 → 17 fields while the space field set stayed at 8 and never gained any of the six.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Options</th>
+<th>id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What happened</td>
+<td>text</td>
+<td>—</td>
+<td><code>5d166eb3-48cb-4323-9166-7a11fc8b54b3</code></td>
+</tr>
+<tr>
+<td>Severity</td>
+<td>drop_down</td>
+<td>Low · Medium · High · Critical</td>
+<td><code>df0d9268-4072-4c3a-8a65-626f5204541c</code></td>
+</tr>
+<tr>
+<td>Why it happened</td>
+<td>text</td>
+<td>—</td>
+<td><code>6431735f-d519-41a1-9b20-72d0841bb522</code></td>
+</tr>
+<tr>
+<td>Root cause type</td>
+<td>drop_down</td>
+<td>People · Process · System / Tech · Supplier · Communication · Training</td>
+<td><code>e6d440d4-f93d-42f4-b1ec-cb7c27b6d801</code></td>
+</tr>
+<tr>
+<td>Fix plan</td>
+<td>text</td>
+<td>—</td>
+<td><code>c528482f-a287-4339-99b1-c29eec1e39ff</code></td>
+</tr>
+<tr>
+<td>Approver</td>
+<td>users</td>
+<td><code>multiple_values: false</code> (single selection)</td>
+<td><code>769f929b-5dcc-451a-beec-6de4e53133fc</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The pre-existing 11 fields are byte-for-byte unchanged. Field descriptions are <strong>not</strong> storable — <code>PUT /v2/list/{list_id}/field/{field_id}</code> returns 405, and the created fields read back with no <code>description</code> key.</p>
+<h3 id="1b-three-views">1b. Three views</h3>
+<p><code>POST /v2/list/{list_id}/view</code>, all three read back exactly as ordered:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>View</th>
+<th>Type</th>
+<th>Grouped by</th>
+<th>id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Incident log</td>
+<td>list</td>
+<td>status</td>
+<td><code>4d6mb-57832</code></td>
+</tr>
+<tr>
+<td>Approval board</td>
+<td>board</td>
+<td>status</td>
+<td><code>4d6mb-57852</code></td>
+</tr>
+<tr>
+<td>Awaiting approval</td>
+<td>list</td>
+<td>status</td>
+<td><code>4d6mb-57872</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Incident log columns, in order as specified:</strong> Name · Severity · What happened · Why it happened · Root cause type · Fix plan · Assignee · Approver · Due date · Recurrence · Cost impact. Closed cards are shown (<code>show_closed: true</code>) so the log stays a full record.</p>
+<h3 id="1c-template-task-1an4v5wztjv">1c. Template task <code>1an4v5wztjv</code></h3>
+<ul>
+<li><strong>Description</strong> replaced with the eight-step EXTREME OWNERSHIP CARD flow and the house rule (904 chars, read back verbatim — see §5).</li>
+<li><strong>Checklist:</strong> <code>Close-out</code> created with <code>Fix done</code> · <code>Team briefed</code> · <code>SOP / system updated</code> · <code>Checked again 2 weeks later</code>. The old single-item <code>Checklist</code> ("What Happened?") was deleted — <code>DELETE /v2/checklist/{checklist_id}</code> → 200. That is the only delete in this run, and it is the one the work order approved.</li>
+</ul>
+<h3 id="1d-list-description">1d. List description</h3>
+<p>Replaced with the one-line flow: <strong>WHAT happened → WHY it happened → FIX plan → APPROVE → CLOSE</strong>, plus the house rule.</p>
+<h2 id="2-what-was-not-touched">2. What was NOT touched</h2>
+<ul>
+<li><strong>Space statuses:</strong> identical before and after every single write — compared after each status call, not just at the end. No 401 and no 403 at any point.</li>
+<li><strong>Shared fields:</strong> none created, renamed, edited or removed.</li>
+<li><strong>Other lists and other tasks:</strong> none referenced. The list's <code>task_count</code> is still 1, the template.</li>
+</ul>
+<h2 id="3-what-the-api-refused--statuses">3. What the API refused — statuses</h2>
+<p>This is the one part of the design that cannot be automated, and it is worth recording exactly why, because the endpoint <em>appears</em> to exist and then refuses at the last step.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Attempt</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /list/{id}/status</code> <code>{"status":"Logged", …}</code></td>
+<td>400 <code>STATUS_026</code> "Status name is required"</td>
+</tr>
+<tr>
+<td><code>{"name":"Logged", …}</code>, <code>{"status_name":…}</code>, <code>{"statuses":[…]}</code>, <code>?status=Logged</code></td>
+<td>400 <code>STATUS_026</code> — same</td>
+</tr>
+<tr>
+<td><code>{"status":{"name":"Logged","type":"open","color":…}}</code></td>
+<td>400 <code>STATUS_028</code> — <strong>"New 'open', 'closed', or 'done' statuses not supported at this time"</strong></td>
+</tr>
+<tr>
+<td><code>{"status":{"name":"Owner writing plan","type":"custom",…}}</code></td>
+<td><strong>200</strong> — created, but stored lower-cased as <code>owner writing plan</code></td>
+</tr>
+<tr>
+<td><code>PUT /list/{id}/status/{status_id}</code> (rename)</td>
+<td>404 — no route</td>
+</tr>
+<tr>
+<td><code>PUT /list/{id}/status</code> with an id (rename)</td>
+<td>405 — no route</td>
+</tr>
+<tr>
+<td><code>DELETE /list/{id}/status/{id}</code> (route probe on a bogus id)</td>
+<td>404 — no route</td>
+</tr>
+</tbody>
+</table></div>
+<p>So the API can only <em>append lower-cased custom statuses</em>. It cannot rename, cannot delete, and cannot create the open-type or closed-type bookends the flow needs. The six statuses Ricardo asked for — capitalised, one open, one closed — are therefore UI work.</p>
+<p>The status the probe created was removed again by switching the list back to <code>override_statuses: false</code> (<code>PUT /v2/list/{list_id}</code> → 200). Verified afterwards: the list is back to its six inherited statuses and <code>override_statuses</code> is <code>false</code>, i.e. <strong>no leftover scaffolding</strong> for Ricardo to clean up before he starts.</p>
+<p>Two smaller refusals, both recorded rather than worked around:</p>
+<ul>
+<li><strong>Default view:</strong> <code>PUT /view/{id}</code> accepts <code>default_view: true</code> with 200 but silently drops it — <code>GET /list/{id}/view</code> still reports <code>default_view: null</code>. It is a UI click.</li>
+<li><strong>Status filter on the "Awaiting approval" view:</strong> the filter is dropped on both POST and PUT while the status <code>Awaiting approval</code> does not exist, so the view is currently unfiltered. Add the filter after the statuses exist.</li>
+</ul>
+<h2 id="4-click-list-for-ricardo--exact-settings-in-this-order">4. Click-list for Ricardo — exact settings, in this order</h2>
+<p><strong>Step 1 — statuses (5 minutes, do this first; everything else refers to these names).</strong> <a href="https://app.clickup.com/4627083/v/li/1501000000003567">Extreme Ownership</a> → the list's <code>…</code> menu → <strong>Statuses</strong> → <em>Use statuses specific to this list</em>, then replace the inherited set with exactly these six, in this order:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Status</th>
+<th>Type</th>
+<th>Colour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>Logged</code></td>
+<td>open</td>
+<td><code>#87909e</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>Owner writing plan</code></td>
+<td>custom</td>
+<td><code>#5b8def</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>Awaiting approval</code></td>
+<td>custom</td>
+<td><code>#f5c04a</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>Approved – fixing</code></td>
+<td>custom</td>
+<td><code>#9a6ef7</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>Verify</code></td>
+<td>custom</td>
+<td><code>#3bb3a8</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>Closed</code></td>
+<td>closed</td>
+<td><code>#008844</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Note the en dash in <code>Approved – fixing</code>, and the capital letters — the automations in Step 2 match these names exactly. Delete the six inherited ones (Open, in progress, in review, waiting, blocked, completed) as you go; the only task is the template, so nothing is stranded.</p>
+<p><strong>Step 2 — three automations</strong> (list <code>…</code> menu → Automations → New automation):</p>
+<ol type="1">
+<li><strong>Approval needed</strong> — <em>When</em> status changes to <code>Awaiting approval</code> → <em>Then</em> add the <strong>Approver</strong> as a watcher <strong>and</strong> post a comment mentioning them: <code>Fix plan is ready — approve or send back with a reason.</code></li>
+<li><strong>Plan approved</strong> — <em>When</em> status changes to <code>Approved – fixing</code> → <em>Then</em> comment <code>Plan approved — go.</code> and notify the <strong>assignee</strong>.</li>
+<li><strong>Nobody owns it</strong> — <em>When</em> a task is created or status changes to <code>Logged</code> → <em>If</em> assignee is empty → <em>Then</em> notify the list owner. (ClickUp's "assignee is empty" condition lives under the task condition, not the trigger — if the builder UI will not offer both, trigger on <em>task created</em> instead of <em>status changed</em>.)</li>
+</ol>
+<p><strong>Step 3 — form "Log an incident"</strong> (list <code>…</code> menu → Forms → New form):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Form field</th>
+<th>Source</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title</td>
+<td>task name</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>What happened</td>
+<td>the <strong>What happened</strong> field</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Severity</td>
+<td><strong>Severity</strong></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Business Unit</td>
+<td>existing field</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Brand</td>
+<td>existing field</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Cost impact</td>
+<td>existing field</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Date</td>
+<td><strong>Due date</strong></td>
+<td>no</td>
+</tr>
+</tbody>
+</table></div>
+<p>Set the created task's status to <strong><code>Logged</code></strong> in the form settings.</p>
+<p><strong>Step 4 — the finishing clicks that belong to the views already created:</strong></p>
+<ul>
+<li>Make <strong>Incident log</strong> the default view: <a href="https://app.clickup.com/4627083/v/li/1501000000003567">list</a> → views bar → right-click <em>Incident log</em> → <strong>Make default</strong>. (The API accepted the flag and dropped it.)</li>
+<li><strong>Awaiting approval</strong> view → Filter → <em>Status is <code>Awaiting approval</code></em>. Optionally add <strong>Approver is me</strong> — the API cannot express "me" at all, so that filter was never attemptable.</li>
+<li>Move the template task <a href="https://app.clickup.com/t/1an4v5wztjv">TEMPLATE — copy me</a> from its current status <code>Open</code> to <strong><code>Logged</code></strong> — it can only be moved once <code>Logged</code> exists.</li>
+<li>Optional: open each of the six new fields' settings and paste the description (the API refuses to store them): <em>What happened</em> — "Facts only. What, where, when, who was affected." · <em>Why it happened</em> — "Root cause — the cause, not the excuse. Ask why 5 times." · <em>Fix plan</em> — "What will change so it never happens again. Steps, owner, date." · <em>Approver</em> — "Manager who approves the fix plan."</li>
+</ul>
+<h2 id="5-verification--the-four-gets-as-read-back">5. Verification — the four GETs, as read back</h2>
+<h3 id="get-v2list1501000000003567"><code>GET /v2/list/1501000000003567</code></h3>
+<pre><code>name: Extreme Ownership | override_statuses: false | task_count: 1
+statuses: Open(open) · in progress · in review · waiting · blocked · completed(closed)   &lt;- inherited, unchanged
+content: EXTREME OWNERSHIP — WHAT happened → WHY it happened → FIX plan → APPROVE → CLOSE. 1) WHAT: facts only,
+one sentence. 2) WHY: the root cause, not the excuse. 3) FIX: what changes so it cannot happen again, with owner
+and date. 4) APPROVE: the approver signs the fix off before the work starts. House rule: the same thing happens
+once — never twice; a repeat changes the system, not the person.</code></pre>
+<h3 id="get-v2list1501000000003567field--17-fields"><code>GET /v2/list/1501000000003567/field</code> — 17 fields</h3>
+<pre><code>Brand · Quality · What happened · Cost impact · Business Unit · Why it happened · Approver · Requested By
+Engagement Tier · Filestage URL · Fix plan · Recurrence · Section · Severity · Root cause type · Work Format
+SLA Service Tier
+Severity options:        Low · Medium · High · Critical
+Root cause type options: People · Process · System / Tech · Supplier · Communication · Training
+Approver type_config:    {&quot;multiple_values&quot;: false, &quot;single_user&quot;: false, &quot;include_guests&quot;: true}</code></pre>
+<h3 id="get-v2list1501000000003567view"><code>GET /v2/list/1501000000003567/view</code></h3>
+<pre><code>4d6mb-57832  Incident log        list   grouping=status  orderindex 1
+4d6mb-57852  Approval board      board  grouping=status  orderindex 2
+4d6mb-57872  Awaiting approval   list   grouping=status  orderindex 3   filters: []  (status does not exist yet)
+default_view: null</code></pre>
+<h3 id="get-v2task1an4v5wztjv"><code>GET /v2/task/1an4v5wztjv</code></h3>
+<pre><code>name: TEMPLATE — copy me | status: Open | assignees: none | due_date: none
+checklists: [ Close-out → Fix done · Team briefed · SOP / system updated · Checked again 2 weeks later ]
+description:
+  EXTREME OWNERSHIP CARD — duplicate this task to log a failure.
+
+  1. Title: short name of what went wrong.
+  2. Fill WHAT HAPPENED and SEVERITY (and Cost impact if known). Status = Logged.
+  3. Assign the OWNER — the person who owns the fix (usually whoever dropped it). It is theirs from that second.
+  4. Owner fills WHY IT HAPPENED, ROOT CAUSE TYPE and FIX PLAN, sets the Due date, picks the APPROVER,
+     and moves the card to Awaiting approval.
+  5. Approver approves (→ Approved – fixing) or sends it back (→ Owner writing plan) with a comment saying why.
+  6. Owner does the fix. If the fix has several actions or people, add one SUBTASK per action.
+  7. Tick the close-out checklist, move to Verify, then Closed.
+  8. Set Brand · Business Unit · Section · Recurrence. If Repeat or Chronic, link the earlier card.
+
+  House rule: the same thing happens once — never twice. A repeat changes the system, not the person.</code></pre>
+<p>Raw JSON for all four sits in <code>after/</code> (<code>list.json</code>, <code>fields.json</code>, <code>views.json</code>, <code>task.json</code>, <code>space.json</code>); the pre-change state is in <code>before/</code>.</p>
+<h2 id="6-notes-on-the-hard-stops">6. Notes on the hard stops</h2>
+<p>No 401 and no 403 occurred. Every write that <strong>changed state</strong> returned 200. The non-200 responses in <code>receipt.json</code> are all refusals that changed nothing: the four wrong status-body shapes (400), the open/closed-type refusal (400), the two non-existent rename routes (404/405), the delete-route probe on a bogus id (404), three view creations with <code>due_date</code> instead of <code>dueDate</code> (400, immediately corrected), one view PUT with no view schema (400, corrected with the full body), and two checklist calls against paths from an older API shape (404, corrected). The single status this run created was reverted, and the space statuses were compared byte-for-byte after every status write.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
