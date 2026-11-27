@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Local Farmer — the water system in three dimensions</title>
+<style>
+  :root{
+    --paper:#fdfaf3; --ink:#12203a; --mut:#6b7784; --rule:#ddd6c6;
+    --green:#14532d; --green-m:#1d6b3f; --mint:#e9f1e6;
+    --water:#1f6f9e; --coral:#c2410c; --teal:#0f766e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--paper);color:var(--ink);
+       font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       -webkit-font-smoothing:antialiased}
+  header{padding:18px clamp(14px,3vw,32px) 12px;border-bottom:1px solid var(--rule)}
+  .eyebrow{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--green-m);font-weight:800}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em;
+     font-size:clamp(20px,2.4vw,30px);margin:.28em 0 .15em;line-height:1.15}
+  h1 span{color:var(--mut);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+          font-size:.55em;font-weight:400;display:block;margin-top:.35em;letter-spacing:0}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{font:inherit;font-size:13px;padding:7px 13px;border-radius:999px;border:1.5px solid var(--rule);
+         background:#fffefb;color:var(--ink);cursor:pointer;transition:.15s}
+  button:hover{border-color:var(--green-m)}
+  button[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+  #stage{position:relative;height:min(80vh,800px);min-height:440px;background:
+    radial-gradient(120% 90% at 30% 0%,#fffdf8 0%,#f6f1e4 55%,#efe9d9 100%)}
+  #stage canvas{display:block}
+  #legend{position:absolute;left:12px;bottom:12px;background:rgba(255,254,251,.92);
+          border:1px solid var(--rule);border-radius:12px;padding:10px 12px;font-size:12px;
+          line-height:1.5;backdrop-filter:blur(6px);max-width:min(300px,60vw)}
+  #legend b{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+            color:var(--mut);margin-bottom:6px}
+  #legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;
+            vertical-align:-1px}
+  #hint{position:absolute;right:12px;bottom:12px;font-size:11.5px;color:var(--mut);
+        background:rgba(255,254,251,.9);border:1px solid var(--rule);border-radius:999px;padding:5px 11px}
+  .lbl{font-size:11.5px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       color:#12203a;background:rgba(255,254,251,.94);border:1px solid #ddd6c6;border-radius:7px;
+       padding:2px 7px;white-space:nowrap;box-shadow:0 1px 2px rgba(18,32,58,.06);pointer-events:none}
+  .lbl.w{background:#14532d;color:#fff;border-color:#14532d;font-weight:600}
+  .lbl.a{background:#c2410c;color:#fff;border-color:#c2410c;font-weight:700;padding:1px 7px;border-radius:999px}
+  main{padding:0}
+  section{max-width:clamp(680px,86vw,1000px);margin:0 auto;padding:26px clamp(16px,3vw,24px) 60px}
+  h2{font-family:Georgia,"Times New Roman",serif;font-size:20px;margin:1.4em 0 .3em}
+  p{margin:.6em 0;max-width:62ch}
+  a{color:var(--teal);text-decoration:none;border-bottom:1px solid rgba(15,118,110,.35)}
+  .facts{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:14px 0}
+  .fact{background:#fffefb;border:1px solid var(--rule);border-radius:11px;padding:10px 12px;font-size:13.5px}
+  .fact b{display:block;color:var(--green);font-size:14px;margin-bottom:2px}
+  footer{border-top:1px solid var(--rule);font-size:12px;color:var(--mut);
+         padding:14px clamp(16px,3vw,32px) 40px}
+  #fallback{display:none;padding:30px;text-align:center;color:var(--mut);font-size:14px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">The Local Farmer · Mushroom Farm · Water System · Rev C</div>
+  <h1>The whole plant, in three dimensions
+    <span>Eight machines, two tanks, one filter and a ring main — drag it, turn it, look inside.</span></h1>
+  <div class="bar">
+    <button id="b-home" aria-pressed="false">Whole plant</button>
+    <button id="b-water" aria-pressed="false">Water only</button>
+    <button id="b-spin" aria-pressed="true">Turn slowly</button>
+    <button id="b-labels" aria-pressed="true">Labels</button>
+  </div>
+</header>
+
+<div id="stage">
+  <div id="legend">
+    <b>What you are looking at</b>
+    <div><i style="background:#8a959c"></i>Town main — the only pressure</div>
+    <div><i style="background:#1f6f9e"></i>Water</div>
+    <div><i style="background:#0f766e"></i>Ring main — by gravity</div>
+    <div><i style="background:#b8862f"></i>Filter and brass</div>
+    <div><i style="background:#c2410c"></i>Humidifier duct</div>
+    <div><i style="background:#c2410c;border-radius:999px"></i>A–D — the four drops, one per line</div>
+  </div>
+  <div id="hint">Drag to orbit · pinch or scroll to zoom</div>
+  <div id="fallback">This view needs WebGL. Open it in Chrome, Safari or Firefox on a device less than ten years old.</div>
+</div>
+
+<section>
+  <h2>What the model shows, and what it deliberately leaves out</h2>
+  <p>Everything you can see is built to the drawing set: the room is 6,000 × 5,050 mm, every machine is 1,300 × 600 × 1,960 mm, and each sits where the client's layout puts it. The tanks are 870 mm across. The ring main runs at 1.0 m, the manifold at 0.35 m, and the clean tank stands on a 600 mm plinth so its water line sits about 0.8 m above the ring — that height is the pump.</p>
+  <div class="facts">
+    <div class="fact"><b>No pump in the line</b>Town pressure fills the reserve; everything after that falls.</div>
+    <div class="fact"><b>The head is the engine</b>0.8 m of water above the ring is about 8 kPa.</div>
+    <div class="fact"><b>Four drops, eight machines</b>Each drop feeds a line; the manifold runs the backs.</div>
+    <div class="fact"><b>Water only in the shared pipe</b>Every machine keeps its own floats and its own pump.</div>
+  </div>
+  <p>Not modelled, because they are decisions for the installer rather than the concept: the ceiling, the electrical enclosure, the drainage falls, and the inside of the filter housings. The humidifier box and tent sit outside the room, as they do on site.</p>
+  <p><a href="https://targetpraks.github.io/tlf-grow-room-water-system-2026-11.html">The ten-sheet drawing set, Rev C</a> · <a href="https://targetpraks.github.io/tlf-water-system-google-handoff-2026-11.html">the plain-English explainer</a> · <a href="https://targetpraks.github.io/2026-11-12-the-local-farmer-grow-room-rev-e-the-client-s-layout-drawn.html">the client layout, Rev E</a></p>
+</section>
+
+<footer>Built 27 November 2026 by Bruce Wayne. Dimensions in millimetres, taken from the Rev E layout and the machine schedule; status: for review, not for construction.</footer>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+const stage = document.getElementById('stage');
+const PAPER = 0xfdfaf3;
+
+/* ---------- renderer ---------- */
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+} catch (e) {
+  document.getElementById('fallback').style.display = 'block';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.domElement.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
+stage.appendChild(labelRenderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(PAPER);
+
+const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 120);
+const HOME = new THREE.Vector3(9.0, 8.6, 11.4);
+const TARGET = new THREE.Vector3(3.10, 0.75, 3.30);
+camera.position.copy(HOME);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.copy(TARGET);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 3.5;
+controls.maxDistance = 26;
+controls.maxPolarAngle = Math.PI * 0.495;
+controls.autoRotateSpeed = 0.55;
+
+/* ---------- lights ---------- */
+scene.add(new THREE.HemisphereLight(0xffffff, 0xd9d2c0, 1.05));
+const key = new THREE.DirectionalLight(0xfff4e2, 1.9);
+key.position.set(6.5, 11, 7.5);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+const d = 9;
+key.shadow.camera.left = -d; key.shadow.camera.right = d;
+key.shadow.camera.top = d;   key.shadow.camera.bottom = -d;
+key.shadow.camera.near = 1;  key.shadow.camera.far = 34;
+key.shadow.bias = -0.0008;
+scene.add(key);
+const fill = new THREE.DirectionalLight(0xdce9ff, 0.45);
+fill.position.set(-7, 5, -6);
+scene.add(fill);
+
+/* ---------- materials ---------- */
+const M = {
+  floor:  new THREE.MeshStandardMaterial({ color:0xf1ece0, roughness:.96 }),
+  wall:   new THREE.MeshStandardMaterial({ color:0xffffff, roughness:.9, transparent:true, opacity:.14, depthWrite:false }),
+  body:   new THREE.MeshStandardMaterial({ color:0xfaf8f2, roughness:.72, metalness:.02 }),
+  bodyIn: new THREE.MeshStandardMaterial({ color:0x243a2c, roughness:.85 }),
+  steel:  new THREE.MeshStandardMaterial({ color:0xb9c3c9, roughness:.42, metalness:.55 }),
+  steelD: new THREE.MeshStandardMaterial({ color:0x8a959c, roughness:.5, metalness:.5 }),
+  brass:  new THREE.MeshStandardMaterial({ color:0xb8862f, roughness:.35, metalness:.75 }),
+  glass:  new THREE.MeshStandardMaterial({ color:0xdfe9ee, roughness:.35, metalness:.05, transparent:true,
+                                           opacity:.42, side:THREE.DoubleSide }),
+  water:  new THREE.MeshStandardMaterial({ color:0x2f86ad, roughness:.28, metalness:.05, transparent:true,
+                                           opacity:.78 }),
+  pipeW:  new THREE.MeshStandardMaterial({ color:0x0f766e, roughness:.35, metalness:.25 }),
+  pipeG:  new THREE.MeshStandardMaterial({ color:0x8a959c, roughness:.4, metalness:.6 }),
+  duct:   new THREE.MeshStandardMaterial({ color:0xc2410c, roughness:.55 }),
+  glow:   new THREE.MeshStandardMaterial({ color:0xfff3d6, emissive:0xffe6b8, emissiveIntensity:.9, roughness:1 }),
+  tent:   new THREE.MeshStandardMaterial({ color:0xffffff, roughness:.9, transparent:true, opacity:.55, side:THREE.DoubleSide }),
+  shadow: new THREE.ShadowMaterial({ opacity:.16 })
+};
+
+/* ---------- helpers ---------- */
+const G = new THREE.Group(); scene.add(G);
+function box(w,h,d,mat,x,y,z,rotY=0){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+  m.position.set(x,y,z); m.rotation.y = rotY; m.castShadow = true; m.receiveShadow = true;
+  G.add(m); return m;
+}
+function cyl(rt,rb,h,mat,x,y,z,seg=24){
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg), mat);
+  m.position.set(x,y,z); m.castShadow = true; m.receiveShadow = true; G.add(m); return m;
+}
+const flow = [];
+function tube(pts, r, mat, moving=true){
+  const v = pts.map(p => new THREE.Vector3(p[0],p[1],p[2]));
+  const curve = new THREE.CatmullRomCurve3(v, false, 'catmullrom', 0.08);
+  const geo = new THREE.TubeGeometry(curve, Math.max(30, pts.length*14), r, 9, false);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.castShadow = true; G.add(mesh);
+  if (moving) flow.push(curve);
+  return mesh;
+}
+const labels = [], leaders = [];
+function label(text, pos, cls='lbl'){
+  const el = document.createElement('div'); el.className = cls; el.textContent = text;
+  const o = new CSS2DObject(el); o.position.set(pos[0],pos[1],pos[2]); G.add(o); labels.push(o); return o;
+}
+function tag(text, part, pos, cls='lbl'){
+  const o = label(text, pos, cls);
+  const geo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(part[0],part[1],part[2]), new THREE.Vector3(pos[0],pos[1],pos[2])]);
+  const ln = new THREE.Line(geo, new THREE.LineBasicMaterial({ color:0x8d979d, transparent:true, opacity:.75 }));
+  G.add(ln); leaders.push(ln);
+  const dt = new THREE.Mesh(new THREE.SphereGeometry(0.021, 8, 8), new THREE.MeshBasicMaterial({ color:0x14532d }));
+  dt.position.set(part[0],part[1],part[2]); G.add(dt); leaders.push(dt);
+  return o;
+}
+
+/* ---------- floor & walls ---------- */
+const ROOM_W = 5.05, ROOM_D = 6.00, WALL_H = 2.55;
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_W, ROOM_D), M.floor);
+floor.rotation.x = -Math.PI/2; floor.position.set(ROOM_W/2, 0, ROOM_D/2);
+floor.receiveShadow = true; G.add(floor);
+
+// shadow catcher under the whole scene
+const pad = new THREE.Mesh(new THREE.PlaneGeometry(16, 14), M.floor.clone());
+pad.material.color.set(0xf7f2e6); pad.rotation.x = -Math.PI/2; pad.position.set(2.6, -0.01, 3.0);
+pad.receiveShadow = true; G.add(pad);
+
+const wallN = box(ROOM_W, WALL_H, 0.06, M.wall, ROOM_W/2, WALL_H/2, ROOM_D);
+const wallW = box(0.06, WALL_H, ROOM_D, M.wall, 0, WALL_H/2, ROOM_D/2);
+const wallE = box(0.06, WALL_H, ROOM_D, M.wall, ROOM_W, WALL_H/2, ROOM_D/2);
+const wallS = box(ROOM_W, WALL_H, 0.06, M.wall, ROOM_W/2, WALL_H/2, 0);
+[wallN,wallW,wallE,wallS].forEach(w => w.castShadow = false);
+
+/* ---------- machines ---------- */
+const MW = 1.30, MD = 0.60, MH = 1.96;
+const machines = [
+  { id:'GM01', x:1.80, z:3.185, rot:0 },
+  { id:'GM02', x:3.75, z:3.185, rot:0 },
+  { id:'GM03', x:1.80, z:3.835, rot:Math.PI },
+  { id:'GM04', x:3.75, z:3.835, rot:Math.PI },
+  { id:'GM05', x:1.05, z:5.400, rot:0 },
+  { id:'GM06', x:2.40, z:5.400, rot:0 },
+  { id:'GM07', x:3.75, z:5.400, rot:0 },
+  { id:'GM08', x:0.60, z:3.185, rot:-Math.PI/2 }
+];
+const bodyParts = [];
+machines.forEach(m => {
+  const g = new THREE.Group();
+  const cx = m.x + MW/2, cz = m.z + MD/2;
+  g.position.set(cx, 0, cz); g.rotation.y = m.rot;
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(MW, MH-0.32, MD), M.body);
+  body.position.y = 0.32 + (MH-0.32)/2; body.castShadow = body.receiveShadow = true; g.add(body); bodyParts.push(body);
+
+  // opening / rack interior
+  const inn = new THREE.Mesh(new THREE.BoxGeometry(MW-0.12, MH-0.62, 0.04), M.bodyIn);
+  inn.position.set(0, 0.36 + (MH-0.62)/2, MD/2 - 0.008); g.add(inn); bodyParts.push(inn);
+
+  // top trim
+  const trim = new THREE.Mesh(new THREE.BoxGeometry(MW+0.012, 0.05, MD+0.012), new THREE.MeshStandardMaterial({color:0xe4ded0, roughness:.8}));
+  trim.position.set(0, MH-0.045, 0); trim.castShadow = true; g.add(trim); bodyParts.push(trim);
+  // six shelf lines across the dark opening
+  for (let i=0;i<6;i++){
+    const sh = new THREE.Mesh(new THREE.BoxGeometry(MW-0.26, 0.012, 0.02),
+      new THREE.MeshStandardMaterial({color:0xd8d2c2, roughness:.9}));
+    sh.position.set(0, 0.58 + i*0.225, MD/2 + 0.012); g.add(sh); bodyParts.push(sh);
+  }
+  // warm grow light
+  const gl = new THREE.Mesh(new THREE.PlaneGeometry(MW-0.24, 0.05), M.glow);
+  gl.position.set(0, MH-0.22, MD/2 - 0.03); g.add(gl); bodyParts.push(gl);
+
+  // base tank with water
+  const t = new THREE.Mesh(new THREE.BoxGeometry(MW-0.16, 0.26, MD-0.12), M.glass);
+  t.position.y = 0.15; g.add(t); bodyParts.push(t);
+  const w = new THREE.Mesh(new THREE.BoxGeometry(MW-0.24, 0.17, MD-0.20), M.water);
+  w.position.y = 0.11; g.add(w); bodyParts.push(w);
+
+  // plinth
+  const p = new THREE.Mesh(new THREE.BoxGeometry(MW-0.06, 0.04, MD-0.04), M.steelD);
+  p.position.y = 0.02; g.add(p); bodyParts.push(p);
+
+  G.add(g);
+  m.group = g;
+});
+
+/* ---------- tanks ---------- */
+const TANK_R = 0.435, TANK_H = 1.20;
+function jojo(x, z, plinth, waterFrac, uid){
+  const y0 = plinth;
+  if (plinth > 0){
+    const pl = box(0.95, plinth, 0.95, M.steelD, x, plinth/2, z);
+    for (let i=0;i<4;i++){ /* corner posts read as a frame */
+      const a = i<2 ? -1 : 1, b = i%2 ? -1 : 1;
+      box(0.05, plinth, 0.05, M.steel, x + a*0.45, plinth/2, z + b*0.45);
+    }
+  }
+  const shell = cyl(TANK_R, TANK_R, TANK_H, M.glass, x, y0 + TANK_H/2, z, 40);
+  const lid   = cyl(TANK_R*1.02, TANK_R*1.02, 0.05, new THREE.MeshStandardMaterial({color:0x2a2f36, roughness:.7}), x, y0 + TANK_H + 0.02, z, 40);
+  const wh = TANK_H * waterFrac;
+  const water = cyl(TANK_R*0.965, TANK_R*0.965, wh, M.water, x, y0 + wh/2 + 0.02, z, 40);
+  const rim = new THREE.Mesh(new THREE.CylinderGeometry(TANK_R*0.99, TANK_R*0.99, 0.018, 40),
+    new THREE.MeshStandardMaterial({ color:0xeaf4fa, roughness:.4 }));
+  rim.position.set(x, y0 + wh + 0.02, z); G.add(rim);
+  return { shell, water, top:y0 + TANK_H, bottom:y0, level:y0 + wh };
+}
+const J1 = jojo(0.705, 0.785, 0.00, 0.62);
+const J2 = jojo(2.117, 0.785, 0.60, 0.72);
+
+/* ---------- filter pack ---------- */
+const fstand = box(0.55, 0.30, 0.34, M.steelD, 1.30, 0.15, 0.785);
+const f1 = cyl(0.105, 0.105, 0.55, new THREE.MeshStandardMaterial({color:0xeef3f6, roughness:.3, metalness:.1}), 1.20, 0.585, 0.785, 20);
+const f2 = cyl(0.105, 0.105, 0.55, new THREE.MeshStandardMaterial({color:0xdfe9ee, roughness:.3, metalness:.1}), 1.40, 0.585, 0.785, 20);
+const fcap = box(0.42, 0.07, 0.26, M.brass, 1.30, 0.89, 0.785);
+
+/* ---------- pipework ---------- */
+const RING_Y = 1.00, MAN_Y = 0.35;
+// town main
+tube([[-0.95,1.45,0.785],[-0.20,1.45,0.785],[0.705,1.45,0.785],[0.705,1.24,0.785]], 0.032, M.steelD);
+// reserve outlet -> filter
+tube([[0.705,0.16,0.785],[1.02,0.16,0.785],[1.16,0.42,0.785]], 0.028, M.pipeW);
+// filter -> clean tank (rises over the top)
+tube([[1.44,0.42,0.785],[1.66,0.42,0.785],[1.66,2.06,0.785],[2.117,2.06,0.785],[2.117,1.86,0.785]], 0.028, M.pipeW);
+// clean tank outlet up to the ring
+tube([[2.117,0.66,0.785],[2.75,0.66,0.785],[2.75,1.00,0.785],[2.75,1.00,2.55]], 0.036, M.pipeW);
+// ring main loop
+const ring = [[2.75,1.00,2.95],[0.42,1.00,2.95],[0.42,1.00,5.30],[4.72,1.00,5.30]];
+tube(ring, 0.040, M.pipeW);
+// drops + manifolds
+const drops = [
+  { k:'A', x:2.45, z:3.810, spur:[[2.45,1.00,2.95]] },
+  { k:'B', x:4.40, z:3.810, spur:[[4.40,1.00,2.95]] },
+  { k:'D', x:1.30, z:3.600, spur:[[1.30,1.00,2.95]] },
+  { k:'C', x:3.725, z:5.700, spur:[[3.725,1.00,5.30]] }
+];
+drops.forEach(dr => {
+  tube([...dr.spur,[dr.x,1.00,dr.z],[dr.x,MAN_Y,dr.z]], 0.026, M.pipeW);
+  cyl(0.05,0.05,0.10, M.brass, dr.x, 1.02, dr.z, 14);       // valve body at the head
+});
+// manifolds along the slots / rear slot
+tube([[1.86,MAN_Y,3.810],[3.04,MAN_Y,3.810]], 0.024, M.pipeW);      // A  GM01+GM03
+tube([[3.80,MAN_Y,3.810],[5.00,MAN_Y,3.810]], 0.024, M.pipeW);      // B  GM02+GM04
+tube([[1.02,MAN_Y,5.965],[5.00,MAN_Y,5.965]], 0.024, M.pipeW);      // C  GM05-07 rear slot
+tube([[1.06,MAN_Y,3.800],[1.24,MAN_Y,3.800]], 0.024, M.pipeW);      // D  into GM08 back
+// risers into each tank
+[[2.10,3.810],[2.80,3.810],[4.05,3.810],[4.75,3.810],[1.45,5.965],[2.75,5.965],[4.05,5.965],[4.75,5.965]]
+  .forEach(([x,z]) => tube([[x,MAN_Y,z],[x,0.42,z],[x,0.42,z+0.0]], 0.017, M.pipeW, false));
+
+/* ---------- humidifier box, duct and tent (outside the room) ---------- */
+const HB = { x:5.52, z:5.12, w:0.62, d:0.46, h:0.52 };
+box(HB.w, HB.h, HB.d, new THREE.MeshStandardMaterial({color:0xf4f1e8, roughness:.8}), HB.x, HB.h/2, HB.z);
+box(HB.w-0.06, 0.10, HB.d-0.06, M.glass, HB.x, HB.h-0.06, HB.z);         // lid / water
+box(HB.w-0.10, 0.06, HB.d-0.10, M.water, HB.x, HB.h-0.075, HB.z);       // water inside
+cyl(0.022,0.022,0.16, M.brass, HB.x-0.18, HB.h+0.02, HB.z, 12);         // float valve
+tube([[HB.x-0.30,HB.h+0.02,HB.z-0.02],[HB.x-0.18,HB.h+0.02,HB.z-0.02]], 0.014, M.steelD, false);
+// duct, sloping back to the box
+tube([[HB.x+0.28,HB.h-0.14,HB.z],[5.92,0.46,5.12],[6.08,0.52,5.10]], 0.055, M.duct);
+// tent
+box(1.05, 1.72, 1.05, M.tent, 6.62, 0.86, 5.10);
+box(0.97, 0.05, 0.97, new THREE.MeshStandardMaterial({color:0x1d6b3f, roughness:.8}), 6.62, 1.72, 5.10);
+const tentGlow = new THREE.Mesh(new THREE.PlaneGeometry(0.9,0.9),
+  new THREE.MeshStandardMaterial({color:0xfff0d0, emissive:0xffe0a8, emissiveIntensity:.35, roughness:1}));
+tentGlow.position.set(6.62, 1.40, 5.10); tentGlow.rotation.x = Math.PI/2; G.add(tentGlow);
+
+/* ---------- flow particles ---------- */
+const dotGeo = new THREE.SphereGeometry(0.028, 8, 8);
+const dotMat = new THREE.MeshStandardMaterial({ color:0x59c7ee, emissive:0x1f8fbc, emissiveIntensity:.5, roughness:.4 });
+const dots = [];
+for (let i=0;i<46;i++){
+  const d = new THREE.Mesh(dotGeo, dotMat); d.castShadow = false; G.add(d);
+  dots.push({ mesh:d, path:(i % flow.length), t:Math.random(), speed:0.10 + Math.random()*0.05 });
+}
+
+/* ---------- labels ---------- */
+tag('TOWN MAIN · 15 mm',            [-0.85,1.45,0.785], [-1.20,2.28,-0.10], 'lbl w');
+tag('JOJO 1 · reserve + filter',    [0.88,1.20,0.785],  [0.90,2.72,-0.55]);
+tag('JOJO 2 · filtered · 0.8 m head',[2.117,1.95,0.785],[3.45,2.96,-0.30], 'lbl w');
+tag('RING MAIN · 1.0 m · by gravity',[1.55,1.00,2.95],  [0.90,2.52,3.45]);
+tag('8 MACHINES · 4 LINES',         [3.20,1.96,4.60],   [3.05,2.92,6.05], 'lbl w');
+label('A', [2.45,1.10,3.81], 'lbl a');
+label('B', [4.40,1.10,3.81], 'lbl a');
+label('C', [3.725,1.10,5.70], 'lbl a');
+label('D', [1.30,1.10,3.60], 'lbl a');
+tag('HUMIDIFIER BOX',               [5.52,0.52,5.12],   [6.15,1.42,5.55]);
+tag('TENT',                         [6.62,1.72,5.10],   [6.62,2.36,5.10]);
+
+/* ---------- resize ---------- */
+function resize(){
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  renderer.domElement.style.width = w+'px'; renderer.domElement.style.height = h+'px';
+  labelRenderer.setSize(w, h);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage); resize();
+
+/* ---------- controls in the bar ---------- */
+const bHome = document.getElementById('b-home');
+const bWater = document.getElementById('b-water');
+const bSpin = document.getElementById('b-spin');
+const bLabels = document.getElementById('b-labels');
+controls.autoRotate = true;
+
+bHome.onclick = () => {
+  camera.position.copy(HOME); controls.target.copy(TARGET);
+  controls.autoRotate = true; controls.update();
+  bHome.setAttribute('aria-pressed','false');
+};
+bWater.onclick = () => {
+  const on = bWater.getAttribute('aria-pressed') !== 'true';
+  bWater.setAttribute('aria-pressed', String(on));
+  bodyParts.forEach(p => p.visible = !on);
+};
+bSpin.onclick = () => {
+  controls.autoRotate = !controls.autoRotate;
+  bSpin.setAttribute('aria-pressed', String(controls.autoRotate));
+};
+bLabels.onclick = () => {
+  const on = bLabels.getAttribute('aria-pressed') !== 'true';
+  bLabels.setAttribute('aria-pressed', String(on));
+  labels.forEach(l => l.visible = on);
+  leaders.forEach(l => l.visible = on);
+};
+
+/* ---------- animate ---------- */
+const clock = new THREE.Clock();
+function tick(){
+  const dt = clock.getDelta();
+  dots.forEach(d => {
+    d.t += d.speed * dt;
+    if (d.t > 1) d.t -= 1;
+    const c = flow[d.path];
+    if (c) { const p = c.getPointAt(d.t); d.mesh.position.copy(p); }
+  });
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+</script>
+</body>
+</html>
