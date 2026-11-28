@@ -154,19 +154,20 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <body><main>
 
 <h1 id="prd--n8n-automation-spine-on-the-mac-mini">PRD — n8n Automation Spine on the Mac mini</h1>
-<p><strong>Owner:</strong> Ricardo Da Costa Maio · <strong>Author:</strong> Adrianna A (AI stack) · <strong>Date:</strong> 2026-11-28 <strong>Status:</strong> v1.0 — MoA-developed, Claude-audited, enhanced from 3 blockers + 19 further findings <strong>Target machine:</strong> Mac mini <code>ricardos-mac-mini</code> (M4 Pro, 24 GB, macOS 27.2.1) <strong>Reviews:</strong> MoA panel (§14) · Claude Code audit (§15) · Changelog (§18)</p>
+<p><strong>Owner:</strong> Ricardo Da Costa Maio · <strong>Author:</strong> Adrianna A (AI stack) · <strong>Date:</strong> 2026-11-28 <strong>Status:</strong> v1.1 — MoA-developed, Claude-audited, then re-shaped from Ricardo's review (three bots of five jobs, built on a measured 73-job inventory) <strong>Target machine:</strong> Mac mini <code>ricardos-mac-mini</code> (M4 Pro, 24 GB, macOS 27.2.1) <strong>Reviews:</strong> MoA panel (§14) · Claude Code audit (§15) · Changelog (§18)</p>
 <hr />
 <h2 id="1-summary">1. Summary</h2>
-<p>Install <strong>n8n 2.49.8</strong> (self-hosted, Community, Sustainable Use Licence) natively on the Mac mini under a pinned Node 24 runtime and a launchd agent, wired to <strong>Ollama Cloud through the local Ollama daemon</strong> so every model call leaves on one credential, one account, one bill. Then stand up a <strong>first fleet of seven bots</strong> for what this machine already does daily — host health, a morning digest, an n8n deadman, drive guard, backup verification, agent-output filing and Home Assistant events — with five more bots phased in only after the spine has proven itself.</p>
+<p>Install <strong>n8n 2.49.8</strong> (self-hosted, Community, Sustainable Use Licence) natively on the Mac mini under a pinned Node 24 runtime and a launchd agent, wired to <strong>Ollama Cloud through the local Ollama daemon</strong> so every model call leaves on one credential, one account, one bill. Then turn the estate's deterministic work into <strong>three multi-purpose bots</strong> — Courage (the machine), Splinter (personal and home) and Bruce Wayne (work) — each one unit of ownership carrying <strong>five jobs</strong>, absorbing the 57 script-only cron jobs those lanes already run and triggering the 16 that need judgment. Between them the four profiles run <strong>73 scheduled jobs today</strong>; the fleet is designed around that number, not beside it.</p>
 <p>n8n is not a replacement for Hermes or Courage. It is the <strong>deterministic glue layer</strong>: schedules, webhooks, retries, approvals-in-principle and an execution log a human can read — the work that today lives in ad-hoc launchd scripts and one-off cron jobs, and the work that is silently missing when a bot dies.</p>
-<p><strong>What changed between v0.1 and this version</strong> (all three blockers came from the Claude audit): the build now starts with a disk-reclaim phase because the machine cannot pass its own install gate; the model ladder is gated on identifying which Ollama account the daemon bills; and the backup is encrypted and taken with <code>sqlite3 .backup</code> because the drive it lands on is USB and unencrypted. Details in §15 and §18.</p>
+<p><strong>What changed between v0.1 and this version</strong> (all three blockers came from the Claude audit): the build now starts with a disk-reclaim phase because the machine cannot pass its own install gate; the model ladder is gated on identifying which Ollama account the daemon bills; and the backup is encrypted and taken with <code>sqlite3 .backup</code> because the drive it lands on is USB and unencrypted.</p>
+<p><strong>What changed in v1.1</strong> (Ricardo's review): the fleet is no longer seven single-purpose bots standing beside the existing work. It is <strong>three bots, one per lane, five jobs each</strong>, built on a measured inventory of the 73 Hermes cron jobs already running across Adrianna, Courage, Splinter and Bruce Wayne — 57 script-mode jobs absorbed, 16 agent-mode jobs triggered but not re-implemented. §7. Details in §15 and §18.</p>
 <hr />
 <h2 id="2-goals-and-non-goals">2. Goals and non-goals</h2>
 <p><strong>Goals</strong></p>
 <ol type="1">
 <li>One always-on local automation service on <code>http://127.0.0.1:5678</code>, started at boot by launchd, independent of any agent session.</li>
 <li>All AI inside n8n routed through <strong>Ollama Cloud via <code>http://127.0.0.1:11434/v1</code></strong> — no second vendor, no second key, no silent substitution, no unattributed spend.</li>
-<li>Seven bots that earn their keep in week one, each producing high-signal, low-noise output into channels Ricardo already reads.</li>
+<li>Three bots carrying five jobs each, consolidated from the 73 cron jobs the four profiles run today; each producing high-signal, low-noise output into channels Ricardo already reads.</li>
 <li>Every standing rule enforced by something a reviewer can run — a lint, a credential that physically cannot write, a node that is absent — not by a prompt and not by discipline.</li>
 <li>A build a second agent can repeat from this document, with the verification commands in §11.</li>
 </ol>
@@ -318,8 +319,8 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h3 id="42-decision">4.2 Decision</h3>
 <p><strong>Option A — native, version-pinned, launchd-managed.</strong> Recorded as decision D-01. Adopted by the MoA panel independently (call M-1) and not contested by the audit.</p>
 <ol type="1">
-<li><strong>Host context is the product.</strong> B1, B4 and B5 are worthless if they cannot see <code>launchctl</code>, <code>lsof</code>, <code>df</code> and the launchd logs. Only a native process can.</li>
-<li><strong>Filesystem continuity.</strong> B6 reads <code>/Volumes/Hiksemi 1TB/AI-Drive</code>; native sees it rw today, Docker cannot (C7).</li>
+<li><strong>Host context is the product.</strong> C1, C2 and C3 are worthless if they cannot see <code>launchctl</code>, <code>lsof</code>, <code>df</code> and the launchd logs. Only a native process can.</li>
+<li><strong>Filesystem continuity.</strong> W5 reads <code>/Volumes/Hiksemi 1TB/AI-Drive</code>; native sees it rw today, Docker cannot (C7).</li>
 <li><strong>RAM.</strong> n8n idle is a few hundred MB; a new 3 GiB VM on a host swapping 5.2 GB is a regression felt in the MoA and council lanes within a day (C4).</li>
 <li><strong>Disk.</strong> The freed headroom (P-1) goes further on a Node install than on images plus a VM disk (C2, C6).</li>
 <li><strong>Latency.</strong> <code>127.0.0.1:11434</code> with no NAT hop, on the same route Hermes uses (C9).</li>
@@ -582,7 +583,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </ol>
 <p>No credential is ever pasted into a node parameter, a Code node, or a git-tracked file. Webhook URLs are secrets too, and are stored as credentials — the audit correctly pointed out that a URL in an HTTP node lands in every weekly export.</p>
 <h3 id="64-model-ladder--gated-on-the-account-audit-a1-blocker">6.4 Model ladder — gated on the account (audit A1, BLOCKER)</h3>
-<p><strong>The gate.</strong> Before any bot calls a model, P0 identifies which Ollama account the local daemon is signed into (Ricardo's own Pro/Max account, or the Infinity company account). The company key is restricted to <code>deepseek-v4.1-flash</code> and <code>mimo-v2.6-flash</code>; if the daemon bills that account, the ladder below narrows to those two tags plus local models, and B2/B8 are re-costed before they are built. <strong>This is gate G0 and it blocks P3.</strong></p>
+<p><strong>The gate.</strong> Before any bot calls a model, P0 identifies which Ollama account the local daemon is signed into (Ricardo's own Pro/Max account, or the Infinity company account). The company key is restricted to <code>deepseek-v4.1-flash</code> and <code>mimo-v2.6-flash</code>; if the daemon bills that account, the ladder below narrows to those two tags plus local models, and S1 and the mail jobs are re-costed before they are built. <strong>This is gate G0 and it blocks P3.</strong></p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -632,148 +633,236 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <h3 id="67-python">6.7 Python</h3>
 <p>v1 is JavaScript only. n8n 2.x removed the Pyodide Python node; native Python needs external task runners (<code>n8nio/runners</code>) — a container dependency we have argued against. Revisit with the 3.0 migration.</p>
 <hr />
-<h2 id="7-bot-fleet">7. Bot fleet</h2>
-<h3 id="71-v1--built-and-proven-in-the-first-two-weeks-7-bots">7.1 v1 — built and proven in the first two weeks (7 bots)</h3>
+<h2 id="7-bot-fleet--three-bots-five-jobs-each">7. Bot fleet — three bots, five jobs each</h2>
+<h3 id="70-what-already-runs-deterministically-and-was-missing-from-v10">7.0 What already runs deterministically (and was missing from v1.0)</h3>
+<p>The estate does not start from zero. Measured today from <code>~/.hermes/{cron,profiles/*/cron}/jobs.json</code> and <code>~/.hermes/profiles/*/cron/jobs.json</code>:</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>#</th>
-<th>Bot</th>
-<th>Purpose</th>
-<th>Trigger / cadence</th>
-<th>Nodes</th>
-<th>Touches</th>
+<th>Lane (profile)</th>
+<th>Cron jobs</th>
+<th>Script-mode (no judgment)</th>
+<th>Agent-mode (judgment)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Adrianna A</strong> (<code>default</code>)</td>
+<td>16</td>
+<td>15</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>Courage</strong></td>
+<td>30</td>
+<td>26</td>
+<td>4</td>
+</tr>
+<tr>
+<td><strong>Splinter</strong> (personal)</td>
+<td>8</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td><strong>Bruce Wayne</strong> (<code>batman</code>)</td>
+<td>19</td>
+<td>12</td>
+<td>7</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>73</strong></td>
+<td><strong>57</strong></td>
+<td><strong>16</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Plus <strong>80 <code>com.maio.*</code> launchd labels</strong>, of which roughly twenty are periodic jobs (backup, firefly-backup, home-assistant-backup, courage-health, courage-backups, google-health, qmd-refresh, maio-os-refresh, top8-refresh, meta-reap, ram-guard, keep-awake-guard, mount-nas, hiksemi-recover, watchtower, deadman) and the rest are long-running servers, MCP endpoints and tunnels.</p>
+<p><strong>This changes the plan's shape.</strong> v1.0 proposed seven new bots standing beside 73 existing jobs — more surface without removing any. The right move is the opposite: <strong>absorb the script-only jobs into three bots organised by the lane that owns them</strong>, and leave the remaining work where it is.</p>
+<h3 id="71-the-rule-that-decides-what-moves">7.1 The rule that decides what moves</h3>
+<ol type="1">
+<li><strong>Script-mode jobs move</strong> (57 of 73): fixed input, fixed output, no language model in the loop. They gain an execution history, retries, one dashboard, dependency ordering and failure alerting they do not have now.</li>
+<li><strong>Agent-mode jobs stay in Hermes</strong> (16 of 73) and, where their trigger is deterministic, n8n <em>calls</em> them through the Hermes API. A prompt that must reason is not re-implemented as an n8n graph — that is how you get a bot that looks automated and quietly stops thinking.</li>
+<li><strong>launchd keeps servers and sub-5-minute guards.</strong> n8n does not duplicate a 1-minute guard, an MCP server or a tunnel; it watches their health instead. A scheduler with a 15-minute floor does not replace a 60-second loop.</li>
+<li><strong>One bot is not one graph.</strong> A bot is a unit of <em>ownership</em>: one lane, one credential set, one channel, one error workflow, five jobs — but five separate workflows under one tag. Job 3 failing must never stop jobs 1, 2, 4 and 5, which is exactly what a single five-branch workflow would do.</li>
+<li><strong>Migrate by pausing, never deleting.</strong> The Hermes cron job is paused the same day its n8n twin is published, then removed after a two-week shadow with identical output. Two live copies of one alert is a bug, not a safety net.</li>
+</ol>
+<h3 id="72-bot-c--courage-the-machine">7.2 BOT-C — Courage (the machine)</h3>
+<p><strong>Owns:</strong> the stack, the disk, the models, the services. <strong>Channel:</strong> Discord <code>#ops</code> for health lines, Cliq DM for anything with a number a human must act on. <strong>Credentials:</strong> none beyond the notification webhooks — this bot touches nothing but the host.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Trigger</th>
+<th>Absorbs</th>
 <th>Output</th>
-<th>On failure</th>
-<th>Owner</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>B1</strong></td>
-<td><strong>Mac Sentinel</strong></td>
-<td>Catch the machine degrading before it breaks</td>
-<td>Webhook from <code>n8n-probe.sh</code>, every 15 min</td>
-<td>Webhook → Code (thresholds) → IF → dedupe → Discord + Cliq</td>
-<td><code>df</code>, <code>memory_pressure</code>, <code>lsof</code>, <code>ollama /api/tags</code>, <code>launchctl</code></td>
-<td>One alert per state change; silent when healthy</td>
-<td>Probe retries next tick; 2 consecutive misses (not 3 — audit A20) → "probe silent" alert</td>
-<td>Adrianna (Courage)</td>
+<td><strong>C1 · Stack Sentinel</strong></td>
+<td>every 15 min, probe webhook</td>
+<td><code>DNS health check</code>, <code>agenticos-stack-probe</code>, stack-doctor's checks</td>
+<td>Disk/swap/port/launchd deltas against a recorded baseline; one alert per state change</td>
 </tr>
 <tr>
-<td><strong>B2</strong></td>
-<td><strong>Morning Digest</strong></td>
-<td>One message that replaces five app openers</td>
-<td>Schedule 06:45 daily</td>
-<td>Schedule → HTTP (weather, calendar, mail counts) → Basic LLM Chain → Discord + Cliq</td>
-<td>Open-Meteo, Google Calendar, Gmail read, local metrics</td>
-<td>6 bullets, ≤15 lines, <strong>plus the weekly drift line on Mondays</strong> (absorbs old B11, audit A15)</td>
-<td>Sends raw metrics without prose, tagged <code>degraded-model</code></td>
-<td>Adrianna</td>
+<td><strong>C2 · Service Watchdogs</strong></td>
+<td>every 10 min</td>
+<td><code>ollama-daily-health</code>, <code>comfyui-keepalive</code>, <code>ok-vault-server watchdog</code>, <code>nexus-watchdog</code>, <code>Snappier stack watchdog</code>, <code>Tailscale guard</code>, <code>AgenticOS public door watchdog</code></td>
+<td>One workflow, seven checks, 2-consecutive-miss rule, single message when something dies</td>
 </tr>
 <tr>
-<td><strong>B3</strong></td>
-<td><strong>n8n Deadman</strong></td>
-<td>Watch the watcher</td>
-<td>launchd <code>n8n-deadman.sh</code> every 5 min, <strong>outside</strong> n8n</td>
-<td>Shell script → <code>curl /healthz</code> + process check → Cliq/Discord directly</td>
-<td>launchd, n8n :5678</td>
-<td>Silent when healthy; one alert when n8n is down or crash-looping</td>
-<td>This is the independent path: if it cannot run, <code>com.maio.deadman</code> already covers it</td>
-<td>Adrianna</td>
+<td><strong>C3 · Backup &amp; Drive</strong></td>
+<td>every 30 min + on mount change + daily 08:15</td>
+<td><code>Hiksemi real-read check</code>, <code>vault-backup-push</code>, <code>courage-backups</code>, HA backup, n8n's own archive</td>
+<td>Presence, freshness, decryptability; "single-copy" stated until gate G9 closes</td>
 </tr>
 <tr>
-<td><strong>B4</strong></td>
-<td><strong>Drive Guard</strong></td>
-<td>Make a missing external drive loud, not silent</td>
-<td>Event: on every mount/unmount + 30 min check</td>
-<td>Schedule/Hook → Code (mount + write test) → Cliq</td>
-<td><code>/Volumes/Hiksemi 1TB</code>, <code>diskutil</code></td>
-<td>One message per state change (mounted / absent / read-only)</td>
-<td>Repeats once per hour while absent, never per workflow</td>
-<td>Adrianna</td>
+<td><strong>C4 · Maintenance Window</strong></td>
+<td>nightly 02:00–04:10</td>
+<td><code>Disk headroom</code>, <code>hermes-log-rotate</code>, <code>t3-maintenance</code>, <code>nexus-vault-index</code>, <code>meta-reap</code></td>
+<td>Ordered maintenance run, one summary line; never a maintenance step while a backup is writing</td>
 </tr>
 <tr>
-<td><strong>B5</strong></td>
-<td><strong>Backup Verifier</strong></td>
-<td>Prove last night's backups exist, open and decrypt</td>
-<td>Schedule 08:15 daily</td>
-<td>Schedule → HTTP probe of backup rail → Code (age, size, hash) → alert</td>
-<td>vault rail, AI-Drive snapshot, n8n archive, HA backup</td>
-<td>Green line in the digest; red alert if any &gt; 36 h stale</td>
-<td>Escalates red; a missing backup is never quiet</td>
-<td>Adrianna</td>
-</tr>
-<tr>
-<td><strong>B6</strong></td>
-<td><strong>Agent Output Filing</strong></td>
-<td>Finished work gets filed, not lost in scratch</td>
-<td>Schedule hourly</td>
-<td>Schedule → mount gate → Read File → Code (name normalise, manifest) → HTTP (kanban card)</td>
-<td>AI-Drive <code>Agent-Output/*</code>, kanban</td>
-<td><code>manifest.jsonl</code> + one <strong>template-only</strong> card per vault-bound doc (path, hash, title — audit A7)</td>
-<td>Files locally, skips card, alerts</td>
-<td>Beast lane</td>
-</tr>
-<tr>
-<td><strong>B7</strong></td>
-<td><strong>Home Assistant Bridge</strong></td>
-<td>Home events into one channel + a nightly summary</td>
-<td>HA webhook + Schedule 21:00</td>
-<td>Webhook → HA node → format → Cliq/Discord</td>
-<td>Home Assistant :8123</td>
-<td>Event messages; night summary</td>
-<td>Retries once, then alerts</td>
-<td>Splinter lane</td>
+<td><strong>C5 · Runtime Drift</strong></td>
+<td>Mondays 06:00</td>
+<td><code>model-roster-weekly</code>, <code>design-skills-drift-check</code>, <code>model-landscape-weekly</code> (agent-triggered)</td>
+<td>One line: node/n8n/ollama/model roster drifted or unchanged; licence terms flagged</td>
 </tr>
 </tbody>
 </table></div>
-<h3 id="72-phase-3--built-only-after-the-spine-passes-5-bots">7.2 Phase 3 — built only after the spine passes (5 bots)</h3>
+<p><strong>Why one bot:</strong> all five answer one question — <em>is this machine still fit to run everything else?</em> — and share one failure budget, one channel and one kill switch.</p>
+<h3 id="73-bot-s--splinter-personal-and-home">7.3 BOT-S — Splinter (personal and home)</h3>
+<p><strong>Owns:</strong> personal mail, diary, home, personal rituals. <strong>Channel:</strong> Cliq DM only — no personal detail in Discord. <strong>Credentials:</strong> Gmail read+draft, Google Calendar, Home Assistant, mail relay.</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>#</th>
-<th>Bot</th>
-<th>Purpose</th>
-<th>Why it waits</th>
+<th>Job</th>
+<th>Trigger</th>
+<th>Absorbs</th>
+<th>Output</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>B8</strong></td>
-<td><strong>Inbox Triage</strong> — classify, label, draft (never send)</td>
-<td>Cuts the inbox to what matters</td>
-<td>Needs OAuth scope review and a real send-block test (the audit's point: any scope that drafts can also send)</td>
+<td><strong>S1 · Personal Brief</strong></td>
+<td>06:45 daily</td>
+<td><code>Personal brief</code> (agent) with n8n gathering the facts first</td>
+<td>Weather, calendar, diary, mail counts, then the agent writes the prose</td>
 </tr>
 <tr>
-<td><strong>B9</strong></td>
-<td><strong>Fleet/Kanban Digest</strong> — one message per 4 h on stuck runs and blocked cards</td>
-<td>Answers "is the fleet alive"</td>
-<td>Narrowed after audit A15 so it does not duplicate <code>stack-doctor</code>/<code>deadman</code>: kanban + agent-run staleness only</td>
+<td><strong>S2 · Personal Mail</strong></td>
+<td>07:00 / 13:00 / 19:00</td>
+<td><code>Mail triage — personal (Gmail)</code> + <code>Mail drafts — personal (Gmail)</code> (agent)</td>
+<td>Labels applied; drafts authored, never sent</td>
 </tr>
 <tr>
-<td><strong>B10</strong></td>
-<td><strong>Model Spend Meter</strong> — reads the local usage ledger</td>
-<td>Keeps the cloud pool visible</td>
-<td>Audit A15: no public usage API; it reports what the ledger records and <strong>never claims cent-level accuracy</strong></td>
+<td><strong>S3 · Correspondence Relay</strong></td>
+<td>07:10 / 13:10 / 19:10</td>
+<td><code>Diary sync — mail to calendar</code>, <code>Mail outbox — Alfred + April relay</code></td>
+<td>Calendar entries written, outbox flushed, one line per cycle</td>
 </tr>
 <tr>
-<td><strong>B11</strong></td>
-<td><strong>System Copilot (MCP Server Trigger)</strong> — read-only tools for Hermes/Claude</td>
-<td>Makes n8n a tool surface the fleet can call</td>
-<td>Audit A15: deferred and <strong>instance-level MCP stays off</strong>; only a single workflow-scoped trigger, bearer auth, read-only</td>
+<td><strong>S4 · Home</strong></td>
+<td>HA webhook + 21:00 nightly</td>
+<td>Home Assistant events, night summary, <code>home-assistant-backup</code> check</td>
+<td>Event messages, one evening summary, backup freshness</td>
 </tr>
 <tr>
-<td><strong>B12</strong></td>
-<td><strong>Finance Prepare-Only</strong> — Firefly categorisation proposal</td>
-<td>Saves an hour a week</td>
-<td>Read-only token, GET only, approval packet; money never moves</td>
+<td><strong>S5 · Personal Week</strong></td>
+<td>Fri 16:30, Sun 21:30</td>
+<td><code>Week close-out</code> (agent), <code>Wheel score guard</code></td>
+<td>The week's facts collected, agent writes the close-out; wheel guard enforces the ritual</td>
 </tr>
 </tbody>
 </table></div>
-<h3 id="73-held-pending-a-ruling">7.3 Held pending a ruling</h3>
-<p><strong>Zoho Brief Intake</strong> (audit A13). Two sources disagree about where Infinity briefs live (Zoho Projects per the brief standard vs ClickUp per <code>RICARDO.md</code>) and about which lane may run Infinity work (Courage/Hermes vs AgenticOS). Until Ricardo rules, no bot touches Infinity data: the risk of filing into the wrong system is worse than the work it saves.</p>
-<p><strong>Shared infrastructure, not bots.</strong> Mount gate, model fallback, idempotency/audit and the HTTP allowlist are called by every bot rather than copied (a guardrail that exists twelve times is eleven chances to drift).</p>
+<h3 id="74-bot-w--bruce-wayne-work-and-infinity">7.4 BOT-W — Bruce Wayne (work and Infinity)</h3>
+<p><strong>Owns:</strong> work mail, Zoho, programme watch, filing. <strong>Channel:</strong> Cliq DM (work) + the kanban board. <strong>Credentials:</strong> Zoho OAuth (read + draft), Gmail work, Filestage, kanban.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Trigger</th>
+<th>Absorbs</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>W1 · Morning Command Brief</strong></td>
+<td>07:45 Mon-Fri</td>
+<td><code>Morning Command Brief</code> (agent), <code>Zoho MCP dashboard</code></td>
+<td>Facts gathered by n8n; the agent writes the brief; one message</td>
+</tr>
+<tr>
+<td><strong>W2 · Work Mail</strong></td>
+<td>07:00 / 13:00 / 19:00 + 08:00 / 16:00</td>
+<td><code>Mail triage — work (Zoho)</code>, <code>Mail drafts — work (Zoho)</code> (agent), <code>Bateman — Zoho inbox triage</code></td>
+<td>Labels, drafts, one triage summary per cycle</td>
+</tr>
+<tr>
+<td><strong>W3 · Zoho Ops</strong></td>
+<td>10 min keepalive; 02:40 / 03:10 / 04:00 Sun / 07:00</td>
+<td><code>Zoho MCP keepalive</code>, <code>auth probe</code>, <code>backup</code>, <code>weekly refresh</code>, <code>dashboard</code></td>
+<td>One workflow, five checks; auth failure is loud, silence is not</td>
+</tr>
+<tr>
+<td><strong>W4 · Programme Watch</strong></td>
+<td><code>*/15</code> 07–18 Mon-Fri, 07:15 daily, Fri 15:30, Sun 18:00</td>
+<td><code>Vengeance Problem Watch</code> (agent), <code>Filestage Checker</code> (agent), <code>Friday Blocked-Ticket Review</code> (agent), <code>THE STANDARD post guard</code></td>
+<td>Deduplicated problem list, blocked-ticket digest, post-format guard</td>
+</tr>
+<tr>
+<td><strong>W5 · Output Filing</strong></td>
+<td>hourly</td>
+<td>Agent-output filing, WorkDrive AI Hub destination, Beast cards</td>
+<td>Manifest, one template-only card per vault-bound doc, WorkDrive copy in the department folder</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Held, not built:</strong> the Zoho Projects brief-intake bot (§17, question 5) — the briefing system and owning lane are still unruled, and filing into the wrong system is worse than not filing.</p>
+<h3 id="75-what-this-absorbs-and-what-stays">7.5 What this absorbs, and what stays</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Count</th>
+<th>Where it goes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script-mode Hermes cron jobs</td>
+<td>57</td>
+<td>Consolidated into 15 n8n jobs (§7.2–7.4). Several scripts collapse into one job: seven service checks become C2; five Zoho checks become W3</td>
+</tr>
+<tr>
+<td>Agent-mode Hermes cron jobs</td>
+<td>16</td>
+<td>Stay in Hermes; n8n calls them on a schedule instead of Hermes' own ticker (S1, S2, S5, W1, W2, W4, C5)</td>
+</tr>
+<tr>
+<td>launchd periodic jobs</td>
+<td>~20</td>
+<td>Stay in launchd where they guard sub-5-minute loops; C2 watches their health</td>
+</tr>
+<tr>
+<td>launchd servers, MCP endpoints, tunnels</td>
+<td>~60</td>
+<td>Untouched. This PRD does not move a single server</td>
+</tr>
+<tr>
+<td>New capability that exists nowhere today</td>
+<td>—</td>
+<td>the out-of-band deadman, the mount gate, the model-fallback path, the HTTP allowlist and the publish-time lint</td>
+</tr>
+</tbody>
+</table></div>
+<p>The honest arithmetic: <strong>15 n8n jobs replace 57 cron scripts and trigger 7 agent jobs</strong>, which is a real reduction in moving parts — but only if each migration is paused-not-deleted and shadowed for two weeks (§7.1 rule 5). A migration that leaves both copies running is worse than either alone.</p>
+<h3 id="76-shared-infrastructure-not-a-bot-and-not-one-of-the-five">7.6 Shared infrastructure (not a bot, and not one of the five)</h3>
+<p>Mount gate · model fallback · idempotency with <code>pending → done</code> states · HTTP allowlist · audit ledger · publish-time lint · error workflow · kill switch per bot. Every job calls these; none of them is a job.</p>
+<p>Every bot also gets <strong>one deadman outside n8n</strong> (launchd + <code>curl /healthz</code>), because a scheduler that dies silently is worse than no scheduler: it looks like calm.</p>
 <hr />
 <h2 id="8-data-state-retention-and-backup">8. Data, state, retention and backup</h2>
 <ul>
@@ -788,7 +877,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <li>Keep 14. Log every run with size + hash.</li>
 </ol></li>
 <li><strong>Restore drill (monthly):</strong> decrypt to a scratch dir, <code>PRAGMA integrity_check</code>, then <strong>boot n8n on port 5680 against the restored data and decrypt one credential through the UI</strong> (audit A5: an integrity check does not prove the key works). Recovery objective: 30 minutes, measured in the drill.</li>
-<li><strong>External-drive policy:</strong> the DB, logs and binary data never live on Hiksemi. If it is absent, B4 and B6 report it and fail cleanly; n8n keeps running. Silent mount failures are a known behaviour of this machine, so "absent" is a normal state to handle, not an exception.</li>
+<li><strong>External-drive policy:</strong> the DB, logs and binary data never live on Hiksemi. If it is absent, C3 and W5 report it and fail cleanly; n8n keeps running. Silent mount failures are a known behaviour of this machine, so "absent" is a normal state to handle, not an exception.</li>
 <li><strong>Versioning:</strong> weekly export (<code>n8n export:workflow --all</code>) done by <strong>launchd, not by n8n</strong> (audit A23 — n8n cannot run git), onto a branch in <code>DevMini</code>, opened as a PR. Nothing commits to <code>main</code>.</li>
 </ul>
 <hr />
@@ -831,11 +920,11 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </table></div>
 <p>Additional operational guardrails:</p>
 <ol type="1">
-<li><strong>Idempotency (audit A18).</strong> Keys are <strong>per object</strong>, not per window (B6: file path + hash; B8: message ID + thread). A key is written in state <code>pending</code> and moved to <code>done</code> only after the output succeeds, so a failed send retries and a successful one never duplicates.</li>
-<li><strong>Loop and cost caps.</strong> <code>maxIterations</code> 6, explicit <code>maxTokens</code> per call, per-run item caps (B8: 40 messages/run), a daily call budget per bot, and retries capped at 2.</li>
+<li><strong>Idempotency (audit A18).</strong> Keys are <strong>per object</strong>, not per window (W5: file path + hash; S2/W2: message ID + thread). A key is written in state <code>pending</code> and moved to <code>done</code> only after the output succeeds, so a failed send retries and a successful one never duplicates.</li>
+<li><strong>Loop and cost caps.</strong> <code>maxIterations</code> 6, explicit <code>maxTokens</code> per call, per-run item caps (S2/W2: 40 messages/run), a daily call budget per bot, and retries capped at 2.</li>
 <li><strong>Alert hygiene.</strong> State-change only; <strong>2</strong> consecutive misses = down (one number everywhere — audit A20); one digest per 4 h at most.</li>
 <li><strong>Kill switch.</strong> <code>bin/n8n-panic.sh</code> → <code>launchctl bootout gui/$UID/com.maio.n8n</code>, timestamp, one Cliq line. Resume is the mirror. The drill asserts the service is gone within <strong>45 s</strong> — longer than the 30 s graceful shutdown, which v0.1 contradicted (audit A20). Soft stop is Publish/Unpublish in 2.x.</li>
-<li><strong>Audit.</strong> 14 days of executions in the UI, the JSONL ledger indefinitely, and B9 surfacing failed executions rather than leaving them to be discovered.</li>
+<li><strong>Audit.</strong> 14 days of executions in the UI, the JSONL ledger indefinitely, and C2 surfacing failed executions rather than leaving them to be discovered.</li>
 <li><strong>Egress, honestly stated.</strong> n8n itself has no firewall; a determined workflow could call any host. v1 compensates with credentials that cannot write money, a publish-time lint, and no <code>ExecuteCommand</code>. A <code>pf</code> egress allowlist is listed as future hardening, not claimed as present (audit A6).</li>
 <li><strong>Credential store — the one approved exception.</strong> n8n keeps credentials encrypted in SQLite, unlocked by the key in <code>~/.n8n/config</code> (0600). That is n8n's own config, and the only place a service credential may live. The consequences are accepted in writing: the backup is encrypted before it leaves the machine, the key never appears outside that archive, and a restore onto a machine we do not own is forbidden.</li>
 </ol>
@@ -881,19 +970,19 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>Lint passes on the spine; deadman alerts when n8n is stopped; probe payload validates against its schema; backup archive decrypts</td>
 </tr>
 <tr>
-<td><strong>P4 — v1 bots</strong></td>
-<td>B1, B2, B3, B4, B5</td>
-<td>Each run three times <strong>as published workflows</strong> (audit A19: dedupe does not work in manual runs); B1 alerts on a stopped daemon and stays silent when healthy; B2 arrives 06:45; no duplicate messages</td>
+<td><strong>P4 — BOT-C, Courage</strong></td>
+<td>C1–C5 (§7.2). C1 and C2 first, then C3, C4, C5. Each migrated script is paused in Hermes cron the same day its n8n twin publishes</td>
+<td>Each job runs three times <strong>as a published workflow</strong> (audit A19); C1 alerts on a stopped daemon and stays silent when healthy; C2 fires once for one dead service, not seven times; the paused cron job and its n8n twin never both alert</td>
 </tr>
 <tr>
-<td><strong>P5 — Filing bot</strong></td>
-<td>B6, with template-only cards</td>
-<td>A new artefact produces exactly one card; the card carries path, hash, title and no free text from the file</td>
+<td><strong>P5 — BOT-S, Splinter</strong></td>
+<td>S1–S5 (§7.3). Personal channel only</td>
+<td>The 06:45 brief arrives with agent-written prose and n8n-gathered facts; mail drafts appear and nothing is sent; a duplicate webhook produces one message</td>
 </tr>
 <tr>
-<td><strong>P6 — HA bridge</strong></td>
-<td>B7</td>
-<td>An HA event reaches the channel in &lt; 60 s; a duplicate webhook produces one message</td>
+<td><strong>P6 — BOT-W, Bruce Wayne</strong></td>
+<td>W1–W5 (§7.4). Zoho read+draft credentials only</td>
+<td>The 07:45 brief arrives Mon–Fri; Zoho auth failure is loud within one cycle; one artefact produces exactly one template-only Beast card; the WorkDrive copy lands in the right department folder</td>
 </tr>
 <tr>
 <td><strong>P7 — Hardening</strong></td>
@@ -901,13 +990,13 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <td>DB &lt; 1 GB after 14 days; restore boots on 5680 and decrypts a credential; panic stops the service in ≤ 45 s</td>
 </tr>
 <tr>
-<td><strong>P8 — Phase 3 bots</strong></td>
-<td>B8–B12, one at a time, each with its own exit test</td>
-<td>See §7.2; every one starts with the lint passing and ends with a negative test (a send attempt is blocked, a write attempt is blocked)</td>
+<td><strong>P8 — Deferred capability</strong></td>
+<td>Add to the three bots, one at a time: WorkDrive bulk upload in W5, model-spend meter in C5 (ledger-only), opt-in read-only copilot MCP, finance prepare-only in Splinter, mail send-block tests</td>
+<td>Every one starts with the lint passing and ends with a negative test: a send attempt is blocked, a write attempt is blocked, a money credential is absent</td>
 </tr>
 </tbody>
 </table></div>
-<p><strong>First 48 hours after P2:</strong> only B3 (deadman), B4 (drive guard) and B1 (sentinel). Watch RSS, swap, and execution count. If n8n's resident set exceeds ~700 MB or swap grows more than 1 GB, stop and re-plan before any model work (C4, gate G2).</p>
+<p><strong>First 48 hours after P2:</strong> only C1 (sentinel), C2 (service watchdogs) and the n8n deadman. Watch RSS, swap, and execution count. If n8n's resident set exceeds ~700 MB or swap grows more than 1 GB, stop and re-plan before any model work (C4, gate G2).</p>
 <hr />
 <h2 id="11-verification-matrix-done-means-these-pass">11. Verification matrix ("done" means these pass)</h2>
 <div class="tablewrap"><table>
@@ -1040,7 +1129,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <tr>
 <td><strong>G9</strong></td>
 <td>Is a second backup destination measured?</td>
-<td>NAS Ricky mount + capacity + credentials tested before B5 may say "two copies"</td>
+<td>NAS Ricky mount + capacity + credentials tested before C3 may say "two copies"</td>
 </tr>
 </tbody>
 </table></div>
@@ -1170,7 +1259,7 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 <tr>
 <td>M-10 Add Finance, Runtime Drift, Mount Gate</td>
 <td><strong>Adopted</strong></td>
-<td>Drift folded into B2 (A15); mount gate is infrastructure; Finance is B12</td>
+<td>Drift folded into C5 (A15); mount gate is infrastructure; Finance is a P8 extension</td>
 </tr>
 <tr>
 <td>M-11 Cliq only, no Discord/Telegram</td>
@@ -1274,7 +1363,7 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 </tr>
 <tr>
 <td>A11</td>
-<td><strong>New P3.5 spine phase</strong> before any bot: mount gate, fallback, idempotency/audit, allowlist, error workflow, probe, deadman, backup — plus B3, an out-of-band deadman</td>
+<td><strong>New P3.5 spine phase</strong> before any bot: mount gate, fallback, idempotency/audit, allowlist, error workflow, probe, deadman, backup — plus the out-of-band deadman</td>
 </tr>
 <tr>
 <td>A12</td>
@@ -1290,7 +1379,7 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 </tr>
 <tr>
 <td>A15</td>
-<td>B6 → ledger-only, no cent-level claim; B5 narrowed to kanban/agent staleness; B10 deferred; <strong>instance MCP disabled</strong></td>
+<td>Model-spend meter → ledger-only, no cent-level claim; the fleet digest narrowed to kanban/agent staleness; copilot MCP deferred; <strong>instance MCP disabled</strong></td>
 </tr>
 <tr>
 <td>A16</td>
@@ -1302,10 +1391,10 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 </tr>
 </tbody>
 </table></div>
-<p><strong>Minors — accepted (6).</strong> A18 per-object idempotency with <code>pending → done</code> states; A19 dedupe tested only on published workflows; A20 one miss-number (2) and a 45 s panic budget that clears the 30 s graceful shutdown; A21 <code>DB_SQLITE_VACUUM_ON_STARTUP</code> flagged "verify the name"; A22 B1 thresholds are <strong>relative to a recorded baseline</strong>, not a fixed 10 GB that is already breached; A23 exports run from launchd onto a branch + PR, never a commit to main.</p>
+<p><strong>Minors — accepted (6).</strong> A18 per-object idempotency with <code>pending → done</code> states; A19 dedupe tested only on published workflows; A20 one miss-number (2) and a 45 s panic budget that clears the 30 s graceful shutdown; A21 <code>DB_SQLITE_VACUUM_ON_STARTUP</code> flagged "verify the name"; A22 C1 thresholds are <strong>relative to a recorded baseline</strong>, not a fixed 10 GB that is already breached; A23 exports run from launchd onto a branch + PR, never a commit to main.</p>
 <p><strong>Minors — partially rejected (1).</strong> A24's claim that <code>N8N_ENFORCE_GLOBAL_USER_AGENT</code> is unverified is right — it was dropped rather than kept. Its per-execution token ceiling was adopted as <code>maxTokens</code> + a counter.</p>
 <p><strong>What Claude contributed that the panel and I both missed:</strong> the disk gate that failed its own test, the unencrypted backup drive, the unowned model account, the boot path depending on USB, the vacuous greps, and the concurrency number that would have starved the webhook. Every one of those is a build-day or a standing-rule failure, not a style note.</p>
-<p><strong>What I kept against the audit:</strong> the ten-bot ambition became a seven-bot v1 with five phased — but B1, B2, B7 and the filing bot survive, so the product is smaller, not different. I also kept the probe-script design over Claude's HTTP-only suggestion (its own A15 concedes that stack-doctor data can be 15 minutes stale; the probe is the fresher path).</p>
+<p><strong>What I kept against the audit:</strong> the ten-bot ambition became three lane bots of five jobs each — a smaller surface with the same coverage, and (after Ricardo's review) one that absorbs 57 existing jobs instead of standing beside them. I also kept the probe-script design over Claude's HTTP-only suggestion (its own A15 concedes that stack-doctor data can be 15 minutes stale; the probe is the fresher path).</p>
 <hr />
 <h2 id="16-risks">16. Risks</h2>
 <div class="tablewrap"><table>
@@ -1324,7 +1413,7 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 <td><strong>Internal disk</strong> — the build cannot start</td>
 <td>Certain today</td>
 <td>High</td>
-<td>P-1 reclaim to ≥ 15 GB with a numeric gate; prune by age; artefacts on Hiksemi; B1 alerts on <strong>trend</strong> against a recorded baseline</td>
+<td>P-1 reclaim to ≥ 15 GB with a numeric gate; prune by age; artefacts on Hiksemi; C1 alerts on <strong>trend</strong> against a recorded baseline</td>
 </tr>
 <tr>
 <td>R2</td>
@@ -1345,7 +1434,7 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 <td>Model spend or 429s on a shared quota</td>
 <td>Medium</td>
 <td>High</td>
-<td>Gate G0 identifies the payer; ladder by cost; degraded mode on the node's error; daily budget; B10 later</td>
+<td>Gate G0 identifies the payer; ladder by cost; degraded mode on the node's error; daily budget; the ledger meter later</td>
 </tr>
 <tr>
 <td>R5</td>
@@ -1359,7 +1448,7 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 <td>Hiksemi absent or dying</td>
 <td>Medium</td>
 <td>Low</td>
-<td>Nothing in the boot path touches it; B4 makes it loud; mount gate before writes</td>
+<td>Nothing in the boot path touches it; C3 makes it loud; mount gate before writes</td>
 </tr>
 <tr>
 <td>R7</td>
@@ -1394,7 +1483,14 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 <td>The watcher is the thing that dies</td>
 <td>Medium</td>
 <td>High</td>
-<td>B3 lives <strong>outside</strong> n8n (launchd + curl) and <code>com.maio.deadman</code> covers the watcher</td>
+<td>The deadman lives <strong>outside</strong> n8n (launchd + curl) and <code>com.maio.deadman</code> covers the watcher</td>
+</tr>
+<tr>
+<td>R12</td>
+<td><strong>Dual-run duplication during migration</strong> — the old cron and its n8n twin both alert</td>
+<td>High (during migration)</td>
+<td>Medium</td>
+<td>Pause the Hermes job the same day the twin publishes (§7.1 rule 5); per-job <code>pending → done</code> keys; the 48-hour soak compares message counts, not just presence</td>
 </tr>
 </tbody>
 </table></div>
@@ -1404,13 +1500,16 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 <li><strong>Which Ollama account does the daemon bill?</strong> — blocks P3 (gate G0). Default: assume Ricardo's own until measured.</li>
 <li><strong>Tailnet exposure of the n8n UI</strong> — default: localhost only in v1 (G5).</li>
 <li><strong>Does n8n hold the Cliq webhook directly, or post through Hermes?</strong> — default: directly, stored as a credential.</li>
-<li><strong>Monthly model budget cap that B10 enforces</strong> — needs a number from him; until then B10 reports only.</li>
-<li><strong>Where do Infinity briefs live — Zoho Projects or ClickUp, and which lane owns Infinity work?</strong> — blocks the held bot (§7.3). Default: nothing touches Infinity data until he rules.</li>
+<li><strong>Monthly model budget cap that the spend meter enforces</strong> — needs a number from him; until then it reports only.</li>
+<li><strong>Where do Infinity briefs live — Zoho Projects or ClickUp, and which lane owns Infinity work?</strong> — blocks the held bot (§7.4). Default: nothing touches Infinity data until he rules.</li>
 <li><strong>Second backup destination</strong> — NAS Ricky after it is measured, or another disk he prefers (G9).</li>
+<li><strong>Bot channels</strong> — default: Courage → Discord <code>#ops</code> plus Cliq DM for numbers; Splinter → Cliq DM only; Bruce Wayne → Cliq DM plus the kanban board. Confirm or re-point.</li>
+<li><strong>Migration order between lanes</strong> — default: Courage first (it watches everything else), then Bruce Wayne (busiest, most deterministic), then Splinter (personal, least tolerant of a wrong message).</li>
 </ol>
 <hr />
 <h2 id="18-changelog">18. Changelog</h2>
-<p><strong>v1.0 (this version)</strong> — Enhanced from the Claude audit: P-1 reclaim phase; gate G0 on the model account; encrypted backups outside the file-access root with <code>sqlite3 .backup</code> and a decrypt drill; logs/binary internal; concurrency 3; degraded mode on node errors; P3.5 spine before bots; v1 cut to seven bots with five phased and one held; lint + gitleaks replacing vacuous greps; template-only Beast cards; no instance MCP; per-object idempotency; reconciled miss-number and panic budget; numeric disk gates.</p>
+<p><strong>v1.1 (this version)</strong> — Re-shaped from Ricardo's review. The fleet is three bots of five jobs each, one per lane (Courage, Splinter, Bruce Wayne), built on a measured inventory of <strong>73 Hermes cron jobs</strong> (57 script-mode, 16 agent-mode) and 80 launchd labels: script-only jobs absorbed, agent jobs triggered but not re-implemented, servers and sub-5-minute guards left in launchd. Adds the migrate-by-pausing rule, the "a bot is ownership, not one graph" rule, the dual-run risk (R12), and lane channels in the open questions.</p>
+<p><strong>v1.0</strong> — Enhanced from the Claude audit: P-1 reclaim phase; gate G0 on the model account; encrypted backups outside the file-access root with <code>sqlite3 .backup</code> and a decrypt drill; logs/binary internal; concurrency 3; degraded mode on node errors; P3.5 spine before bots; lint + gitleaks replacing vacuous greps; template-only Beast cards; no instance MCP; per-object idempotency; reconciled miss-number and panic budget; numeric disk gates.</p>
 <p><strong>v0.2</strong> — MoA adjudication: split state placement, mount gate, second backup destination, credential-store exception, B11/B12, drift bot folded, channel rule, gates G7–G9, risks R9–R10.</p>
 <p><strong>v0.1</strong> — First draft from measured evidence (native lane decision, ten bots, guardrails, delivery plan).</p>
 <hr />
@@ -1435,6 +1534,9 @@ $ curl 127.0.0.1:11434/v1 + tool schema     → finish_reason: tool_calls (get_w
 $ lsof -nP -iTCP:11434 -sTCP:LISTEN         → *:11434 (all interfaces)
 $ lsof -nP -iTCP -sTCP:LISTEN               → 5678 free; 9111/8792/64200/6174/8807/8188/8800/8123/8085 up
 $ launchctl list | grep com.maio            → ~20 agents
+$ ls ~/Library/LaunchAgents/com.maio.*.plist | wc -l   → 80 labels
+$ python3 … jobs.json (default/courage/splinter/batman) → 16 + 30 + 8 + 19 = 73 cron jobs
+       script-mode 15 + 26 + 4 + 12 = 57 · agent-mode 1 + 4 + 4 + 7 = 16
 $ defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser → not set   [auditor]</code></pre>
 <h2 id="appendix-b--file-layout-on-the-machine">Appendix B — File layout on the machine</h2>
 <pre><code>~/AI Hub/n8n/
