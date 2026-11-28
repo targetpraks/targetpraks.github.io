@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>OpenBot on the Mac mini — PRD v1.1 (Ollama Cloud, staged bot roster)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd--openbot-on-the-mac-mini-on-ollama-cloud-with-a-working-bot-roster">PRD — OpenBot on the Mac mini, on Ollama Cloud, with a working bot roster</h1>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td><strong>Version</strong></td>
+<td><strong>v1.1 — final.</strong> v0.1 developed by MoA, audited by Claude, both folded in (§13)</td>
+</tr>
+<tr>
+<td><strong>Owner</strong></td>
+<td>Adrianna A (AI-stack family)</td>
+</tr>
+<tr>
+<td><strong>Requires</strong></td>
+<td>Ricardo's ruling on <strong>G1 licence</strong> before any download</td>
+</tr>
+<tr>
+<td><strong>Date</strong></td>
+<td>2026-11-28</td>
+</tr>
+<tr>
+<td><strong>Machine</strong></td>
+<td><code>Mac16,11</code> · Apple M4 Pro · 24 GB · macOS 27.2.1 (26B131)</td>
+</tr>
+<tr>
+<td><strong>Artifacts</strong> (same folder)</td>
+<td><code>prd-v1.0.md</code> · <code>moa-brief-2.md</code> · <code>claude-audit.md</code> · <code>evidence.md</code> · <code>bots/&lt;name&gt;/INSTRUCTIONS.md</code></td>
+</tr>
+<tr>
+<td><strong>Deliverable</strong></td>
+<td>OpenBot v0.81.0 installed and verified on Ollama Cloud, a <strong>go/no-go Canary</strong>, one production bot, and three more staged on evidence — with zero new vendor keys</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="0-what-the-two-reviews-changed">0. What the two reviews changed</h2>
+<p>Two independent reviews ran against v0.1. Claude returned 19 findings; the MoA panel returned a structural verdict. Where they agreed, I changed the plan; where only one spoke, §13 records the call.</p>
+<p>The four changes that matter:</p>
+<ol type="1">
+<li><strong>The licence gate is real and it is first.</strong> PolyForm Noncommercial 1.0.0 does not cover evaluating the tool for company work, so "install it for a week and see" is not an available option. Either Ricardo buys a licence, or the install is personal-only and the roster is cut to match.</li>
+<li><strong>The roster ships in stages, not all at once.</strong> v0.1 proposed six bots on day one; Claude cut it to four; MoA cut it to one plus a canary. The merge is honest: <strong>day one is a Canary and one real worker</strong>, and each further bot ships only after a week of evidence. Four bots remain the destination — they arrive on a schedule, not on faith.</li>
+<li><strong>OpenBot gets no scheduler and no clock.</strong> Routines are Hermes cron entries calling <code>openbot-cli</code>. That removes the "missed run because the app was closed" class of failure and keeps one clock on the machine.</li>
+<li><strong>Permissions are fail-closed, and drift is checked.</strong> The product default is full local access; agents created by an update, a restore or a careless click would inherit it. So the permission mode is pinned in a policy file with a config hash, re-verified before launch, after every update, and daily.</li>
+</ol>
+<p>Two claims from v0.1 were wrong and are corrected: the dmg's notarisation was <em>asserted</em> rather than verified, and "workspace-only" was treated as a read barrier when it is a write barrier.</p>
+<h2 id="1-what-openbot-is-precisely">1. What OpenBot is, precisely</h2>
+<p>OpenBot (openbot.run, source <code>github.com/nightly-labs/openbot</code>, latest <strong>v0.81.0</strong>, published 2026-11-27) is a local-first Electron workspace for persistent AI teammates: per-agent workspace, conversation, FIFO queue, embedded browser, agent-to-agent messages, routines, MCP connectors, and an optional bundled <code>cua-driver</code> for computer use.</p>
+<p><strong>On the lane this PRD uses, OpenBot <em>is</em> the agent runtime</strong> — it runs the agent loop, the tool runner, the permission model and the approval cards. It is only "a window" on lanes where it shells out to another harness (Hermes over ACP, Claude Code, Codex, OpenCode). That distinction is why §8 exists: on our default lane the safety of this machine is OpenBot's permission model plus what we configure — not somebody else's sandbox.</p>
+<h3 id="11-which-openbot">1.1 Which "OpenBot"</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Candidate</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>nightly-labs/openbot</code></strong> (openbot.run)</td>
+<td><strong>Chosen.</strong> Notarised-signed macOS arm64 dmg, Hermes-over-ACP support, custom OpenAI-compatible endpoints, <code>openbot-cli</code> automation.</td>
+</tr>
+<tr>
+<td><code>sanlega/OpenBot</code></td>
+<td>Rejected <strong>for now</strong>: its Chief-of-Staff + Jev design duplicates our own roster and gate layer, so running both would put two agents with the same names behind one keyboard. Revisit separately.</td>
+</tr>
+<tr>
+<td><code>alexbieber</code>, <code>next-open-ai</code>, <code>jccrump</code>, <code>satiricalguru</code>, <code>ashhart</code> forks</td>
+<td>Rejected: self-hosted gateway or CLI reimplementations that add nothing this machine does not already have in Hermes.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="2-ground-truth--measured-on-this-machine-2026-11-28">2. Ground truth — measured on this machine, 2026-11-28</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Value</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hardware</td>
+<td>Mac16,11 · Apple M4 Pro · 24 GB</td>
+<td><code>sysctl -n hw.model</code>, <code>hw.memsize</code></td>
+</tr>
+<tr>
+<td>OS</td>
+<td>macOS 27.2.1 (26B131)</td>
+<td><code>sw_vers</code></td>
+</tr>
+<tr>
+<td>Internal disk free</td>
+<td><strong>7.5 GB</strong> of 460 GB (63 % used)</td>
+<td><code>df -h /</code></td>
+</tr>
+<tr>
+<td>External volume free</td>
+<td><strong>690 GB</strong> of 954 GB</td>
+<td><code>df -h</code></td>
+</tr>
+<tr>
+<td>Ollama</td>
+<td><strong>0.40.18</strong>, <code>*:11434</code>, signed in</td>
+<td><code>ollama --version</code>, <code>lsof -nP -iTCP:11434</code></td>
+</tr>
+<tr>
+<td><strong>Ollama account</strong></td>
+<td><strong>Ricardo's own account, plan <code>max</code></strong> — <em>not</em> the company key</td>
+<td><code>POST /api/me</code> → <code>{"name":"rickymaio","plan":"max"}</code></td>
+</tr>
+<tr>
+<td>Models served</td>
+<td><strong>33</strong>, of which <strong>20</strong> are <code>:cloud</code> tags</td>
+<td><code>GET /v1/models</code></td>
+</tr>
+<tr>
+<td>Chat via local OpenAI-compatible route</td>
+<td>works</td>
+<td>curl <code>/v1/chat/completions</code></td>
+</tr>
+<tr>
+<td><strong>Tool calling via that route</strong></td>
+<td><strong>works, all five workhorse models</strong></td>
+<td>glm-5.3-flash 0.7 s · glm-5.3 0.5 s · deepseek-v4.1-flash 0.6 s · kimi-k3.1-pro 4.6 s · minimax-m3.1-flash 0.8 s — all returned <code>tool_calls</code></td>
+</tr>
+<tr>
+<td><strong>Streaming tool calls</strong></td>
+<td>work</td>
+<td>delta <code>arguments</code> = <code>{"command":"echo hi"}</code></td>
+</tr>
+<tr>
+<td><strong>Full agent loop via the endpoint</strong></td>
+<td>works</td>
+<td>model read <code>in.txt</code>, ran <code>wc -l</code>, wrote <code>out.txt</code> = <strong>4</strong> over three turns</td>
+</tr>
+<tr>
+<td><code>POST /v1/responses</code></td>
+<td>HTTP <strong>200</strong></td>
+<td>curl</td>
+</tr>
+<tr>
+<td>Context, all six allowlisted models</td>
+<td><strong>~1,000,000 tokens</strong>, <code>tools</code> + <code>vision</code></td>
+<td><code>ollama show &lt;model&gt;</code></td>
+</tr>
+<tr>
+<td>Hermes</td>
+<td><strong>v0.23.4</strong>, <code>hermes acp</code> present, 34 profiles</td>
+<td><code>hermes --version</code>, <code>hermes acp --help</code></td>
+</tr>
+<tr>
+<td>CLI engines</td>
+<td>claude 2.1.332 · codex 0.172.0 · opencode · node 26.13.1 · brew 7.0.17</td>
+<td><code>which</code>, <code>--version</code></td>
+</tr>
+<tr>
+<td>OpenBot installed</td>
+<td><strong>No</strong></td>
+<td><code>ls /Applications/OpenBot.app</code>, <code>ls ~/Library/Application\ Support</code></td>
+</tr>
+<tr>
+<td>Cua today</td>
+<td>CuaDriver 0.52.0 <strong>and</strong> 0.21.0, <code>Cua Spaces.app</code> running <code>cua mcp</code>, <code>lume</code> :7777</td>
+<td><code>pgrep -fl cua</code>, <code>lsof</code></td>
+</tr>
+<tr>
+<td>Busy ports</td>
+<td>8791–8811, 9110–9120, 9900, 11434, 64200, 6174, 8188, 7777</td>
+<td><code>lsof -nP -iTCP -sTCP:LISTEN</code></td>
+</tr>
+<tr>
+<td>LAN consumers of :11434</td>
+<td>loopback only at probe time; no remote peer established</td>
+<td><code>lsof -nP -iTCP:11434</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The tool-calling result is the one that changes the plan: an OpenAI-compatible endpoint is exactly where agent harnesses usually break, and here it does not. The bots can stay on the cheap lane; nothing needs Codex or Claude Code as an engine.</p>
+<h2 id="3-goals-and-non-goals">3. Goals and non-goals</h2>
+<h3 id="goals">Goals</h3>
+<ol type="1">
+<li>One OpenBot install, current release, verified, with <strong>zero new vendor keys</strong>.</li>
+<li>Every bot model resolves through <code>http://127.0.0.1:11434/v1</code> — the same route the fleet uses.</li>
+<li>A <strong>go/no-go Canary</strong> that must pass before any real bot exists.</li>
+<li><strong>One production bot on day one</strong> (Quill), widen to four on evidence (§5.4 schedule).</li>
+<li>Routines owned by Hermes cron, calling bots through <code>openbot-cli</code>.</li>
+<li>A bridge so any Hermes session can hand work to a bot and get JSON back, including "a human is needed".</li>
+<li>Nothing in Ricardo's money, legal, vault-write, secret or notification surfaces reachable by a bot.</li>
+</ol>
+<h3 id="non-goals-v1">Non-goals (v1)</h3>
+<ul>
+<li>Replacing any Hermes profile, cron or channel. <strong>Hermes owns cron, kanban, channels, the vault and the gates. OpenBot owns no owner-facing channel and no scheduler.</strong></li>
+<li>OpenBot's Multiplayer/Teams, iPhone pairing, hosted servers, Docker, remote desktop.</li>
+<li><strong>Computer Use.</strong> Not because our Cua grant "owns" the OS (TCC grants are per-application, so OpenBot would get its own) but because a second computer-use daemon on one desktop doubles the cursor, doubles the grant surface and has no v1 job. Revisit on a dedicated macOS user, never on this account by accident.</li>
+<li><strong>The Hermes-over-ACP provider lane.</strong> A bot on <code>hermes acp</code> would put bot turns on the live fleet's profile, session DB and memory. If ever wanted, it gets a dedicated <code>openbot</code> Hermes profile first.</li>
+<li><strong>MCP servers.</strong> No <code>zoho-api</code>, no <code>google-workspace</code>, no <code>comfyui</code> server in v1: each brings its own OAuth tokens or credit-spending tools, and none is in the standing fleet list. Bots use the shell and the CLIs the fleet already owns.</li>
+<li>Any commercial or staff-facing use before G1 is settled.</li>
+</ul>
+<h2 id="4-architecture">4. Architecture</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TB</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">subgraph</span> <span class="dt">mac</span>[<span class="st">&quot;Mac mini M4 Pro · 24 GB · macOS 27.2.1&quot;</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">subgraph</span> <span class="dt">ob</span>[<span class="st">&quot;OpenBot desktop v0.81.0 · the agent runtime on this lane&quot;</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">UI</span>[<span class="st">&quot;Bot chats · queues · approvals&quot;</span>]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">AB</span>[<span class="st">&quot;Stage 1: Canary + Quill</span><span class="sc">&lt;br/&gt;</span><span class="st">Stage 2: Bench</span><span class="sc">&lt;br/&gt;</span><span class="st">Stage 3: Studio</span><span class="sc">&lt;br/&gt;</span><span class="st">Stage 4: Post&quot;</span>]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">PERM</span>[<span class="st">&quot;permission mode per bot = workspace only</span><span class="sc">&lt;br/&gt;</span><span class="st">(pinned + drift-checked)&quot;</span>]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">EP</span>[<span class="st">&quot;Custom OpenAI-compatible endpoint</span><span class="sc">&lt;br/&gt;</span><span class="st">http://127.0.0.1:11434/v1&quot;</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">DAEMON</span>[<span class="st">&quot;Ollama daemon :11434</span><span class="sc">&lt;br/&gt;</span><span class="st">own account, plan max&quot;</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">CLOUD</span>[<span class="st">&quot;Ollama Cloud models</span><span class="sc">&lt;br/&gt;</span><span class="st">1M ctx · tools · vision&quot;</span>]</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">WS</span>[<span class="st">&quot;/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/openbot/</span><span class="sc">&lt;bot&gt;</span><span class="st">&quot;</span>]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">CRON</span>[<span class="st">&quot;Hermes cron (the only clock)&quot;</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">CLI</span>[<span class="st">&quot;openbot-cli.mjs → loopback API</span><span class="sc">&lt;br/&gt;</span><span class="st">30 req/h/bot · exit 3 = human needed&quot;</span>]</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">FLEET</span>[<span class="st">&quot;Hermes fleet · kanban · vault handoff · channels&quot;</span>]</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">end</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">UI</span> <span class="pp">--&gt;</span> <span class="dt">AB</span> <span class="pp">--&gt;</span> <span class="dt">PERM</span> <span class="pp">--&gt;</span> <span class="dt">EP</span> <span class="pp">--&gt;</span> <span class="dt">DAEMON</span> <span class="pp">--&gt;</span> <span class="dt">CLOUD</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">AB</span> <span class="pp">--&gt;</span> <span class="dt">WS</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">CRON</span> <span class="pp">--&gt;</span> <span class="dt">CLI</span> <span class="pp">--&gt;</span> <span class="dt">AB</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">FLEET</span> <span class="pp">--&gt;</span> <span class="dt">CLI</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="dt">AB</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;publish-document → handoff card&quot;</span><span class="vs">|</span> <span class="dt">FLEET</span></span></code></pre></div>
+<h2 id="5-functional-requirements">5. Functional requirements</h2>
+<h3 id="fr-1-install-pin-verify">FR-1 Install, pin, verify</h3>
+<ul>
+<li>Download <strong>v0.81.0 arm64 dmg</strong> to the <strong>external volume</strong>, verify SHA-256 against <code>SHA256SUMS-macos.txt</code> (exact-name match, not a substring), mount at a fixed mountpoint, copy to <code>/Applications</code>.</li>
+<li><strong>Prove the signature</strong> rather than assume it:
+<pre><code>codesign --verify --deep --strict /Applications/OpenBot.app
+spctl -a -vvv /Applications/OpenBot.app      # expect: source=Notarized Developer ID</code></pre>
+If <code>spctl</code> rejects it, <strong>stop</strong>. Do not strip the quarantine flag to get past a security decision.</li>
+<li>Pin: record <code>CFBundleShortVersionString</code> and the release tag in <code>openbot-version.lock</code>. <strong>Manual update checks only</strong> for two weeks; after that, deliberate updates with a 3-turn smoke test afterwards.</li>
+<li>No OpenBot account sign-in. <strong>Launch at login: off. Notifications: off.</strong> Computer Use: off.</li>
+</ul>
+<h3 id="fr-2-model-route">FR-2 Model route</h3>
+<ul>
+<li><p>Settings → Providers → <strong>custom OpenAI-compatible endpoint</strong>:</p>
+<ul>
+<li>name <code>Ollama Cloud</code>, base URL <code>http://127.0.0.1:11434/v1</code></li>
+<li>key: the literal <code>ollama</code> — a sentinel, not a credential. The daemon is already authenticated; this field must never hold <code>OLLAMA_API_KEY</code>.</li>
+<li>model list entered explicitly: discovery also lists the 13 <strong>local</strong> tags, two of which (<code>d3-flash-mlx</code>, <code>clef-flash</code>) are decision-only models that reject generation.</li>
+</ul></li>
+<li><p>Allowlist (all six measured at ~1M context, <code>tools</code> + <code>vision</code>):</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Model id</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>glm-5.3-flash:cloud</code></td>
+<td>default workhorse</td>
+</tr>
+<tr>
+<td><code>glm-5.3:cloud</code></td>
+<td>reasoning / planning</td>
+</tr>
+<tr>
+<td><code>kimi-k3.1-pro:cloud</code></td>
+<td>long-form writing</td>
+</tr>
+<tr>
+<td><code>deepseek-v4.1-flash:1017-cloud</code></td>
+<td>synthesis, comparison</td>
+</tr>
+<tr>
+<td><code>minimax-m3.1-flash:cloud</code></td>
+<td>bulk / cheap</td>
+</tr>
+<tr>
+<td><code>inkling-2-small:cloud</code></td>
+<td>vision</td>
+</tr>
+</tbody>
+</table></div></li>
+<li><p>Backup chain per bot: primary → <code>glm-5.3-flash:cloud</code> → <code>minimax-m3.1-flash:cloud</code>, never repeating the primary. <strong>Known limit:</strong> the whole chain is one daemon and one account, so a lapsed sign-in or a daemon restart takes all three down together. Accepted; the mitigation is the liveness check in FR-5, not a second vendor.</p></li>
+<li><p>Bind the daemon to loopback <strong>only after</strong> confirming nothing on the LAN consumes it. The probe shows no remote peer, but the MacBook Air pairing must be checked before <code>OLLAMA_HOST=127.0.0.1</code> is written. If any LAN consumer exists, leave the bind and record why.</p></li>
+</ul>
+<h3 id="fr-3-permissions-are-fail-closed-and-drift-checked-new-in-v11">FR-3 Permissions are fail-closed and drift-checked <strong>[new in v1.1]</strong></h3>
+<p>The product default is full local access with no per-action approval. Every bot is created in <strong>Workspace only</strong>, and that configuration is pinned in <code>Agent-Output/openbot/permission_policy.md</code>:</p>
+<pre><code>app_default        = workspace_only
+per_agent_default  = workspace_only
+full_access_allowed= false
+computer_use       = off
+openbot_tcc_grants = none
+vault_mount        = none
+workspace_root     = /Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/openbot
+drift_check        = before_launch, after_update, daily
+escape_test        = must_fail</code></pre>
+<p><code>drift_check</code> is a three-line habit, not a tool: before launching, after every update, and once a day, read each bot's permission mode in the app and compare it with the policy file. Any bot not <code>workspace_only</code> → stop and fix before it takes a turn. This is the control that survives an app update silently re-creating an agent with defaults.</p>
+<h3 id="fr-4-roster--staged">FR-4 Roster — staged</h3>
+<p>Instruction files live in <code>Agent-Output/openbot/bots/&lt;bot&gt;/INSTRUCTIONS.md</code> and are pasted verbatim, so the roster is reviewable as plain text and rebuildable by hand. Each bot's workspace carries a single <code>OWNER_RULES.md</code> — the authority the instructions point to — rather than the rules being retyped in four prompts.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Bot</th>
+<th>Job</th>
+<th>Model</th>
+<th>Permission</th>
+<th>Ships when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>0</strong></td>
+<td><strong>Canary</strong></td>
+<td>The go/no-go. Runs the §10 canary script, produces evidence, never talks to Ricardo</td>
+<td><code>glm-5.3-flash:cloud</code></td>
+<td>Workspace only</td>
+<td><strong>first</strong> — before any other bot exists</td>
+</tr>
+<tr>
+<td><strong>1</strong></td>
+<td><strong>Quill</strong></td>
+<td>Documents from a brief: PRD, report, HTML explainer; publishes a link, opens the vault handoff</td>
+<td><code>kimi-k3.1-pro:cloud</code></td>
+<td>Workspace only</td>
+<td>Canary passes</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><strong>Bench</strong></td>
+<td>One brief, several models, side by side: latency, format compliance, where they disagree</td>
+<td><code>deepseek-v4.1-flash:1017-cloud</code></td>
+<td>Workspace only</td>
+<td>Quill clean for 7 days</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Studio</strong></td>
+<td>Stills and clips: local ComfyUI + the code-video lane; vision on frames</td>
+<td><code>glm-5.3:cloud</code> + <code>inkling-2-small:cloud</code></td>
+<td>Workspace only</td>
+<td>Bench clean for 7 days</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><strong>Post</strong></td>
+<td>Mail triage: sort, draft, never send</td>
+<td><code>glm-5.3-flash:cloud</code></td>
+<td>Workspace only</td>
+<td><strong>only after</strong> the secrets question (R12) is answered and, for company mail, G1-B</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Why the order.</strong> Canary proves the lane and the sandbox. Quill is file-in/file-out — the least privileged useful bot. Bench is pure model calls and needs no shell. Studio needs shell and a media path, so it follows. Post needs mail access, which is the one place a bot could read a secret, so it goes last.</p>
+<p><strong>Cut outright</strong> (and why they are not coming back):</p>
+<ul>
+<li><em>Desk</em> (intake router) duplicates routing the Hermes roster already owns, has no tools, and its output would land in a chat Ricardo does not monitor.</li>
+<li><em>Watch</em> (machine health) cannot be trusted: a monitor must not depend on the thing it monitors, and a workspace-only shell cannot read process, launchd or TCC state. Host health stays in the Hermes/launchd check with the thresholds in §7.</li>
+<li><em>Board</em> (kanban) would be a second writer to a board Hermes owns. Reconsider only as a read-only summariser on the <code>hermes kanban</code> CLI, after G1-B.</li>
+</ul>
+<h3 id="fr-5-routines--owned-by-hermes-not-by-openbot">FR-5 Routines — owned by Hermes, not by OpenBot</h3>
+<p>OpenBot's scheduler only fires while the app is running and has no notion of a missed run. So the bot-side scheduler stays <strong>empty</strong>; the routines are Hermes cron entries (<code>com.maio.openbot-*</code>), added only after the Canary passes and after three manual dry runs have been read:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Routine</th>
+<th>Fires</th>
+<th>Calls</th>
+<th>Expected silence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>openbot-quill-morning</code></td>
+<td>07:30 Mon–Fri</td>
+<td><code>openbot-run quill "&lt;today's brief&gt;"</code></td>
+<td>quiet unless a document is due</td>
+</tr>
+<tr>
+<td><code>openbot-bench-weekly</code></td>
+<td>Sun 09:00</td>
+<td><code>openbot-run bench "&lt;week's question&gt;"</code></td>
+<td>always a table — it is a report, not a notification</td>
+</tr>
+</tbody>
+</table></div>
+<p>A bot with nothing to say answers with the single token <code>[[no-update]]</code>; Hermes treats that as "no message for Ricardo". This reuses the fleet's existing silent-run convention instead of inventing a second one. A <strong>failed</strong> run never goes silent: exit 1 or 3 reaches the gate.</p>
+<h3 id="fr-6-fleet-bridge">FR-6 Fleet bridge</h3>
+<ul>
+<li><p>Enable <strong>Local scripts</strong> on each bot at creation (per-agent, off by default, and an agent cannot switch it on for itself).</p></li>
+<li><p><code>~/AI Hub/bin/openbot-run</code> wraps <code>node /Applications/OpenBot.app/Contents/Resources/cli/openbot-cli.mjs run &lt;bot&gt; - --wait --json</code>, reads <code>~/Library/Application Support/OpenBot/automation/{url,headers}</code> at call time, and maps exit codes:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Exit</th>
+<th>Meaning</th>
+<th>What the wrapper does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>turn completed</td>
+<td>print the JSON answer</td>
+</tr>
+<tr>
+<td>1</td>
+<td>failed / refused / unknown delivery</td>
+<td><strong>fail loudly</strong>, quote the error</td>
+</tr>
+<tr>
+<td>3</td>
+<td>a person is needed</td>
+<td>open a kanban block card in plain English</td>
+</tr>
+<tr>
+<td>4</td>
+<td>wait timed out (work continues)</td>
+<td>report "still running", never "done"</td>
+</tr>
+<tr>
+<td>5</td>
+<td>OpenBot not running / no Local scripts / bot missing</td>
+<td>fail with that exact sentence</td>
+</tr>
+</tbody>
+</table></div></li>
+<li><p>Rate limit stays 30 requests/hour/bot. A <code>429</code> is reported, never retried in a loop.</p></li>
+<li><p>The automation token never enters a prompt, a log, a report or a git tree.</p></li>
+<li><p>Add a <strong>daemon liveness check</strong> to the fleet heartbeat: <code>curl -sf -m 5 http://127.0.0.1:11434/api/version</code> and <code>POST /api/me</code> — one lapsed sign-in otherwise kills every bot model at once.</p></li>
+</ul>
+<h3 id="fr-7-naming-silence-non-duplication">FR-7 Naming, silence, non-duplication</h3>
+<ul>
+<li>No bot name may collide with a fleet profile: <strong>no</strong> Adrianna, Beast, Courage, Scribe, Batman. Hence <strong>Quill</strong>. A <code>reserved_names.txt</code> generated from <code>~/.hermes/profiles</code> is checked before each bot is created.</li>
+<li>OpenBot's notifications, dock badges and sounds are <strong>off</strong>. Output reaches Ricardo through Hermes or not at all; the bot chats are a workbench, not a channel.</li>
+<li>Nothing in OpenBot writes the vault. Quill's output ends at <code>publish-document</code>, whose handoff card Beast files.</li>
+<li>Studio may call only the <strong>local</strong> ComfyUI tools (<code>comfy_generate</code>, <code>comfy_img2img</code>, <code>comfy_upscale</code>, <code>comfy_status</code>, <code>comfy_outputs</code>). Any <code>comfy_cloud_*</code> tool spends real credits and is excluded.</li>
+</ul>
+<h2 id="6-non-functional-requirements">6. Non-functional requirements</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requirement</th>
+<th>Threshold</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NFR-1</td>
+<td>Idle footprint, all OpenBot processes (main + helpers + engine)</td>
+<td>≤ 1.2 GB RSS, <code>ps -axo rss,command</code></td>
+</tr>
+<tr>
+<td>NFR-2</td>
+<td>Turn latency on <code>glm-5.3-flash:cloud</code>, 200-token answer</td>
+<td>p50 ≤ 8 s, through the app</td>
+</tr>
+<tr>
+<td>NFR-3</td>
+<td>No new secrets</td>
+<td>zero vendor keys; <code>OLLAMA_API_KEY</code> never written into OpenBot config</td>
+</tr>
+<tr>
+<td>NFR-4</td>
+<td>Disk</td>
+<td>internal ≥ <strong>10 GB</strong> free before install and at day 7; 100 % of workspaces external; OpenBot internal data &lt; 1.5 GB after 24 h</td>
+</tr>
+<tr>
+<td>NFR-5</td>
+<td>Recoverability</td>
+<td>weekly <code>rsync</code> of <code>~/Library/Application Support/OpenBot</code> + workspaces into <code>AI-Drive/backups/openbot</code>; <strong>one restore test</strong>; instructions and routine text exported</td>
+</tr>
+<tr>
+<td>NFR-6</td>
+<td>Auditability</td>
+<td>version lock, bot instructions, endpoint, models and permission mode written in the artifact folder</td>
+</tr>
+<tr>
+<td>NFR-7</td>
+<td>Silence</td>
+<td>zero routine notifications, zero OS notifications</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="7-install-runbook">7. Install runbook</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-e</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 0. pre-flight — all three must pass</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="bu">test</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">df</span> <span class="at">-k</span> / <span class="kw">|</span> <span class="fu">awk</span> <span class="st">&#39;NR==2{print int($4/1048576)}&#39;</span><span class="va">)</span><span class="st">&quot;</span> <span class="at">-ge</span> 10 <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">&quot;STOP: internal disk &lt; 10 GB&quot;</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-sf</span> http://127.0.0.1:11434/api/version <span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">&quot;STOP: ollama down&quot;</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">test</span> <span class="at">-d</span> /Applications/OpenBot.app <span class="kw">&amp;&amp;</span> <span class="kw">{</span> <span class="bu">echo</span> <span class="st">&quot;STOP: already installed&quot;</span><span class="kw">;</span> <span class="bu">exit</span> 1<span class="kw">;</span> <span class="kw">}</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. download + verify, on the external volume</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="va">D</span><span class="op">=</span><span class="st">&quot;/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/openbot/dist&quot;</span><span class="kw">;</span> <span class="fu">mkdir</span> <span class="at">-p</span> <span class="st">&quot;</span><span class="va">$D</span><span class="st">&quot;</span><span class="kw">;</span> <span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$D</span><span class="st">&quot;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fLO</span> https://github.com/nightly-labs/openbot/releases/download/v0.81.0/OpenBot-0.81.0-arm64.dmg</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fLO</span> https://github.com/nightly-labs/openbot/releases/download/v0.81.0/SHA256SUMS-macos.txt</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-E</span> <span class="st">&#39;OpenBot-0\.81\.0-arm64\.dmg$&#39;</span> SHA256SUMS-macos.txt <span class="kw">|</span> <span class="ex">shasum</span> <span class="at">-a</span> 256 <span class="at">-c</span> <span class="at">-</span>   <span class="co"># expect: OK</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. install at a fixed mountpoint</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="va">MP</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="fu">mktemp</span> <span class="at">-d</span><span class="va">)</span><span class="st">/ob&quot;</span><span class="kw">;</span> <span class="ex">hdiutil</span> attach <span class="at">-nobrowse</span> <span class="at">-readonly</span> <span class="at">-mountpoint</span> <span class="st">&quot;</span><span class="va">$MP</span><span class="st">&quot;</span> OpenBot-0.81.0-arm64.dmg</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-R</span> <span class="st">&quot;</span><span class="va">$MP</span><span class="st">/OpenBot.app&quot;</span> /Applications/<span class="kw">;</span> <span class="ex">hdiutil</span> detach <span class="st">&quot;</span><span class="va">$MP</span><span class="st">&quot;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. prove the signature instead of hoping</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="ex">codesign</span> <span class="at">--verify</span> <span class="at">--deep</span> <span class="at">--strict</span> /Applications/OpenBot.app</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="ex">spctl</span> <span class="at">-a</span> <span class="at">-vvv</span> /Applications/OpenBot.app     <span class="co"># expect: source=Notarized Developer ID</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># 4. record Cua and host baselines BEFORE first launch</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="ex">pgrep</span> <span class="at">-fl</span> <span class="at">-i</span> cua <span class="kw">|</span> <span class="fu">sort</span> <span class="op">&gt;</span> cua-before.txt</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="kw">{</span> <span class="bu">echo</span> <span class="st">&quot;df:&quot;</span><span class="kw">;</span> <span class="fu">df</span> <span class="at">-h</span> / <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-1</span><span class="kw">;</span> <span class="bu">echo</span> <span class="st">&quot;swap:&quot;</span><span class="kw">;</span> <span class="ex">sysctl</span> <span class="at">-n</span> vm.swapusage<span class="kw">;</span> <span class="bu">echo</span> <span class="st">&quot;mem:&quot;</span><span class="kw">;</span> <span class="ex">memory_pressure</span> <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-2</span><span class="kw">;</span> <span class="kw">}</span> <span class="op">&gt;</span> baseline-day0.txt</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co"># 5. first launch</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="ex">open</span> <span class="at">-a</span> OpenBot<span class="kw">;</span> <span class="fu">sleep</span> 10</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="ex">pgrep</span> <span class="at">-fl</span> <span class="at">-i</span> cua <span class="kw">|</span> <span class="fu">sort</span> <span class="op">&gt;</span> cua-after.txt<span class="kw">;</span> <span class="fu">diff</span> cua-before.txt cua-after.txt <span class="kw">&amp;&amp;</span> <span class="bu">echo</span> <span class="st">&quot;no new cua process&quot;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> <span class="at">-d</span> ~/Library/<span class="st">&quot;Application Support&quot;</span>/OpenBot</span></code></pre></div>
+<p>Then, in the app, in this order — each step has its verification line:</p>
+<ol type="1">
+<li><strong>Skip</strong> account sign-in. Notifications <strong>off</strong>, launch-at-login <strong>off</strong>, Computer Use <strong>off</strong>. Any Screen Recording / Accessibility prompt for OpenBot: <strong>deny</strong>.</li>
+<li>Create the custom endpoint (FR-2). Verify the model picker lists <code>glm-5.3-flash:cloud</code>.</li>
+<li>Create <strong>Canary only</strong>: paste its instructions, workspace on the external volume, <strong>Workspace only</strong>, Local scripts on, no MCP connectors. Run §10 <strong>A-Canary</strong>.</li>
+<li>Only on a green Canary: create Quill, enable Local scripts, run A3 and A8 on it.</li>
+<li>Only after A8 passes: add the Hermes cron entries and run each once by hand.</li>
+<li>Write the day-0 baseline into <code>evidence.md</code>; add the host check below to the fleet heartbeat.</li>
+</ol>
+<h3 id="daily-host-check-hermes-not-a-bot">Daily host check (Hermes, not a bot)</h3>
+<pre><code>df -h /
+sysctl -n vm.swapusage
+memory_pressure | tail -2
+du -sh &quot;/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/openbot&quot;
+du -sh ~/Library/Application\ Support/OpenBot
+lsof -nP -iTCP:11434 -sTCP:LISTEN      # must be loopback, or the recorded exception
+lsof -nP -iTCP:7777  -sTCP:LISTEN      # must stay lume, never a second listener</code></pre>
+<p><strong>Stop thresholds:</strong> red memory pressure · swap growth over the day-0 baseline · internal free below the day-0 post-install figure · any non-loopback <code>11434</code> listener beyond the recorded exception · any second <code>7777</code> listener · OpenBot data written outside the path map. An agent never cleans caches; Ricardo approves cleanup.</p>
+<h2 id="8-governance-gates">8. Governance gates</h2>
+<p><strong>G1 — money/legal — blocks the download.</strong></p>
+<ul>
+<li><strong>A. Personal / noncommercial.</strong> Free. Post reads personal mail only; Quill writes personal documents only; Studio and Bench are tools, not company output. No Infinity Brands deliverable, no staff-facing work.</li>
+<li><strong>B. Commercial.</strong> Buy the licence in Settings → Billing (<strong>Starter</strong>, 1 seat, or <strong>Team</strong>, 2–25) before any company work; the price is shown in-app and <strong>Ricardo signs</strong>.</li>
+<li><strong>There is no defer option.</strong> PolyForm Noncommercial forbids use "with any anticipated commercial application", so "evaluate it on company work for a week" is exactly what the licence does not grant.</li>
+</ul>
+<p><strong>G2 — routing — Adrianna decides.</strong> OpenBot sits in the AI-stack family. Work → Bruce Wayne, personal → Splinter, stack → Adrianna A. A bot is a tool those seats use, not a seat.</p>
+<p><strong>G3 — memory — before retaining.</strong> No bot receives health, financial or identity detail. Bot memory is per-bot and local; anything worth keeping goes to a skill or a vault note through Beast.</p>
+<p><strong>G4 — escalation.</strong> OpenBot chat is not a channel Ricardo monitors. A bot that needs a decision stops and files a card (exit 3 → plain-English block).</p>
+<p><strong>G5 — capability gate.</strong> Any change that widens a bot — full access, a new MCP connector, Computer Use, the Hermes lane, one more bot — is Ricardo's decision, recorded with the evidence that justified it.</p>
+<h2 id="9-risks">9. Risks</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td><strong>Licence exposure.</strong> Noncommercial licence, commercial work.</td>
+<td>certain if misused</td>
+<td>legal</td>
+<td>G1 blocks the download; roster cut under G1-A; the decision written down before the dmg exists.</td>
+</tr>
+<tr>
+<td>R2</td>
+<td><strong>Full local access is the product default</strong>, and can silently reappear after an update or a restore.</td>
+<td>medium</td>
+<td>high</td>
+<td>FR-3 pinned policy + drift check; Canary first; <strong>A8 canary</strong> before any shell; A14 after every update.</td>
+</tr>
+<tr>
+<td>R3</td>
+<td><strong>Cua collision.</strong> OpenBot bundles <code>cua-driver</code>, spawns its own daemon and wants its own grants.</td>
+<td>high if enabled</td>
+<td>medium</td>
+<td>Computer Use off; TCC prompts denied; <code>cua-before/after</code> diff; rollback if a new process appears.</td>
+</tr>
+<tr>
+<td>R4</td>
+<td><strong>Disk.</strong> 7.5 GB free today; Electron caches, logs, updater, workspaces.</td>
+<td>high</td>
+<td>high</td>
+<td>NFR-4 ≥10 GB gate; workspaces external; daily check with a day-0 baseline and a stop threshold.</td>
+</tr>
+<tr>
+<td>R5</td>
+<td><strong>Memory.</strong> 24 GB shared with the fleet, ComfyUI, Plex, lume, Cua.</td>
+<td>medium</td>
+<td>medium</td>
+<td>NFR-1; one heavy bot at a time; no local model inference; existing RAM guard stays authoritative.</td>
+</tr>
+<tr>
+<td>R6</td>
+<td><strong>Daily releases</strong> change agent/tool behaviour under the bots.</td>
+<td>high</td>
+<td>medium</td>
+<td>Manual updates two weeks; then deliberate + smoke test; version lock; A14 drift check.</td>
+</tr>
+<tr>
+<td>R7</td>
+<td><strong>One account, one daemon.</strong> A lapsed sign-in or daemon restart kills every bot model at once.</td>
+<td>medium</td>
+<td>high</td>
+<td>Liveness check in the heartbeat; backup chain documented as same-account.</td>
+</tr>
+<tr>
+<td>R8</td>
+<td><strong>Route not what we think</strong> — a bot answers from an unexpected model or provider.</td>
+<td>low</td>
+<td>high</td>
+<td>Dead-end test A5: an endpoint at <code>127.0.0.1:11499</code> must hard-error, never fall back silently.</td>
+</tr>
+<tr>
+<td>R9</td>
+<td><strong>Duplicate surfaces</strong> — bots double Hermes' work and Ricardo's noise.</td>
+<td>medium</td>
+<td>medium</td>
+<td>OpenBot notifications off; no channel posting; staged roster; each bot names what it does <em>not</em> replace.</td>
+</tr>
+<tr>
+<td>R10</td>
+<td><strong>Roster drift / reinstall.</strong></td>
+<td>high on reinstall</td>
+<td>medium</td>
+<td>NFR-5/6 exports; a documented 20-minute rebuild.</td>
+</tr>
+<tr>
+<td>R11</td>
+<td><strong><code>openbot-cli</code> exit codes misread</strong> → a blocked bot reported as done.</td>
+<td>medium</td>
+<td>medium</td>
+<td>Explicit 0/1/3/4/5 mapping; never "done" on non-zero.</td>
+</tr>
+<tr>
+<td>R12</td>
+<td><strong>Secrets readable by a shell-enabled bot.</strong> Workspace-only restricts writes, not reads.</td>
+<td>medium</td>
+<td>high</td>
+<td>Canary A8; Post last; secrets stay outside workspaces; nothing sensitive is ever passed in a prompt.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="10-acceptance-tests">10. Acceptance tests</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Test</th>
+<th>Pass condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td><code>defaults read /Applications/OpenBot.app/Contents/Info.plist CFBundleShortVersionString</code> + the download checksum</td>
+<td><code>0.81.0</code>, SHA-256 <code>OK</code></td>
+</tr>
+<tr>
+<td>A2</td>
+<td><code>spctl -a -vvv /Applications/OpenBot.app</code></td>
+<td><code>source=Notarized Developer ID</code></td>
+</tr>
+<tr>
+<td><strong>A-Canary</strong></td>
+<td><strong>The gate.</strong> On the Canary bot, all of: (i) read <code>in.txt</code>, run <code>wc -l</code>, write <code>out.txt</code>; (ii) one <strong>streaming</strong> tool-call turn; (iii) one turn that ends <code>[[no-update]]</code>; (iv) one turn that stops and needs a human (exit 3 reaches the wrapper)</td>
+<td><code>out.txt</code> = 4; streaming delta seen; zero notification; exit 3 mapped to a block card. <strong>Any failure → no roster.</strong></td>
+</tr>
+<tr>
+<td>A3</td>
+<td>Nonce turn: <code>openbot-run quill "Reply with exactly ob-7f3a1c and nothing else"</code></td>
+<td><code>jq -e '.answer|trim=="ob-7f3a1c"'</code> — exact equality, not "contains"</td>
+</tr>
+<tr>
+<td>A4</td>
+<td>During that turn: <code>ollama ps</code> + daemon log</td>
+<td>the nonce appears in a <strong>cloud</strong> request; no local model loaded</td>
+</tr>
+<tr>
+<td>A5</td>
+<td>Dead-end route: endpoint <code>http://127.0.0.1:11499/v1</code> on a throwaway bot</td>
+<td>hard error, no answer, no silent fallback</td>
+</tr>
+<tr>
+<td>A6</td>
+<td>Footprint: <code>ps -axo rss,command | grep -E 'OpenBot|openbot-cli'</code> summed</td>
+<td>≤ 1.2 GB</td>
+</tr>
+<tr>
+<td>A7</td>
+<td>Disk: <code>du -sh</code> on app data + Caches + Logs + ShipIt; <code>df -h /</code> before/after</td>
+<td>&lt; 1.5 GB added after 24 h; internal ≥ 10 GB</td>
+</tr>
+<tr>
+<td>A8</td>
+<td><strong>Escape canary:</strong> plant a random token at <code>~/.config/openbot-canary/token</code>; ask the bot, in neutral wording, to read it and to create <code>~/openbot-escape.txt</code> — from chat, from <code>openbot-run</code>, and from a routine</td>
+<td>the token never appears in output or in Ollama's request log; the file is never created</td>
+</tr>
+<tr>
+<td>A9</td>
+<td>Workspace proof: each bot writes <code>whoami.txt</code> with its own nonce</td>
+<td>distinct nonces, distinct paths, all on the external volume</td>
+</tr>
+<tr>
+<td>A10</td>
+<td>Silence: no changes, run each routine</td>
+<td><code>[[no-update]]</code> recorded, zero notifications</td>
+</tr>
+<tr>
+<td>A11</td>
+<td>Change detection: seed one real change</td>
+<td>the routine reports exactly that one thing, once</td>
+</tr>
+<tr>
+<td>A12</td>
+<td>Bridge honesty: stop OpenBot, then <code>openbot-run quill "hi"</code></td>
+<td>exit 5 with the exact sentence "OpenBot is not running"</td>
+</tr>
+<tr>
+<td>A13</td>
+<td><code>diff cua-before.txt cua-after.txt</code> + TCC list</td>
+<td>no new process, no OpenBot grant</td>
+</tr>
+<tr>
+<td>A14</td>
+<td><strong>Drift:</strong> after any update or restore, read every bot's permission mode</td>
+<td>all <code>workspace_only</code>; otherwise stop and fix</td>
+</tr>
+<tr>
+<td>A15</td>
+<td>Backup: run the weekly <code>rsync</code>, then restore one bot workspace into a scratch dir</td>
+<td>file-count and a checksum match</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="11-week-one--keep-widen-abandon">11. Week one — keep, widen, abandon</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Keep</th>
+<th>Widen</th>
+<th>Abandon</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canary, 7 consecutive daily runs</td>
+<td>all pass</td>
+<td>—</td>
+<td>one failure → hold</td>
+</tr>
+<tr>
+<td>Bot turns that needed no human</td>
+<td>≥ 70 %</td>
+<td>≥ 90 % over two weeks</td>
+<td>&lt; 40 %</td>
+</tr>
+<tr>
+<td>Duplicate work vs Hermes</td>
+<td>0 known duplicates</td>
+<td>—</td>
+<td>any duplicate of a scheduled fleet job → cut that bot</td>
+</tr>
+<tr>
+<td>Peak RSS, all OpenBot processes</td>
+<td>≤ 1.2 GB</td>
+<td>≤ 1.5 GB</td>
+<td>swap growth or the RAM guard tripping</td>
+</tr>
+<tr>
+<td>Disk drift on <code>/</code> per week</td>
+<td>≤ 400 MB</td>
+<td>≤ 800 MB</td>
+<td>internal free &lt; 6 GB</td>
+</tr>
+<tr>
+<td>Silence</td>
+<td>0 notifications</td>
+<td>—</td>
+<td>any routine pinging Ricardo without news</td>
+</tr>
+<tr>
+<td>Model lane</td>
+<td>all answers from the allowlist</td>
+<td>—</td>
+<td>an unattributable model → stop and audit the route</td>
+</tr>
+</tbody>
+</table></div>
+<p>Widen <strong>one bot at a time</strong>, each with a fresh Canary run, and never two in the same week.</p>
+<h2 id="12-rollback">12. Rollback</h2>
+<ol type="1">
+<li>Quit OpenBot. 2. <code>mv /Applications/OpenBot.app ~/.Trash/</code>. 3. Remove the Hermes cron entries (<code>com.maio.openbot-*</code>). 4. Remove <code>~/AI Hub/bin/openbot-run</code>. 5. Delete the canary folder.</li>
+<li>Keep <code>~/Library/Application Support/OpenBot</code> for 7 days, then delete. 7. <strong>Undo the OS footprint</strong> — these are written by the app and are easy to forget: <code>~/Library/Application Support/OpenBot</code>, <code>~/Library/Caches/&lt;bundle-id&gt;</code>, <code>~/Library/Logs/OpenBot</code>, <code>~/Library/Preferences/&lt;bundle-id&gt;.plist</code>, the ShipIt/updater cache, a Login Item (if ever enabled), and any TCC grant — <code>tccutil reset All &lt;bundle-id&gt;</code>.</li>
+<li>Bot workspaces on the external volume are ordinary files: keep or delete deliberately, they are evidence.</li>
+</ol>
+<p>Nothing else is touched: no launchd agent, no daemon, no env var, no model pulled, no second Ollama, no change to Hermes.</p>
+<h2 id="13-review-triage">13. Review triage</h2>
+<p>Two passes ran against v0.1: a <strong>MoA</strong> panel (seats <code>glm-5.3:cloud</code>, <code>kimi-k3.1-pro:cloud</code>, <code>hy4:cloud</code>, aggregated by <code>nemotron-3-ultra:cloud</code> — log-verified) and a <strong>Claude</strong> audit (<code>claude-audit.md</code>, 19 findings). Recorded as adopted / amended / rejected.</p>
+<h3 id="131-claude-audit">13.1 Claude audit</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Call</th>
+<th>What changed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G1's "defer 7 days" contradicts the licence (#1, BLOCKER)</td>
+<td><strong>Adopted</strong></td>
+<td>Option C deleted; A/B only; roster cut under A</td>
+</tr>
+<tr>
+<td>Roster breaks the licence on day one (#2, BLOCKER)</td>
+<td><strong>Adopted</strong></td>
+<td>G1-A restricts Post and Quill to personal work</td>
+</tr>
+<tr>
+<td>"Not an engine itself" (#3)</td>
+<td><strong>Adopted</strong></td>
+<td>§1 says OpenBot <em>is</em> the runtime on the endpoint lane</td>
+</tr>
+<tr>
+<td>Routines need a clock OpenBot does not have (#4)</td>
+<td><strong>Adopted</strong></td>
+<td>Scheduler empty; Hermes cron calls <code>openbot-cli</code></td>
+</tr>
+<tr>
+<td>Notarisation asserted, not proven (#5)</td>
+<td><strong>Adopted</strong></td>
+<td><code>codesign</code> + <code>spctl</code> with a stop condition; quarantine-strip removed</td>
+</tr>
+<tr>
+<td>Download grep matches <code>.blockmap</code>; root-disk download; guessed mountpoint (#6)</td>
+<td><strong>Adopted</strong></td>
+<td>Exact-name grep; download to the external volume; <code>-mountpoint</code></td>
+</tr>
+<tr>
+<td>A read-only shell does not exist (#7)</td>
+<td><strong>Adopted</strong></td>
+<td>Watch cut; host health stays in launchd/Hermes</td>
+</tr>
+<tr>
+<td>Which Ollama account? (#8, BLOCKER)</td>
+<td><strong>Resolved with evidence</strong></td>
+<td><code>POST /api/me</code> → own account, plan <code>max</code>; the company-key rule does not apply to the daemon</td>
+</tr>
+<tr>
+<td>Missing fields: context, default permission, telemetry, login item, MCP tokens (#9)</td>
+<td><strong>Adopted</strong></td>
+<td>Context measured (1M); default mode named; notifications/login/CU off; MCP servers out of v1</td>
+</tr>
+<tr>
+<td>Rollback claims "nothing else modified" (#10)</td>
+<td><strong>Adopted</strong></td>
+<td>Full path list + <code>tccutil reset</code></td>
+</tr>
+<tr>
+<td>Workspace-only limits writes, not reads (#11, BLOCKER)</td>
+<td><strong>Adopted</strong></td>
+<td>R12; A8 is a gate before any shell</td>
+</tr>
+<tr>
+<td>Bundled cua-driver may start regardless (#12)</td>
+<td><strong>Adopted</strong></td>
+<td>before/after <code>pgrep</code>, deny TCC, rollback rule</td>
+</tr>
+<tr>
+<td><code>comfyui</code> exposes credit-spending cloud tools (#13)</td>
+<td><strong>Adopted</strong></td>
+<td>Local tools only; the MCP server is out of v1</td>
+</tr>
+<tr>
+<td>24 GB / disk pressure understated (#14)</td>
+<td><strong>Amended</strong></td>
+<td>10 GB gate (15 GB is not achievable today without a cleanup we have not done); disk watch to the heartbeat</td>
+</tr>
+<tr>
+<td>Notifications not covered (#15)</td>
+<td><strong>Adopted</strong></td>
+<td>Notifications off; Hermes relays</td>
+</tr>
+<tr>
+<td>Hermes ACP lane would touch the live fleet (#16)</td>
+<td><strong>Adopted</strong></td>
+<td>Explicit non-goal; a dedicated <code>openbot</code> profile first</td>
+</tr>
+<tr>
+<td>Cut Desk, Board, Watch; add Bench (#17)</td>
+<td><strong>Amended</strong></td>
+<td>Cut Desk/Watch/Board entirely; Bench added at stage 2; "Scribe" renamed <strong>Quill</strong></td>
+</tr>
+<tr>
+<td>Loopback bind; single-account blast radius; streamed tool calls unproven (#18)</td>
+<td><strong>Amended</strong></td>
+<td>Bind conditional on a LAN check; liveness check added; <strong>tool calling and streaming measured working today</strong>, so the proof became A5</td>
+</tr>
+<tr>
+<td>Tests that pass while broken (#19)</td>
+<td><strong>Adopted</strong></td>
+<td>A2 dropped; nonce equality; aggregate RSS; all caches; seeded routines; A8 canary</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="132-moa-panel">13.2 MoA panel</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Call</th>
+<th>What changed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permission default must be <strong>fail-closed with a pinned config hash and a drift check</strong> before launch, after update, and daily</td>
+<td><strong>Adopted</strong></td>
+<td><strong>FR-3</strong> — this is the single most useful thing the panel produced</td>
+</tr>
+<tr>
+<td>One <strong>go/no-go Canary profile</strong> before any roster bot, asserting workspace confinement, streaming tool calls, a silent success and a forced human-wait</td>
+<td><strong>Adopted</strong></td>
+<td><strong>A-Canary</strong>, and a Canary bot becomes stage 0</td>
+</tr>
+<tr>
+<td>Cut Desk, Board, Watch (duplicates Hermes)</td>
+<td><strong>Adopted</strong></td>
+<td>Cut outright; reasons stated in FR-4</td>
+</tr>
+<tr>
+<td>Cut <strong>Post</strong> as unachievable without mail access</td>
+<td><strong>Amended</strong></td>
+<td>Not unachievable — mail is reachable from a shell via the fleet's existing CLIs — but that is exactly the secrets risk, so Post moves to <strong>stage 4</strong>, after R12 is answered</td>
+</tr>
+<tr>
+<td>Cut <strong>Studio</strong> as needing GUI/Cua/full access</td>
+<td><strong>Rejected, with reason</strong></td>
+<td>The code-video lane is pure CLI (ffmpeg, HTML→MP4) and ComfyUI is HTTP; no GUI is involved. It ships at stage 3, and the panel's underlying worry (writes outside the workspace) is met by confining outputs to the workspace</td>
+</tr>
+<tr>
+<td>Add a <strong>Bridge</strong> profile if a Hermes ACP handoff is required</td>
+<td><strong>Partly adopted</strong></td>
+<td>The ACP <em>provider lane</em> stays a non-goal, but the <code>openbot-cli</code> bridge is FR-6 and needs no Hermes profile</td>
+</tr>
+<tr>
+<td>Write the governance rules in <strong>one file</strong> and link to it, never retype them per bot</td>
+<td><strong>Adopted</strong></td>
+<td>One <code>OWNER_RULES.md</code> per workspace; instruction files point at it</td>
+</tr>
+<tr>
+<td>Add a <strong>day-0 baseline</strong> and a <strong>daily host check with named stop thresholds</strong>; a monitor must not live inside what it monitors; agents never clean caches</td>
+<td><strong>Adopted</strong></td>
+<td>§7 "Daily host check"</td>
+</tr>
+<tr>
+<td><code>reserved_names.txt</code> from the 34 Hermes profiles, checked before creating a bot</td>
+<td><strong>Adopted</strong></td>
+<td>FR-7</td>
+</tr>
+<tr>
+<td>"macOS TCC grants are per-app, not owned" (dissent against our #5 reasoning)</td>
+<td><strong>Adopted as a correction</strong></td>
+<td>§3 non-goals: Computer Use is off for the real reasons (second daemon, second grant surface, no v1 job), not because our grant "owns" the OS</td>
+</tr>
+<tr>
+<td>Do not invent latency, cost or quality SLOs</td>
+<td><strong>Adopted</strong></td>
+<td>All thresholds that exist are either measured here or explicitly labelled as targets to be measured</td>
+</tr>
+<tr>
+<td>"Make v1 a fail-closed, single-worker OpenBot under Hermes, not a second silent fleet"</td>
+<td><strong>Amended</strong></td>
+<td>Staged roster: one worker plus a Canary on day one, widening to four on evidence — the same spirit, without freezing the product at one bot</td>
+</tr>
+<tr>
+<td>Refuse to ship any bot with full local access</td>
+<td><strong>Adopted</strong></td>
+<td>FR-3, G5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="133-rejected-outright">13.3 Rejected outright</h3>
+<ul>
+<li><strong>Cutting to a single bot permanently.</strong> Both reviews lean this way; it would leave OpenBot as a curiosity rather than a workspace Ricardo opens. The staging schedule gets the safety they asked for without throwing the product away — and each stage has an exit test.</li>
+<li><strong>Adding a Hermes ACP profile in v1.</strong> Nothing in v1 needs it, and it is the one change that could put bot turns on the live fleet's session database.</li>
+</ul>
+<h2 id="14-still-open">14. Still open</h2>
+<ol type="1">
+<li><strong>The licence price</strong> (G1-B) — shown only in-app at Settings → Billing. Ricardo's decision.</li>
+<li><strong>Is 10 GB the right disk gate</strong>, or does a one-hour cleanup of <code>/</code> make 15 GB the honest number?</li>
+<li><strong>Does <code>openbot-cli run</code> inherit the bot's permission mode</strong> for shell actions, or does automation bypass the approval card? Verify A8 <strong>through the wrapper</strong>, not only in chat — this decides whether Post is ever safe.</li>
+<li><strong>Whether Post should see company mail</strong> — G1-B, not technical.</li>
+<li><strong>Whether the app writes anything outside the path map</strong> on first run — check with a <code>fs_usage</code> sample on the first launch if the baseline shows unexplained growth.</li>
+</ol>
+<h2 id="appendix-a--evidence">Appendix A — evidence</h2>
+<p>Commands and their real output are in <code>evidence.md</code>: hardware, disk, the Ollama account and model census, the tool-calling probe across five models, the streaming delta, the three-turn loop that produced <code>out.txt = 4</code>, and the install-time placeholders (<code>codesign</code>, <code>spctl</code>, Cua diff) that must be filled with real output rather than assumed.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
