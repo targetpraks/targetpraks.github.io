@@ -153,189 +153,145 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 </style></head>
 <body><main>
 
-<h1 id="mac-mini--where-the-disk-went-and-what-can-be-deleted">Mac mini — where the disk went, and what can be deleted</h1>
-<p><strong>Host</strong> Ricardos-Mac-mini · <strong>Date</strong> 2026-11-28 · <strong>Measured</strong> live with <code>df</code>, <code>diskutil</code>, <code>du</code>, <code>docker system df</code>, <code>ollama list</code></p>
-<h2 id="the-situation">The situation</h2>
+<h1 id="mac-mini-disk-cleanup--what-was-actually-freed">Mac mini disk cleanup — what was actually freed</h1>
+<p><strong>Host</strong> Ricardos-Mac-mini · <strong>Run</strong> 2026-11-28 17:00–18:05 SAST · <strong>Every figure below is a <code>df -k</code> delta measured before and after the action, not a <code>du</code> estimate.</strong></p>
+<h2 id="result">Result</h2>
 <div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">Before</th>
+<th style="text-align: right;">After</th>
+</tr>
+</thead>
 <tbody>
 <tr>
-<td>APFS container</td>
-<td>494.4 GB</td>
-</tr>
-<tr>
 <td>Data volume used</td>
-<td>447.1 GB</td>
+<td style="text-align: right;">447.1 GB</td>
+<td style="text-align: right;">399 GB</td>
 </tr>
 <tr>
 <td><strong>Free</strong></td>
-<td><strong>15.7 GB (3.2 %)</strong></td>
+<td style="text-align: right;"><strong>15.7 GB (3 %)</strong></td>
+<td style="text-align: right;"><strong>28.6 GB (6 %)</strong></td>
 </tr>
 <tr>
-<td>Local Time Machine snapshots</td>
-<td>none — nothing hidden to purge</td>
+<td>Ollama models</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">34 (all verified answering)</td>
 </tr>
 <tr>
-<td>External <code>Hiksemi 1TB</code></td>
-<td>689 GB free — the obvious archive target</td>
+<td>Running containers</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">26</td>
 </tr>
 </tbody>
 </table></div>
-<p>No snapshots and no purgeable ghost data: every byte below is a real file. The container is at 97 %, so the fix is deleting files, not waiting for macOS.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pie</span> <span class="cn">showData</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">title</span> <span class="vs">What holds the 447 GB data volume</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Chrome code-sign clone leak&quot;</span> <span class="dt">:</span> <span class="dv">35</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Ollama model blobs&quot;</span> <span class="dt">:</span> <span class="dv">63</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hermes + T3 + caches&quot;</span> <span class="dt">:</span> <span class="dv">54</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Docker / colima&quot;</span> <span class="dt">:</span> <span class="dv">62</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Library (App Support, caches, Spotlight)&quot;</span> <span class="dt">:</span> <span class="dv">73</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Homebrew + Applications&quot;</span> <span class="dt">:</span> <span class="dv">37</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Photos&quot;</span> <span class="dt">:</span> <span class="dv">17</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;AI Hub models / venvs / HF&quot;</span> <span class="dt">:</span> <span class="dv">49</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Other&quot;</span> <span class="dt">:</span> <span class="dv">57</span></span></code></pre></div>
-<h2 id="tier-1--safe-no-data-loss-no-service-impact-893-gb">Tier 1 — safe, no data loss, no service impact (89.3 GB)</h2>
-<p>Each item is a cache, a duplicate, or a leak. Nothing here is a record, a model in use, or a running service.</p>
+<p>Net gain <strong>+12.9 GB</strong>. Modest, and the honest reason is in the next section.</p>
+<h2 id="two-corrections-to-the-earlier-plan">Two corrections to the earlier plan</h2>
+<p><strong>1. The 35 GB "Chrome code-sign leak" was not 35 GB.</strong> The 47 clone directories are APFS <em>clonefile</em> copies — they share nearly every block with the Chrome bundle, so <code>du</code> charged each one the full size while the disk held one copy. Deleting 46 of 47 moved free space by ~0. The directory is still there (one live handle, 754 MB) and stable. <code>du</code> is not a reclaim figure; only the free-space delta is.</p>
+<p><strong>2. The 15.8 GB of "orphan" Ollama blobs were mostly not orphaned.</strong> Ollama keeps two manifest trees: <code>manifests/</code> (regular files) and <code>manifests-v2/</code> (symlinks whose target <em>is</em> a blob — the newer layout stores the manifest itself as a blob, with the layers named inside it). The cross-check read only <code>manifests/</code>, so the two v2-only models — <code>shadow-abl:9b</code> (the Shadow seat) and <code>d3-flash-mlx</code> (the §8 gate) — looked unreferenced. Their weights were deleted.</p>
+<p>Both were restored in the same run and verified:</p>
+<ul>
+<li><code>shadow-abl:9b</code> → 6.4 GB, Qwen3.5 9.2B Q4_K_M, loads at 7.9 GB resident, 100 % GPU, CONTEXT 65536, and answers.</li>
+<li><code>d3-flash-mlx</code> → 10 GB, Qwen3.5 8.95B Q8_0; <code>gate-health.py</code> reports <code>inference: true</code>, <code>model_present: true</code>, probe 0.886, MCP tools <code>decide</code> and <code>ask</code> present.</li>
+<li>The corrected cross-check now reports <strong>0 orphan blobs of 3,556</strong>.</li>
+</ul>
+<h2 id="what-actually-freed-space">What actually freed space</h2>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>#</th>
-<th>What</th>
-<th style="text-align: right;">Size</th>
-<th>Why it is safe</th>
+<th>Action</th>
+<th style="text-align: right;">Delta</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td>Chrome <code>code_sign_clone</code> leak — 47 stale clones in <code>/private/var/folders/kj/df2w…/X/</code></td>
-<td style="text-align: right;"><strong>35.0 GB</strong></td>
-<td>Chrome's updater clones its own bundle per run and never cleans up. Newest clone is from 27 Nov, oldest 25 Nov; one is live. Quit Chrome, delete the folder, Chrome recreates it on next launch.</td>
+<td>Claude desktop VM bundle (<code>rootfs.img</code>, untouched since 25 Oct) — re-downloads if local agent mode is used</td>
+<td style="text-align: right;"><strong>+11.9 GB</strong></td>
 </tr>
 <tr>
-<td>2</td>
-<td>Orphaned Ollama blobs in <code>~/AI Hub/blobs</code> — 772 files no manifest references</td>
-<td style="text-align: right;"><strong>15.8 GB</strong></td>
-<td>Verified with a script: 33 manifests cite 3,545 blobs; 772 blobs (largest 5.8 GB) cite nothing. Left behind by deleted pulls.</td>
+<td>Homebrew old versions and download caches (<code>brew cleanup --prune=all</code>)</td>
+<td style="text-align: right;"><strong>+4.9 GB</strong></td>
 </tr>
 <tr>
-<td>3</td>
-<td>Claude desktop VM bundle <code>~/Library/Application Support/Claude-3p/vm_bundles</code></td>
-<td style="text-align: right;"><strong>12.0 GB</strong></td>
-<td><code>rootfs.img</code> last written 25 Oct — a month untouched. Claude re-downloads it if local agent mode is used again.</td>
+<td>Apple Music artwork cache (<code>AMPArtworkAgent/Data/Documents/artwork</code>) — re-downloads with artwork</td>
+<td style="text-align: right;"><strong>+3.7 GB</strong></td>
 </tr>
 <tr>
-<td>4</td>
-<td>Stopped colima profiles <code>constellation-ci</code> (4.9) + <code>unit-report</code> (1.1)</td>
-<td style="text-align: right;"><strong>6.0 GB</strong></td>
-<td>Both <code>Stopped</code>; only <code>default</code> is running your 26 live containers.</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Docker unused images + unused volumes</td>
-<td style="text-align: right;"><strong>6.2 GB</strong></td>
-<td><code>docker system df</code>: 5.42 GB reclaimable images, 766 MB dangling volumes. Running containers keep their layers.</td>
-</tr>
-<tr>
-<td>6</td>
-<td><code>uv</code> package cache <code>~/.cache/uv</code></td>
-<td style="text-align: right;"><strong>5.3 GB</strong></td>
-<td>Rebuilt from PyPI on demand.</td>
-</tr>
-<tr>
-<td>7</td>
-<td>Stale pip build dirs <code>/private/var/folders/…/T</code> (<code>wheel-source-*</code>)</td>
-<td style="text-align: right;"><strong>5.0 GB</strong></td>
-<td>Temp files, days old.</td>
-</tr>
-<tr>
-<td>8</td>
-<td>Homebrew old versions + download caches</td>
-<td style="text-align: right;"><strong>3.5 GB</strong></td>
-<td><code>brew cleanup -n</code> reports exactly 3.5 GB (<code>omlx 0.8.3</code> 1.7 GB, caches 2.6 GB). Current versions stay.</td>
-</tr>
-<tr>
-<td>9</td>
 <td>Trash</td>
-<td style="text-align: right;"><strong>0.45 GB</strong></td>
-<td>Already deleted by you.</td>
+<td style="text-align: right;"><strong>+0.4 GB</strong></td>
+</tr>
+<tr>
+<td>Chrome clone tree (46 stale clones)</td>
+<td style="text-align: right;">~0 GB — clonefile-shared</td>
+</tr>
+<tr>
+<td>Ollama blob cleanup</td>
+<td style="text-align: right;">−16.3 GB net: 15.8 deleted, 16.4 re-downloaded to restore the two models</td>
 </tr>
 </tbody>
 </table></div>
-<p><strong>Free space after Tier 1: ~105 GB.</strong></p>
-<h3 id="the-exact-commands">The exact commands</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 — quit Chrome first, then:</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> /private/var/folders/kj/df2w2h451ll61dmtl6jql3ww0000gn/X/com.google.Chrome.code_sign_clone</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 3 — Claude VM bundle (quit Claude first)</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/Library/Application Support/Claude-3p/vm_bundles&quot;</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 4 — retired colima profiles</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">colima</span> delete <span class="at">-p</span> constellation-ci <span class="at">--force</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">colima</span> delete <span class="at">-p</span> unit-report <span class="at">--force</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 5 — docker prune (running containers untouched)</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> image prune <span class="at">-a</span> <span class="at">--force</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> volume prune <span class="at">--force</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 6, 8, 9</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> cache prune</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> cleanup <span class="at">--prune</span><span class="op">=</span>all</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> ~/.Trash/<span class="pp">*</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 7 — temp build dirs</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> /private/var/folders/kj/df2w2h451ll61dmtl6jql3ww0000gn/T/wheel-source-<span class="pp">*</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># 2 — orphan blobs: script deletes only blobs no manifest references</span></span></code></pre></div>
-<p>Item 2 is done with the orphan-blob script rather than a blind <code>rm</code>, so a referenced layer can never be caught in it.</p>
-<h2 id="tier-2--needs-your-call-about-55-gb">Tier 2 — needs your call (about 55 GB)</h2>
-<p>Real space, but something stops working until it re-downloads or rebuilds.</p>
+<h2 id="held-back-and-why">Held back, and why</h2>
 <div class="tablewrap"><table>
 <thead>
 <tr>
-<th>What</th>
+<th>Item</th>
 <th style="text-align: right;">Size</th>
-<th>Trade-off</th>
+<th>Reason</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Local Ollama models with no reference in any config, cron or skill: <code>ocria-1:bf16</code> 10, <code>deepseek-ocr</code> 6.7, <code>x/flux2-klein</code> 5.7, <code>qwen2.5vl:3b</code> 3.2, <code>glm-ocr</code> 2.7, <code>granite3.2-vision</code> 2.4</td>
-<td style="text-align: right;"><strong>30.7 GB</strong></td>
-<td>Only if the OCR / image lane is retired. A grep of <code>~/.hermes/config.yaml</code>, cron, profiles and skills found no live reference; re-pulling costs bandwidth.</td>
+<td>Spotlight extracted-text index (<code>Library/Metadata/CoreSpotlight/DocumentProcessing</code>)</td>
+<td style="text-align: right;">9.4 GB</td>
+<td>Regenerable, but forces a full re-index: hours of <code>mdworker</code> CPU on an already busy mini. Your call.</td>
 </tr>
 <tr>
-<td>Spotlight extracted-text index <code>~/Library/Metadata/CoreSpotlight/DocumentProcessing</code></td>
-<td style="text-align: right;"><strong>9.4 GB</strong></td>
-<td>Regenerable; forces a full re-index and the machine is busy for a while.</td>
+<td>Browser caches — WhatsApp 2.3, Playwright 2.2, Camoufox 2.5, Chrome 1.2</td>
+<td style="text-align: right;">~8 GB</td>
+<td>In daily use; each re-downloads on the next run.</td>
 </tr>
 <tr>
-<td>Browser caches: playwright 2.2, camoufox 2.5, WhatsApp 2.3, Chrome 1.2</td>
-<td style="text-align: right;"><strong>8.2 GB</strong></td>
-<td>Regenerate; Playwright/Camoufox re-download on first automation run.</td>
+<td><code>colima</code> stopped profiles <code>constellation-ci</code> 0.95 GB + <code>unit-report</code> 4.4 GB (allocated)</td>
+<td style="text-align: right;">5.3 GB</td>
+<td><code>dev.maio.constellation-ci-vm</code> LaunchAgent manages one; ram-guard pauses the other. Paused is not unused.</td>
 </tr>
 <tr>
-<td><code>~/.cache/qmd</code> 4.0 + <code>~/.cache/huggingface</code> 3.0</td>
-<td style="text-align: right;"><strong>7.0 GB</strong></td>
-<td>Model caches for OCR/TTS helpers; re-downloaded on use.</td>
+<td><code>~/AI Hub/hf</code> FLUX.1-schnell + FLUX.2-klein-4B</td>
+<td style="text-align: right;">15 GB</td>
+<td>Image lane; a second copy of FLUX.2-klein also sits in Ollama. Only you can say which lane is current.</td>
+</tr>
+<tr>
+<td>Local OCR models — <code>ocria-1</code> 10, <code>deepseek-ocr</code> 6.7, <code>qwen2.5vl</code> 3.2, <code>glm-ocr</code> 2.7, <code>granite3.2-vision</code> 2.4, <code>x/flux2-klein</code> 5.7</td>
+<td style="text-align: right;">30.7 GB</td>
+<td><code>deepseek-ocr</code> was loaded <strong>today at 17:18</strong> — the OCR lane is live. Not unused.</td>
+</tr>
+<tr>
+<td><code>~/.cache/qmd</code> 2.4 GB models</td>
+<td style="text-align: right;">2.4 GB</td>
+<td>Referenced by <code>~/.hermes/config.yaml</code> and <code>maio-os-refresh.js</code>.</td>
+</tr>
+<tr>
+<td><code>uv</code> cache</td>
+<td style="text-align: right;">5.3 GB</td>
+<td><code>uv cache prune</code> refused: <code>blender-mcp</code> holds the cache lock for its lifetime. Stop that MCP first.</td>
+</tr>
+<tr>
+<td>Docker images / volumes inside the VM</td>
+<td style="text-align: right;">6.2 GB</td>
+<td>Frees space <em>inside</em> the VM only. <code>colima</code>'s <code>datadisk</code> is a 100 GB sparse image (48 GB allocated); it never shrinks on the host when you delete inside it.</td>
+</tr>
+<tr>
+<td>Photos 17 GB · <code>/Applications</code> 20 GB · <code>.hermes</code> 29 GB · <code>.t3</code> 12 GB</td>
+<td style="text-align: right;">—</td>
+<td>Records, apps and agent state — your decision, not cleanup defaults.</td>
 </tr>
 </tbody>
 </table></div>
-<h2 id="keep--do-not-touch">Keep — do not touch</h2>
-<ul>
-<li><strong>26 running Docker containers</strong> (firefly, metamcp, hindsight, signet, chromacommand, constellation, infx-fnd, ha-mcp…) and their 10.5 GB of volumes — live services.</li>
-<li><code>d3-flash-mlx</code> (9.4 GB) — the local fallback for the §8 gate. <code>shadow-abl:9b</code> (6.4 GB) — the Shadow seat.</li>
-<li><code>~/AI Hub/hf</code> (15 GB, FLUX.1/FLUX.2) and ComfyUI checkpoints (10 GB) — image lane in use.</li>
-<li><code>~/AI Hub/venvs</code> (8 GB) — live Python environments.</li>
-<li><code>~/Pictures/Photos Library</code> (17 GB) — your photos.</li>
-<li><code>~/.hermes</code> (29 GB) and <code>~/.t3</code> (12 GB) — agent state and the T3 Code database; they hold history, not junk.</li>
-<li><code>/Applications</code> (20 GB) — app removal is your decision, not a cleanup default.</li>
-</ul>
-<h2 id="better-than-deleting-for-the-big-models">Better than deleting, for the big models</h2>
-<p><code>Hiksemi 1TB</code> has 689 GB free. The 30.7 GB of unused Ollama models and 15 GB of Hugging Face weights can be moved there (and symlinked) instead of deleted, so nothing is lost when the OCR lane is needed again.</p>
-<h2 id="bottom-line">Bottom line</h2>
-<ul>
-<li><strong>Do now, zero risk: 89.3 GB</strong> → free space 15.7 GB → <strong>~105 GB</strong>.</li>
-<li><strong>Your call: another ~55 GB</strong> → <strong>~160 GB</strong> free.</li>
-<li>Nothing in Tier 1 is a record, a model in use, or a running service.</li>
-</ul>
+<h2 id="the-one-real-structural-saving-left">The one real structural saving left</h2>
+<p><code>/var/lib/docker</code> inside the VM holds <strong>42 GB used of 98 GB</strong>, and the host <code>datadisk</code> has <strong>48 GB allocated</strong>. Recreating the colima VM on a smaller disk would shrink that to the 42 GB in use, but it destroys the containers and volumes first. That is a migration job, not a cleanup, and it needs a rebuild plan and your go-ahead.</p>
+<h2 id="standing-rule-added-to-the-skill">Standing rule added to the skill</h2>
+<p><code>mac-disk-cleanup</code> now opens with rule 0: a <code>du</code> size is not a reclaim size — check for clonefile sets and sparse images, and prove every deletion with a <code>df</code> delta. The orphan-blob script scans <strong>both</strong> manifest trees with <code>find -L</code> plus <code>readlink</code>, and the procedure requires an <code>/api/show</code> proof on every listed model after any blob deletion.</p>
 <p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
 </main></body></html>
