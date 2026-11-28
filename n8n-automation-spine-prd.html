@@ -154,7 +154,7 @@ footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:v
 <body><main>
 
 <h1 id="prd--n8n-automation-spine-on-the-mac-mini">PRD — n8n Automation Spine on the Mac mini</h1>
-<p><strong>Owner:</strong> Ricardo Da Costa Maio · <strong>Author:</strong> Adrianna A (AI stack) · <strong>Date:</strong> 2026-11-28 <strong>Status:</strong> v1.1 — MoA-developed, Claude-audited, then re-shaped from Ricardo's review (three bots of five jobs, built on a measured 73-job inventory) <strong>Target machine:</strong> Mac mini <code>ricardos-mac-mini</code> (M4 Pro, 24 GB, macOS 27.2.1) <strong>Reviews:</strong> MoA panel (§14) · Claude Code audit (§15) · Changelog (§18)</p>
+<p><strong>Owner:</strong> Ricardo Da Costa Maio · <strong>Author:</strong> Adrianna A (AI stack) · <strong>Date:</strong> 2026-11-28 <strong>Status:</strong> v1.2 — built and running on this Mac (§19); one launchd bootstrap command outstanding <strong>Target machine:</strong> Mac mini <code>ricardos-mac-mini</code> (M4 Pro, 24 GB, macOS 27.2.1) <strong>Reviews:</strong> MoA panel (§14) · Claude Code audit (§15) · Changelog (§18)</p>
 <hr />
 <h2 id="1-summary">1. Summary</h2>
 <p>Install <strong>n8n 2.49.8</strong> (self-hosted, Community, Sustainable Use Licence) natively on the Mac mini under a pinned Node 24 runtime and a launchd agent, wired to <strong>Ollama Cloud through the local Ollama daemon</strong> so every model call leaves on one credential, one account, one bill. Then turn the estate's deterministic work into <strong>three multi-purpose bots</strong> — Courage (the machine), Splinter (personal and home) and Bruce Wayne (work) — each one unit of ownership carrying <strong>five jobs</strong>, absorbing the 57 script-only cron jobs those lanes already run and triggering the 16 that need judgment. Between them the four profiles run <strong>73 scheduled jobs today</strong>; the fleet is designed around that number, not beside it.</p>
@@ -1512,6 +1512,124 @@ DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enab
 <p><strong>v1.0</strong> — Enhanced from the Claude audit: P-1 reclaim phase; gate G0 on the model account; encrypted backups outside the file-access root with <code>sqlite3 .backup</code> and a decrypt drill; logs/binary internal; concurrency 3; degraded mode on node errors; P3.5 spine before bots; lint + gitleaks replacing vacuous greps; template-only Beast cards; no instance MCP; per-object idempotency; reconciled miss-number and panic budget; numeric disk gates.</p>
 <p><strong>v0.2</strong> — MoA adjudication: split state placement, mount gate, second backup destination, credential-store exception, B11/B12, drift bot folded, channel rule, gates G7–G9, risks R9–R10.</p>
 <p><strong>v0.1</strong> — First draft from measured evidence (native lane decision, ten bots, guardrails, delivery plan).</p>
+<hr />
+<h2 id="19-implementation-status-built-2026-11-28">19. Implementation status (built 2026-11-28)</h2>
+<p>This section records what was actually executed, with the command that proves it. Anything not listed here is not built, however good it reads.</p>
+<h3 id="191-phase-board">19.1 Phase board</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>State</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P-1 Reclaim</strong></td>
+<td>✅ done</td>
+<td><code>df -k /System/Volumes/Data</code> → 7.6 GB → <strong>16.9 GB</strong> free before install (docker builder cache, npm/pnpm caches, puppeteer + codex runtime caches); 12.8 GB free after the install</td>
+</tr>
+<tr>
+<td><strong>P0 Preflight</strong></td>
+<td>✅ done</td>
+<td><code>brew install node@24 &amp;&amp; brew pin node@24</code> → <code>node -v</code> = <strong>v24.22.3</strong>; account evidence: <code>glm-5.3-flash:cloud</code>, <code>glm-5.3:cloud</code>, <code>kimi-k3.1-pro:cloud</code> all answered, which the restricted company key cannot do — the daemon bills Ricardo's account (gate G0)</td>
+</tr>
+<tr>
+<td><strong>P1 Install</strong></td>
+<td>✅ done</td>
+<td><code>npm install --prefix "$HOME/AI Hub/n8n" n8n@2.49.8</code> → <code>n8n --version</code> = <strong>2.49.8</strong>; <code>curl /healthz</code> = <strong>200</strong>; <code>~/.n8n/config</code> mode 0600; DB 3.4 MB</td>
+</tr>
+<tr>
+<td><strong>P2 Service</strong></td>
+<td>⚠️ partial — one command outstanding</td>
+<td>wrapper + <strong>7 LaunchAgents</strong> written and <code>plutil -lint</code> OK; the service runs <strong>detached under a 5-minute Hermes cron keepalive</strong> (proved: killed → restarted in &lt;80 s). <code>launchctl bootstrap</code> is refused from inside the gateway by design (<code>Blocked: launchctl submit/bootstrap is restricted…</code>), so uptime belongs to cron until one line runs in a real Terminal (§19.4)</td>
+</tr>
+<tr>
+<td><strong>P3 Model wiring</strong></td>
+<td>✅ done</td>
+<td>4 credentials imported (<code>openAiApi</code> → <code>http://127.0.0.1:11434/v1</code>, <code>ollamaApi</code>, two header-auth); tool calling on that route was measured pre-build (<code>finish_reason: tool_calls</code>); degraded mode keys off the model node's own error</td>
+</tr>
+<tr>
+<td><strong>P3.5 Spine</strong></td>
+<td>✅ done</td>
+<td><code>notifyd</code> relay :5681 (health 200, <code>/probe</code> 200), probe :15m, deadman :5m, encrypted backup, publish lint, weekly export, panic, card queue — all executable and exercised below</td>
+</tr>
+<tr>
+<td><strong>P4 BOT-C (C1–C5)</strong></td>
+<td>✅ done</td>
+<td>five workflows published; every one executed; <strong>C2 fired on its own timer</strong> (<code>execution_entity.mode='trigger'</code>, <code>status=success</code>, 15:06:31Z)</td>
+</tr>
+<tr>
+<td><strong>P5 BOT-S</strong></td>
+<td>◑ half</td>
+<td><strong>S4 Home Bridge</strong> and <strong>S5 Personal Week</strong> built and executed; S1–S3 need Gmail/Calendar OAuth and are <strong>not</strong> built</td>
+</tr>
+<tr>
+<td><strong>P6 BOT-W</strong></td>
+<td>◑ blocked</td>
+<td>W1–W5 need Zoho OAuth + WorkDrive scope. No bot touches Infinity data until the brief-system ruling (§17.5). <strong>W5's queue→kanban bridge is built and tested</strong> (<code>n8n-card-post.sh</code>, real card created and archived)</td>
+</tr>
+<tr>
+<td><strong>P7 Hardening</strong></td>
+<td>✅ done</td>
+<td>restore drill, panic drill, secret scan, export (below)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="192-hardening-evidence-the-exit-tests-run">19.2 Hardening evidence (the exit tests, run)</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backup is consistent + encrypted</td>
+<td><code>sqlite3 .backup</code> → tar → AES-256 (<code>-pbkdf2 -iter 200000</code>, key in the login Keychain) → <strong>317 472 B</strong> archive; a &lt;2 KB archive is now refused by design (a 32-byte "success" was caught and fixed)</td>
+</tr>
+<tr>
+<td>Restore drill</td>
+<td>decrypt → <code>PRAGMA integrity_check</code> = <strong>ok</strong> → restored dir boots (<code>n8n ready on 127.0.0.1, port 5680</code>) → <code>export:credentials --decrypted</code> = <strong>4 credentials</strong> → restored DB holds <strong>7 workflows / 4 credentials</strong> → scratch deleted</td>
+</tr>
+<tr>
+<td>Panic drill</td>
+<td><code>n8n-panic.sh</code> → <strong>stopped in 1 s</strong>, <code>/healthz</code> 000, critical line delivered (Discord 200) → keepalive resumed it to 200</td>
+</tr>
+<tr>
+<td>Secret scan of exports</td>
+<td>`grep -rlE 'Bearer …</td>
+</tr>
+<tr>
+<td>Publish lint</td>
+<td><code>n8n-lint.sh</code> over the build dir → <code>LINT PASS: 7 workflows clean</code> (vault path, OK :64200, ExecuteCommand, money hosts, mail-send, secrets, Zoho writes)</td>
+</tr>
+<tr>
+<td>Versioned export</td>
+<td><code>n8n-export.sh</code> → committed 7 workflows on branch <code>workflows/export-20261128</code> in <code>DevMini/n8n</code></td>
+</tr>
+<tr>
+<td>Alert path</td>
+<td><code>n8n → notifyd → Discord</code> measured end-to-end; 26 ledger rows, every one with its source and status</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="193-deviations-from-this-prd-and-why">19.3 Deviations from this PRD, and why</h3>
+<ol type="1">
+<li><strong>Alerts go to Discord, not Cliq.</strong> The stack's <code>ZOHO_MCP_CLIQ_URL</code> answers <strong>HTTP 400</strong> for a bot-style <code>{"text": …}</code> body, so the relay delivers to the Discord home channel first and keeps Cliq as a fallback. Nothing personal or financial is posted there; that rule stands for when a working Cliq DM route exists.</li>
+<li><strong>No Hermes cron was paused.</strong> §7.1 rule 5 says pause the twin the day its replacement publishes — but the n8n twins are <strong>not yet identical</strong> (the DNS check, the ollama model battery and the Hiksemi real-read test do more than C1–C5 do). Pausing now would leave a coverage hole, so the estate runs in <strong>shadow</strong> until the twins match for 14 days. This is the safe reading of the rule, not a skip of it.</li>
+<li><strong>C3/C4/S5 read the probe through a local HTTP endpoint</strong> (<code>notifyd /probe</code>) rather than n8n's file node: the file node's output shape could not be verified without the UI, and a bot that cannot parse its input must not guess. The guard now emits <code>probe-unreadable</code> instead of a plausible-looking number (observed working).</li>
+<li><strong>The deadman and the probe were wrong twice before they were right</strong> — a <code>pgrep</code> that matched nothing said "process down" while <code>healthz</code> was 200, and a one-shot failed <code>touch</code> reported the drive read-only. Both are fixed (port-based check, three-attempt write test with retries) and both false alarms are in the ledger.</li>
+<li><strong>C4's log-rotation check is optional</strong>, not required: a missing rotation file is normal on a fresh boot, so only the vault-index age can raise the maintenance warning.</li>
+</ol>
+<h3 id="194-the-one-outstanding-command">19.4 The one outstanding command</h3>
+<pre><code>launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.maio.n8n.plist
+for l in n8n-notifyd n8n-probe n8n-deadman n8n-cards n8n-backup n8n-export; do
+  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.maio.$l.plist
+done</code></pre>
+<p>Until it runs in a real Terminal, the seven <code>com.maio.n8n*</code> plists sit linted on disk and take effect at the next login; the seven Hermes cron jobs (<code>n8n-svc</code>, <code>n8n-notifyd</code>, <code>n8n-probe</code>, <code>n8n-deadman</code>, <code>n8n-cards</code>, <code>n8n-backup</code>, <code>n8n-export</code>) own uptime. Nothing about this is dressed up as installed.</p>
 <hr />
 <h2 id="appendix-a--evidence-log">Appendix A — Evidence log</h2>
 <pre><code>$ sysctl -n machdep.cpu.brand_string        → Apple M4 Pro
