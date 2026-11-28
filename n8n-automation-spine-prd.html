@@ -1,0 +1,1456 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>n8n Automation Spine — Mac mini PRD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="prd--n8n-automation-spine-on-the-mac-mini">PRD — n8n Automation Spine on the Mac mini</h1>
+<p><strong>Owner:</strong> Ricardo Da Costa Maio · <strong>Author:</strong> Adrianna A (AI stack) · <strong>Date:</strong> 2026-11-28 <strong>Status:</strong> v1.0 — MoA-developed, Claude-audited, enhanced from 3 blockers + 19 further findings <strong>Target machine:</strong> Mac mini <code>ricardos-mac-mini</code> (M4 Pro, 24 GB, macOS 27.2.1) <strong>Reviews:</strong> MoA panel (§14) · Claude Code audit (§15) · Changelog (§18)</p>
+<hr />
+<h2 id="1-summary">1. Summary</h2>
+<p>Install <strong>n8n 2.49.8</strong> (self-hosted, Community, Sustainable Use Licence) natively on the Mac mini under a pinned Node 24 runtime and a launchd agent, wired to <strong>Ollama Cloud through the local Ollama daemon</strong> so every model call leaves on one credential, one account, one bill. Then stand up a <strong>first fleet of seven bots</strong> for what this machine already does daily — host health, a morning digest, an n8n deadman, drive guard, backup verification, agent-output filing and Home Assistant events — with five more bots phased in only after the spine has proven itself.</p>
+<p>n8n is not a replacement for Hermes or Courage. It is the <strong>deterministic glue layer</strong>: schedules, webhooks, retries, approvals-in-principle and an execution log a human can read — the work that today lives in ad-hoc launchd scripts and one-off cron jobs, and the work that is silently missing when a bot dies.</p>
+<p><strong>What changed between v0.1 and this version</strong> (all three blockers came from the Claude audit): the build now starts with a disk-reclaim phase because the machine cannot pass its own install gate; the model ladder is gated on identifying which Ollama account the daemon bills; and the backup is encrypted and taken with <code>sqlite3 .backup</code> because the drive it lands on is USB and unencrypted. Details in §15 and §18.</p>
+<hr />
+<h2 id="2-goals-and-non-goals">2. Goals and non-goals</h2>
+<p><strong>Goals</strong></p>
+<ol type="1">
+<li>One always-on local automation service on <code>http://127.0.0.1:5678</code>, started at boot by launchd, independent of any agent session.</li>
+<li>All AI inside n8n routed through <strong>Ollama Cloud via <code>http://127.0.0.1:11434/v1</code></strong> — no second vendor, no second key, no silent substitution, no unattributed spend.</li>
+<li>Seven bots that earn their keep in week one, each producing high-signal, low-noise output into channels Ricardo already reads.</li>
+<li>Every standing rule enforced by something a reviewer can run — a lint, a credential that physically cannot write, a node that is absent — not by a prompt and not by discipline.</li>
+<li>A build a second agent can repeat from this document, with the verification commands in §11.</li>
+</ol>
+<p><strong>Non-goals (v1)</strong></p>
+<ul>
+<li>Not n8n Cloud, not queue mode, not multi-user, not a public webhook endpoint.</li>
+<li>Not a replacement for Hermes agents, the MoA/council lane, or Beast's vault writing.</li>
+<li>Not a client-facing workflow service — the Sustainable Use Licence permits internal business use only.</li>
+<li>No Python Code nodes in v1 (n8n 2.x requires external task runners for native Python, §6.7).</li>
+<li>No approvals that resume over a loopback URL (§15, A12) and no instance-level MCP (§15, A15).</li>
+</ul>
+<hr />
+<h2 id="3-measured-constraints-evidence-2026-11-28">3. Measured constraints (evidence, 2026-11-28)</h2>
+<p>Every number came from a command on this machine today. Claude re-measured three of them independently (§15).</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Constraint</th>
+<th>Measured value</th>
+<th>Command / evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>Hardware / OS</td>
+<td>Apple M4 Pro, 12 cores, 24 GB RAM, macOS 27.2.1 (26B131)</td>
+<td><code>sysctl -n machdep.cpu.brand_string</code>, <code>hw.memsize</code>, <code>sw_vers</code></td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Internal data volume</td>
+<td>423 GB used of 460 GB — <strong>7.6 GB free (99 %)</strong></td>
+<td><code>df -h /System/Volumes/Data</code></td>
+</tr>
+<tr>
+<td>C3</td>
+<td>External volume</td>
+<td>Hiksemi 1TB, <strong>APFS over USB</strong>, <strong>not encrypted</strong>, 690 GB free at <code>/Volumes/Hiksemi 1TB</code></td>
+<td><code>diskutil info</code> → <code>Protocol: USB</code>, <code>Encrypted: No</code>, <code>FileVault: No</code></td>
+</tr>
+<tr>
+<td>C4</td>
+<td>Memory pressure</td>
+<td>swap 6.1 GB total, <strong>5.2 GB used</strong>; <code>memory_pressure</code> 61 % free</td>
+<td><code>sysctl -n vm.swapusage</code>, <code>memory_pressure</code></td>
+</tr>
+<tr>
+<td>C5</td>
+<td>Node on PATH</td>
+<td><strong>v26.13.1</strong>; n8n 2.49.8 declares <code>engines.node &gt;= 24.0.0</code>; docs say 20.19–24.x</td>
+<td><code>node -v</code>, <code>npm view n8n engines</code></td>
+</tr>
+<tr>
+<td>C6</td>
+<td>Container runtime</td>
+<td>Docker 29.10.1 inside <strong>colima 0.10.3</strong>: 4 vCPU, <strong>6 GiB RAM</strong>, 100 GiB sparse disk (67 GB used), <strong>26 containers running</strong></td>
+<td><code>colima ls</code>, <code>docker info</code>, <code>docker ps</code>, <code>du -sh ~/.colima</code></td>
+</tr>
+<tr>
+<td>C7</td>
+<td>colima mounts</td>
+<td><code>/Volumes/Hiksemi 1TB</code> mounted <strong>read-only</strong>; a write from a container fails <code>Read-only file system</code></td>
+<td><code>colima.yaml</code> mounts + live write probe</td>
+</tr>
+<tr>
+<td>C8</td>
+<td>Ollama reachability from a container</td>
+<td><code>host.docker.internal:11434 → 200</code>, <code>192.168.64.1:11434 → 200</code></td>
+<td><code>docker run curlimages/curl</code></td>
+</tr>
+<tr>
+<td>C9</td>
+<td>Ollama Cloud <code>/v1</code> supports tools</td>
+<td><code>finish_reason: tool_calls</code>, correct <code>get_weather</code> call on <code>glm-5.3-flash:cloud</code></td>
+<td><code>curl :11434/v1/chat/completions</code> with a tool schema</td>
+</tr>
+<tr>
+<td>C10</td>
+<td>Ollama binding</td>
+<td>daemon listens on <strong><code>*:11434</code></strong> (all interfaces), not loopback-only</td>
+<td><code>lsof -nP -iTCP:11434 -sTCP:LISTEN</code></td>
+</tr>
+<tr>
+<td>C11</td>
+<td>Port 5678</td>
+<td>free</td>
+<td><code>lsof -nP -iTCP -sTCP:LISTEN</code></td>
+</tr>
+<tr>
+<td>C12</td>
+<td>House service convention</td>
+<td>~20 <code>com.maio.*</code> LaunchAgents already run always-on services; <strong>no auto-login</strong> on this Mac</td>
+<td><code>launchctl list | grep com.maio</code>; <code>autoLoginUser</code> unset</td>
+</tr>
+<tr>
+<td>C13</td>
+<td>Decision gate</td>
+<td><code>gate</code> MCP live on <code>127.0.0.1:8792</code> (HTTP 200)</td>
+<td><code>curl -o /dev/null -w %{http_code}</code></td>
+</tr>
+<tr>
+<td>C14</td>
+<td>Other local services</td>
+<td>Maio OS <code>/health</code> 200 on :9111, OpenKnowledge MCP :64200, HA :8123, Firefly :8085</td>
+<td><code>curl</code>, <code>lsof</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>What the constraints force</strong></p>
+<ul>
+<li><strong>C2 is the binding constraint — and the build currently fails its own first gate.</strong> v0.1 required 8 GB free to install; the machine has 7.6 GB (Claude A2). The build therefore starts with a reclaim phase (§10, P-1), not an install.</li>
+<li><strong>C4 says no new VM.</strong> A second colima profile at 3–4 GiB on a machine already swapping 5.2 GB repeats a known failure mode.</li>
+<li><strong>C7 rules out the Docker lane for anything touching AI-Drive.</strong> A container cannot read/write the 220 GB of agent output without a colima restart that stops all 26 running containers — and it still could not <code>launchctl</code>, <code>lsof</code> or <code>df</code> the host, which is exactly what the health bot must do.</li>
+<li><strong>C3 means every backup is plaintext on removable media.</strong> The tarball carries the credential-encryption key, so it is encrypted before it leaves the machine (§8).</li>
+<li><strong>C10 means the cloud account is reachable from the LAN.</strong> Accepted with named controls (§16, R9, gate G8).</li>
+<li><strong>C12 means "survives reboot" is only true after someone logs in.</strong> Every boot test is stated that way (§10, P2 exit test), never claimed as unattended.</li>
+</ul>
+<hr />
+<h2 id="4-architecture-decision">4. Architecture decision</h2>
+<h3 id="41-options-considered">4.1 Options considered</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Shape</th>
+<th>Fit against the evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. Native n8n, pinned Node 24, launchd</strong></td>
+<td>brew <code>node@24</code> (keg-only) → <code>npm install n8n@2.49.8</code> into a private prefix → <code>com.maio.n8n</code> LaunchAgent</td>
+<td>~400 MB RSS, no VM, direct <code>127.0.0.1:11434</code>, host context for probes, rw access to <code>/Volumes</code></td>
+</tr>
+<tr>
+<td><strong>B. Docker in the existing colima profile</strong></td>
+<td><code>n8nio/n8n:2.49.8</code> beside 26 containers</td>
+<td>6 GiB VM already saturated, <code>/Volumes</code> read-only (C7), host-invisible, images inside a VM disk on a volume with 7.6 GB free</td>
+</tr>
+<tr>
+<td><strong>C. Docker in a new dedicated colima profile</strong></td>
+<td>second VM, 2–4 vCPU / 3 GiB / 20 GiB, Hiksemi mounted rw</td>
+<td>Clean isolation, but more swap pressure (C4), a sparse image against 7.6 GB free (C2), and still host-invisible</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="42-decision">4.2 Decision</h3>
+<p><strong>Option A — native, version-pinned, launchd-managed.</strong> Recorded as decision D-01. Adopted by the MoA panel independently (call M-1) and not contested by the audit.</p>
+<ol type="1">
+<li><strong>Host context is the product.</strong> B1, B4 and B5 are worthless if they cannot see <code>launchctl</code>, <code>lsof</code>, <code>df</code> and the launchd logs. Only a native process can.</li>
+<li><strong>Filesystem continuity.</strong> B6 reads <code>/Volumes/Hiksemi 1TB/AI-Drive</code>; native sees it rw today, Docker cannot (C7).</li>
+<li><strong>RAM.</strong> n8n idle is a few hundred MB; a new 3 GiB VM on a host swapping 5.2 GB is a regression felt in the MoA and council lanes within a day (C4).</li>
+<li><strong>Disk.</strong> The freed headroom (P-1) goes further on a Node install than on images plus a VM disk (C2, C6).</li>
+<li><strong>Latency.</strong> <code>127.0.0.1:11434</code> with no NAT hop, on the same route Hermes uses (C9).</li>
+</ol>
+<h3 id="43-objections-to-the-decision-and-the-answers">4.3 Objections to the decision, and the answers</h3>
+<p><strong>O1 — "n8n deprecates npm installs from 3.0; you are building on a dead lane."</strong> Accepted. Mitigations: pin the version (2.49.8) and <code>brew pin node@24</code>; keep <code>~/.n8n</code> portable (SQLite file + encryption key, restorable into a container); stage a Compose file in the repo from day one; gate G3 re-evaluates Docker at 3.0 when the disk situation has changed. npm is deprecated for 3.0, not broken today.</p>
+<p><strong>O2 — "No container isolation; a compromised workflow owns the host."</strong> Partly true, and why §9 exists, now with the audit's corrections: bind to <code>127.0.0.1</code>, a password-manager secret for the owner account, <code>N8N_BLOCK_ENV_ACCESS_IN_NODE=true</code>, <code>ExecuteCommand</code>/<code>LocalFileTrigger</code> off, file access restricted to <code>Agent-Output</code> only, task runners on, a publish-time lint (§9.8) and a launchd-level kill switch. Host facts arrive through a read-only probe script, so n8n needs no shell.</p>
+<p><strong>O3 — "A second Node runtime on a machine with Node 26 will confuse tooling."</strong> <code>node@24</code> is brew <strong>keg-only</strong> (not linked into <code>/opt/homebrew/bin</code>), n8n gets its own prefix (<code>~/AI Hub/n8n</code>), and the LaunchAgent wrapper sets <code>PATH</code> explicitly. <code>node -v</code> stays 26 everywhere else.</p>
+<p><strong>O4 — "Why not queue mode / Postgres now?"</strong> Queue mode needs Redis and a second process for a single operator; Postgres costs ~150 MB RSS plus a service to babysit for tens of rows a minute. n8n 2.x's pooled SQLite driver (WAL) is the documented default. <code>DB_TYPE</code> is one env var and the migration tool is documented; gate G4 defines when we take it.</p>
+<p><strong>O5 — "The plan depends on a USB drive." (audit A4)</strong> Accepted and designed around: the DB, the logs and the binary data now live on the <strong>internal</strong> volume; only artefacts and encrypted backups go to Hiksemi. Nothing in the boot path touches the external drive.</p>
+<hr />
+<h2 id="5-target-architecture">5. Target architecture</h2>
+<figure>
+<svg viewBox="0 0 980 430" role="img" aria-label="n8n runs natively on the Mac mini, calls the local Ollama daemon which reaches Ollama Cloud, and posts into Discord, Cliq, the kanban board and AI-Drive; a launchd deadman watches n8n from outside." xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c8899"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="980" height="430" fill="#0f1116"/>
+  <rect x="24" y="24" width="520" height="250" rx="12" fill="#161a22" stroke="#2a3140"/>
+  <text x="40" y="50" fill="#9fb0c8" font-size="13" letter-spacing="1.2">MAC MINI — NATIVE, INTERNAL APFS</text>
+
+  <rect x="44" y="66" width="200" height="72" rx="9" fill="#1d2531" stroke="#3a465c"/>
+  <text x="58" y="90" fill="#e7edf6" font-size="14" font-weight="600">com.maio.n8n</text>
+  <text x="58" y="110" fill="#9fb0c8" font-size="12">n8n 2.49.8 · Node 24</text>
+  <text x="58" y="127" fill="#9fb0c8" font-size="12">127.0.0.1:5678 · SQLite/WAL</text>
+
+  <rect x="44" y="158" width="200" height="48" rx="9" fill="#1d2531" stroke="#3a465c"/>
+  <text x="58" y="179" fill="#e7edf6" font-size="13">logs + binary data</text>
+  <text x="58" y="196" fill="#9fb0c8" font-size="11">internal — boot path never on USB</text>
+
+  <rect x="44" y="222" width="200" height="36" rx="9" fill="#1d2531" stroke="#3a465c"/>
+  <text x="58" y="245" fill="#9fb0c8" font-size="12">launchd probes (read-only)</text>
+
+  <rect x="284" y="66" width="236" height="72" rx="9" fill="#17202b" stroke="#39506b"/>
+  <text x="298" y="90" fill="#e7edf6" font-size="14" font-weight="600">Ollama daemon</text>
+  <text x="298" y="110" fill="#9fb0c8" font-size="12">:11434 · /v1 OpenAI-compatible</text>
+  <text x="298" y="127" fill="#9fb0c8" font-size="12">tool calling verified</text>
+
+  <rect x="284" y="158" width="236" height="48" rx="9" fill="#17202b" stroke="#39506b"/>
+  <text x="298" y="179" fill="#e7edf6" font-size="13">Ollama Cloud</text>
+  <text x="298" y="196" fill="#9fb0c8" font-size="11">:cloud tags · one account (gate G0)</text>
+
+  <rect x="284" y="222" width="236" height="36" rx="9" fill="#2a1c1c" stroke="#6b3b3b"/>
+  <text x="298" y="245" fill="#f0c9c9" font-size="12">com.maio.n8n-deadman (outside)</text>
+
+  <line x1="244" y1="102" x2="282" y2="102" stroke="#7c8899" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="402" y1="138" x2="402" y2="156" stroke="#7c8899" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="244" y1="240" x2="282" y2="240" stroke="#7c8899" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+
+<p><text x="600" y="50" fill="#9fb0c8" font-size="13" letter-spacing="1.2">OUTPUTS</text> <rect x="600" y="66" width="330" height="34" rx="8" fill="#1d2531" stroke="#3a465c"/> <text x="614" y="88" fill="#e7edf6" font-size="13">Discord #ops — stack-health lines</text> <rect x="600" y="108" width="330" height="34" rx="8" fill="#1d2531" stroke="#3a465c"/> <text x="614" y="130" fill="#e7edf6" font-size="13">Zoho Cliq DM — detail, personal, money</text> <rect x="600" y="150" width="330" height="34" rx="8" fill="#1d2531" stroke="#3a465c"/> <text x="614" y="172" fill="#e7edf6" font-size="13">Kanban — template-only Beast cards</text> <rect x="600" y="192" width="330" height="34" rx="8" fill="#1d2531" stroke="#3a465c"/> <text x="614" y="214" fill="#e7edf6" font-size="13">AI-Drive — artefacts + audit.jsonl</text> <rect x="600" y="234" width="330" height="34" rx="8" fill="#1d2531" stroke="#3a465c"/> <text x="614" y="256" fill="#e7edf6" font-size="13">Hiksemi — age-encrypted backups</text></p>
+  <line x1="544" y1="102" x2="598" y2="86" stroke="#7c8899" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="544" y1="120" x2="598" y2="126" stroke="#7c8899" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="544" y1="150" x2="598" y2="166" stroke="#7c8899" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="544" y1="176" x2="598" y2="206" stroke="#7c8899" stroke-width="1.2" marker-end="url(#ar)"/>
+  <line x1="520" y1="222" x2="598" y2="248" stroke="#7c8899" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+
+  <rect x="24" y="300" width="906" height="104" rx="12" fill="#12161d" stroke="#2a3140"/>
+  <text x="40" y="326" fill="#9fb0c8" font-size="12" letter-spacing="1.2">GUARDRAIL SPINE — CALLED BY EVERY BOT</text>
+  <text x="40" y="350" fill="#e7edf6" font-size="13">mount gate → model fallback → idempotency (pending → done) → HTTP allowlist → audit ledger → publish-time lint</text>
+  <text x="40" y="376" fill="#9aabbe" font-size="12">No money-capable credential · no vault path · no ExecuteCommand · no MCP client on OK :64200 · instance MCP off in v1</text>
+</svg>
+<figcaption>Figure 1 — the spine: one native service, one model route, five outputs, and a guardrail layer that is a shared sub-workflow rather than twelve copies.</figcaption>
+</figure>
+
+<pre><code>                        ┌──────────────────────────────────────────────┐
+   launchd 03:35 cron   │  Mac mini (native, APFS internal)            │
+   com.maio.* agents ──▶│                                              │
+                        │  com.maio.n8n ──▶ n8n 2.49.8 (Node 24)       │
+   launchd probe script │   127.0.0.1:5678  SQLite/WAL ~/.n8n          │
+   n8n-probe.sh ───────▶│         │           logs + binary internal   │
+   (read-only, posts)   │         │                                    │
+   n8n-deadman.sh ─────▶│         │ OpenAI-compatible :11434/v1        │
+   (watches n8n)        │         ▼                                    │
+                        │  Ollama daemon ──▶ Ollama Cloud (:cloud tags)│
+                        └──────────────────────┬───────────────────────┘
+                                               │
+      ┌──────────────┬───────────────┬─────────┴──────┬──────────────┐
+      ▼              ▼               ▼                ▼              ▼
+  Discord #ops   Zoho Cliq DM    Kanban board     AI-Drive files  (opt-in MCP,
+  (stack lines)  (detail)        (Beast cards)    + encrypted      Phase 3)
+                                                    backups</code></pre>
+<p><strong>Placement of state (revised after audit A3/A4)</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>n8n install (<code>node_modules</code>, wrappers)</td>
+<td><code>~/AI Hub/n8n/</code></td>
+<td>Rule 5: local runtimes live in <code>~/AI Hub</code>; ~400 MB</td>
+</tr>
+<tr>
+<td>SQLite DB + encryption key</td>
+<td><code>~/AI Hub/n8n/.n8n/</code> (<code>N8N_USER_FOLDER</code>)</td>
+<td>Internal: the service must survive an external-drive failure to <em>report</em> it</td>
+</tr>
+<tr>
+<td>Logs, binary data</td>
+<td><code>~/AI Hub/n8n/{logs,binary}/</code></td>
+<td>Audit A4: a boot path must not depend on a USB drive</td>
+</tr>
+<tr>
+<td>Bot artefacts (manifests, reports, digests)</td>
+<td><code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/n8n/</code></td>
+<td>Rule 5: agent output on AI-Drive; also the only path file nodes may touch</td>
+</tr>
+<tr>
+<td>Workflow exports (versioned)</td>
+<td><code>/Volumes/Hiksemi 1TB/DevMini/n8n/workflows/</code> (branch + PR)</td>
+<td>Rule 5: code in DevMini; audit A23: never a direct commit to main</td>
+</tr>
+<tr>
+<td>Backups</td>
+<td><code>/Volumes/Hiksemi 1TB/AI-Drive/Backups/n8n/</code> — <strong>encrypted</strong>, outside the file-access root</td>
+<td>Audit A3: plaintext credential DB on an unencrypted USB drive is not allowed</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Mount gate (adopted from MoA, M-2 as amended).</strong> Every workflow that touches the external volume starts with a shared <em>mount-gate</em> sub-workflow: exact path present, write test succeeds, else the run fails closed with one alert and writes nothing. It is per-workflow, not a start gate, because a start gate would silence the only component able to report the missing drive (Claude's §"single most likely failure" makes the same point).</p>
+<hr />
+<h2 id="6-configuration-contract">6. Configuration contract</h2>
+<h3 id="61-runtime-and-service">6.1 Runtime and service</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Runtime</td>
+<td><code>brew install node@24</code> (keg-only; available: 24.22.3) then <code>brew pin node@24</code></td>
+</tr>
+<tr>
+<td>Package</td>
+<td><code>n8n@2.49.8</code> — npm <code>dist-tags</code> reported by the auditor: <code>stable: 2.49.8</code>, <code>beta: 2.50.3</code>. Read the 2.49.8 changelog before pinning (A16)</td>
+</tr>
+<tr>
+<td>Prefix</td>
+<td><code>npm install --prefix "$HOME/AI Hub/n8n" n8n@2.49.8 --omit=dev</code></td>
+</tr>
+<tr>
+<td>npm cache</td>
+<td><code>~/AI Hub/n8n/.npm-cache</code> (kept off the default <code>~/.npm</code> so the P-1 headroom is measurable)</td>
+</tr>
+<tr>
+<td>Entry point</td>
+<td><code>node ~/AI Hub/n8n/node_modules/n8n/bin/n8n start</code> (absolute path in the plist)</td>
+</tr>
+<tr>
+<td>LaunchAgent</td>
+<td><code>~/Library/LaunchAgents/com.maio.n8n.plist</code> — <code>RunAtLoad</code>, <code>KeepAlive</code>, <code>ThrottleInterval 30</code>, stdout/stderr to <code>~/AI Hub/n8n/logs/</code></td>
+</tr>
+<tr>
+<td>Bind</td>
+<td><code>127.0.0.1:5678</code>, <code>N8N_PROTOCOL=http</code></td>
+</tr>
+<tr>
+<td>Timezone</td>
+<td><code>TZ=Africa/Johannesburg</code>, <code>GENERIC_TIMEZONE=Africa/Johannesburg</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The wrapper (<code>bin/n8n-start.sh</code>) exports <code>PATH</code> with node@24 first, refuses to start below the disk floor (number, not a string — audit A2), refuses if 5678 is bound, and writes one line to <code>logs/lifecycle.log</code>.</p>
+<h3 id="62-environment-full-table-13">6.2 Environment (full table §13)</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>N8N_BLOCK_ENV_ACCESS_IN_NODE</code></td>
+<td><code>true</code></td>
+<td>Code nodes cannot read the environment</td>
+</tr>
+<tr>
+<td><code>NODES_EXCLUDE</code></td>
+<td>left at 2.x default</td>
+<td><code>ExecuteCommand</code> and <code>LocalFileTrigger</code> stay disabled</td>
+</tr>
+<tr>
+<td><code>N8N_RESTRICT_FILE_ACCESS_TO</code></td>
+<td><code>/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output</code></td>
+<td>Audit A3: backups and DevMini sit <strong>outside</strong> this root</td>
+</tr>
+<tr>
+<td><code>N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS</code></td>
+<td><code>true</code></td>
+<td>n8n config is 0600</td>
+</tr>
+<tr>
+<td><code>N8N_DIAGNOSTICS_ENABLED</code></td>
+<td><code>false</code></td>
+<td>No telemetry; Ask-AI in Code node off (we do not want it)</td>
+</tr>
+<tr>
+<td><code>N8N_VERSION_NOTIFICATIONS_ENABLED</code></td>
+<td><code>true</code></td>
+<td>We do want to hear about security releases</td>
+</tr>
+<tr>
+<td><code>N8N_ENCRYPTION_KEY</code></td>
+<td><strong>not set</strong></td>
+<td>n8n generates it into <code>~/.n8n/config</code> (0600); backed up only inside an encrypted archive</td>
+</tr>
+<tr>
+<td><code>EXECUTIONS_DATA_PRUNE</code> / <code>_MAX_AGE</code> / <code>_PRUNE_MAX_COUNT</code></td>
+<td><code>true</code> / <code>336</code> (hours) / <code>0</code></td>
+<td>Audit A8: sub-workflows multiply executions, so prune by <strong>age</strong> as the binding rule; the count cap would keep 2–3 days, not 14</td>
+</tr>
+<tr>
+<td><code>EXECUTIONS_DATA_SAVE_ON_ERROR</code> / <code>_SAVE_ON_SUCCESS</code></td>
+<td><code>all</code> / <code>all</code> for 14 days, then <code>all</code> / <code>none</code></td>
+<td>Payloads are needed to tune bots; the JSONL ledger replaces success payloads at gate G7</td>
+</tr>
+<tr>
+<td><code>N8N_CONCURRENCY_PRODUCTION_LIMIT</code></td>
+<td><code>3</code></td>
+<td>Audit A9: <code>1</code> lets one long agent run block the probe webhook and MCP calls</td>
+</tr>
+<tr>
+<td><code>DB_SQLITE_VACUUM_ON_STARTUP</code></td>
+<td><code>true</code> <em>(verify name against 2.49.8 before use — A21)</em></td>
+<td>Pruning frees rows, not bytes</td>
+</tr>
+<tr>
+<td><code>N8N_DEFAULT_BINARY_DATA_MODE</code></td>
+<td><code>filesystem</code></td>
+<td>Binary never inflates the DB</td>
+</tr>
+<tr>
+<td><code>N8N_PUBLIC_API_DISABLED</code></td>
+<td><code>false</code> (localhost only)</td>
+<td>Our tools need the API; rate limits at defaults</td>
+</tr>
+<tr>
+<td><code>WEBHOOK_URL</code></td>
+<td><code>http://127.0.0.1:5678/</code></td>
+<td>Phase 3 may add a tailnet URL — gate G5</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="63-credentials-inside-n8n">6.3 Credentials inside n8n</h3>
+<ol type="1">
+<li><strong>OpenAI-compatible → Ollama</strong> — Type: OpenAI. <strong>Base URL <code>http://127.0.0.1:11434/v1</code></strong>, API key the literal <code>ollama</code> (the local daemon ignores it). This is the route that supports tool calling — measured (C9).</li>
+<li><strong>Ollama</strong> — Type: Ollama, Base URL <code>http://127.0.0.1:11434</code>, no key. For embeddings and plain LLM Chain nodes.</li>
+<li><strong>Service credentials</strong>, scoped per workflow, <strong>read-only wherever the vendor offers a read-only token</strong>: Firefly gets an app password that is never used for writes; Gmail gets the narrowest scope that can still list and draft; HA gets a long-lived token; Discord/Cliq get webhook URLs stored as <em>credentials</em>, never as node parameters (audit A14).</li>
+</ol>
+<p>No credential is ever pasted into a node parameter, a Code node, or a git-tracked file. Webhook URLs are secrets too, and are stored as credentials — the audit correctly pointed out that a URL in an HTTP node lands in every weekly export.</p>
+<h3 id="64-model-ladder--gated-on-the-account-audit-a1-blocker">6.4 Model ladder — gated on the account (audit A1, BLOCKER)</h3>
+<p><strong>The gate.</strong> Before any bot calls a model, P0 identifies which Ollama account the local daemon is signed into (Ricardo's own Pro/Max account, or the Infinity company account). The company key is restricted to <code>deepseek-v4.1-flash</code> and <code>mimo-v2.6-flash</code>; if the daemon bills that account, the ladder below narrows to those two tags plus local models, and B2/B8 are re-costed before they are built. <strong>This is gate G0 and it blocks P3.</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Model (if the daemon bills Ricardo's account)</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Classify / extract / route</td>
+<td><code>glm-5.3-flash:cloud</code></td>
+<td>Fleet default; tool-calling verified today</td>
+</tr>
+<tr>
+<td>Draft / summarise</td>
+<td><code>deepseek-v4.1-flash:1017-cloud</code></td>
+<td>The chairman-grade writer, already the default model</td>
+</tr>
+<tr>
+<td>Deep reasoning in an agent loop</td>
+<td><code>kimi-k3.1-pro:cloud</code></td>
+<td>Strongest long-context reasoning seat</td>
+</tr>
+<tr>
+<td>Vision</td>
+<td><code>inkling-2-small</code></td>
+<td>The registered vision route</td>
+</tr>
+<tr>
+<td>Embeddings</td>
+<td><code>nomic-embed-text</code> (local)</td>
+<td>Zero cloud cost</td>
+</tr>
+</tbody>
+</table></div>
+<p>Every tag in this table is a <strong>hypothesis to probe at P3</strong> (one generation + one tool call each, MoA call M-15), not an assumption.</p>
+<p><strong>Fallback rule (rewritten after audit A10).</strong> The daemon answers <code>/api/tags</code> with 200 even while the cloud lane is 429-ing, so a health check on the daemon proves nothing. Degraded mode is therefore triggered by the <strong>model node's own error output</strong> (non-2xx, timeout, invalid tool JSON), not by a pre-check: bounded retries (2), then the deterministic template answer — raw values, no prose — plus one alert, execution tagged <code>degraded-model</code>. A daily call budget per bot stops the retry loop from burning the shared quota.</p>
+<h3 id="65-agent-vs-chain">6.5 Agent vs chain</h3>
+<ul>
+<li><strong>Basic LLM Chain</strong> for one-shot generation (digest prose, eight-line briefs).</li>
+<li><strong>AI Agent (tools)</strong> only where a lookup is needed: inbox triage, copilot. Agent runs are capped at <code>maxIterations</code> 6, one tool-call per item, and an explicit <code>maxTokens</code> per call with a per-execution counter (audit A24 — a token ceiling must exist as a number, not a hope).</li>
+<li><strong>MCP Client Tool</strong> only against <strong>read-only</strong> MCP servers. The OpenKnowledge server on :64200 exposes write/edit/delete and is <strong>never</strong> connected (audit A7).</li>
+</ul>
+<h3 id="66-notification-routes">6.6 Notification routes</h3>
+<p>Discord for stack-health lines; DM-locked Cliq for anything personal, financial or business; the kanban board for work items; AI-Drive for artefacts. Nothing posts to a public channel. Every route carries a <code>source</code> field so a message can be traced to an execution ID.</p>
+<h3 id="67-python">6.7 Python</h3>
+<p>v1 is JavaScript only. n8n 2.x removed the Pyodide Python node; native Python needs external task runners (<code>n8nio/runners</code>) — a container dependency we have argued against. Revisit with the 3.0 migration.</p>
+<hr />
+<h2 id="7-bot-fleet">7. Bot fleet</h2>
+<h3 id="71-v1--built-and-proven-in-the-first-two-weeks-7-bots">7.1 v1 — built and proven in the first two weeks (7 bots)</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Bot</th>
+<th>Purpose</th>
+<th>Trigger / cadence</th>
+<th>Nodes</th>
+<th>Touches</th>
+<th>Output</th>
+<th>On failure</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>B1</strong></td>
+<td><strong>Mac Sentinel</strong></td>
+<td>Catch the machine degrading before it breaks</td>
+<td>Webhook from <code>n8n-probe.sh</code>, every 15 min</td>
+<td>Webhook → Code (thresholds) → IF → dedupe → Discord + Cliq</td>
+<td><code>df</code>, <code>memory_pressure</code>, <code>lsof</code>, <code>ollama /api/tags</code>, <code>launchctl</code></td>
+<td>One alert per state change; silent when healthy</td>
+<td>Probe retries next tick; 2 consecutive misses (not 3 — audit A20) → "probe silent" alert</td>
+<td>Adrianna (Courage)</td>
+</tr>
+<tr>
+<td><strong>B2</strong></td>
+<td><strong>Morning Digest</strong></td>
+<td>One message that replaces five app openers</td>
+<td>Schedule 06:45 daily</td>
+<td>Schedule → HTTP (weather, calendar, mail counts) → Basic LLM Chain → Discord + Cliq</td>
+<td>Open-Meteo, Google Calendar, Gmail read, local metrics</td>
+<td>6 bullets, ≤15 lines, <strong>plus the weekly drift line on Mondays</strong> (absorbs old B11, audit A15)</td>
+<td>Sends raw metrics without prose, tagged <code>degraded-model</code></td>
+<td>Adrianna</td>
+</tr>
+<tr>
+<td><strong>B3</strong></td>
+<td><strong>n8n Deadman</strong></td>
+<td>Watch the watcher</td>
+<td>launchd <code>n8n-deadman.sh</code> every 5 min, <strong>outside</strong> n8n</td>
+<td>Shell script → <code>curl /healthz</code> + process check → Cliq/Discord directly</td>
+<td>launchd, n8n :5678</td>
+<td>Silent when healthy; one alert when n8n is down or crash-looping</td>
+<td>This is the independent path: if it cannot run, <code>com.maio.deadman</code> already covers it</td>
+<td>Adrianna</td>
+</tr>
+<tr>
+<td><strong>B4</strong></td>
+<td><strong>Drive Guard</strong></td>
+<td>Make a missing external drive loud, not silent</td>
+<td>Event: on every mount/unmount + 30 min check</td>
+<td>Schedule/Hook → Code (mount + write test) → Cliq</td>
+<td><code>/Volumes/Hiksemi 1TB</code>, <code>diskutil</code></td>
+<td>One message per state change (mounted / absent / read-only)</td>
+<td>Repeats once per hour while absent, never per workflow</td>
+<td>Adrianna</td>
+</tr>
+<tr>
+<td><strong>B5</strong></td>
+<td><strong>Backup Verifier</strong></td>
+<td>Prove last night's backups exist, open and decrypt</td>
+<td>Schedule 08:15 daily</td>
+<td>Schedule → HTTP probe of backup rail → Code (age, size, hash) → alert</td>
+<td>vault rail, AI-Drive snapshot, n8n archive, HA backup</td>
+<td>Green line in the digest; red alert if any &gt; 36 h stale</td>
+<td>Escalates red; a missing backup is never quiet</td>
+<td>Adrianna</td>
+</tr>
+<tr>
+<td><strong>B6</strong></td>
+<td><strong>Agent Output Filing</strong></td>
+<td>Finished work gets filed, not lost in scratch</td>
+<td>Schedule hourly</td>
+<td>Schedule → mount gate → Read File → Code (name normalise, manifest) → HTTP (kanban card)</td>
+<td>AI-Drive <code>Agent-Output/*</code>, kanban</td>
+<td><code>manifest.jsonl</code> + one <strong>template-only</strong> card per vault-bound doc (path, hash, title — audit A7)</td>
+<td>Files locally, skips card, alerts</td>
+<td>Beast lane</td>
+</tr>
+<tr>
+<td><strong>B7</strong></td>
+<td><strong>Home Assistant Bridge</strong></td>
+<td>Home events into one channel + a nightly summary</td>
+<td>HA webhook + Schedule 21:00</td>
+<td>Webhook → HA node → format → Cliq/Discord</td>
+<td>Home Assistant :8123</td>
+<td>Event messages; night summary</td>
+<td>Retries once, then alerts</td>
+<td>Splinter lane</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="72-phase-3--built-only-after-the-spine-passes-5-bots">7.2 Phase 3 — built only after the spine passes (5 bots)</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Bot</th>
+<th>Purpose</th>
+<th>Why it waits</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>B8</strong></td>
+<td><strong>Inbox Triage</strong> — classify, label, draft (never send)</td>
+<td>Cuts the inbox to what matters</td>
+<td>Needs OAuth scope review and a real send-block test (the audit's point: any scope that drafts can also send)</td>
+</tr>
+<tr>
+<td><strong>B9</strong></td>
+<td><strong>Fleet/Kanban Digest</strong> — one message per 4 h on stuck runs and blocked cards</td>
+<td>Answers "is the fleet alive"</td>
+<td>Narrowed after audit A15 so it does not duplicate <code>stack-doctor</code>/<code>deadman</code>: kanban + agent-run staleness only</td>
+</tr>
+<tr>
+<td><strong>B10</strong></td>
+<td><strong>Model Spend Meter</strong> — reads the local usage ledger</td>
+<td>Keeps the cloud pool visible</td>
+<td>Audit A15: no public usage API; it reports what the ledger records and <strong>never claims cent-level accuracy</strong></td>
+</tr>
+<tr>
+<td><strong>B11</strong></td>
+<td><strong>System Copilot (MCP Server Trigger)</strong> — read-only tools for Hermes/Claude</td>
+<td>Makes n8n a tool surface the fleet can call</td>
+<td>Audit A15: deferred and <strong>instance-level MCP stays off</strong>; only a single workflow-scoped trigger, bearer auth, read-only</td>
+</tr>
+<tr>
+<td><strong>B12</strong></td>
+<td><strong>Finance Prepare-Only</strong> — Firefly categorisation proposal</td>
+<td>Saves an hour a week</td>
+<td>Read-only token, GET only, approval packet; money never moves</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="73-held-pending-a-ruling">7.3 Held pending a ruling</h3>
+<p><strong>Zoho Brief Intake</strong> (audit A13). Two sources disagree about where Infinity briefs live (Zoho Projects per the brief standard vs ClickUp per <code>RICARDO.md</code>) and about which lane may run Infinity work (Courage/Hermes vs AgenticOS). Until Ricardo rules, no bot touches Infinity data: the risk of filing into the wrong system is worse than the work it saves.</p>
+<p><strong>Shared infrastructure, not bots.</strong> Mount gate, model fallback, idempotency/audit and the HTTP allowlist are called by every bot rather than copied (a guardrail that exists twelve times is eleven chances to drift).</p>
+<hr />
+<h2 id="8-data-state-retention-and-backup">8. Data, state, retention and backup</h2>
+<ul>
+<li><strong>Store:</strong> SQLite pooling driver (2.x default, WAL). Single writer, read pool. No Postgres in v1.</li>
+<li><strong>Retention:</strong> prune by <strong>age</strong> (14 days) as the binding rule; the row count is a secondary guard set to <code>0</code> (off) until measured, because sub-workflow executions multiply the count (audit A8). Success payloads stop being saved after the 14-day tuning window, replaced by the JSONL ledger.</li>
+<li><strong>Audit ledger:</strong> append-only JSONL outside the DB — execution ID, workflow ID + version, dedupe key, model tag, tool calls, action status, artefact reference. No payloads, no secrets.</li>
+<li><strong>Backup (rewritten after audit A3/A5):</strong>
+<ol type="1">
+<li><code>sqlite3 "$DB" ".backup '/tmp/n8n-backup/db.sqlite'"</code> — never <code>tar</code> a live WAL database.</li>
+<li>Collect <code>.n8n/config</code> (the encryption key), <code>manifest.json</code> (versions, plist hash), and the JSONL ledger.</li>
+<li><code>tar</code> → <strong><code>age</code>-encrypt to a public key whose identity lives in the login Keychain</strong> → write to <code>/Volumes/Hiksemi 1TB/AI-Drive/Backups/n8n/</code> — outside the file-access root, so no workflow can read it.</li>
+<li>Keep 14. Log every run with size + hash.</li>
+</ol></li>
+<li><strong>Restore drill (monthly):</strong> decrypt to a scratch dir, <code>PRAGMA integrity_check</code>, then <strong>boot n8n on port 5680 against the restored data and decrypt one credential through the UI</strong> (audit A5: an integrity check does not prove the key works). Recovery objective: 30 minutes, measured in the drill.</li>
+<li><strong>External-drive policy:</strong> the DB, logs and binary data never live on Hiksemi. If it is absent, B4 and B6 report it and fail cleanly; n8n keeps running. Silent mount failures are a known behaviour of this machine, so "absent" is a normal state to handle, not an exception.</li>
+<li><strong>Versioning:</strong> weekly export (<code>n8n export:workflow --all</code>) done by <strong>launchd, not by n8n</strong> (audit A23 — n8n cannot run git), onto a branch in <code>DevMini</code>, opened as a PR. Nothing commits to <code>main</code>.</li>
+</ul>
+<hr />
+<h2 id="9-guardrails--the-standing-rules-enforced-by-something-runnable">9. Guardrails — the standing rules, enforced by something runnable</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>How n8n enforces it</th>
+<th>How a reviewer verifies it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Money &amp; legal are prepared, never executed</strong></td>
+<td>Two independent controls. (1) n8n is <strong>never given a credential that can move money</strong> — the Firefly token is read-only, no Zoho Books/Invoice credential is created at all. (2) A <strong>publish-time lint</strong> rejects any workflow containing a non-<code>GET</code> HTTP call to a financial or legal host, a Gmail <code>send</code>, or a Zoho write operation.</td>
+<td><code>n8n-lint.sh</code> runs on every export before publish; a failing workflow cannot be published. Greps alone are not enough — the audit correctly showed the original pattern matched nothing (A6)</td>
+</tr>
+<tr>
+<td><strong>Vault is read-only except Beast</strong></td>
+<td>The vault path appears in no workflow and no credential. Vault-bound documents become <strong>template-only</strong> Beast cards (path, hash, title). No MCP Client node is ever connected to OK :64200.</td>
+<td><code>grep -r "Maio Hub"</code> over the export dir returns nothing; the lint rejects any MCP credential pointed at :64200</td>
+</tr>
+<tr>
+<td><strong>Secrets stay in env / credential store</strong></td>
+<td>Credentials in n8n's encrypted store; webhook URLs stored as credentials; <code>N8N_BLOCK_ENV_ACCESS_IN_NODE=true</code>; exports carry credential IDs only.</td>
+<td><code>n8n-lint.sh</code> scans exports for <code>Authorization</code>, <code>Bearer</code>, <code>hooks.slack</code>, <code>discord.com/api/webhooks</code>, <code>sk-</code>, PEM blocks; <code>gitleaks</code> runs as a pre-commit hook in DevMini</td>
+</tr>
+<tr>
+<td><strong>Claims need evidence</strong></td>
+<td>Every bot reports the raw value and its source; degraded mode emits raw data, never prose</td>
+<td>Execution payload for any alert contains the source command/response</td>
+</tr>
+<tr>
+<td><strong>No host shell</strong></td>
+<td><code>ExecuteCommand</code> and <code>LocalFileTrigger</code> stay disabled; host facts arrive through a read-only probe script</td>
+<td><code>NODES_EXCLUDE</code> printed at startup; lint rejects both node types</td>
+</tr>
+</tbody>
+</table></div>
+<p>Additional operational guardrails:</p>
+<ol type="1">
+<li><strong>Idempotency (audit A18).</strong> Keys are <strong>per object</strong>, not per window (B6: file path + hash; B8: message ID + thread). A key is written in state <code>pending</code> and moved to <code>done</code> only after the output succeeds, so a failed send retries and a successful one never duplicates.</li>
+<li><strong>Loop and cost caps.</strong> <code>maxIterations</code> 6, explicit <code>maxTokens</code> per call, per-run item caps (B8: 40 messages/run), a daily call budget per bot, and retries capped at 2.</li>
+<li><strong>Alert hygiene.</strong> State-change only; <strong>2</strong> consecutive misses = down (one number everywhere — audit A20); one digest per 4 h at most.</li>
+<li><strong>Kill switch.</strong> <code>bin/n8n-panic.sh</code> → <code>launchctl bootout gui/$UID/com.maio.n8n</code>, timestamp, one Cliq line. Resume is the mirror. The drill asserts the service is gone within <strong>45 s</strong> — longer than the 30 s graceful shutdown, which v0.1 contradicted (audit A20). Soft stop is Publish/Unpublish in 2.x.</li>
+<li><strong>Audit.</strong> 14 days of executions in the UI, the JSONL ledger indefinitely, and B9 surfacing failed executions rather than leaving them to be discovered.</li>
+<li><strong>Egress, honestly stated.</strong> n8n itself has no firewall; a determined workflow could call any host. v1 compensates with credentials that cannot write money, a publish-time lint, and no <code>ExecuteCommand</code>. A <code>pf</code> egress allowlist is listed as future hardening, not claimed as present (audit A6).</li>
+<li><strong>Credential store — the one approved exception.</strong> n8n keeps credentials encrypted in SQLite, unlocked by the key in <code>~/.n8n/config</code> (0600). That is n8n's own config, and the only place a service credential may live. The consequences are accepted in writing: the backup is encrypted before it leaves the machine, the key never appears outside that archive, and a restore onto a machine we do not own is forbidden.</li>
+</ol>
+<hr />
+<h2 id="10-delivery-plan">10. Delivery plan</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Work</th>
+<th>Exit test (literal)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>P-1 — Reclaim</strong> (new, audit A2)</td>
+<td>Free internal disk to <strong>≥ 15 GB</strong> before anything installs: Docker build cache (<code>2.6 GB</code> reclaimable, measured), stale colima profiles, AI Hub caches, old backups. Nothing deleted that a backup has not first covered</td>
+<td><code>free=$(df -k /System/Volumes/Data | awk 'NR==2{print $4}'); [ "$free" -ge 15728640 ] &amp;&amp; echo PASS</code> — a numeric comparison, not a string</td>
+</tr>
+<tr>
+<td><strong>P0 — Preflight &amp; freeze</strong> (gate G0)</td>
+<td>Identify the Ollama account behind the daemon; <code>brew install node@24 &amp;&amp; brew pin node@24</code>; record exact versions; confirm 5678 free; create <code>~/AI Hub/n8n/{bin,logs,binary}</code></td>
+<td><code>ollama account</code>/daemon env identified in writing; <code>node -v</code> (node@24 path) → v24.x; <code>! lsof -nP -iTCP:5678 -sTCP:LISTEN</code>; <code>curl -fsS -o /dev/null -w '%{http_code}' http://127.0.0.1:11434/v1/models</code> → 200</td>
+</tr>
+<tr>
+<td><strong>P1 — Install</strong></td>
+<td><code>npm install --prefix "$HOME/AI Hub/n8n" n8n@2.49.8 --omit=dev</code> with <code>npm_config_cache</code> under the prefix; first foreground start</td>
+<td><code>curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5678/healthz</code> → 200; <code>ls -l ~/AI\ Hub/n8n/.n8n/config</code> → <code>-rw-------</code>; <code>du -sh ~/AI\ Hub/n8n</code> recorded; owner account created</td>
+</tr>
+<tr>
+<td><strong>P2 — Service</strong></td>
+<td>LaunchAgent + wrapper; <code>launchctl bootstrap</code>; <strong>TCC and cold-boot test</strong> (audit A4)</td>
+<td><code>launchctl print gui/$UID/com.maio.n8n | grep state</code> → running; <code>launchctl kickstart -k</code> → <code>/healthz</code> 200 within 60 s; <strong>a write test run by the launchd process</strong> (not the terminal) succeeds; after <code>sudo reboot</code> <strong>and a login</strong>, the service is up — stated as such, because this Mac has no auto-login</td>
+</tr>
+<tr>
+<td><strong>P3 — Model wiring</strong> (gate G0 passed)</td>
+<td>Two credentials; probe every ladder tag (one generation + one tool call); smoke workflow both routes (OpenAI-compatible <strong>and</strong> Ollama Chat Model, audit A17); confirm the Responses-API toggle behaviour</td>
+<td>Each tag returns a completion; the agent run shows a real tool-call node; a forced 429 lands in the degraded branch within 2 retries</td>
+</tr>
+<tr>
+<td><strong>P3.5 — Spine</strong> (new, audit A11)</td>
+<td>Build <strong>before any bot</strong>: mount gate, model fallback, idempotency/audit, HTTP allowlist, error workflow, <code>n8n-probe.sh</code>, <code>n8n-deadman.sh</code>, backup script</td>
+<td>Lint passes on the spine; deadman alerts when n8n is stopped; probe payload validates against its schema; backup archive decrypts</td>
+</tr>
+<tr>
+<td><strong>P4 — v1 bots</strong></td>
+<td>B1, B2, B3, B4, B5</td>
+<td>Each run three times <strong>as published workflows</strong> (audit A19: dedupe does not work in manual runs); B1 alerts on a stopped daemon and stays silent when healthy; B2 arrives 06:45; no duplicate messages</td>
+</tr>
+<tr>
+<td><strong>P5 — Filing bot</strong></td>
+<td>B6, with template-only cards</td>
+<td>A new artefact produces exactly one card; the card carries path, hash, title and no free text from the file</td>
+</tr>
+<tr>
+<td><strong>P6 — HA bridge</strong></td>
+<td>B7</td>
+<td>An HA event reaches the channel in &lt; 60 s; a duplicate webhook produces one message</td>
+</tr>
+<tr>
+<td><strong>P7 — Hardening</strong></td>
+<td>Pruning verified by age, vacuum on startup verified, restore drill, panic drill, gitleaks hook</td>
+<td>DB &lt; 1 GB after 14 days; restore boots on 5680 and decrypts a credential; panic stops the service in ≤ 45 s</td>
+</tr>
+<tr>
+<td><strong>P8 — Phase 3 bots</strong></td>
+<td>B8–B12, one at a time, each with its own exit test</td>
+<td>See §7.2; every one starts with the lint passing and ends with a negative test (a send attempt is blocked, a write attempt is blocked)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>First 48 hours after P2:</strong> only B3 (deadman), B4 (drive guard) and B1 (sentinel). Watch RSS, swap, and execution count. If n8n's resident set exceeds ~700 MB or swap grows more than 1 GB, stop and re-plan before any model work (C4, gate G2).</p>
+<hr />
+<h2 id="11-verification-matrix-done-means-these-pass">11. Verification matrix ("done" means these pass)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Command</th>
+<th>Pass</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Service is up</td>
+<td><code>curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5678/healthz</code></td>
+<td><code>200</code></td>
+</tr>
+<tr>
+<td>Bound privately</td>
+<td><code>lsof -nP -iTCP:5678 -sTCP:LISTEN</code></td>
+<td>only <code>127.0.0.1:5678</code></td>
+</tr>
+<tr>
+<td>Right runtime</td>
+<td><code>ps -o command= -p $(pgrep -f 'n8n/bin/n8n' | head -1)</code></td>
+<td>contains <code>/node@24/</code></td>
+</tr>
+<tr>
+<td>Model route</td>
+<td>smoke workflow</td>
+<td>model id + <code>finish_reason</code> present</td>
+</tr>
+<tr>
+<td>Tool calling</td>
+<td>agent run</td>
+<td>one tool node executed, logged</td>
+</tr>
+<tr>
+<td>Degraded path</td>
+<td>stop the cloud lane (or force 429)</td>
+<td>raw-output message + <code>degraded-model</code> tag within 2 retries</td>
+</tr>
+<tr>
+<td>Disk headroom</td>
+<td><code>free=$(df -k /System/Volumes/Data | awk 'NR==2{print $4}'); echo $free</code></td>
+<td>≥ 3 145 728 KB (3 GB) after a week</td>
+</tr>
+<tr>
+<td>DB bound</td>
+<td><code>ls -lh ~/AI\ Hub/n8n/.n8n/database.sqlite</code></td>
+<td>&lt; 1 GB; oldest execution &lt; 15 days</td>
+</tr>
+<tr>
+<td>Backup</td>
+<td><code>ls -lt /Volumes/Hiksemi\ 1TB/AI-Drive/Backups/n8n/ | head -2</code></td>
+<td>archive &lt; 26 h old and <code>age -d</code> succeeds</td>
+</tr>
+<tr>
+<td>Kill switch</td>
+<td><code>~/AI\ Hub/n8n/bin/n8n-panic.sh</code></td>
+<td>service gone ≤ 45 s, one Cliq line</td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><code>~/AI\ Hub/n8n/bin/n8n-lint.sh &lt;export-dir&gt;</code></td>
+<td>exit 0 on the current export set</td>
+</tr>
+<tr>
+<td>No secrets in git</td>
+<td><code>gitleaks detect --source /Volumes/Hiksemi\ 1TB/DevMini/n8n</code></td>
+<td>no leaks found</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="12-decision-gates">12. Decision gates</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Question</th>
+<th>Threshold / rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>G0</strong></td>
+<td><strong>Which Ollama account does the daemon bill?</strong></td>
+<td>If the company account: only <code>deepseek-v4.1-flash</code> / <code>mimo-v2.6-flash</code> + local models. Blocks P3. <em>(new, audit A1)</em></td>
+</tr>
+<tr>
+<td><strong>G1</strong></td>
+<td>Is free internal disk ≥ 15 GB?</td>
+<td>Below → P-1 continues. Below 8 GB → no install at all</td>
+</tr>
+<tr>
+<td><strong>G2</strong></td>
+<td>Did the 48-hour soak keep RSS &lt; 700 MB and swap growth &lt; 1 GB?</td>
+<td>Fail → stop at three bots, re-plan</td>
+</tr>
+<tr>
+<td><strong>G3</strong></td>
+<td>At n8n 3.0, does npm still install?</td>
+<td>No → Docker Compose migration, which first needs G1 satisfied</td>
+</tr>
+<tr>
+<td><strong>G4</strong></td>
+<td>Does volume justify Postgres?</td>
+<td>&gt; ~50 executions/min sustained, or 2+ concurrent operators → Postgres + queue mode</td>
+</tr>
+<tr>
+<td><strong>G5</strong></td>
+<td>Tailnet exposure?</td>
+<td>Default <strong>no</strong>. If yes: dedicated port, <code>N8N_PROTOCOL=https</code>, <code>WEBHOOK_URL</code>, <code>N8N_PROXY_HOPS=1</code>, Ricardo's explicit go</td>
+</tr>
+<tr>
+<td><strong>G6</strong></td>
+<td>Any bot sending outbound mail or writing to Zoho?</td>
+<td>Only with its own PRD section and an approval design that works from a phone. v1: never</td>
+</tr>
+<tr>
+<td><strong>G7</strong></td>
+<td>Do the retention numbers match reality?</td>
+<td>At +14 days compare executions, DB bytes, payload bytes; set the real caps</td>
+</tr>
+<tr>
+<td><strong>G8</strong></td>
+<td>Is Ollama's <code>*:11434</code> exposure accepted?</td>
+<td>Loopback-only would break the 26 containers' local-model path; keep with no port-forward, application firewall, tailnet ACLs. Re-check on any new network path</td>
+</tr>
+<tr>
+<td><strong>G9</strong></td>
+<td>Is a second backup destination measured?</td>
+<td>NAS Ricky mount + capacity + credentials tested before B5 may say "two copies"</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="13-environment-reference-complete">13. Environment reference (complete)</h2>
+<pre><code>N8N_HOST=127.0.0.1
+N8N_LISTEN_ADDRESS=127.0.0.1
+N8N_PORT=5678
+N8N_PROTOCOL=http
+WEBHOOK_URL=http://127.0.0.1:5678/
+N8N_USER_FOLDER=/Users/ricardomaio/AI Hub/n8n
+GENERIC_TIMEZONE=Africa/Johannesburg
+TZ=Africa/Johannesburg
+N8N_BLOCK_ENV_ACCESS_IN_NODE=true
+N8N_RESTRICT_FILE_ACCESS_TO=/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output
+N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+N8N_DIAGNOSTICS_ENABLED=false
+N8N_VERSION_NOTIFICATIONS_ENABLED=true
+N8N_TEMPLATES_ENABLED=false
+N8N_PERSONALIZATION_ENABLED=false
+N8N_HIRING_BANNER_ENABLED=false
+EXECUTIONS_DATA_PRUNE=true
+EXECUTIONS_DATA_MAX_AGE=336
+EXECUTIONS_DATA_PRUNE_MAX_COUNT=0
+EXECUTIONS_DATA_SAVE_ON_ERROR=all
+EXECUTIONS_DATA_SAVE_ON_SUCCESS=all          # -&gt; none after gate G7
+N8N_CONCURRENCY_PRODUCTION_LIMIT=3
+N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+N8N_BINARY_DATA_STORAGE_PATH=/Users/ricardomaio/AI Hub/n8n/binary
+N8N_LOG_FILE_LOCATION=/Users/ricardomaio/AI Hub/n8n/logs/n8n.log
+N8N_LOG_LEVEL=info
+N8N_LOG_OUTPUT=console,file
+N8N_PUBLIC_API_DISABLED=false
+N8N_PROXY_HOPS=0
+N8N_GRACEFUL_SHUTDOWN_TIMEOUT=30
+DB_SQLITE_VACUUM_ON_STARTUP=true             # verify against 2.49.8 before enabling</code></pre>
+<p>Dropped from v0.1 after the audit: <code>N8N_ENFORCE_GLOBAL_USER_AGENT</code> (unverified — A24). Model access is not an env var: it is the credential in §6.3, so no key ever sits in the plist.</p>
+<hr />
+<h2 id="14-development-arm-record-moa">14. Development-arm record (MoA)</h2>
+<p>The panel was briefed with the measured ground truth of §3 and asked for the technical spine. It returned 24 KB of architecture, nine bots, a delivery plan and a risk ranking.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Seat</th>
+<th>Model</th>
+<th>Engaged</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reference 1</td>
+<td><code>glm-5.3:cloud</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Reference 2</td>
+<td><code>kimi-k3.1-pro:cloud</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Reference 3</td>
+<td><code>hy4:cloud</code></td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Aggregator</td>
+<td><code>nemotron-3-ultra:cloud</code></td>
+<td>yes</td>
+</tr>
+</tbody>
+</table></div>
+<p><em>Brief:</em> <code>moa-brief.md</code> · <em>Raw return:</em> <code>moa-draft.md</code> · both in <code>AI-Drive/Agent-Output/adrianna/n8n-2026-11-28/</code>.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>MoA call</th>
+<th>Ruling</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M-1 Native n8n, pinned Node 24, launchd</td>
+<td><strong>Adopted</strong> (D-01)</td>
+<td>Its addition — verify launchd resolves the absolute Node 24 path — is §11 row 3</td>
+</tr>
+<tr>
+<td>M-2 All state external; n8n start gated on the mount</td>
+<td><strong>Amended</strong></td>
+<td>DB/logs/binary internal (A4 agrees); the <em>start</em> gate is rejected — it silences the reporter. Per-workflow mount gate instead</td>
+</tr>
+<tr>
+<td>M-3 Don't guess retention; measure first</td>
+<td><strong>Adopted as G7</strong>, with a starting cap so growth is bounded meanwhile</td>
+<td></td>
+</tr>
+<tr>
+<td>M-4 One drive is not a backup</td>
+<td><strong>Adopted</strong> (§8, R10, G9)</td>
+<td></td>
+</tr>
+<tr>
+<td>M-5 Health via HTTP, not shell</td>
+<td><strong>Amended</strong></td>
+<td>A read-only probe carrying <code>df</code>/swap/<code>lsof</code>/<code>launchctl</code> beats an HTTP endpoint; Maio OS <code>/health</code> is the second source</td>
+</tr>
+<tr>
+<td>M-6 n8n's credential store is a secret-on-disk exception</td>
+<td><strong>Adopted in writing</strong> (§9.7) — and the audit showed it needed encryption too (A3)</td>
+<td></td>
+</tr>
+<tr>
+<td>M-7 Pin versions; no auto-update</td>
+<td><strong>Adopted</strong> (§6.1, G3)</td>
+<td></td>
+</tr>
+<tr>
+<td>M-8 Don't write <code>/healthz</code> in unless confirmed</td>
+<td><strong>Adopted with evidence</strong> — docs list <code>/healthz</code>, <code>/healthz/readiness</code>, <code>/metrics</code>; P1 measures it</td>
+<td></td>
+</tr>
+<tr>
+<td>M-9 Health sentinel at 03:35</td>
+<td><strong>Rejected</strong></td>
+<td>03:35 reports a 14:00 disk fill sixteen hours late</td>
+</tr>
+<tr>
+<td>M-10 Add Finance, Runtime Drift, Mount Gate</td>
+<td><strong>Adopted</strong></td>
+<td>Drift folded into B2 (A15); mount gate is infrastructure; Finance is B12</td>
+</tr>
+<tr>
+<td>M-11 Cliq only, no Discord/Telegram</td>
+<td><strong>Amended</strong></td>
+<td>Stack lines in Discord are read; detail goes to Cliq/board</td>
+</tr>
+<tr>
+<td>M-12 Concurrency one</td>
+<td><strong>Amended</strong></td>
+<td>Three — A9: one long run would block the webhook and MCP</td>
+</tr>
+<tr>
+<td>M-13 Save no success payloads</td>
+<td><strong>Amended</strong></td>
+<td>Keep 14 days to tune, then <code>none</code></td>
+</tr>
+<tr>
+<td>M-14 Bind Ollama to loopback</td>
+<td><strong>Rejected, documented as R9/G8</strong></td>
+<td>Would break the 26 containers' model path (C8)</td>
+</tr>
+<tr>
+<td>M-15 Measure the model ladder</td>
+<td><strong>Adopted</strong></td>
+<td>P3 probes each tag (§6.4)</td>
+</tr>
+<tr>
+<td>M-16 Roll back if any container or launchd agent is disturbed</td>
+<td><strong>Adopted</strong></td>
+<td>Added to P2/P4 exit tests</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Adjudication.</strong> The panel and this document agree on the spine: native lane, pinned runtime, SQLite, the <code>/v1</code> tool-calling route, hardening left on, measured-not-guessed operations. The disagreements were about where state lives and how often to look — both answered from the same numbers, in opposite directions, which is why the brief carried measurements instead of a conclusion. Two calls were rejected outright and both matter: a start gate on the drive would have turned a recoverable condition into a silent outage of the system that reports it, and a loopback bind would have broken 26 containers to close an exposure the router already closes.</p>
+<hr />
+<h2 id="15-claude-audit-2026-11-28-and-what-changed">15. Claude audit (2026-11-28) and what changed</h2>
+<p>Claude Code read the MoA-adjudicated v0.2 in full, re-measured three facts independently, and returned 24 findings: <strong>3 blockers, 15 major, 6 minor.</strong></p>
+<p><strong>Blockers — accepted, and they changed the build</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Finding</th>
+<th>Change made</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A1</strong></td>
+<td>The model ladder never says which Ollama account it bills; the company account is limited to <code>deepseek-v4.1-flash</code> / <code>mimo-v2.6-flash</code></td>
+<td><strong>New gate G0</strong> blocks P3 until the daemon's account is identified; §6.4 states the narrowed ladder if it is the company account</td>
+</tr>
+<tr>
+<td><strong>A2</strong></td>
+<td>P0 required 8 GB free while the PRD's own measurement is 7.6 GB; the footprint omitted node_modules, npm cache and swap growth; <code>df | awk</code> compares strings</td>
+<td><strong>New phase P-1</strong> reclaims to ≥ 15 GB with a numeric exit test; npm cache moved under the prefix; §11 disk check is numeric</td>
+</tr>
+<tr>
+<td><strong>A3</strong></td>
+<td>The backup tarball (credential DB + key) was plaintext on an <strong>unencrypted USB</strong> drive, inside the file-access root</td>
+<td>Backups are <code>age</code>-encrypted to a Keychain-held identity, written <strong>outside</strong> <code>N8N_RESTRICT_FILE_ACCESS_TO</code> (now <code>…/Agent-Output</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Majors — accepted (15)</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A4</td>
+<td>Logs and binary data moved back to the <strong>internal</strong> volume so the boot path never depends on USB; P2 adds a launchd-context write test and a cold-boot test, and states that this Mac has <strong>no auto-login</strong></td>
+</tr>
+<tr>
+<td>A5</td>
+<td>Backup uses <code>sqlite3 ".backup"</code>, never <code>tar</code> on a live WAL DB; the monthly drill <strong>boots n8n on 5680 and decrypts a credential</strong>, because <code>integrity_check</code> does not prove the key</td>
+</tr>
+<tr>
+<td>A6</td>
+<td>Replaced "structural grep" claims with a <strong>publish-time lint</strong> (<code>n8n-lint.sh</code>) plus credentials that cannot write money; §9.6 states honestly that there is no egress firewall in v1</td>
+</tr>
+<tr>
+<td>A7</td>
+<td>Beast cards are <strong>template-only</strong> (path, hash, title); no MCP Client is ever connected to OK :64200 (write tools)</td>
+</tr>
+<tr>
+<td>A8</td>
+<td>Prune <strong>by age</strong> as the binding rule; count cap off until measured — sub-workflow executions would otherwise cut history to 2–3 days</td>
+</tr>
+<tr>
+<td>A9</td>
+<td><code>N8N_CONCURRENCY_PRODUCTION_LIMIT=3</code> so one agent run cannot block the probe webhook or MCP callers</td>
+</tr>
+<tr>
+<td>A10</td>
+<td>Degraded mode keys off the <strong>model node's error output</strong>, not <code>/api/tags</code> (200 during cloud 429s); retries capped at 2; daily call budget</td>
+</tr>
+<tr>
+<td>A11</td>
+<td><strong>New P3.5 spine phase</strong> before any bot: mount gate, fallback, idempotency/audit, allowlist, error workflow, probe, deadman, backup — plus B3, an out-of-band deadman</td>
+</tr>
+<tr>
+<td>A12</td>
+<td>Approvals over loopback URLs removed from v1; nothing gated is built</td>
+</tr>
+<tr>
+<td>A13</td>
+<td>Zoho Brief Intake <strong>held</strong> pending Ricardo's ruling on briefing system and owning lane</td>
+</tr>
+<tr>
+<td>A14</td>
+<td>Webhook URLs stored as <strong>credentials</strong>, not node parameters; <code>gitleaks</code> pre-commit in DevMini</td>
+</tr>
+<tr>
+<td>A15</td>
+<td>B6 → ledger-only, no cent-level claim; B5 narrowed to kanban/agent staleness; B10 deferred; <strong>instance MCP disabled</strong></td>
+</tr>
+<tr>
+<td>A16</td>
+<td>Pin <strong>2.49.8</strong> (npm <code>dist-tags</code> stable) and <code>brew pin node@24</code>, after reading its changelog</td>
+</tr>
+<tr>
+<td>A17</td>
+<td>P3 tests <strong>both</strong> model routes and the Responses-API toggle</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Minors — accepted (6).</strong> A18 per-object idempotency with <code>pending → done</code> states; A19 dedupe tested only on published workflows; A20 one miss-number (2) and a 45 s panic budget that clears the 30 s graceful shutdown; A21 <code>DB_SQLITE_VACUUM_ON_STARTUP</code> flagged "verify the name"; A22 B1 thresholds are <strong>relative to a recorded baseline</strong>, not a fixed 10 GB that is already breached; A23 exports run from launchd onto a branch + PR, never a commit to main.</p>
+<p><strong>Minors — partially rejected (1).</strong> A24's claim that <code>N8N_ENFORCE_GLOBAL_USER_AGENT</code> is unverified is right — it was dropped rather than kept. Its per-execution token ceiling was adopted as <code>maxTokens</code> + a counter.</p>
+<p><strong>What Claude contributed that the panel and I both missed:</strong> the disk gate that failed its own test, the unencrypted backup drive, the unowned model account, the boot path depending on USB, the vacuous greps, and the concurrency number that would have starved the webhook. Every one of those is a build-day or a standing-rule failure, not a style note.</p>
+<p><strong>What I kept against the audit:</strong> the ten-bot ambition became a seven-bot v1 with five phased — but B1, B2, B7 and the filing bot survive, so the product is smaller, not different. I also kept the probe-script design over Claude's HTTP-only suggestion (its own A15 concedes that stack-doctor data can be 15 minutes stale; the probe is the fresher path).</p>
+<hr />
+<h2 id="16-risks">16. Risks</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td><strong>Internal disk</strong> — the build cannot start</td>
+<td>Certain today</td>
+<td>High</td>
+<td>P-1 reclaim to ≥ 15 GB with a numeric gate; prune by age; artefacts on Hiksemi; B1 alerts on <strong>trend</strong> against a recorded baseline</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>Memory/swap worsens</td>
+<td>Medium</td>
+<td>High</td>
+<td>Native lane (~400 MB); 48-hour soak, gate G2; no new VM</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>n8n 3.0 kills the npm lane</td>
+<td>Certain (scheduled)</td>
+<td>Medium</td>
+<td>Pin 2.49.8 + <code>brew pin node@24</code>; portable data dir; Compose staged; gate G3</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>Model spend or 429s on a shared quota</td>
+<td>Medium</td>
+<td>High</td>
+<td>Gate G0 identifies the payer; ladder by cost; degraded mode on the node's error; daily budget; B10 later</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>A confident bot reports nonsense</td>
+<td>Medium</td>
+<td>High</td>
+<td>Raw-value reporting, <code>degraded-model</code> tag, negative tests per bot</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Hiksemi absent or dying</td>
+<td>Medium</td>
+<td>Low</td>
+<td>Nothing in the boot path touches it; B4 makes it loud; mount gate before writes</td>
+</tr>
+<tr>
+<td>R7</td>
+<td>Credential or webhook URL in git</td>
+<td>Low</td>
+<td>High</td>
+<td>Credentials for URLs; publish-time lint; gitleaks pre-commit</td>
+</tr>
+<tr>
+<td>R8</td>
+<td>Alert fatigue</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>State-change only; digest batching; 2-miss rule; noise budget per bot</td>
+</tr>
+<tr>
+<td>R9</td>
+<td>Ollama on <code>*:11434</code> reachable from the LAN</td>
+<td>Medium</td>
+<td>High</td>
+<td>No port-forward, application firewall, tailnet ACLs; gate G8</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>Backup is single-copy and encrypted-key-dependent</td>
+<td>High (today)</td>
+<td>High</td>
+<td><code>age</code> encryption, Keychain identity, restore drill that decrypts; gate G9 for the second copy</td>
+</tr>
+<tr>
+<td>R11</td>
+<td>The watcher is the thing that dies</td>
+<td>Medium</td>
+<td>High</td>
+<td>B3 lives <strong>outside</strong> n8n (launchd + curl) and <code>com.maio.deadman</code> covers the watcher</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="17-open-questions-for-ricardo">17. Open questions for Ricardo</h2>
+<ol type="1">
+<li><strong>Which Ollama account does the daemon bill?</strong> — blocks P3 (gate G0). Default: assume Ricardo's own until measured.</li>
+<li><strong>Tailnet exposure of the n8n UI</strong> — default: localhost only in v1 (G5).</li>
+<li><strong>Does n8n hold the Cliq webhook directly, or post through Hermes?</strong> — default: directly, stored as a credential.</li>
+<li><strong>Monthly model budget cap that B10 enforces</strong> — needs a number from him; until then B10 reports only.</li>
+<li><strong>Where do Infinity briefs live — Zoho Projects or ClickUp, and which lane owns Infinity work?</strong> — blocks the held bot (§7.3). Default: nothing touches Infinity data until he rules.</li>
+<li><strong>Second backup destination</strong> — NAS Ricky after it is measured, or another disk he prefers (G9).</li>
+</ol>
+<hr />
+<h2 id="18-changelog">18. Changelog</h2>
+<p><strong>v1.0 (this version)</strong> — Enhanced from the Claude audit: P-1 reclaim phase; gate G0 on the model account; encrypted backups outside the file-access root with <code>sqlite3 .backup</code> and a decrypt drill; logs/binary internal; concurrency 3; degraded mode on node errors; P3.5 spine before bots; v1 cut to seven bots with five phased and one held; lint + gitleaks replacing vacuous greps; template-only Beast cards; no instance MCP; per-object idempotency; reconciled miss-number and panic budget; numeric disk gates.</p>
+<p><strong>v0.2</strong> — MoA adjudication: split state placement, mount gate, second backup destination, credential-store exception, B11/B12, drift bot folded, channel rule, gates G7–G9, risks R9–R10.</p>
+<p><strong>v0.1</strong> — First draft from measured evidence (native lane decision, ten bots, guardrails, delivery plan).</p>
+<hr />
+<h2 id="appendix-a--evidence-log">Appendix A — Evidence log</h2>
+<pre><code>$ sysctl -n machdep.cpu.brand_string        → Apple M4 Pro
+$ sysctl -n hw.memsize                      → 25769803776 (24 GB)
+$ sw_vers                                   → macOS 27.2.1 (26B131)
+$ df -h /System/Volumes/Data                → 460Gi 423Gi 7.6Gi 99%
+$ diskutil info &quot;/Volumes/Hiksemi 1TB&quot;      → APFS, USB, Encrypted: No, 740.7 GB free
+$ sysctl -n vm.swapusage                    → total 6144.00M used 5204.56M
+$ memory_pressure                           → System-wide memory free percentage: 61%
+$ node -v / npm -v                          → v26.13.1 / 12.2.3
+$ npm view n8n version engines              → 2.49.8 / { node: &#39;&gt;=24.0.0&#39; }
+$ npm view n8n dist-tags                    → stable 2.49.8, beta 2.50.3   [auditor]
+$ brew info node@24                         → stable 24.22.3 (bottled) [keg-only]
+$ colima ls                                 → default Running aarch64 4 6GiB 100GiB docker
+$ docker ps | wc -l                         → 27 lines (26 containers + header)
+$ docker system df                          → Images 29.41GB, Volumes 10.43GB, build cache 2.604GB
+$ container write to /Volumes/Hiksemi 1TB   → &quot;Read-only file system&quot;
+$ curl host.docker.internal:11434 (in dock) → 200
+$ curl 127.0.0.1:11434/v1 + tool schema     → finish_reason: tool_calls (get_weather, Cape Town)
+$ lsof -nP -iTCP:11434 -sTCP:LISTEN         → *:11434 (all interfaces)
+$ lsof -nP -iTCP -sTCP:LISTEN               → 5678 free; 9111/8792/64200/6174/8807/8188/8800/8123/8085 up
+$ launchctl list | grep com.maio            → ~20 agents
+$ defaults read /Library/Preferences/com.apple.loginwindow autoLoginUser → not set   [auditor]</code></pre>
+<h2 id="appendix-b--file-layout-on-the-machine">Appendix B — File layout on the machine</h2>
+<pre><code>~/AI Hub/n8n/
+├── bin/{n8n-start.sh, n8n-panic.sh, n8n-backup.sh, n8n-lint.sh, n8n-export.sh}
+├── logs/{lifecycle.log, n8n.out.log, n8n.err.log}
+├── binary/
+├── .npm-cache/
+├── node_modules/…            # n8n@2.49.8
+├── package.json
+└── .n8n/                     # SQLite DB + config (0600)
+~/Library/LaunchAgents/{com.maio.n8n.plist, com.maio.n8n-deadman.plist}
+~/Library/LaunchAgents/com.maio.n8n-probe.plist
+/Volumes/Hiksemi 1TB/AI-Drive/Agent-Output/n8n/           # artefacts + audit.jsonl
+/Volumes/Hiksemi 1TB/AI-Drive/Backups/n8n/                # age-encrypted archives (14)
+/Volumes/Hiksemi 1TB/DevMini/n8n/workflows/               # weekly export, branch + PR</code></pre>
+<h2 id="appendix-c--glossary">Appendix C — Glossary</h2>
+<p><strong>Agent node</strong> an LLM with tools and a loop · <strong>Chain node</strong> a single LLM call · <strong>Task runner</strong> the isolated process that executes Code-node JavaScript (2.x default) · <strong>MCP</strong> Model Context Protocol, the tool interface Hermes, Claude and n8n all speak · <strong>Publish</strong> in 2.x, the explicit act that makes a saved workflow live · <strong>Data table</strong> n8n's built-in row store, used here for idempotency keys · <strong>Deadman</strong> a watcher outside the watched system, so its failure cannot hide behind the failure it reports.</p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
