@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Mac mini disk cleanup — what can be deleted</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="mac-mini--where-the-disk-went-and-what-can-be-deleted">Mac mini — where the disk went, and what can be deleted</h1>
+<p><strong>Host</strong> Ricardos-Mac-mini · <strong>Date</strong> 2026-11-28 · <strong>Measured</strong> live with <code>df</code>, <code>diskutil</code>, <code>du</code>, <code>docker system df</code>, <code>ollama list</code></p>
+<h2 id="the-situation">The situation</h2>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td>APFS container</td>
+<td>494.4 GB</td>
+</tr>
+<tr>
+<td>Data volume used</td>
+<td>447.1 GB</td>
+</tr>
+<tr>
+<td><strong>Free</strong></td>
+<td><strong>15.7 GB (3.2 %)</strong></td>
+</tr>
+<tr>
+<td>Local Time Machine snapshots</td>
+<td>none — nothing hidden to purge</td>
+</tr>
+<tr>
+<td>External <code>Hiksemi 1TB</code></td>
+<td>689 GB free — the obvious archive target</td>
+</tr>
+</tbody>
+</table></div>
+<p>No snapshots and no purgeable ghost data: every byte below is a real file. The container is at 97 %, so the fix is deleting files, not waiting for macOS.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pie</span> <span class="cn">showData</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">title</span> <span class="vs">What holds the 447 GB data volume</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Chrome code-sign clone leak&quot;</span> <span class="dt">:</span> <span class="dv">35</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Ollama model blobs&quot;</span> <span class="dt">:</span> <span class="dv">63</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hermes + T3 + caches&quot;</span> <span class="dt">:</span> <span class="dv">54</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Docker / colima&quot;</span> <span class="dt">:</span> <span class="dv">62</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Library (App Support, caches, Spotlight)&quot;</span> <span class="dt">:</span> <span class="dv">73</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Homebrew + Applications&quot;</span> <span class="dt">:</span> <span class="dv">37</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Photos&quot;</span> <span class="dt">:</span> <span class="dv">17</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;AI Hub models / venvs / HF&quot;</span> <span class="dt">:</span> <span class="dv">49</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Other&quot;</span> <span class="dt">:</span> <span class="dv">57</span></span></code></pre></div>
+<h2 id="tier-1--safe-no-data-loss-no-service-impact-893-gb">Tier 1 — safe, no data loss, no service impact (89.3 GB)</h2>
+<p>Each item is a cache, a duplicate, or a leak. Nothing here is a record, a model in use, or a running service.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>What</th>
+<th style="text-align: right;">Size</th>
+<th>Why it is safe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Chrome <code>code_sign_clone</code> leak — 47 stale clones in <code>/private/var/folders/kj/df2w…/X/</code></td>
+<td style="text-align: right;"><strong>35.0 GB</strong></td>
+<td>Chrome's updater clones its own bundle per run and never cleans up. Newest clone is from 27 Nov, oldest 25 Nov; one is live. Quit Chrome, delete the folder, Chrome recreates it on next launch.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Orphaned Ollama blobs in <code>~/AI Hub/blobs</code> — 772 files no manifest references</td>
+<td style="text-align: right;"><strong>15.8 GB</strong></td>
+<td>Verified with a script: 33 manifests cite 3,545 blobs; 772 blobs (largest 5.8 GB) cite nothing. Left behind by deleted pulls.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Claude desktop VM bundle <code>~/Library/Application Support/Claude-3p/vm_bundles</code></td>
+<td style="text-align: right;"><strong>12.0 GB</strong></td>
+<td><code>rootfs.img</code> last written 25 Oct — a month untouched. Claude re-downloads it if local agent mode is used again.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Stopped colima profiles <code>constellation-ci</code> (4.9) + <code>unit-report</code> (1.1)</td>
+<td style="text-align: right;"><strong>6.0 GB</strong></td>
+<td>Both <code>Stopped</code>; only <code>default</code> is running your 26 live containers.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Docker unused images + unused volumes</td>
+<td style="text-align: right;"><strong>6.2 GB</strong></td>
+<td><code>docker system df</code>: 5.42 GB reclaimable images, 766 MB dangling volumes. Running containers keep their layers.</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>uv</code> package cache <code>~/.cache/uv</code></td>
+<td style="text-align: right;"><strong>5.3 GB</strong></td>
+<td>Rebuilt from PyPI on demand.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Stale pip build dirs <code>/private/var/folders/…/T</code> (<code>wheel-source-*</code>)</td>
+<td style="text-align: right;"><strong>5.0 GB</strong></td>
+<td>Temp files, days old.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Homebrew old versions + download caches</td>
+<td style="text-align: right;"><strong>3.5 GB</strong></td>
+<td><code>brew cleanup -n</code> reports exactly 3.5 GB (<code>omlx 0.8.3</code> 1.7 GB, caches 2.6 GB). Current versions stay.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Trash</td>
+<td style="text-align: right;"><strong>0.45 GB</strong></td>
+<td>Already deleted by you.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Free space after Tier 1: ~105 GB.</strong></p>
+<h3 id="the-exact-commands">The exact commands</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1 — quit Chrome first, then:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> /private/var/folders/kj/df2w2h451ll61dmtl6jql3ww0000gn/X/com.google.Chrome.code_sign_clone</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 3 — Claude VM bundle (quit Claude first)</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> <span class="st">&quot;</span><span class="va">$HOME</span><span class="st">/Library/Application Support/Claude-3p/vm_bundles&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 4 — retired colima profiles</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">colima</span> delete <span class="at">-p</span> constellation-ci <span class="at">--force</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">colima</span> delete <span class="at">-p</span> unit-report <span class="at">--force</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># 5 — docker prune (running containers untouched)</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> image prune <span class="at">-a</span> <span class="at">--force</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> volume prune <span class="at">--force</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 6, 8, 9</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> cache prune</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="ex">brew</span> cleanup <span class="at">--prune</span><span class="op">=</span>all</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> ~/.Trash/<span class="pp">*</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># 7 — temp build dirs</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> /private/var/folders/kj/df2w2h451ll61dmtl6jql3ww0000gn/T/wheel-source-<span class="pp">*</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># 2 — orphan blobs: script deletes only blobs no manifest references</span></span></code></pre></div>
+<p>Item 2 is done with the orphan-blob script rather than a blind <code>rm</code>, so a referenced layer can never be caught in it.</p>
+<h2 id="tier-2--needs-your-call-about-55-gb">Tier 2 — needs your call (about 55 GB)</h2>
+<p>Real space, but something stops working until it re-downloads or rebuilds.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>What</th>
+<th style="text-align: right;">Size</th>
+<th>Trade-off</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Local Ollama models with no reference in any config, cron or skill: <code>ocria-1:bf16</code> 10, <code>deepseek-ocr</code> 6.7, <code>x/flux2-klein</code> 5.7, <code>qwen2.5vl:3b</code> 3.2, <code>glm-ocr</code> 2.7, <code>granite3.2-vision</code> 2.4</td>
+<td style="text-align: right;"><strong>30.7 GB</strong></td>
+<td>Only if the OCR / image lane is retired. A grep of <code>~/.hermes/config.yaml</code>, cron, profiles and skills found no live reference; re-pulling costs bandwidth.</td>
+</tr>
+<tr>
+<td>Spotlight extracted-text index <code>~/Library/Metadata/CoreSpotlight/DocumentProcessing</code></td>
+<td style="text-align: right;"><strong>9.4 GB</strong></td>
+<td>Regenerable; forces a full re-index and the machine is busy for a while.</td>
+</tr>
+<tr>
+<td>Browser caches: playwright 2.2, camoufox 2.5, WhatsApp 2.3, Chrome 1.2</td>
+<td style="text-align: right;"><strong>8.2 GB</strong></td>
+<td>Regenerate; Playwright/Camoufox re-download on first automation run.</td>
+</tr>
+<tr>
+<td><code>~/.cache/qmd</code> 4.0 + <code>~/.cache/huggingface</code> 3.0</td>
+<td style="text-align: right;"><strong>7.0 GB</strong></td>
+<td>Model caches for OCR/TTS helpers; re-downloaded on use.</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="keep--do-not-touch">Keep — do not touch</h2>
+<ul>
+<li><strong>26 running Docker containers</strong> (firefly, metamcp, hindsight, signet, chromacommand, constellation, infx-fnd, ha-mcp…) and their 10.5 GB of volumes — live services.</li>
+<li><code>d3-flash-mlx</code> (9.4 GB) — the local fallback for the §8 gate. <code>shadow-abl:9b</code> (6.4 GB) — the Shadow seat.</li>
+<li><code>~/AI Hub/hf</code> (15 GB, FLUX.1/FLUX.2) and ComfyUI checkpoints (10 GB) — image lane in use.</li>
+<li><code>~/AI Hub/venvs</code> (8 GB) — live Python environments.</li>
+<li><code>~/Pictures/Photos Library</code> (17 GB) — your photos.</li>
+<li><code>~/.hermes</code> (29 GB) and <code>~/.t3</code> (12 GB) — agent state and the T3 Code database; they hold history, not junk.</li>
+<li><code>/Applications</code> (20 GB) — app removal is your decision, not a cleanup default.</li>
+</ul>
+<h2 id="better-than-deleting-for-the-big-models">Better than deleting, for the big models</h2>
+<p><code>Hiksemi 1TB</code> has 689 GB free. The 30.7 GB of unused Ollama models and 15 GB of Hugging Face weights can be moved there (and symlinked) instead of deleted, so nothing is lost when the OCR lane is needed again.</p>
+<h2 id="bottom-line">Bottom line</h2>
+<ul>
+<li><strong>Do now, zero risk: 89.3 GB</strong> → free space 15.7 GB → <strong>~105 GB</strong>.</li>
+<li><strong>Your call: another ~55 GB</strong> → <strong>~160 GB</strong> free.</li>
+<li>Nothing in Tier 1 is a record, a model in use, or a running service.</li>
+</ul>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
