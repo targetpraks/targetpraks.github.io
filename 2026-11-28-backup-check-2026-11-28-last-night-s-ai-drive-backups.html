@@ -245,15 +245,70 @@ home-assistant backup ok (log: ~/.config/maio-stack/home-assistant/backup.log)
 </tbody>
 </table></div>
 <p>Under <code>set -euo pipefail</code> (<code>backup.sh:8</code>) condition 3 can never pass: <code>grep -q</code> exits on the first match, the pipe closes under <code>head</code>, <code>gzip -dc</code> dies of SIGPIPE, and pipefail promotes that 141 to the whole expression. Forty consecutive runs failed 40/40; the same check written with <code>grep -c</code> passed 40/40. It is deterministic, not a race.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TD</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">A</span>[<span class="st">&quot;docker exec pg_dump\n(77,472 B SQL, exit 0)&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;gzip &gt; .partial\n9,139 B, exit 0&quot;</span>]</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>{<span class="st">&quot;guard: size &gt;= 2048\nPASS&quot;</span>}</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">D</span>{<span class="st">&quot;guard: gzip -t\nPASS&quot;</span>}</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;gzip -dc | head -c 400000 | grep -q header&quot;</span>]</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">E</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;grep -q finds match,\nexits early, closes pipe&quot;</span><span class="vs">|</span> <span class="dt">F</span>[<span class="st">&quot;gzip -dc killed by SIGPIPE\nrc = 141&quot;</span>]</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">F</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;set -o pipefail promotes 141&quot;</span><span class="vs">|</span> <span class="dt">G</span>[<span class="st">&quot;guard FAILS&quot;</span>]</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">H</span>[<span class="st">&quot;rm -f .partial\n+ CST_FAIL=constellation\n+ exit 9&quot;</span>]</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">H</span> <span class="pp">--&gt;</span> <span class="dt">I</span>[<span class="st">&quot;no artifact that night\nand the next morning&#39;s\nnight-check says GREEN&quot;</span>]</span></code></pre></div>
+<figure class="courage-figure">
+<svg viewBox="0 0 960 770" width="100%" role="img" aria-labelledby="fig1title" xmlns="http://www.w3.org/2000/svg" style="max-width:100%;height:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace">
+  <title id="fig1title">A healthy constellation dump becomes no backup at all</title>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+    </marker>
+    <marker id="arRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+
+<p><text x="24" y="34" font-size="16" font-weight="600" fill="currentColor">The dump is healthy — the guard is what fails</text> <text x="24" y="56" font-size="12.5" fill="currentColor" opacity="0.72">com.maio.backup, constellation lane (backup.sh:81–95), night of 2026-11-27 → 28</text></p>
+  <g fill="none" stroke="#2e8b57" stroke-width="1.8">
+    <rect x="40" y="96"  width="400" height="58" rx="8"/>
+    <rect x="40" y="190" width="400" height="58" rx="8"/>
+    <rect x="40" y="284" width="400" height="58" rx="8"/>
+    <rect x="40" y="378" width="400" height="58" rx="8"/>
+  </g>
+  <g font-size="14" fill="currentColor" text-anchor="middle">
+    <text x="240" y="120">docker exec pg_dump</text>
+    <text x="240" y="140" font-size="12.5" opacity="0.75">77,472 B of SQL · exit 0 · 0 B stderr</text>
+    <text x="240" y="214">gzip &gt; 2026-11-28.sql.gz.partial</text>
+    <text x="240" y="234" font-size="12.5" opacity="0.75">9,139–9,146 B · exit 0 · gzip stream complete</text>
+    <text x="240" y="308">guard 1 — size ≥ 2,048 B</text>
+    <text x="240" y="328" font-size="12.5" opacity="0.75">PASS</text>
+    <text x="240" y="402">guard 2 — gzip -t</text>
+    <text x="240" y="422" font-size="12.5" opacity="0.75">PASS (rc=0)</text>
+  </g>
+  <g stroke="#2e8b57" stroke-width="1.8" fill="none" marker-end="url(#ar)">
+    <line x1="240" y1="154" x2="240" y2="188"/>
+    <line x1="240" y1="248" x2="240" y2="282"/>
+    <line x1="240" y1="342" x2="240" y2="376"/>
+  </g>
+  <line x1="440" y1="407" x2="516" y2="407" stroke="#c0392b" stroke-width="1.8" fill="none" marker-end="url(#arRed)"/>
+
+  <g fill="none" stroke-width="1.8">
+    <rect x="520" y="378" width="400" height="58" rx="8" stroke="#c0392b"/>
+    <rect x="520" y="472" width="400" height="58" rx="8" stroke="#c0392b"/>
+    <rect x="520" y="566" width="400" height="58" rx="8" stroke="#c0392b"/>
+  </g>
+  <g font-size="14" fill="currentColor" text-anchor="middle">
+    <text x="720" y="402">guard 3 — gzip -dc | head | grep -q header</text>
+    <text x="720" y="422" font-size="12.5" opacity="0.75">grep -q exits on the first match, closes the pipe</text>
+    <text x="720" y="496">gzip -dc killed by SIGPIPE</text>
+    <text x="720" y="516" font-size="12.5" opacity="0.75">rc = 141 (128 + 13)</text>
+    <text x="720" y="590">set -o pipefail promotes 141</text>
+    <text x="720" y="610" font-size="12.5" opacity="0.75">guard FAILS — 40 of 40 runs</text>
+  </g>
+  <g stroke="#c0392b" stroke-width="1.8" fill="none" marker-end="url(#arRed)">
+    <line x1="720" y1="436" x2="720" y2="470"/>
+    <line x1="720" y1="530" x2="720" y2="564"/>
+    <line x1="720" y1="624" x2="720" y2="662"/>
+  </g>
+
+  <rect x="40" y="666" width="880" height="76" rx="8" fill="none" stroke="#8a8a8a" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <g font-size="14" fill="currentColor" text-anchor="middle">
+    <text x="480" y="692">rm -f the partial · CST_FAIL=constellation · run exits 9</text>
+    <text x="480" y="714" font-size="12.5" opacity="0.75">no artifact that night — and at 03:35 the night-check reports “backups: green, all fresh: hindsight”</text>
+  </g>
+</svg>
+<figcaption>Figure 1 — <strong>How a perfectly good dump becomes no backup at all.</strong> The two verification checks the dump can pass, it passes; the third can never pass under <code>set -o pipefail</code>, so the guard deletes the file and the night ends in exit 9 while the overnight monitor stays green.</figcaption>
+</figure>
+
 <p>The failure message is the other half of the problem: <em>"is 9146 bytes (floor 2048) <strong>or</strong> fails gzip -t"</em> names two conditions the file actually passed, and never names the one it failed. Two nights were spent chasing a torn pipe and a CGROUP theory that were both wrong.</p>
 <h3 id="why-it-started-on-nov-27-and-why-nov-25-passed">Why it started on Nov 27, and why Nov 25 passed</h3>
 <p><code>backup.sh</code> was last edited <strong>2026-11-25 19:26:54</strong> (9,092 B) — <em>after</em> the Nov 25 03:30 run. The structural header check arrived in that edit. Every night since has either died before reaching the lane or been rejected by it:</p>
