@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Backup check 2026-11-28 — last night's AI-Drive/Backups</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{--paper:#f7f4ee;--card:#fff;--ink:#22201c;--muted:#5f5a52;--line:#e3ddd0;
+      --ok:#2f7d5b;--bad:#b5453a;--warn:#8a6110;--gold:#8a6110;--accent:#1a2744;--code:#efece4;
+      --th-bg:#e6ddc9;--th-ink:#1b1917;--th-line:#c3b6a0;--cell-line:#cbbfa9;--zebra:#f0e9da;
+      --fig:#fffdf8}
+/* The dark palette is only variables: every rule below reads them, so no base rule can
+   out-order it. Explicit dark rules here used to be overridden by the base table rules
+   further down the sheet, which painted cream rows under near-white text. */
+@media (prefers-color-scheme:dark){
+:root{--paper:#14151a;--card:#1b1d24;--ink:#e8e4da;--muted:#b0a99b;--line:#2e313a;
+      --ok:#5fbf92;--bad:#e07b6f;--warn:#d8a24f;--gold:#d4a853;--accent:#c9d3ee;--code:#22252c;
+      --th-bg:#2c313c;--th-ink:#f6f2e8;--th-line:#4a5162;--cell-line:#3c424f;--zebra:#20242c;
+      --fig:#191b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+     font:17px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     -webkit-text-size-adjust:100%}
+main{max-width:clamp(740px,92vw,1280px);margin:0 auto;padding:38px clamp(20px,2.6vw,44px) 88px}
+/* Wide screens use the screen. The frame grows with the window; prose and headings hold one
+   fixed reading measure (50rem) centred in it, so a table, a code block or a figure overhangs
+   equally on both sides instead of breaking the grid. The measure is
+   in rem, not ch: ch is relative to each element's own font size, which would put a 36px h1 and
+   a 17px paragraph on two different widths. Below ~804px the clamp bottom makes the frame the
+   viewport, so a phone keeps exactly the layout this template always had. */
+main>:is(h1,h2,h3,h4,p,ul,ol,blockquote,hr,footer,.kicker,.sub,.meta,.lede,.callout,.quote,.foot,.src,ol.steps){max-width:50rem;margin-left:auto;margin-right:auto}
+.hero{margin:0 0 30px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.hero img{width:100%;height:clamp(190px,42vw,340px);object-fit:cover;display:block;margin:0}
+.hero figcaption{font-size:12.5px;color:var(--muted);padding:8px 12px;background:var(--card)}
+h1{font:600 clamp(27px,5.4vw,36px)/1.2 "Iowan Old Style",Georgia,"Times New Roman",serif;
+    letter-spacing:-.01em;margin:0 0 .5em}
+h2{font:600 clamp(20px,3.6vw,25px)/1.25 "Iowan Old Style",Georgia,serif;margin:2em 0 .5em;
+    padding-bottom:.28em;border-bottom:1px solid var(--line)}
+h3{font-size:17px;font-weight:700;letter-spacing:.01em;margin:1.6em 0 .4em}
+p,li{color:var(--ink)}
+a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;
+   text-underline-offset:2px;font-weight:600}
+a[href^="http"]::after{content:" ↗";font-weight:400;font-size:.85em;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+blockquote{margin:1.3em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+           border-left:3px solid var(--gold);border-radius:10px;color:var(--ink)}
+blockquote p:last-child{margin-bottom:0}
+code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:.88em;background:var(--code);
+     border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+     overflow-x:auto}
+pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.55}
+/* A table fills its wrapper, and the wrapper scrolls. Putting overflow on the table itself
+   (display:block) made the rounded border full width while the rows painted only as far as their
+   content — an empty band on the right of every wide table on a big screen. The renderer now wraps
+   every <table> in .tablewrap, so the table stays a real table (rows fill, cells wrap) and only a
+   table that genuinely cannot fit scrolls, inside its own box, never the page. */
+table{width:100%;border-collapse:collapse;margin:0;font-size:15px}
+.tablewrap{margin:1.3em 0;border:1px solid var(--line);border-radius:10px;overflow-x:auto;
+           -webkit-overflow-scrolling:touch}
+td,th{overflow-wrap:break-word}
+thead th{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;text-transform:uppercase;
+         letter-spacing:.08em;color:var(--th-ink);background:var(--th-bg);white-space:nowrap;
+         border-bottom:2px solid var(--th-line)}
+th,td{border-bottom:1px solid var(--cell-line);padding:10px 12px;text-align:left;vertical-align:top}
+tbody tr:nth-child(even){background:var(--zebra)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600}
+td strong{font-weight:650}
+img{max-width:100%;height:auto;border-radius:10px}
+/* Diagrams and figures run wide: the figure is a card the width of the frame, its svg centred and
+   never wider than the card, its caption a rule below. The read tier asks every report for at
+   least one diagram, so this is the rule most documents lean on. */
+main>figure:not(.hero),.figure{margin:1.6em 0;padding:16px 18px;background:var(--fig);
+     border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+main>figure:not(.hero)>svg,.figure>svg,main>figure:not(.hero)>img,.figure>img{
+     display:block;margin:0 auto;max-width:100%;height:auto;border-radius:8px}
+main>figure:not(.hero) figcaption,.figure figcaption{margin-top:12px;padding-top:10px;
+     border-top:1px solid var(--line);font-size:12.5px;line-height:1.55;color:var(--muted)}
+svg{max-width:100%;height:auto}
+ul,ol{padding-left:1.3em} li{margin:.34em 0}
+/* Components — the classes an agent reaches for when a document needs a kicker, a callout, a
+   card, a results line or a small calculator. Every colour is a token, so they flip with the
+   paper and nothing here can drift off the two house looks. */
+.wrap{max-width:none}
+.kicker{font:700 11px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+h1 em{font-style:normal;color:var(--gold)}
+.sub{color:var(--muted);font-size:17.5px;margin:.2em 0 0;max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.chip{font-size:12.5px;padding:5px 11px;border:1px solid var(--line);border-radius:999px;
+      color:var(--muted);background:var(--card)}
+.chip.hot{border-color:var(--bad);color:var(--bad)}
+.chip.ok{border-color:var(--ok);color:var(--ok)}
+.lede{font-size:18.5px;color:var(--ink)}
+.callout{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+         border-left:3px solid var(--gold);border-radius:10px}
+.callout.warn{border-left-color:var(--bad)} .callout.safe{border-left-color:var(--ok)}
+.callout p:last-child{margin-bottom:0}
+.quote{margin:1.4em 0;padding:14px 16px;background:var(--card);border:1px solid var(--line);
+       border-left:3px solid var(--gold);border-radius:10px;font-size:15.5px}
+.quote .tag{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+            letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.quote q{font-style:italic}
+td.cl{font-family:ui-monospace,"SF Mono",Menlo,monospace;color:var(--gold);white-space:nowrap;
+      font-weight:600;font-size:13.5px}
+td .why{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:1.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .step{font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;letter-spacing:.14em;
+            text-transform:uppercase;color:var(--gold)}
+.card h4{margin:.5em 0 .3em;font-size:16px} .card p{margin:0;color:var(--muted);font-size:14px}
+.calc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;margin:1.5em 0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px 16px;
+        margin:14px 0 6px}
+.f label{display:block;font:700 10.5px/1.4 ui-monospace,"SF Mono",Menlo,monospace;
+         letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.f input{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);
+         border-radius:8px;padding:9px 11px;font:inherit;font-variant-numeric:tabular-nums}
+.f input:focus{outline:none;border-color:var(--gold)}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.results{margin-top:18px;border-top:1px solid var(--line);padding-top:6px}
+.rline{display:flex;justify-content:space-between;gap:14px;padding:10px 0;
+       border-bottom:1px dashed var(--line);font-size:15px}
+.rline span:first-child{color:var(--muted)}
+.rline span:last-child{font-variant-numeric:tabular-nums;font-weight:650}
+.rline.total{border-bottom:0;border-top:2px solid var(--gold);margin-top:8px;padding-top:14px;
+             font-size:17px}
+.rline.total span:last-child{color:var(--gold);font-size:21px}
+.elect{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.elec{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.elec.win{border-color:var(--gold)}
+ol.steps{list-style:none;padding-left:0;counter-reset:s}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 42px;
+            border-left:1px solid var(--line);margin-left:12px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;
+                   border-radius:50%;background:var(--card);border:1px solid var(--gold);
+                   color:var(--gold);font-size:12.5px;font-weight:700;display:grid;place-items:center}
+ul.tight{margin:1em 0;padding-left:1.2em} ul.tight li::marker{color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media (max-width:720px){.two,.elect{grid-template-columns:1fr}}
+footer{margin-top:46px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);
+       font-size:13.5px}
+.src{font-size:13.5px;color:var(--muted)}
+.foot{margin-top:54px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);
+      font-size:12.5px;font-family:ui-monospace,"SF Mono",Menlo,monospace}
+@media (max-width:520px){th,td{padding:7px 8px;font-size:13.5px}
+  .tablewrap{margin-left:-6px;margin-right:-6px}
+  thead th{white-space:normal}
+  main>figure:not(.hero),.figure{padding:10px 11px;border-radius:12px}
+  main>figure:not(.hero) figcaption,.figure figcaption{font-size:12px}}
+@media print{body{background:#fff;color:#000}main{max-width:none;padding:0}}
+</style></head>
+<body><main>
+
+<h1 id="backup-check--2026-11-28-0400-sast">Backup check — 2026-11-28 04:00 SAST</h1>
+<p>Night of Nov 27 → 28. Two of the three real lanes shipped clean artifacts. <strong>The constellation lane has now produced no valid file for three nights running — and tonight I found why: the dump was never broken. The check that guards it can never pass.</strong> Two perfectly good dumps were deleted by the guard on Nov 27 and Nov 28 under <code>set -o pipefail</code>, and nobody was told, because the night-check's backups lane watches hindsight only and called tonight green.</p>
+<p>This is not the transient I reported last night. That call was wrong, and the evidence below says so plainly.</p>
+<h2 id="verdict">Verdict</h2>
+<p>🔴 <strong>RED</strong> — constellation has no backup since <strong>2026-11-25</strong>, and its only surviving copy is swept by the 14-day retention on <strong>2026-12-10</strong> if the guard is not fixed.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Lane</th>
+<th>Tonight's artifact</th>
+<th>Size</th>
+<th>Integrity (verified now)</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hindsight</td>
+<td><code>2026-11-28.tgz</code> 03:32</td>
+<td>2,274,019,487 B (2.12 GiB)</td>
+<td><code>gzip -t</code> <strong>rc=0</strong>; <code>tar tzf</code> → <strong>3,162 entries</strong></td>
+<td>✅ GREEN</td>
+</tr>
+<tr>
+<td>home-assistant</td>
+<td><code>home-assistant-config-2026-11-28.tar.gz</code> 03:32</td>
+<td>4,638,720 B</td>
+<td><code>tar tzf</code> <strong>149 entries</strong>; inflate <strong>complete</strong>, 18,331,648 B; <code>gzip -t</code> rc=2 "trailing garbage ignored" (5,722 zero-bytes of pad)</td>
+<td>🟠 AMBER — restorable, cosmetic pad</td>
+</tr>
+<tr>
+<td>constellation</td>
+<td><strong>none</strong> — newest is <code>2026-11-25.sql.gz</code>, 5,647 B</td>
+<td>—</td>
+<td>guard failed at 03:30; the rejected dump itself passed every real check</td>
+<td>🔴 <strong>MISS — 3rd night</strong></td>
+</tr>
+<tr>
+<td>paperclip</td>
+<td>none since <code>paperclip-20261125-033006.sql.gz</code></td>
+<td>—</td>
+<td>—</td>
+<td>✅ BY DESIGN (decommissioned 2026-11-25)</td>
+</tr>
+<tr>
+<td>top8</td>
+<td><code>top8-maio-2026-11-22.bundle</code> (weekly)</td>
+<td>40,129,039 B</td>
+<td>present</td>
+<td>✅ next due tomorrow, 2026-11-29</td>
+</tr>
+</tbody>
+</table></div>
+<p>Job outcome, from <code>launchctl print gui/501/com.maio.backup</code>: <strong><code>last exit code = 9</code></strong> — the script's own FAIL path (<code>backup.sh:155</code>), runs = 4. Verbatim from <code>~/Library/Logs/com.maio.backup.log</code>:</p>
+<pre><code>[2026-11-28 03:30:04] backup start (v4)
+** constellation dump FAILED — /Volumes/Hiksemi 1TB/AI-Drive/Backups/constellation/2026-11-28.sql.gz.partial is 9146 bytes (floor 2048) or fails gzip -t — check constellation-dev-pg
+home-assistant backup ok (log: ~/.config/maio-stack/home-assistant/backup.log)
+[2026-11-28 03:32:31] backups FAILED (2026-11-28) — constellation lane produced no valid file; every other lane completed</code></pre>
+<h2 id="the-finding-the-guard-rejects-a-healthy-dump-every-time">The finding: the guard rejects a healthy dump, every time</h2>
+<p>The constellation lane (<code>backup.sh:81–95</code>) pipes <code>pg_dump</code> into <code>gzip</code>, then requires three things before promoting the file: a size floor, <code>gzip -t</code>, and a header grep. I reproduced the exact guard expression against a dump I took by hand tonight.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Guard condition</th>
+<th>Result on a good dump</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. size ≥ 2,048 B</td>
+<td>9,139 B</td>
+<td><strong>PASS</strong></td>
+</tr>
+<tr>
+<td>2. <code>gzip -t "$f"</code></td>
+<td>rc=0</td>
+<td><strong>PASS</strong></td>
+</tr>
+<tr>
+<td>3. <code>gzip -dc "$f" | head -c 400000 | grep -q "PostgreSQL database dump"</code></td>
+<td><strong>rc=141</strong> (128+13, SIGPIPE)</td>
+<td><strong>FAIL — 40 of 40 runs</strong></td>
+</tr>
+<tr>
+<td>— is the header actually in the file?</td>
+<td><code>grep -c</code> → <strong>2 matches</strong></td>
+<td>present</td>
+</tr>
+</tbody>
+</table></div>
+<p>Under <code>set -euo pipefail</code> (<code>backup.sh:8</code>) condition 3 can never pass: <code>grep -q</code> exits on the first match, the pipe closes under <code>head</code>, <code>gzip -dc</code> dies of SIGPIPE, and pipefail promotes that 141 to the whole expression. Forty consecutive runs failed 40/40; the same check written with <code>grep -c</code> passed 40/40. It is deterministic, not a race.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode mermaid"><code class="sourceCode mermaid"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">flowchart</span> <span class="cn">TD</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">A</span>[<span class="st">&quot;docker exec pg_dump\n(77,472 B SQL, exit 0)&quot;</span>] <span class="pp">--&gt;</span> <span class="dt">B</span>[<span class="st">&quot;gzip &gt; .partial\n9,139 B, exit 0&quot;</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">B</span> <span class="pp">--&gt;</span> <span class="dt">C</span>{<span class="st">&quot;guard: size &gt;= 2048\nPASS&quot;</span>}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">C</span> <span class="pp">--&gt;</span> <span class="dt">D</span>{<span class="st">&quot;guard: gzip -t\nPASS&quot;</span>}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">D</span> <span class="pp">--&gt;</span> <span class="dt">E</span>[<span class="st">&quot;gzip -dc | head -c 400000 | grep -q header&quot;</span>]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">E</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;grep -q finds match,\nexits early, closes pipe&quot;</span><span class="vs">|</span> <span class="dt">F</span>[<span class="st">&quot;gzip -dc killed by SIGPIPE\nrc = 141&quot;</span>]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">F</span> <span class="pp">--&gt;</span><span class="vs">|</span><span class="st">&quot;set -o pipefail promotes 141&quot;</span><span class="vs">|</span> <span class="dt">G</span>[<span class="st">&quot;guard FAILS&quot;</span>]</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">G</span> <span class="pp">--&gt;</span> <span class="dt">H</span>[<span class="st">&quot;rm -f .partial\n+ CST_FAIL=constellation\n+ exit 9&quot;</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">H</span> <span class="pp">--&gt;</span> <span class="dt">I</span>[<span class="st">&quot;no artifact that night\nand the next morning&#39;s\nnight-check says GREEN&quot;</span>]</span></code></pre></div>
+<p>The failure message is the other half of the problem: <em>"is 9146 bytes (floor 2048) <strong>or</strong> fails gzip -t"</em> names two conditions the file actually passed, and never names the one it failed. Two nights were spent chasing a torn pipe and a CGROUP theory that were both wrong.</p>
+<h3 id="why-it-started-on-nov-27-and-why-nov-25-passed">Why it started on Nov 27, and why Nov 25 passed</h3>
+<p><code>backup.sh</code> was last edited <strong>2026-11-25 19:26:54</strong> (9,092 B) — <em>after</em> the Nov 25 03:30 run. The structural header check arrived in that edit. Every night since has either died before reaching the lane or been rejected by it:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Night</th>
+<th>What the log says</th>
+<th>Constellation artifact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nov 23</td>
+<td><code>backups OK</code></td>
+<td><code>2026-11-23.sql.gz</code> ✅</td>
+</tr>
+<tr>
+<td>Nov 24</td>
+<td>failed on the <strong>old</strong> 102,400 B floor (<code>5658 bytes (floor 102400)</code>)</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Nov 25 03:30</td>
+<td><code>constellation backup: … 5647 bytes, gzip verified</code> — pre-edit code, floor 2,048 + <code>gzip -t</code> only</td>
+<td><code>2026-11-25.sql.gz</code> ✅ <strong>last good</strong></td>
+</tr>
+<tr>
+<td>Nov 25 19:26</td>
+<td><strong><code>backup.sh</code> edited — structural header check added</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>Nov 26 03:30 and 03:35</td>
+<td>died at <code>secrets.env:1501</code> before any lane ran</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Nov 27 03:30</td>
+<td><code>9141 bytes … or fails gzip -t</code> → guard reject</td>
+<td>none</td>
+</tr>
+<tr>
+<td>Nov 28 03:30</td>
+<td><code>9146 bytes … or fails gzip -t</code> → guard reject</td>
+<td>none</td>
+</tr>
+</tbody>
+</table></div>
+<p>Two runs have reached the new guard. Both were rejected. Nothing about the database changed.</p>
+<h3 id="the-database-and-the-volume-are-both-innocent--tested-not-assumed">The database and the volume are both innocent — tested, not assumed</h3>
+<ul>
+<li>Hand-run of the lane pipeline at 04:07 (scratch, deleted after): <strong>9,139 B, <code>gzip -t</code> rc=0, 77,472 B of plain SQL, header present, 0 bytes of <code>pg_dump</code> stderr</strong>.</li>
+<li>The same pipeline written <strong>three times onto the Hiksemi volume itself</strong> (probe file, deleted after): 9,137 / 9,139 / 9,142 B, <code>gzip -t</code> <strong>rc=0</strong> each time. The volume is not losing bytes.</li>
+<li><code>constellation-dev-pg</code>: no memory limit (<code>MemLimit=0</code>), <code>oom_kill 0</code>, <code>Restarts 0</code>, up since 2026-11-25T06:58Z; container log shows no error or connection termination around 03:30; the system log 03:29–03:33 shows no jetsam kill of <code>docker</code>, <code>pg_dump</code> or <code>gzip</code>.</li>
+<li>The rejected sizes (9,141 / 9,146 B) sit inside the healthy range (9,137–9,142 B taken tonight) — these were <strong>complete dumps, not torn ones</strong>.</li>
+</ul>
+<h2 id="the-cliff-2026-12-10">The cliff: 2026-12-10</h2>
+<p><code>backup.sh:152</code> runs <code>find "$D" -type f -mtime +14 -delete</code> over the whole tree. The newest constellation dump is <code>2026-11-25.sql.gz</code>; at 15 days old it is deleted by the run around <strong>2026-12-10 03:30</strong>. From that morning there would be <strong>zero constellation backups</strong> — and the nightly job would keep exiting 9 with a message pointing at the database.</p>
+<h2 id="home-assistant--restorable-with-a-zero-pad-tail-amber-not-a-fault">Home Assistant — restorable, with a zero pad tail (amber, not a fault)</h2>
+<p><code>gzip -t</code> exits 2 <code>trailing garbage ignored</code>, and the script's own restore check passed tonight (the footer names constellation only, so <code>HA_FAIL</code> was empty — the archive extracted). Measured:</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Night</th>
+<th>bytes</th>
+<th>inflated</th>
+<th>stream complete</th>
+<th>leftover pad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Nov 24</td>
+<td>3,339,144</td>
+<td>13,014,528</td>
+<td>✅</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Nov 25</td>
+<td>3,368,960</td>
+<td>14,391,808</td>
+<td>✅</td>
+<td>7,922</td>
+</tr>
+<tr>
+<td>Nov 26</td>
+<td>4,556,800</td>
+<td>18,155,520</td>
+<td>✅</td>
+<td>8,140</td>
+</tr>
+<tr>
+<td>Nov 27</td>
+<td>4,618,240</td>
+<td>18,309,120</td>
+<td>✅</td>
+<td>5,842</td>
+</tr>
+<tr>
+<td>Nov 28</td>
+<td>4,638,720</td>
+<td>18,331,648</td>
+<td>✅</td>
+<td><strong>5,722</strong></td>
+</tr>
+</tbody>
+</table></div>
+<p>Every archive inflates completely (<code>eof=True</code>) and lists 149 entries. The pad is <strong>zeros</strong>, and the volume copy is byte-identical to the local copy in <code>~/AI Hub/backups/home-assistant/</code> (both sha256 <code>c5b804042b0c73a0…</code>, 4,638,720 B) — so this is produced by the writer, not by the volume, and it started the night of Nov 25. No data is at risk; it is a cosmetic defect that <code>gzip -t</code> will keep flagging.</p>
+<h2 id="hindsight--green-tonight-two-holes-in-the-window">hindsight — green tonight, two holes in the window</h2>
+<p><code>2026-11-28.tgz</code> is sound (2.12 GiB, <code>gzip -t</code> rc=0, 3,162 entries). The 14-day window holds one file per night except:</p>
+<ul>
+<li><strong>2026-11-26</strong> — explained: both runs died at <code>secrets.env:1501</code> before any lane ran, and the night-check's 03:35 re-run hit the same broken file. Source data was never at risk; only the off-volume copy was lost.</li>
+<li><strong>2026-11-16</strong> — <strong>unexplained</strong>: <code>com.maio.backup.log</code> has no rotation and starts 2026-11-24, so there is no record of that night. Same class of hole, no cause on file.</li>
+</ul>
+<h2 id="lanes-that-are-quiet-by-decision--and-one-that-is-not-protected">Lanes that are quiet by decision — and one that is not protected</h2>
+<ul>
+<li><strong>paperclip</strong> — decommissioned 2026-11-25 by Ricardo; <code>backup.sh</code> says "do not re-add a dump block". Last dump retained; the retention sweep empties that folder on its own.</li>
+<li><strong>litellm</strong> — removed 2026-10-19; empty folder is correct.</li>
+<li><strong>superwhisper</strong> — one-off pre-removal snapshots, never a nightly lane.</li>
+<li><strong>metamcp</strong> — excluded from backups by the 2026-11-09 decision (<code>backup.sh:54</code>), <strong>but the container is still running</strong> (<code>Up 2 days (healthy)</code>, 1.38 GiB resident) alongside <code>metamcp-pg</code>. A running service with no backup lane is worth a decision, not an alarm: either it is retiring and should be stopped, or it matters and needs a lane.</li>
+</ul>
+<h2 id="why-nothing-alerted">Why nothing alerted</h2>
+<p>The night-check <code>backups</code> lane checks <strong>hindsight freshness only</strong>. At 03:35 tonight it reported <code>🟢 backups | green | all fresh: hindsight</code> — nineteen minutes after the backup job logged <code>backups FAILED (2026-11-28)</code>. Night-check also flagged <code>🔴 disks internal=98%</code>; measured now, <code>/System/Volumes/Data</code> is at <strong>99% with 5.1 GiB free</strong> (the host-wide RED, unrelated to backups; Hiksemi is at 28%).</p>
+<p>So the one lane that was failing is the one lane nobody reads, and the failure surfaces only as an exit code and a log footer.</p>
+<h2 id="proposals-decisions-for-ricardo--nothing-applied">Proposals (decisions for Ricardo — nothing applied)</h2>
+<ol type="1">
+<li><strong>Fix the constellation guard first</strong> — swap <code>grep -q</code> for a form that reads to EOF (<code>grep -c … &gt; 0</code>, demonstrated 40/40 passing) or scope <code>set +o pipefail</code> to that expression. One line in <code>backup.sh:87</code>. Until this lands, every night deletes a good dump.</li>
+<li><strong>Make the guard tell the truth</strong> — log <em>which</em> sub-check failed instead of <code>size … or fails gzip -t</code>, keep the rejected file as <code>.rejected-$T</code> instead of <code>rm -f</code>, and stop swallowing <code>pg_dump</code> stderr (<code>2&gt;/dev/null</code> → the log). That alone would have saved two nights.</li>
+<li><strong>Restore coverage</strong> — after (1), one manual run puts <code>2026-11-28.sql.gz</code> in place and resets the Dec 10 cliff. Ricardo's call; I will not run it.</li>
+<li><strong>Widen the night-check backups lane</strong> to constellation freshness, HA presence, and a grep for <code>backups FAILED (…)</code> in the 03:30 footer, so an exit-9 night alerts instead of sleeping.</li>
+<li><strong>HA writer</strong> — temp file then <code>mv</code> over the dated path, which kills the zero-pad class.</li>
+<li><strong>Log rotation</strong> — size-rotate <code>com.maio.backup.log</code> so the next Nov-16-class hole has a cause.</li>
+<li><strong>Retention vs. this lane</strong> — with a single fragile lane, 14 days is a short leash. Decide whether the constellation dump gets a longer window or an exclusion from <code>find -delete</code>.</li>
+<li><strong>metamcp</strong> — decide: stop the container, or give it a lane.</li>
+</ol>
+<h2 id="evidence-appendix">Evidence appendix</h2>
+<ul>
+<li>Log: <code>~/Library/Logs/com.maio.backup.log</code> (23 lines, Nov 24–28; no rotation), quoted above.</li>
+<li>Job: <code>launchctl print gui/501/com.maio.backup</code> → <code>last exit code = 9</code>, <code>runs = 4</code>; schedule via <code>com.maio.backup.plist</code> <code>StartCalendarInterval</code> 03:30 through the osascript launcher (holds the removable-volume grant).</li>
+<li>Guard experiment: 40 iterations of the exact <code>backup.sh:87</code> expression → <strong>40 × rc=141</strong>; <code>grep -c</code> variant → <strong>40/40 pass</strong>; header present twice in the dump. Run at 04:05 in scratch.</li>
+<li>Volume probe: 3 writes of the live pipeline onto <code>/Volumes/Hiksemi 1TB/AI-Drive/</code> (probe file <code>…/.probe-courage-volwrite-*</code>, removed after) → 9,137 / 9,139 / 9,142 B, <code>gzip -t</code> rc=0 each.</li>
+<li>Integrity: hindsight <code>gzip -t</code> rc=0 + <code>tar tzf</code> 3,162 entries; HA inflate complete (<code>eof=True</code>)
+<ul>
+<li><code>tar tzf</code> 149 entries + sha256 match with the local copy; constellation Nov 25 <code>gzip -t</code> rc=0.</li>
+</ul></li>
+<li>Container (read-only): <code>docker inspect</code> <code>MemLimit=0</code>, <code>OOMKilled=false</code>, <code>Restarts=0</code>; <code>/sys/fs/cgroup/memory.events</code> → <code>oom 0 oom_kill 0</code>; <code>docker logs</code> clean around 03:30.</li>
+<li>Retention: <code>find … -mtime +15</code> → <strong>0 files</strong> older than 15 days anywhere in <code>AI-Drive/Backups</code>.</li>
+<li>Disk: <code>/System/Volumes/Data</code> 99% used, 5.1 GiB free; <code>/Volumes/Hiksemi 1TB</code> 28%.</li>
+</ul>
+<h3 id="references">References</h3>
+<ul>
+<li><a href="https://www.postgresql.org/docs/current/app-pgdump.html">pg_dump — exit status and <code>--no-owner</code> / <code>--no-privileges</code></a></li>
+<li><a href="https://man7.org/linux/man-pages/man7/signal.7.html">signal(7) — SIGPIPE is 13, so a pipeline exit of 141 is 128 + 13</a></li>
+<li><a href="https://zsh.sourceforge.io/Doc/Release/Options.html">zsh options — <code>pipefail</code>: the status of a pipeline is the last non-zero exit</a></li>
+<li><a href="https://keith.github.io/xcode-man-pages/find.1.html">find(1) — <code>-mtime +n</code> age semantics used by the retention sweep</a></li>
+<li><a href="https://man.freebsd.org/cgi/man.cgi?query=gzip">gzip(1) — <code>-t</code> test mode and the message "trailing garbage ignored"</a></li>
+</ul>
+<p><em>Check only — no job, file, database or script was changed. Two probe files were written to scratch and removed; nothing under <code>AI-Drive/Backups</code> was touched. Courage 🐾</em></p>
+<p class="foot">Maio Hub &middot; reading edition &middot; generated from the markdown record.</p>
+</main></body></html>
